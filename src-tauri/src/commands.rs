@@ -511,6 +511,20 @@ pub async fn launch_cli(
         return Err("PROJECT_DIRECTORY_NOT_APPROVED".into());
     }
     let id = device(&state.root)?;
+    let stored = cli::StoredRun {
+        payload,
+        executable_path: path.to_string_lossy().into(),
+        provider: provider.into(),
+        project_id: project_id.clone(),
+    };
+    storage::prepare(
+        &pool,
+        &run_id,
+        &id,
+        hash,
+        &serde_json::to_string(&stored).map_err(|_| "INVALID_PAYLOAD")?,
+    )
+    .await?;
     let started=post(&http,format!("{base}/projects/{project_id}/runs/{run_id}/start"),&access_token,json!({"expectedRevision":expected_revision,"approvalId":approval_id,"detectedVersion":version,"deviceId":id})).await?;
     if started["state"] != "RUNNING"
         || started["deviceId"] != id
@@ -519,20 +533,6 @@ pub async fn launch_cli(
     {
         return Err("APPROVAL_STALE".into());
     }
-    let stored = cli::StoredRun {
-        payload,
-        executable_path: path.to_string_lossy().into(),
-        provider: provider.into(),
-        project_id: project_id.clone(),
-    };
-    storage::claim(
-        &pool,
-        &run_id,
-        &id,
-        hash,
-        &serde_json::to_string(&stored).map_err(|_| "INVALID_PAYLOAD")?,
-    )
-    .await?;
     let claimed = report_launch(
         &http,
         &base,
@@ -543,6 +543,7 @@ pub async fn launch_cli(
         None,
     )
     .await?;
+    storage::arm(&pool, &run_id).await?;
     if let Err(error) = open_terminal(&state.root, &run_id) {
         sqlx::query("UPDATE runs SET state='UNKNOWN' WHERE id=?")
             .bind(&run_id)
@@ -564,6 +565,62 @@ pub async fn launch_cli(
     pool.close().await;
     Ok(claimed)
 }
+async fn reconcile_uncertain(
+    http: &reqwest::Client,
+    base: &str,
+    token: &str,
+    project: &str,
+    mut run: Value,
+    pool: &SqlitePool,
+    device: &str,
+) -> Result<Value, String> {
+    if run["state"] != "RUNNING" {
+        return Ok(run);
+    }
+    if run["deviceId"] != device {
+        return Err("APPROVAL_STALE".into());
+    }
+    let id = run["id"].as_str().ok_or("INVALID_API_RESPONSE")?;
+    let record: Option<(String, String, String)> =
+        sqlx::query_as("SELECT state,device,hash FROM runs WHERE id=?")
+            .bind(id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
+    if record.as_ref().is_some_and(|(_, bound_device, hash)| {
+        bound_device != device || run["payloadHash"] != *hash
+    }) {
+        return Err("APPROVAL_STALE".into());
+    }
+    let local = record.map(|(state, _, _)| state);
+    if local.is_none() {
+        storage::prepare(
+            pool,
+            id,
+            device,
+            run["payloadHash"].as_str().ok_or("INVALID_API_RESPONSE")?,
+            "{}",
+        )
+        .await?;
+    }
+    if local.is_none()
+        || matches!(local.as_deref(), Some("PREPARED" | "UNKNOWN" | "FAILED"))
+        || run["launchStatus"] == "NOT_CLAIMED"
+    {
+        sqlx::query("UPDATE runs SET state='UNKNOWN' WHERE id=?")
+            .bind(id)
+            .execute(pool)
+            .await
+            .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
+        if run["launchStatus"] == "NOT_CLAIMED" {
+            run = report_launch(http, base, token, project, &run, "CLAIMED", None).await?;
+        }
+        if run["launchStatus"] == "CLAIMED" || run["launchStatus"] == "STARTED" {
+            run = report_launch(http, base, token, project, &run, "UNKNOWN", None).await?;
+        }
+    }
+    Ok(run)
+}
 #[tauri::command]
 pub async fn poll_cli(
     state: State<'_, NativeState>,
@@ -575,6 +632,16 @@ pub async fn poll_cli(
     let (http, base) = client(&api_base)?;
     let mut run = fetch_run(&http, &base, &access_token, &project_id, &run_id).await?;
     let pool = storage::database(&state.root.join("native.sqlite")).await?;
+    run = reconcile_uncertain(
+        &http,
+        &base,
+        &access_token,
+        &project_id,
+        run,
+        &pool,
+        &device(&state.root)?,
+    )
+    .await?;
     let row = sqlx::query("SELECT state,pid,started_at,exit_code,device,hash FROM runs WHERE id=?")
         .bind(&run_id)
         .fetch_optional(&pool)
@@ -640,12 +707,22 @@ pub async fn recover_cli(
 ) -> Result<Value, String> {
     let (http, base) = client(&api_base)?;
     let run = fetch_run(&http, &base, &access_token, &project_id, &run_id).await?;
-    if run["deviceId"] != device(&state.root)? || run["launchStatus"] != "UNKNOWN" {
+    let pool = storage::database(&state.root.join("native.sqlite")).await?;
+    let run = reconcile_uncertain(
+        &http,
+        &base,
+        &access_token,
+        &project_id,
+        run,
+        &pool,
+        &device(&state.root)?,
+    )
+    .await?;
+    if run["launchStatus"] != "UNKNOWN" {
         return Err("RUN_NOT_RECOVERABLE".into());
     }
     let mut body =
         json!({"expectedRevision":run["revision"],"deviceId":run["deviceId"],"decision":decision});
-    let pool = storage::database(&state.root.join("native.sqlite")).await?;
     if decision == "REATTACH" {
         let row = sqlx::query("SELECT pid,started_at FROM runs WHERE id=?")
             .bind(&run_id)
@@ -702,7 +779,7 @@ pub async fn complete_cli(
     let (http, base) = client(&api_base)?;
     let run = fetch_run(&http, &base, &access_token, &project_id, &run_id).await?;
     let pool = storage::database(&state.root.join("native.sqlite")).await?;
-    let row = sqlx::query("SELECT state,exit_code,device,hash FROM runs WHERE id=?")
+    let row = sqlx::query("SELECT state,exit_code,device,hash,payload FROM runs WHERE id=?")
         .bind(&run_id)
         .fetch_one(&pool)
         .await
@@ -715,6 +792,15 @@ pub async fn complete_cli(
     {
         return Err("RUN_NOT_FINISHED".into());
     }
+    let stored: cli::StoredRun =
+        serde_json::from_str(row.get("payload")).map_err(|_| "INVALID_LOCAL_RUN")?;
+    let exit: Option<i64> = row.get("exit_code");
+    let exit = exit.ok_or("PROCESS_RESULT_UNKNOWN")?;
+    let commit_sha = match cli::project_commit(&stored.payload.working_directory).await {
+        Ok(sha) => Some(sha),
+        Err(error) if exit == 0 => return Err(error),
+        Err(_) => None,
+    };
     let mut hashes = Vec::new();
     for label in [
         "실제 표준 출력 로그 선택 (stdout)",
@@ -740,9 +826,13 @@ pub async fn complete_cli(
         }
         hashes.push(format!("{:x}", Sha256::digest(&bytes)));
     }
-    let exit: Option<i64> = row.get("exit_code");
-    let exit = exit.ok_or("PROCESS_RESULT_UNKNOWN")?;
-    let result=post(&http,format!("{base}/projects/{project_id}/runs/{run_id}/result"),&access_token,json!({"expectedRevision":run["revision"],"exitCode":exit,"stdoutHash":hashes[0],"stderrHash":hashes[1]})).await?;
+    let result = post(
+        &http,
+        format!("{base}/projects/{project_id}/runs/{run_id}/result"),
+        &access_token,
+        result_payload(run["revision"].clone(), exit, &hashes, commit_sha),
+    )
+    .await?;
     pool.close().await;
     Ok(Some(result))
 }
@@ -823,5 +913,161 @@ mod tests {
         ] {
             assert!(client(origin).is_err());
         }
+    }
+}
+
+fn result_payload(revision: Value, exit: i64, hashes: &[String], commit: Option<String>) -> Value {
+    let mut body = json!({"expectedRevision":revision,"exitCode":exit,"stdoutHash":hashes[0],"stderrHash":hashes[1]});
+    if let Some(sha) = commit {
+        body["commitSha"] = sha.into();
+    }
+    body
+}
+#[cfg(test)]
+mod fault_tests {
+    use super::*;
+    use std::io::BufRead;
+    fn endpoint(mut run: Value, count: usize) -> (String, std::thread::JoinHandle<Vec<Value>>) {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let base = format!("http://{}", listener.local_addr().unwrap());
+        let handle = std::thread::spawn(move || {
+            let mut bodies = Vec::new();
+            for _ in 0..count {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                    .unwrap();
+                let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+                let mut size = 0;
+                loop {
+                    let mut line = String::new();
+                    reader.read_line(&mut line).unwrap();
+                    if line == "\r\n" {
+                        break;
+                    }
+                    if line.to_lowercase().starts_with("content-length:") {
+                        size = line.split(':').nth(1).unwrap().trim().parse().unwrap();
+                    }
+                }
+                let mut bytes = vec![0; size];
+                reader.read_exact(&mut bytes).unwrap();
+                let body: Value = serde_json::from_slice(&bytes).unwrap();
+                if let Some(status) = body.get("launchStatus") {
+                    run["launchStatus"] = status.clone();
+                }
+                run["revision"] = json!(run["revision"].as_u64().unwrap() + 1);
+                bodies.push(body);
+                let response = json!({"data":run}).to_string();
+                write!(stream,"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",response.len(),response).unwrap();
+            }
+            bodies
+        });
+        (base, handle)
+    }
+    #[tokio::test]
+    async fn interruptions_before_local_claim_and_after_server_start_reconcile_without_spawn() {
+        for (intent, status, expected) in [
+            (false, "NOT_CLAIMED", vec!["CLAIMED", "UNKNOWN"]),
+            (true, "NOT_CLAIMED", vec!["CLAIMED", "UNKNOWN"]),
+            (true, "CLAIMED", vec!["UNKNOWN"]),
+        ] {
+            let dir = tempfile::tempdir().unwrap();
+            let pool = storage::database(&dir.path().join("runs.db"))
+                .await
+                .unwrap();
+            storage::recover_after_restart(&pool).await.unwrap();
+            let id = uuid::Uuid::new_v4().to_string();
+            let device = uuid::Uuid::new_v4().to_string();
+            if intent {
+                storage::prepare(&pool, &id, &device, "hash", "{}")
+                    .await
+                    .unwrap();
+            }
+            let run = json!({"id":id,"revision":3,"state":"RUNNING","deviceId":device,"payloadHash":"hash","launchStatus":status});
+            let (base, server) = endpoint(run.clone(), expected.len());
+            let reconciled = reconcile_uncertain(
+                &reqwest::Client::new(),
+                &base,
+                "fixture-token",
+                "project",
+                run,
+                &pool,
+                &device,
+            )
+            .await
+            .unwrap();
+            assert_eq!(reconciled["launchStatus"], "UNKNOWN");
+            assert!(storage::arm(&pool, &id).await.is_err());
+            assert!(storage::begin_execution(&pool, &id).await.is_err());
+            let requests = server.join().unwrap();
+            assert_eq!(
+                requests
+                    .iter()
+                    .map(|b| b["launchStatus"].as_str().unwrap())
+                    .collect::<Vec<_>>(),
+                expected
+            );
+            for (index, request) in requests.iter().enumerate() {
+                assert_eq!(request["expectedRevision"], json!(3 + index));
+                assert_eq!(request["deviceId"], device);
+                assert_eq!(request["payloadHash"], "hash");
+            }
+        }
+    }
+    #[tokio::test]
+    async fn completed_project_result_transmits_actual_git_commit() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().to_str().unwrap();
+        for args in [
+            vec!["init", "--quiet"],
+            vec![
+                "-c",
+                "user.name=Fixture",
+                "-c",
+                "user.email=fixture@example.test",
+                "commit",
+                "--allow-empty",
+                "--no-gpg-sign",
+                "-m",
+                "fixture",
+                "--quiet",
+            ],
+        ] {
+            assert!(std::process::Command::new("git")
+                .arg("-C")
+                .arg(path)
+                .args(args)
+                .status()
+                .unwrap()
+                .success());
+        }
+        let expected = std::process::Command::new("git")
+            .args(["-C", path, "rev-parse", "HEAD"])
+            .output()
+            .unwrap();
+        let expected = String::from_utf8(expected.stdout)
+            .unwrap()
+            .trim()
+            .to_string();
+        let sha = cli::project_commit(path).await.unwrap();
+        let (base, server) = endpoint(json!({"revision":4}), 1);
+        post(
+            &reqwest::Client::new(),
+            format!("{base}/result"),
+            "fixture-token",
+            result_payload(json!(4), 0, &["a".repeat(64), "b".repeat(64)], Some(sha)),
+        )
+        .await
+        .unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(requests[0]["commitSha"], expected);
+        assert_eq!(requests[0]["exitCode"], 0);
+        let nested = dir.path().join("not-a-repository");
+        fs::create_dir(&nested).unwrap();
+        assert!(cli::project_commit(nested.to_str().unwrap()).await.is_err());
+        let empty = tempfile::tempdir().unwrap();
+        assert!(cli::project_commit(empty.path().to_str().unwrap())
+            .await
+            .is_err());
     }
 }

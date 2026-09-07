@@ -82,10 +82,12 @@ async fn initialize(pool: &SqlitePool) -> Result<(), String> {
 }
 pub async fn recover_after_restart(pool: &SqlitePool) -> Result<(), String> {
     initialize(pool).await?;
-    sqlx::query("UPDATE runs SET state='UNKNOWN' WHERE state IN ('CLAIMED','LAUNCHING')")
-        .execute(pool)
-        .await
-        .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
+    sqlx::query(
+        "UPDATE runs SET state='UNKNOWN' WHERE state IN ('PREPARED','CLAIMED','LAUNCHING')",
+    )
+    .execute(pool)
+    .await
+    .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
     Ok(())
 }
 #[cfg(test)]
@@ -104,4 +106,34 @@ mod recovery_tests {
         assert_eq!(state, "UNKNOWN");
         assert!(begin_execution(&pool, "r").await.is_err());
     }
+}
+pub async fn prepare(
+    pool: &SqlitePool,
+    id: &str,
+    device: &str,
+    hash: &str,
+    payload: &str,
+) -> Result<(), String> {
+    initialize(pool).await?;
+    sqlx::query("INSERT INTO runs(id,device,hash,payload,state) VALUES(?,?,?,?,'PREPARED')")
+        .bind(id)
+        .bind(device)
+        .bind(hash)
+        .bind(payload)
+        .execute(pool)
+        .await
+        .map_err(|_| "RUN_ALREADY_CLAIMED")?;
+    Ok(())
+}
+pub async fn arm(pool: &SqlitePool, id: &str) -> Result<(), String> {
+    let changed = sqlx::query("UPDATE runs SET state='CLAIMED' WHERE id=? AND state='PREPARED'")
+        .bind(id)
+        .execute(pool)
+        .await
+        .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?
+        .rows_affected();
+    if changed != 1 {
+        return Err("RUN_NOT_PREPARED".into());
+    }
+    Ok(())
 }

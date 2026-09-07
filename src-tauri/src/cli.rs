@@ -278,3 +278,33 @@ mod runner_tests {
         assert!(run_in_terminal(&id, &journal).await.is_err());
     }
 }
+pub async fn project_commit(directory: &str) -> Result<String, String> {
+    let root = tokio::process::Command::new("git")
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .args(["-C", directory, "rev-parse", "--show-toplevel"])
+        .output()
+        .await
+        .map_err(|_| "PROJECT_COMMIT_REQUIRED")?;
+    let root = String::from_utf8(root.stdout).map_err(|_| "PROJECT_COMMIT_REQUIRED")?;
+    if !root.trim().is_empty()
+        && std::fs::canonicalize(root.trim()).ok() != std::fs::canonicalize(directory).ok()
+    {
+        return Err("PROJECT_COMMIT_REQUIRED".into());
+    }
+    let output = tokio::process::Command::new("git")
+        .env_remove("GIT_DIR")
+        .env_remove("GIT_WORK_TREE")
+        .args(["-C", directory, "rev-parse", "--verify", "HEAD^{commit}"])
+        .output()
+        .await
+        .map_err(|_| "PROJECT_COMMIT_REQUIRED")?;
+    let sha = String::from_utf8(output.stdout)
+        .map_err(|_| "PROJECT_COMMIT_REQUIRED")?
+        .trim()
+        .to_string();
+    if !output.status.success() || sha.len() != 40 || !sha.bytes().all(|c| c.is_ascii_hexdigit()) {
+        return Err("PROJECT_COMMIT_REQUIRED".into());
+    }
+    Ok(sha)
+}

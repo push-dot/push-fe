@@ -42,7 +42,6 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
-      - run: npm test
       - run: cargo test --manifest-path src-tauri/Cargo.toml
       - name: Build platform bundle
         shell: bash
@@ -68,3 +67,16 @@ jobs:
         with:
           name: push-${{ matrix.target }}-build-artifacts
           path: src-tauri/target/**/bundle/**
+
+  export-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: npm ci
+      - run: npm test
+      - run: npm run check:fsd
