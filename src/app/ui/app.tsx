@@ -333,7 +333,10 @@ export const App = () => {
                 setConversationId(id);
                 void conversations.reload();
               }}
-              onNavigate={setPage}
+              onNavigate={(page, id) => {
+                if (page === "documents") setDocumentId(id || "");
+                setPage(page);
+              }}
             />
           ) : page === "applications" ? (
             <ApplicationsPage onOpen={openApplication} />

@@ -4,6 +4,7 @@ import { Action } from "@/shared/ui";
 import { useT, useLabel } from "@/shared/config";
 import { ShieldCheck } from "lucide-react";
 export const Approval = ({
+  existingApproval,
   kind,
   applicationId,
   targetId,
@@ -12,6 +13,7 @@ export const Approval = ({
   reviewContent,
   onApproved,
 }: {
+  existingApproval?: Resource;
   kind: string;
   applicationId: string;
   targetId: string;
@@ -22,8 +24,13 @@ export const Approval = ({
 }) => {
   const t = useT();
   const label = useLabel();
-  const [approval, setApproval] = useState<Resource | null>(null);
-  useEffect(() => setApproval(null), [targetId, applicationId]);
+  const [approval, setApproval] = useState<Resource | null>(
+    existingApproval || null,
+  );
+  useEffect(
+    () => setApproval(existingApproval || null),
+    [targetId, applicationId, existingApproval],
+  );
   return (
     <div className="approval">
       <ShieldCheck size={23} />

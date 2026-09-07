@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ArrowUp, Plus, Sparkles, Lock, AudioLines } from "lucide-react";
 import {
   request,
@@ -7,8 +7,10 @@ import {
   runOperation,
   type Resource,
 } from "@/shared/api";
-import { Empty, Notice, Action } from "@/shared/ui";
-import { useT, useLabel } from "@/shared/config";
+import { Empty, Notice } from "@/shared/ui";
+import { useT } from "@/shared/config";
+import { ContextPicker } from "./context-picker";
+import { AttachmentCard, type Attachment } from "./attachment-card";
 import { useChat } from "../model/chat";
 export const ChatPage = ({
   applicationId,
@@ -19,21 +21,46 @@ export const ChatPage = ({
   applicationId: string;
   conversationId?: string;
   onConversation: (id: string) => void;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, resourceId?: string) => void;
 }) => {
   const t = useT();
-  const label = useLabel();
+  const scope = `${applicationId}:${conversationId || ""}`;
+  const currentScope = useRef(scope);
+  currentScope.current = scope;
+  const documents = useResources("documents");
+  const evidence = useResources("career-evidence");
+  const [contextOpen, setContextOpen] = useState(false);
   const models = useResources("ai/models");
   const messages = useResources(
     conversationId
       ? `conversations/${conversationId}/messages`
       : "conversations",
   );
-  const { inputs, ai, accessMode, setInput, setAi, setAccess } = useChat();
+  const {
+    inputs,
+    contexts,
+    setContext,
+    ai,
+    accessMode,
+    setInput,
+    setAi,
+    setAccess,
+  } = useChat();
+  const context = contexts[applicationId] || { evidenceIds: [] };
+  const contextValid =
+    (!context.documentId ||
+      (Boolean(context.versionId) &&
+        documents.data.some(
+          (d) =>
+            d.id === context.documentId && d.applicationId === applicationId,
+        ))) &&
+    context.evidenceIds.every((id) => evidence.data.some((e) => e.id === id));
   const input = inputs[applicationId] || "";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const send = async () => {
+    if (busy || !contextValid || !applicationId || !ai.model || !input.trim())
+      return;
     setBusy(true);
     setError("");
     try {
@@ -43,16 +70,18 @@ export const ChatPage = ({
           applicationId,
           title: input.slice(0, 80),
         });
+        if (currentScope.current !== scope) return;
         id = c.id;
         onConversation(id);
       }
       await runOperation(`conversations/${id}/messages`, {
         text: input,
-        context: { evidenceIds: [] },
+        context,
         ai,
         accessMode,
       });
-      setInput(applicationId, "");
+      if (useChat.getState().inputs[applicationId] === input)
+        setInput(applicationId, "");
       await refresh(`conversations/${id}/messages`);
     } catch (e) {
       setError((e as Error).message);
@@ -92,19 +121,13 @@ export const ChatPage = ({
                 {m.role !== "USER" && <span className="message-logo">P</span>}
                 <div>
                   <p>{m.text}</p>
-                  {m.attachments?.map((a: { type: string; id: string }) => (
-                    <button
-                      key={a.id}
-                      onClick={() =>
-                        onNavigate(
-                          a.type.includes("DOCUMENT")
-                            ? "documents"
-                            : "applications",
-                        )
-                      }
-                    >
-                      {a.type} ↗
-                    </button>
+                  {m.attachments?.map((attachment: Attachment) => (
+                    <AttachmentCard
+                      key={`${attachment.type}:${attachment.id}`}
+                      attachment={attachment}
+                      applicationId={applicationId}
+                      onOpenDocument={(id) => onNavigate("documents", id)}
+                    />
                   ))}
                 </div>
               </div>
@@ -124,6 +147,37 @@ export const ChatPage = ({
         <Notice error={error} />
       </div>
       <div className="composer">
+        {contextOpen && applicationId && (
+          <ContextPicker
+            applicationId={applicationId}
+            documents={documents.data}
+            evidence={evidence.data}
+            context={context}
+            onChange={(value) => setContext(applicationId, value)}
+          />
+        )}
+        {(context.documentId || context.evidenceIds.length > 0) && (
+          <div className="context-summary">
+            <button onClick={() => setContextOpen(!contextOpen)}>
+              {documents.data.find((d) => d.id === context.documentId)?.title ||
+                t("선택한 근거", "Selected evidence")}{" "}
+              · {context.evidenceIds.length} {t("개 근거", "evidence items")}
+            </button>
+            <button
+              onClick={() => setContext(applicationId, { evidenceIds: [] })}
+            >
+              {t("선택 해제", "Clear context")}
+            </button>
+          </div>
+        )}
+        {!contextValid && (
+          <Notice
+            error={t(
+              "이 지원의 문서 버전을 선택하거나 참고 자료를 다시 선택하세요.",
+              "Choose a version belonging to this application or select context again.",
+            )}
+          />
+        )}
         <textarea
           aria-label={t("메시지", "Message")}
           placeholder={t("무엇이든 요청하세요", "Ask anything")}
@@ -135,7 +189,9 @@ export const ChatPage = ({
               (e.metaKey || e.ctrlKey) &&
               input.trim() &&
               applicationId &&
-              ai.model
+              ai.model &&
+              contextValid &&
+              !busy
             )
               void send();
           }}
@@ -143,7 +199,8 @@ export const ChatPage = ({
         <div className="composer-tools">
           <button
             aria-label={t("근거 추가", "Add evidence")}
-            onClick={() => onNavigate("career")}
+            onClick={() => setContextOpen(!contextOpen)}
+            disabled={!applicationId}
           >
             <Plus size={21} />
           </button>
@@ -226,7 +283,13 @@ export const ChatPage = ({
           </label>
           <button
             className="send"
-            disabled={busy || !input.trim() || !applicationId || !ai.model}
+            disabled={
+              busy ||
+              !contextValid ||
+              !input.trim() ||
+              !applicationId ||
+              !ai.model
+            }
             aria-label={t("전송", "Send")}
             onClick={() => void send()}
           >

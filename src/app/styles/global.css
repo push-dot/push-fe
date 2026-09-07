@@ -982,3 +982,45 @@ td {
 .brand {
   color: #fff;
 }
+
+.chat-context {
+  max-height: 40vh;
+  overflow: auto;
+  margin: 0 0 12px;
+}
+.context-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.attachment-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 16px;
+  background: var(--panel);
+}
+.attachment-card h3 {
+  margin: 0;
+}
+.attachment-card .row button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.document-excerpt {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-height: 220px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+}
+.attachment-card .quality {
+  margin: 16px 0;
+}
+.attachment-card .approval {
+  flex-wrap: wrap;
+}
