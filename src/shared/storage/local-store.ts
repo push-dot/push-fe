@@ -6,12 +6,11 @@ const openDb = () =>
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
-export const localRead = async <T>(
+const readRecord = async <T>(
   accountId: string,
   key: string,
 ): Promise<T | null> => {
   if (!accountId) return null;
-  await pendingWrites.get(`${accountId}:${key}`)?.catch(() => undefined);
   if (isTauri()) {
     const value = await invoke<string | null>("local_read", { accountId, key });
     return value ? JSON.parse(value) : null;
@@ -46,13 +45,34 @@ const writeRecord = async (accountId: string, key: string, value: unknown) => {
 };
 
 const pendingWrites = new Map<string, Promise<unknown>>();
-export const localWrite = (accountId: string, key: string, value: unknown) => {
+const enqueue = <T>(
+  accountId: string,
+  key: string,
+  operation: () => Promise<T>,
+): Promise<T> => {
   const scope = `${accountId}:${key}`;
   const pending = (pendingWrites.get(scope) || Promise.resolve())
     .catch(() => undefined)
-    .then(() => writeRecord(accountId, key, value));
+    .then(operation);
   pendingWrites.set(scope, pending);
   return pending.finally(() => {
     if (pendingWrites.get(scope) === pending) pendingWrites.delete(scope);
   });
 };
+export const localRead = <T>(
+  accountId: string,
+  key: string,
+): Promise<T | null> =>
+  enqueue(accountId, key, () => readRecord<T>(accountId, key));
+export const localWrite = (accountId: string, key: string, value: unknown) =>
+  enqueue(accountId, key, () => writeRecord(accountId, key, value));
+export const localUpdate = <T>(
+  accountId: string,
+  key: string,
+  transform: (current: T | null) => T | null,
+): Promise<T | null> =>
+  enqueue(accountId, key, async () => {
+    const next = transform(await readRecord<T>(accountId, key));
+    await writeRecord(accountId, key, next);
+    return next;
+  });

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { useEffect } from "react";
 import { listAll, request } from "./client";
-import { localRead, localWrite } from "@/shared/storage";
+import { localRead, localWrite, localUpdate } from "@/shared/storage";
 import { useSession } from "@/shared/auth";
 export type Resource = {
   id: string;
@@ -137,19 +137,25 @@ export const applyCachedChanges = async (
   account: string,
   changes: CacheChange[],
 ) => {
-  const prior =
-    (await localRead<Record<string, CacheChange>>(account, "cache:changes")) ||
-    {};
-  for (const change of changes) {
-    const key = `${change.resourceType}:${change.resourceId}`;
-    if (!prior[key] || prior[key].sequence <= change.sequence)
-      prior[key] = change;
-  }
-  await localWrite(account, "cache:changes", prior);
+  await localUpdate<Record<string, CacheChange>>(
+    account,
+    "cache:changes",
+    (current) => {
+      const prior = { ...current };
+      for (const change of changes) {
+        const key = `${change.resourceType}:${change.resourceId}`;
+        if (!prior[key] || prior[key].sequence <= change.sequence)
+          prior[key] = change;
+      }
+      return prior;
+    },
+  );
   if (account !== useSession.getState().accountId) return;
   for (const [path, data] of Object.entries(useCache.getState().data)) {
-    const merged = mergeCacheChanges(path, data, changes);
-    await localWrite(account, `cache:${path}`, merged);
+    const merged =
+      (await localUpdate<Resource[]>(account, `cache:${path}`, (current) =>
+        mergeCacheChanges(path, current || data, changes),
+      )) || [];
     if (account === useSession.getState().accountId)
       useCache.setState((s) => ({ data: { ...s.data, [path]: merged } }));
   }

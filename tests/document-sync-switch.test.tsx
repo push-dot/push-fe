@@ -36,6 +36,15 @@ vi.mock("@/shared/storage", () => ({
     async (_account: string, key: string) => state.records.get(key) ?? null,
   ),
   localWrite: state.writes,
+  localUpdate: async (
+    account: string,
+    key: string,
+    transform: (value: unknown) => unknown,
+  ) => {
+    const next = transform(state.records.get(key) ?? null);
+    await state.writes(account, key, next);
+    return next;
+  },
 }));
 vi.mock("@/features/approval", () => ({ Approval: () => null }));
 vi.mock("@/features/pin", () => ({ PinButton: () => null }));

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { localRead, localWrite } from "@/shared/storage";
+import { localRead, localWrite, localUpdate } from "@/shared/storage";
 import { useSession } from "@/shared/auth";
 import { request } from "./client";
 import { applyCachedChanges, refresh, type CacheChange } from "./resources";
@@ -80,23 +80,17 @@ export const mergeSyncResults = (
 export const useOutbox = create<{ items: QueuedMutation[]; busy: boolean }>(
   () => ({ items: [], busy: false }),
 );
-let edits = Promise.resolve();
-const updateQueue = (
+const updateQueue = async (
   account: string,
   update: (items: QueuedMutation[]) => QueuedMutation[],
 ) => {
-  const operation = edits
-    .catch(() => undefined)
-    .then(async () => {
-      const items = update(
-        (await localRead<QueuedMutation[]>(account, "sync:outbox")) || [],
-      );
-      await localWrite(account, "sync:outbox", items);
-      if (account === useSession.getState().accountId)
-        useOutbox.setState({ items });
-    });
-  edits = operation;
-  return operation;
+  const items = await localUpdate<QueuedMutation[]>(
+    account,
+    "sync:outbox",
+    (current) => update(current || []),
+  );
+  if (account === useSession.getState().accountId)
+    useOutbox.setState({ items: items || [] });
 };
 export const restoreOutbox = async () => {
   const account = useSession.getState().accountId;
@@ -148,11 +142,11 @@ export const synchronize = async () => {
   useOutbox.setState({ busy: true });
   try {
     await restoreOutbox();
-    let clientId = await localRead<string>(account, "sync:client-id");
-    if (!clientId) {
-      clientId = crypto.randomUUID();
-      await localWrite(account, "sync:client-id", clientId);
-    }
+    const clientId = await localUpdate<string>(
+      account,
+      "sync:client-id",
+      (current) => current || crypto.randomUUID(),
+    );
     const pending = useOutbox
       .getState()
       .items.filter((item) => item.status === "PENDING");

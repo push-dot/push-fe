@@ -18,7 +18,7 @@ import {
 import { Field, Form, Empty, Notice, Action, text } from "@/shared/ui";
 import { useT, useLabel } from "@/shared/config";
 import { useSession } from "@/shared/auth";
-import { localRead, localWrite } from "@/shared/storage";
+import { localRead, localWrite, localUpdate } from "@/shared/storage";
 import { PinButton } from "@/features/pin";
 import { Approval } from "@/features/approval";
 import {
@@ -30,6 +30,7 @@ import {
   reconcileDraft,
   makeDraft,
   applyDraftSync,
+  mergeDraftEdit,
   type Draft,
 } from "../model/draft";
 
@@ -121,10 +122,19 @@ export const DocumentsPage = ({
       );
       draftRef.current = local;
       setDraft(local);
-      void localWrite(accountId, `draft:${current.id}`, local)
-        .then(() => {
-          if (isBound(current.id))
+      void localUpdate<Draft>(accountId, `draft:${current.id}`, (stored) =>
+        mergeDraftEdit(stored, local),
+      )
+        .then((stored) => {
+          if (
+            isBound(current.id) &&
+            draftRef.current?.mutation?.mutationId ===
+              local.mutation?.mutationId
+          ) {
+            draftRef.current = stored;
+            setDraft(stored);
             setStatus(t("기기에 저장됨", "Saved on device"));
+          }
         })
         .catch((e) => setError(e.message));
     },
@@ -208,10 +218,36 @@ export const DocumentsPage = ({
     result: { document: Resource; version: Resource },
   ) => {
     const active = () => isBound(id);
-    const current = active()
-      ? draftRef.current
-      : await localRead<Draft>(accountId, `draft:${id}`);
-    const next = completeVersionSave(current, sent, result.document.revision);
+    await localUpdate<Draft>(accountId, `draft:${id}`, (stored) => {
+      const next = completeVersionSave(stored, sent, result.document.revision);
+      if (next) return next;
+      const baseline =
+        stored ||
+        makeDraft(
+          null,
+          result.document,
+          result.version.content,
+          result.version.blocks || [],
+          [],
+        );
+      return {
+        ...baseline,
+        baseRevision: result.document.revision,
+        content: result.version.content,
+        blocks: result.version.blocks,
+        evidenceIds: Array.from(
+          new Set(
+            (result.version.blocks || []).flatMap((block: Block) =>
+              block.evidenceRefs.map((ref) => ref.evidenceId),
+            ),
+          ),
+        ),
+        mutation: undefined,
+      };
+    });
+    const next = active()
+      ? completeVersionSave(draftRef.current, sent, result.document.revision)
+      : null;
     if (active()) {
       draftRef.current = next;
       setDraft(next);
@@ -225,7 +261,6 @@ export const DocumentsPage = ({
           emitUpdate: false,
         });
     }
-    await localWrite(accountId, `draft:${id}`, next);
     await docs.reload();
     if (active())
       setStatus(
@@ -281,19 +316,20 @@ export const DocumentsPage = ({
     const outcome = result.results[0];
     if (outcome.status !== "APPLIED")
       throw new Error(outcome.error?.message || outcome.status);
-    const stored = await localRead<Draft>(accountId, `draft:${document.id}`);
-    const current = isBound(document.id) ? draftRef.current : stored;
-    if (!current || current.documentId !== document.id) return;
-    const synced = applyDraftSync(
-      current,
-      draft.mutation.mutationId,
-      outcome.resource!.revision,
-    );
+    const apply = (current: Draft | null) =>
+      current?.documentId === document.id
+        ? applyDraftSync(
+            current,
+            draft.mutation!.mutationId,
+            outcome.resource!.revision,
+          )
+        : current;
+    await localUpdate<Draft>(accountId, `draft:${document.id}`, apply);
     if (isBound(document.id)) {
+      const synced = apply(draftRef.current);
       draftRef.current = synced;
       setDraft(synced);
     }
-    await localWrite(accountId, `draft:${document.id}`, synced);
     if (isBound(document.id)) setStatus(t("초안 동기화됨", "Draft synced"));
   };
   const exportFile = async (format: "PDF" | "DOCX") => {

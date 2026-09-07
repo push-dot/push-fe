@@ -73,11 +73,33 @@ export const applyDraftSync = (
 ): Draft => {
   if (draft.mutation?.mutationId === mutationId)
     return { ...draft, revision, mutation: undefined };
-  return makeDraft(
+  const rebased = makeDraft(
     { ...draft, revision },
     { id: draft.documentId, revision: draft.baseRevision },
     draft.content || {},
     draft.blocks || [],
     draft.evidenceIds,
   );
+  if (draft.mutation && rebased.mutation)
+    rebased.mutation.mutationId = draft.mutation.mutationId;
+  return rebased;
+};
+
+export const mergeDraftEdit = (stored: Draft | null, edit: Draft): Draft => {
+  if (!stored || stored.documentId !== edit.documentId) return edit;
+  const merged = makeDraft(
+    {
+      ...edit,
+      id: stored.id || edit.id,
+      revision: Math.max(stored.revision || 0, edit.revision || 0) || undefined,
+      baseRevision: Math.max(stored.baseRevision, edit.baseRevision),
+    },
+    { id: edit.documentId, revision: edit.baseRevision },
+    edit.content || {},
+    edit.blocks || [],
+    edit.evidenceIds,
+  );
+  if (edit.mutation && merged.mutation)
+    merged.mutation.mutationId = edit.mutation.mutationId;
+  return merged;
 };

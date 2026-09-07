@@ -1,1 +1,1 @@
-export { localRead, localWrite } from "./local-store";
+export { localRead, localWrite, localUpdate } from "./local-store";

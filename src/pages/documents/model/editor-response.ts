@@ -22,11 +22,14 @@ export const completeVersionSave = (
   revision: number,
 ): Draft | null => {
   if (!draft || draft.mutation?.mutationId === sent) return null;
-  return makeDraft(
+  const rebased = makeDraft(
     { ...draft, baseRevision: revision },
     { id: draft.documentId, revision },
     draft.content || {},
     draft.blocks || [],
     draft.evidenceIds,
   );
+  if (draft.mutation && rebased.mutation)
+    rebased.mutation.mutationId = draft.mutation.mutationId;
+  return rebased;
 };
