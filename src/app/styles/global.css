@@ -157,40 +157,21 @@ blockquote {
   flex-direction: column;
   position: relative;
 }
-.window-bar {
+.sidebar-toolbar {
   height: 65px;
   min-height: 65px;
   padding: 0 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
-.window-bar > button,
+.sidebar-toolbar > button,
 .topbar button,
 .sidebar-footer > button {
   padding: 5px;
   background: transparent;
   border: 0;
   color: var(--muted);
-}
-.traffic {
-  display: flex;
-  gap: 8px;
-}
-.traffic button {
-  padding: 0;
-  min-width: 0;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 0;
-  background: #ff605b;
-}
-.traffic button:nth-child(2) {
-  background: #ffbd44;
-}
-.traffic button:nth-child(3) {
-  background: #61bc4d;
 }
 .sidebar-scroll {
   padding: 0 9px;

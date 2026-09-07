@@ -32,7 +32,6 @@ import { usePreferences, useT } from "@/shared/config";
 import { useSession } from "@/shared/auth";
 import { useResources } from "@/shared/api";
 import { isTauri } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
 export const App = () => {
   const t = useT();
@@ -114,29 +113,7 @@ export const App = () => {
   return (
     <div className={`app-shell ${collapsed ? "collapsed" : ""}`}>
       <aside className="sidebar">
-        <div className="window-bar" data-tauri-drag-region>
-          <div className="traffic">
-            <button
-              aria-label={t("창 닫기", "Close window")}
-              onClick={() =>
-                isTauri() ? getCurrentWindow().close() : setCollapsed(true)
-              }
-            />
-            <button
-              aria-label={t("최소화", "Minimize")}
-              onClick={() =>
-                isTauri() ? getCurrentWindow().minimize() : setCollapsed(true)
-              }
-            />
-            <button
-              aria-label={t("최대화", "Maximize")}
-              onClick={() =>
-                isTauri()
-                  ? getCurrentWindow().toggleMaximize()
-                  : setCollapsed(!collapsed)
-              }
-            />
-          </div>
+        <div className="sidebar-toolbar">
           <button
             aria-label={t("사이드바 접기", "Collapse sidebar")}
             onClick={() => setCollapsed(true)}
