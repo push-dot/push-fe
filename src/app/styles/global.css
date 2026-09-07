@@ -714,14 +714,19 @@ td {
 }
 .composer-tools {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 10px;
   align-items: center;
   margin-top: 5px;
 }
 .composer-tools button {
+  flex-shrink: 0;
   padding: 10px;
 }
 .tool-select {
+  min-width: 0;
+  flex: 0 1 auto;
   border: 1px solid var(--line);
   border-radius: 10px;
   display: flex;
@@ -990,9 +995,18 @@ td {
 }
 .context-summary {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+}
+.context-summary button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
 }
 .attachment-card {
   border: 1px solid var(--line);
