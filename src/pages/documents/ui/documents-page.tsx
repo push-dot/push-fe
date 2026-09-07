@@ -76,6 +76,15 @@ export const DocumentsPage = ({
   });
   const models = useResources("ai/models");
   const accountId = useSession((s) => s.accountId);
+  const [bound, setBound] = useState("");
+  const boundRef = useRef("");
+  const scope = `${accountId}:${selected}`;
+  const ready = bound === scope;
+  const isBound = (id: string) =>
+    boundRef.current === `${accountId}:${id}` &&
+    selectedRef.current === id &&
+    (!draftRef.current || draftRef.current.documentId === id) &&
+    useSession.getState().accountId === accountId;
   const draftRef = useRef(draft);
   draftRef.current = draft;
   const evidenceRef = useRef(evidenceIds);
@@ -91,11 +100,11 @@ export const DocumentsPage = ({
   const editor = useEditor({
     extensions: [StarterKit, BlockIds],
     content: { type: "doc", content: [{ type: "paragraph" }] },
+    editable: ready,
     onUpdate: ({ editor }) => {
-      guard.edit();
       const current = docRef.current;
-      if (!current) return;
-      const content = editor.getJSON();
+      if (!current || !isBound(current.id)) return;
+      guard.edit();
       setStatus(t("수정 중", "Editing"));
       const payload = buildBlocks(
         editor.getJSON(),
@@ -113,20 +122,16 @@ export const DocumentsPage = ({
       draftRef.current = local;
       setDraft(local);
       void localWrite(accountId, `draft:${current.id}`, local)
-        .then(() => setStatus(t("기기에 저장됨", "Saved on device")))
+        .then(() => {
+          if (isBound(current.id))
+            setStatus(t("기기에 저장됨", "Saved on device"));
+        })
         .catch((e) => setError(e.message));
     },
   });
   const load = async (id: string) => {
     const ticket = guard.ticket();
     const local = await localRead<Draft>(accountId, `draft:${id}`);
-    if (local && guard.matches(ticket)) {
-      draftRef.current = local;
-      setDraft(local);
-      editor?.commands.setContent(local.content as JSONContent, {
-        emitUpdate: false,
-      });
-    }
     const rows = await listAll<Resource>(`documents/${id}/versions`).catch(
       async () =>
         (await localRead<Resource[]>(accountId, `versions:${id}`)) || [],
@@ -137,14 +142,15 @@ export const DocumentsPage = ({
       useSession.getState().accountId !== accountId
     )
       return;
+    if (!guard.matches(ticket)) return;
     setVersions(rows);
     const latest = rows[0] || null;
     setVersion(latest);
-    if (!guard.matches(ticket)) return;
-    draftRef.current = local;
-    setDraft(local);
+    const ownDraft = local?.documentId === id ? local : null;
+    draftRef.current = ownDraft;
+    setDraft(ownDraft);
     editor?.commands.setContent(
-      (local?.content ||
+      (ownDraft?.content ||
         latest?.content || {
           type: "doc",
           content: [{ type: "paragraph" }],
@@ -152,7 +158,7 @@ export const DocumentsPage = ({
       { emitUpdate: false },
     );
     setEvidenceIds(
-      local?.evidenceIds ||
+      ownDraft?.evidenceIds ||
         (Array.from(
           new Set(
             (latest?.blocks || []).flatMap((b: Block) =>
@@ -161,11 +167,38 @@ export const DocumentsPage = ({
           ),
         ) as string[]),
     );
+    boundRef.current = `${accountId}:${id}`;
+    setBound(boundRef.current);
+    editor?.setEditable(true, false);
+  };
+  const selectDocument = (id: string) => {
+    if (selectedRef.current === id) return;
+    boundRef.current = "";
+    setBound("");
+    editor?.setEditable(false, false);
+    editor?.commands.setContent(
+      { type: "doc", content: [{ type: "paragraph" }] },
+      { emitUpdate: false },
+    );
+    draftRef.current = null;
+    setDraft(null);
+    setVersion(null);
+    setVersions([]);
+    setEvidenceIds([]);
+    setProposal(null);
+    setStatus("");
+    selectedRef.current = id;
+    setSelected(id);
   };
   useEffect(() => {
     if (selected && editor)
       void load(selected).catch((e) => setError(e.message));
-  }, [selected, editor]);
+    return () => {
+      boundRef.current = "";
+      guard.edit();
+      editor?.setEditable(false, false);
+    };
+  }, [selected, editor, accountId]);
   const recovery = document
     ? reconcileDraft(draft, document)
     : { status: "clean" };
@@ -174,9 +207,7 @@ export const DocumentsPage = ({
     sent: string | undefined,
     result: { document: Resource; version: Resource },
   ) => {
-    const active = () =>
-      selectedRef.current === id &&
-      useSession.getState().accountId === accountId;
+    const active = () => isBound(id);
     const current = active()
       ? draftRef.current
       : await localRead<Draft>(accountId, `draft:${id}`);
@@ -204,7 +235,7 @@ export const DocumentsPage = ({
       );
   };
   const save = async () => {
-    if (!document || !editor) return;
+    if (!document || !editor || !isBound(document.id)) return;
     const sent = draftRef.current?.mutation?.mutationId;
     const payload = buildBlocks(
       editor.getJSON(),
@@ -230,7 +261,13 @@ export const DocumentsPage = ({
     await acceptVersion(document.id, sent, result);
   };
   const syncDraft = async () => {
-    if (!draft?.mutation || !document) return;
+    if (
+      !draft?.mutation ||
+      !document ||
+      !isBound(document.id) ||
+      draft.documentId !== document.id
+    )
+      return;
     const result = await request<{
       results: {
         status: string;
@@ -244,7 +281,11 @@ export const DocumentsPage = ({
     const outcome = result.results[0];
     if (outcome.status !== "APPLIED")
       throw new Error(outcome.error?.message || outcome.status);
-    if (!draftRef.current || draftRef.current.documentId !== document.id)
+    if (
+      !isBound(document.id) ||
+      !draftRef.current ||
+      draftRef.current.documentId !== document.id
+    )
       return;
     const synced = applyDraftSync(
       draftRef.current,
@@ -376,7 +417,7 @@ export const DocumentsPage = ({
               template: text(f, "template"),
             });
             await docs.reload();
-            setSelected(d.id);
+            selectDocument(d.id);
           }}
         >
           <div className="form-grid">
@@ -416,8 +457,7 @@ export const DocumentsPage = ({
             key={d.id}
             className={d.id === selected ? "selected" : ""}
             onClick={() => {
-              setSelected(d.id);
-              setProposal(null);
+              selectDocument(d.id);
             }}
           >
             {d.title}
@@ -441,9 +481,11 @@ export const DocumentsPage = ({
               <PinButton resourceType="DOCUMENT" resourceId={document.id} />
               <span className="muted">{status}</span>
               <select
+                disabled={!ready}
                 aria-label={t("버전", "Version")}
                 value={version?.id || ""}
                 onChange={(e) => {
+                  if (!isBound(document.id)) return;
                   const v = versions.find((v) => v.id === e.target.value);
                   if (v) {
                     guard.edit();
@@ -522,26 +564,25 @@ export const DocumentsPage = ({
                     ].map(([action, ko, en]) => (
                       <Action
                         key={action}
-                        disabled={!version || !ai.model}
+                        disabled={!ready || !version || !ai.model}
                         run={async () => {
-                          if (!version) return;
+                          if (!version || !isBound(document.id)) return;
                           const { from, to } = editor.state.selection;
-                          setProposal(
-                            await runOperation<Resource>(
-                              `documents/${document.id}/revisions`,
-                              {
-                                expectedRevision: document.revision,
-                                versionId: version.id,
-                                selection: {
-                                  from,
-                                  to,
-                                  text: editor.state.doc.textBetween(from, to),
-                                },
-                                action,
-                                ai,
+                          const proposed = await runOperation<Resource>(
+                            `documents/${document.id}/revisions`,
+                            {
+                              expectedRevision: document.revision,
+                              versionId: version.id,
+                              selection: {
+                                from,
+                                to,
+                                text: editor.state.doc.textBetween(from, to),
                               },
-                            ),
+                              action,
+                              ai,
+                            },
                           );
+                          if (isBound(document.id)) setProposal(proposed);
                         }}
                       >
                         {t(ko, en)}
@@ -550,25 +591,32 @@ export const DocumentsPage = ({
                   </div>
                 </BubbleMenu>
               )}
+              {!ready && (
+                <p role="status">
+                  {t("문서를 불러오는 중입니다.", "Loading document.")}
+                </p>
+              )}
               <EditorContent editor={editor} />
             </div>
             <div className="actions">
-              <Action disabled={!draft?.mutation} run={syncDraft}>
+              <Action disabled={!ready || !draft?.mutation} run={syncDraft}>
                 {t("초안 동기화", "Sync draft")}
               </Action>
               <button
+                disabled={!ready}
                 onClick={() => editor?.chain().focus().toggleBold().run()}
               >
                 {t("굵게", "Bold")}
               </button>
               <button
+                disabled={!ready}
                 onClick={() => editor?.chain().focus().toggleBulletList().run()}
               >
                 {t("목록", "List")}
               </button>
               <Action
                 className="primary"
-                disabled={recovery.status === "conflict"}
+                disabled={!ready || recovery.status === "conflict"}
                 run={save}
               >
                 {t("새 버전 저장", "Save new version")}
@@ -581,6 +629,7 @@ export const DocumentsPage = ({
               <div key={e.id}>
                 <label className="check">
                   <input
+                    disabled={!ready}
                     type="checkbox"
                     checked={evidenceIds.includes(e.id)}
                     onChange={(event) =>
@@ -607,7 +656,9 @@ export const DocumentsPage = ({
               </div>
             ))}
             <Action
+              disabled={!ready}
               run={async () => {
+                if (!isBound(document.id)) return;
                 const sent = draftRef.current?.mutation?.mutationId;
                 const generated = await runOperation<{
                   document: Resource;
@@ -650,14 +701,16 @@ export const DocumentsPage = ({
               </select>
             </Field>
           </div>
-          {proposal && (
+          {ready && proposal && (
             <div className="panel">
               <h3>{t("변경 제안", "Suggested revision")}</h3>
               <del>{proposal.selection.text}</del>
               <p>{proposal.replacement}</p>
               <span className="badge">{label(proposal.claimStatus)}</span>
               <Action
+                disabled={!ready}
                 run={async () => {
+                  if (!isBound(document.id)) return;
                   const sent = draftRef.current?.mutation?.mutationId;
                   const applied = await request<{
                     document: Resource;
@@ -678,7 +731,7 @@ export const DocumentsPage = ({
               </button>
             </div>
           )}
-          {version && (
+          {ready && version && (
             <div className="panel">
               <div className="quality">
                 {Object.entries(version.quality || {})
