@@ -161,34 +161,38 @@ export const AttachmentCard = ({
     );
   if (!document) return null;
   return (
-    <div className="attachment-card">
-      <div className="row">
-        <FileText size={22} />
-        <h3>{document.title}</h3>
-        <span className="badge">v{record.number}</span>
-        <span className="grow" />
-        <button onClick={() => onOpenDocument(document.id, record.id)}>
-          {t("문서 열기", "Open document")} <ExternalLink size={14} />
-        </button>
-      </div>
-      <div className="document-excerpt">
-        {record.blocks
-          ?.slice(0, 4)
-          .map((block: { id: string; text: string }) => (
-            <p key={block.id}>{block.text}</p>
-          ))}
-      </div>
-      <div className="quality">
-        {Object.entries(record.quality || {})
-          .filter(([key]) =>
-            ["jobFit", "evidenceFidelity", "readability", "ats"].includes(key),
-          )
-          .map(([key, value]) => (
-            <div key={key}>
-              <small>{label(key)}</small>
-              <strong>{value === null ? "—" : String(value)}</strong>
-            </div>
-          ))}
+    <div className="document-attachment-group">
+      <div className="attachment-card">
+        <div className="row">
+          <FileText size={22} />
+          <h3>{document.title}</h3>
+          <span className="badge">v{record.number}</span>
+          <span className="grow" />
+          <button onClick={() => onOpenDocument(document.id, record.id)}>
+            {t("문서 열기", "Open document")} <ExternalLink size={14} />
+          </button>
+        </div>
+        <div className="document-excerpt">
+          {record.blocks
+            ?.slice(0, 4)
+            .map((block: { id: string; text: string }) => (
+              <p key={block.id}>{block.text}</p>
+            ))}
+        </div>
+        <div className="quality">
+          {Object.entries(record.quality || {})
+            .filter(([key]) =>
+              ["jobFit", "evidenceFidelity", "readability", "ats"].includes(
+                key,
+              ),
+            )
+            .map(([key, value]) => (
+              <div key={key}>
+                <small>{label(key)}</small>
+                <strong>{value === null ? "—" : String(value)}</strong>
+              </div>
+            ))}
+        </div>
       </div>
       <Approval
         kind="DOCUMENT_FINALIZE"

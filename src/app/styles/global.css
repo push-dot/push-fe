@@ -678,6 +678,8 @@ td {
   max-width: 80%;
 }
 .message.assistant > div {
+  min-width: 0;
+  flex: 1;
   padding-top: 3px;
 }
 .message-logo {
@@ -1037,4 +1039,16 @@ td {
 }
 .attachment-card .approval {
   flex-wrap: wrap;
+}
+
+.document-attachment-group {
+  width: 600px;
+  max-width: 100%;
+  margin-top: 16px;
+}
+.document-attachment-group > .attachment-card {
+  margin-top: 0;
+}
+.document-attachment-group > .approval {
+  margin-bottom: 0;
 }

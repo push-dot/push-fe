@@ -110,7 +110,13 @@ it("sends explicitly selected scoped version and evidence and opens the exact re
       onNavigate={navigate}
     />,
   );
-  await screen.findByText("Actual version excerpt");
+  const excerpt = await screen.findByText("Actual version excerpt");
+  const card = excerpt.closest(".attachment-card")!;
+  expect(card.querySelector(".approval")).toBeNull();
+  expect(
+    card.parentElement?.classList.contains("document-attachment-group"),
+  ).toBe(true);
+  expect(card.nextElementSibling?.classList.contains("approval")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: /문서 열기/ }));
   expect(navigate).toHaveBeenCalledWith("documents", "doc-a", "version-a");
   fireEvent.click(screen.getByRole("button", { name: "근거 추가" }));
