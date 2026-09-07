@@ -126,6 +126,7 @@ pub fn write_manifest(root: &Path, files: &[(String, String, String)]) -> Result
 mod boundaries {
     use super::*;
     use sha2::{Digest, Sha256};
+    #[cfg(unix)]
     #[test]
     fn terminal_arguments_remain_literal() {
         let value = "space ' quote; $(touch /tmp/push-test-should-never-exist)\n";
@@ -205,5 +206,27 @@ mod nested_tests {
         )
         .is_err());
         assert!(!outside.path().join("file").exists());
+    }
+}
+
+#[cfg(windows)]
+pub fn powershell_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
+}
+#[cfg(all(test, windows))]
+mod windows_tests {
+    #[test]
+    fn powershell_arguments_remain_literal() {
+        let value = "space ' quote; $(throw 'unexpected') & literal";
+        let output = std::process::Command::new("powershell.exe")
+            .args([
+                "-NoProfile",
+                "-Command",
+                &format!("[Console]::Write({})", super::powershell_quote(value)),
+            ])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8(output.stdout).unwrap(), value);
     }
 }

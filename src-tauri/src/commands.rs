@@ -443,7 +443,7 @@ fn open_terminal(root: &Path, run_id: &str) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::process::CommandExt;
-        let quote = |v: &str| format!("'{}'", v.replace('\'', "''"));
+        let quote = safety::powershell_quote;
         let path = root.join(format!("{run_id}.ps1"));
         let mut file = private_file(&path)?;
         let script = format!(
