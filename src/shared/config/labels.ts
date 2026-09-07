@@ -1,5 +1,9 @@
 import { usePreferences } from "./preferences";
 const labels: Record<string, [string, string]> = {
+  jobFit: ["공고 적합도", "Job fit"],
+  evidenceFidelity: ["근거 충실도", "Evidence fidelity"],
+  readability: ["가독성", "Readability"],
+  ats: ["채용 시스템 호환성", "ATS compatibility"],
   DISCOVERED: ["관심 공고", "Discovered"],
   PREPARING: ["준비 중", "Preparing"],
   READY: ["제출 준비", "Ready"],

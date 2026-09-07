@@ -131,12 +131,12 @@ export const DocumentsPage = ({
   });
   const load = async (id: string) => {
     const ticket = guard.ticket();
-    const local = await localRead<Draft>(accountId, `draft:${id}`);
     const rows = await listAll<Resource>(`documents/${id}/versions`).catch(
       async () =>
         (await localRead<Resource[]>(accountId, `versions:${id}`)) || [],
     );
     await localWrite(accountId, `versions:${id}`, rows);
+    const local = await localRead<Draft>(accountId, `draft:${id}`);
     if (
       selectedRef.current !== id ||
       useSession.getState().accountId !== accountId
@@ -281,21 +281,20 @@ export const DocumentsPage = ({
     const outcome = result.results[0];
     if (outcome.status !== "APPLIED")
       throw new Error(outcome.error?.message || outcome.status);
-    if (
-      !isBound(document.id) ||
-      !draftRef.current ||
-      draftRef.current.documentId !== document.id
-    )
-      return;
+    const stored = await localRead<Draft>(accountId, `draft:${document.id}`);
+    const current = isBound(document.id) ? draftRef.current : stored;
+    if (!current || current.documentId !== document.id) return;
     const synced = applyDraftSync(
-      draftRef.current,
+      current,
       draft.mutation.mutationId,
       outcome.resource!.revision,
     );
-    draftRef.current = synced;
-    setDraft(synced);
+    if (isBound(document.id)) {
+      draftRef.current = synced;
+      setDraft(synced);
+    }
     await localWrite(accountId, `draft:${document.id}`, synced);
-    setStatus(t("초안 동기화됨", "Draft synced"));
+    if (isBound(document.id)) setStatus(t("초안 동기화됨", "Draft synced"));
   };
   const exportFile = async (format: "PDF" | "DOCX") => {
     if (!document?.finalizedVersionId) return;
@@ -745,7 +744,7 @@ export const DocumentsPage = ({
                   )
                   .map(([k, v]) => (
                     <div key={k}>
-                      <small>{k}</small>
+                      <small>{label(k)}</small>
                       <strong>{v === null ? "—" : String(v)}</strong>
                     </div>
                   ))}
