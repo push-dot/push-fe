@@ -231,3 +231,81 @@ it("preserves dirty interview fields and their original revision when refreshed 
     (screen.getByLabelText("준비 메모") as HTMLTextAreaElement).value,
   ).toBe("Local notes in progress");
 });
+
+it("critic retains edits made during saving ACK and next Save has acknowledged baseline", async () => {
+  state.interview = {
+    ...state.interview,
+    revision: 1,
+    companySources: [],
+    notes: "old",
+    reflection: "old reflection",
+  };
+  let ack!: (value: unknown) => void;
+  state.reload.mockResolvedValue(undefined);
+  state.request.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        ack = resolve;
+      }),
+  );
+  const ui = render(<InterviewsPage />);
+  fireEvent.change(screen.getByLabelText("준비 메모"), {
+    target: { value: "sent" },
+  });
+  const form = screen
+    .getByRole("button", { name: "회사 자료 추가" })
+    .closest("form")!;
+  fireEvent.submit(form);
+  fireEvent.change(screen.getByLabelText("준비 메모"), {
+    target: { value: "typed during ACK" },
+  });
+  await act(async () => {
+    state.interview = { ...state.interview, revision: 2, notes: "sent" };
+    ack(state.interview);
+  });
+  ui.rerender(<InterviewsPage />);
+  expect(
+    (screen.getByLabelText("준비 메모") as HTMLTextAreaElement).value,
+  ).toBe("typed during ACK");
+  state.request.mockResolvedValue({ ...state.interview, revision: 3 });
+  fireEvent.submit(form);
+  await waitFor(() => expect(state.request).toHaveBeenCalledTimes(2));
+  expect(state.request.mock.calls[1][2]).toMatchObject({
+    expectedRevision: 2,
+    notes: "typed during ACK",
+  });
+});
+
+it("critic acknowledged save survives unavailable reload and next save is valid", async () => {
+  state.interview = {
+    ...state.interview,
+    revision: 1,
+    companySources: [],
+    notes: "cached old",
+    reflection: "old reflection",
+  };
+  state.reload.mockResolvedValue(undefined);
+  state.request.mockImplementation(async (_path, _method, body) => ({
+    ...state.interview,
+    ...body,
+    revision: 2,
+  }));
+  render(<InterviewsPage />);
+  fireEvent.change(screen.getByLabelText("준비 메모"), {
+    target: { value: "acknowledged notes" },
+  });
+  const form = screen
+    .getByRole("button", { name: "회사 자료 추가" })
+    .closest("form")!;
+  fireEvent.submit(form);
+  await screen.findByText("저장됨");
+  expect(
+    (screen.getByLabelText("준비 메모") as HTMLTextAreaElement).value,
+  ).toBe("acknowledged notes");
+  fireEvent.submit(form);
+  await waitFor(() => expect(state.request).toHaveBeenCalledTimes(2));
+  expect(state.request.mock.calls[1][2]).toMatchObject({
+    expectedRevision: 2,
+    notes: "acknowledged notes",
+  });
+});

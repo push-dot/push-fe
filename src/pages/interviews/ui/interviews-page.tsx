@@ -1,6 +1,7 @@
+import { useSession } from "@/shared/auth";
 import { InterviewEditor } from "./interview-editor";
 import { Approval } from "@/features/approval";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   request,
   useResources,
@@ -15,6 +16,16 @@ export const InterviewsPage = () => {
   const evidence = useResources("career-evidence");
   const label = useLabel();
   const interviews = useResources("interviews");
+  const accountId = useSession((state) => state.accountId);
+  const [acknowledged, setAcknowledged] = useState<Record<string, Resource>>(
+    {},
+  );
+  useEffect(() => setAcknowledged({}), [accountId]);
+  const currentInterviews = interviews.data.map((record) =>
+    acknowledged[record.id]?.revision > record.revision
+      ? acknowledged[record.id]
+      : record,
+  );
   const apps = useResources("applications");
   const offers = useResources("offers");
   const savedRevisions = useRef<Record<string, number>>({});
@@ -92,7 +103,7 @@ export const InterviewsPage = () => {
         </Form>
       </details>
       <Notice error={interviews.error} />
-      {interviews.data.map((i) => (
+      {currentInterviews.map((i) => (
         <div className="panel" key={i.id}>
           <div className="row">
             <div className="grow">
@@ -205,6 +216,13 @@ export const InterviewsPage = () => {
                   "PATCH",
                   patch,
                 );
+                setAcknowledged((current) => ({
+                  ...current,
+                  [i.id]:
+                    current[i.id]?.revision > updated.revision
+                      ? current[i.id]
+                      : updated,
+                }));
                 savedRevisions.current[i.id] = updated.revision;
                 setPrep((current) => {
                   const next = { ...current };
