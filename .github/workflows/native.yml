@@ -1,0 +1,83 @@
+name: Native desktop
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: universal-apple-darwin
+            bundles: dmg
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+    runs-on: ${{ matrix.os }}
+    env:
+      PUSH_API_BASE: ${{ vars.PUSH_API_BASE }}
+      VITE_API_URL: ${{ vars.PUSH_API_BASE }}
+      PUSH_UPDATER_ENDPOINT: ${{ vars.PUSH_UPDATER_ENDPOINT }}
+      PUSH_UPDATER_PUBLIC_KEY: ${{ vars.PUSH_UPDATER_PUBLIC_KEY }}
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 'x86_64-pc-windows-msvc' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+      - name: Build platform bundle
+        shell: bash
+        run: |
+          if [[ -z "$APPLE_CERTIFICATE" ]]; then
+            unset APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
+          fi
+          if [[ -z "$TAURI_SIGNING_PRIVATE_KEY" ]]; then
+            unset TAURI_SIGNING_PRIVATE_KEY TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+          fi
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const config = { bundle: { createUpdaterArtifacts: Boolean(process.env.TAURI_SIGNING_PRIVATE_KEY) } };
+          if (process.env.PUSH_API_BASE) {
+            const origin = new URL(process.env.PUSH_API_BASE).origin;
+            if (!origin.startsWith('https://')) throw new Error('Production API requires HTTPS');
+            config.app = { security: { csp: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src ipc: http://ipc.localhost ${origin}; frame-src 'none'; object-src 'none'; base-uri 'self'` } };
+          }
+          fs.writeFileSync(process.env.RUNNER_TEMP + '/native-config.json', JSON.stringify(config));
+          NODE
+          npm run tauri -- build --config "$RUNNER_TEMP/native-config.json" --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: push-${{ matrix.target }}-build-artifacts
+          path: src-tauri/target/**/bundle/**
+
+  export-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: npm ci
+      - run: npm test
+      - run: npm run check:fsd
