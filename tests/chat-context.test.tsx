@@ -112,7 +112,7 @@ it("sends explicitly selected scoped version and evidence and opens the exact re
   );
   await screen.findByText("Actual version excerpt");
   fireEvent.click(screen.getByRole("button", { name: /문서 열기/ }));
-  expect(navigate).toHaveBeenCalledWith("documents", "doc-a");
+  expect(navigate).toHaveBeenCalledWith("documents", "doc-a", "version-a");
   fireEvent.click(screen.getByRole("button", { name: "근거 추가" }));
   expect(
     screen.queryByRole("option", { name: "Other application resume" }),

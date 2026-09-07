@@ -52,8 +52,10 @@ const BlockIds = Extension.create({
 });
 export const DocumentsPage = ({
   initialDocumentId = "",
+  initialVersionId = "",
 }: {
   initialDocumentId?: string;
+  initialVersionId?: string;
 }) => {
   const t = useT();
   const label = useLabel();
@@ -61,6 +63,8 @@ export const DocumentsPage = ({
   const apps = useResources("applications");
   const evidence = useResources("career-evidence");
   const [selected, setSelected] = useState(initialDocumentId);
+  const [viewVersionId, setViewVersionId] = useState(initialVersionId);
+  const historical = Boolean(viewVersionId);
   const document = docs.data.find((d) => d.id === selected);
   const [versions, setVersions] = useState<Resource[]>([]);
   const [version, setVersion] = useState<Resource | null>(null);
@@ -79,10 +83,10 @@ export const DocumentsPage = ({
   const accountId = useSession((s) => s.accountId);
   const [bound, setBound] = useState("");
   const boundRef = useRef("");
-  const scope = `${accountId}:${selected}`;
+  const scope = `${accountId}:${selected}:${viewVersionId}`;
   const ready = bound === scope;
   const isBound = (id: string) =>
-    boundRef.current === `${accountId}:${id}` &&
+    boundRef.current === `${accountId}:${id}:${viewVersionId}` &&
     selectedRef.current === id &&
     (!draftRef.current || draftRef.current.documentId === id) &&
     useSession.getState().accountId === accountId;
@@ -97,14 +101,14 @@ export const DocumentsPage = ({
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const guard = useRef(createEditorGuard()).current;
-  guard.select(`${accountId}:${selected}`);
+  guard.select(scope);
   const editor = useEditor({
     extensions: [StarterKit, BlockIds],
     content: { type: "doc", content: [{ type: "paragraph" }] },
-    editable: ready,
+    editable: ready && !historical,
     onUpdate: ({ editor }) => {
       const current = docRef.current;
-      if (!current || !isBound(current.id)) return;
+      if (!current || historical || !isBound(current.id)) return;
       guard.edit();
       setStatus(t("수정 중", "Editing"));
       const payload = buildBlocks(
@@ -154,9 +158,18 @@ export const DocumentsPage = ({
       return;
     if (!guard.matches(ticket)) return;
     setVersions(rows);
-    const latest = rows[0] || null;
+    const latest = viewVersionId
+      ? rows.find((row) => row.id === viewVersionId) || null
+      : rows[0] || null;
+    if (viewVersionId && !latest)
+      throw new Error(
+        t(
+          "요청한 문서 버전을 찾을 수 없습니다.",
+          "The requested document version was not found.",
+        ),
+      );
     setVersion(latest);
-    const ownDraft = local?.documentId === id ? local : null;
+    const ownDraft = !historical && local?.documentId === id ? local : null;
     draftRef.current = ownDraft;
     setDraft(ownDraft);
     editor?.commands.setContent(
@@ -177,9 +190,19 @@ export const DocumentsPage = ({
           ),
         ) as string[]),
     );
-    boundRef.current = `${accountId}:${id}`;
+    boundRef.current = `${accountId}:${id}:${viewVersionId}`;
     setBound(boundRef.current);
-    editor?.setEditable(true, false);
+    editor?.setEditable(!historical, false);
+  };
+  const selectVersion = (id: string) => {
+    boundRef.current = "";
+    setBound("");
+    editor?.setEditable(false, false);
+    draftRef.current = null;
+    setDraft(null);
+    setVersion(null);
+    setProposal(null);
+    setViewVersionId(id);
   };
   const selectDocument = (id: string) => {
     if (selectedRef.current === id) return;
@@ -198,6 +221,7 @@ export const DocumentsPage = ({
     setProposal(null);
     setStatus("");
     selectedRef.current = id;
+    setViewVersionId("");
     setSelected(id);
   };
   useEffect(() => {
@@ -208,7 +232,7 @@ export const DocumentsPage = ({
       guard.edit();
       editor?.setEditable(false, false);
     };
-  }, [selected, editor, accountId]);
+  }, [selected, editor, accountId, viewVersionId]);
   const recovery = document
     ? reconcileDraft(draft, document)
     : { status: "clean" };
@@ -270,7 +294,7 @@ export const DocumentsPage = ({
       );
   };
   const save = async () => {
-    if (!document || !editor || !isBound(document.id)) return;
+    if (!document || !editor || historical || !isBound(document.id)) return;
     const sent = draftRef.current?.mutation?.mutationId;
     const payload = buildBlocks(
       editor.getJSON(),
@@ -297,6 +321,7 @@ export const DocumentsPage = ({
   };
   const syncDraft = async () => {
     if (
+      historical ||
       !draft?.mutation ||
       !document ||
       !isBound(document.id) ||
@@ -514,24 +539,26 @@ export const DocumentsPage = ({
             <div className="row">
               <h2>{document.title}</h2>
               <PinButton resourceType="DOCUMENT" resourceId={document.id} />
-              <span className="muted">{status}</span>
+              <span className="muted">
+                {historical
+                  ? t("저장된 버전 · 읽기 전용", "Saved version · Read only")
+                  : status}
+              </span>
+              {historical && (
+                <button onClick={() => selectVersion("")}>
+                  {t("현재 초안 열기", "Open current draft")}
+                </button>
+              )}
               <select
                 disabled={!ready}
                 aria-label={t("버전", "Version")}
-                value={version?.id || ""}
+                value={historical ? viewVersionId : ""}
                 onChange={(e) => {
-                  if (!isBound(document.id)) return;
-                  const v = versions.find((v) => v.id === e.target.value);
-                  if (v) {
-                    guard.edit();
-                    setVersion(v);
-                    editor?.commands.setContent(v.content, {
-                      emitUpdate: false,
-                    });
-                  }
+                  if (isBound(document.id) && e.target.value !== viewVersionId)
+                    selectVersion(e.target.value);
                 }}
               >
-                <option value="">{t("버전 없음", "No versions")}</option>
+                <option value="">{t("현재 초안", "Current draft")}</option>
                 {versions.map((v) => (
                   <option key={v.id} value={v.id}>
                     v{v.number} · {v.changeNote}
@@ -543,6 +570,7 @@ export const DocumentsPage = ({
               {["CLASSIC", "MODERN", "COMPACT"].map((template) => (
                 <Action
                   key={label(template)}
+                  disabled={!ready || historical}
                   className={document.template === template ? "selected" : ""}
                   run={async () => {
                     await request(`documents/${document.id}`, "PATCH", {
@@ -599,9 +627,10 @@ export const DocumentsPage = ({
                     ].map(([action, ko, en]) => (
                       <Action
                         key={action}
-                        disabled={!ready || !version || !ai.model}
+                        disabled={!ready || historical || !version || !ai.model}
                         run={async () => {
-                          if (!version || !isBound(document.id)) return;
+                          if (!version || historical || !isBound(document.id))
+                            return;
                           const { from, to } = editor.state.selection;
                           const proposed = await runOperation<Resource>(
                             `documents/${document.id}/revisions`,
@@ -634,24 +663,29 @@ export const DocumentsPage = ({
               <EditorContent editor={editor} />
             </div>
             <div className="actions">
-              <Action disabled={!ready || !draft?.mutation} run={syncDraft}>
+              <Action
+                disabled={!ready || historical || !draft?.mutation}
+                run={syncDraft}
+              >
                 {t("초안 동기화", "Sync draft")}
               </Action>
               <button
-                disabled={!ready}
+                disabled={!ready || historical}
                 onClick={() => editor?.chain().focus().toggleBold().run()}
               >
                 {t("굵게", "Bold")}
               </button>
               <button
-                disabled={!ready}
+                disabled={!ready || historical}
                 onClick={() => editor?.chain().focus().toggleBulletList().run()}
               >
                 {t("목록", "List")}
               </button>
               <Action
                 className="primary"
-                disabled={!ready || recovery.status === "conflict"}
+                disabled={
+                  !ready || historical || recovery.status === "conflict"
+                }
                 run={save}
               >
                 {t("새 버전 저장", "Save new version")}
@@ -664,7 +698,7 @@ export const DocumentsPage = ({
               <div key={e.id}>
                 <label className="check">
                   <input
-                    disabled={!ready}
+                    disabled={!ready || historical}
                     type="checkbox"
                     checked={evidenceIds.includes(e.id)}
                     onChange={(event) =>
@@ -691,9 +725,9 @@ export const DocumentsPage = ({
               </div>
             ))}
             <Action
-              disabled={!ready}
+              disabled={!ready || historical}
               run={async () => {
-                if (!isBound(document.id)) return;
+                if (historical || !isBound(document.id)) return;
                 const sent = draftRef.current?.mutation?.mutationId;
                 const generated = await runOperation<{
                   document: Resource;
@@ -743,9 +777,9 @@ export const DocumentsPage = ({
               <p>{proposal.replacement}</p>
               <span className="badge">{label(proposal.claimStatus)}</span>
               <Action
-                disabled={!ready}
+                disabled={!ready || historical}
                 run={async () => {
-                  if (!isBound(document.id)) return;
+                  if (historical || !isBound(document.id)) return;
                   const sent = draftRef.current?.mutation?.mutationId;
                   const applied = await request<{
                     document: Resource;

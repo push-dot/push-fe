@@ -15,7 +15,7 @@ export const AttachmentCard = ({
 }: {
   attachment: Attachment;
   applicationId: string;
-  onOpenDocument: (id: string) => void;
+  onOpenDocument: (id: string, versionId?: string) => void;
 }) => {
   const t = useT();
   const label = useLabel();
@@ -167,7 +167,7 @@ export const AttachmentCard = ({
         <h3>{document.title}</h3>
         <span className="badge">v{record.number}</span>
         <span className="grow" />
-        <button onClick={() => onOpenDocument(document.id)}>
+        <button onClick={() => onOpenDocument(document.id, record.id)}>
           {t("문서 열기", "Open document")} <ExternalLink size={14} />
         </button>
       </div>

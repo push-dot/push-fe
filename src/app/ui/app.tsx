@@ -37,6 +37,7 @@ import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
 export const App = () => {
   const t = useT();
   const [documentId, setDocumentId] = useState("");
+  const [documentVersionId, setDocumentVersionId] = useState("");
   const pins = useResources("pins");
   const documents = useResources("documents");
   const [page, setPage] = useState("chat");
@@ -160,6 +161,43 @@ export const App = () => {
               </button>
             ))}
           </nav>
+          {pins.data.length > 0 && (
+            <div className="sidebar-section">
+              <div className="section-label">
+                {t("고정한 항목", "Pinned items")}
+              </div>
+              {pins.data.map((pin) => {
+                const doc =
+                  pin.resourceType === "DOCUMENT"
+                    ? documents.data.find((item) => item.id === pin.resourceId)
+                    : undefined;
+                const application =
+                  pin.resourceType === "JOB"
+                    ? apps.data.find((item) => item.jobId === pin.resourceId)
+                    : undefined;
+                if (!doc && !application) return null;
+                return (
+                  <button
+                    className="nav-row"
+                    key={pin.id}
+                    onClick={() => {
+                      if (doc) {
+                        setDocumentId(doc.id);
+                        setDocumentVersionId("");
+                        setPage("documents");
+                      } else if (application) {
+                        openApplication(application.id);
+                      }
+                    }}
+                  >
+                    {doc
+                      ? doc.title
+                      : `${application!.company} · ${application!.title}`}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="sidebar-section">
             <div className="section-label">{t("채팅", "Chats")}</div>
             <button
@@ -333,8 +371,11 @@ export const App = () => {
                 setConversationId(id);
                 void conversations.reload();
               }}
-              onNavigate={(page, id) => {
-                if (page === "documents") setDocumentId(id || "");
+              onNavigate={(page, id, versionId) => {
+                if (page === "documents") {
+                  setDocumentId(id || "");
+                  setDocumentVersionId(versionId || "");
+                }
                 setPage(page);
               }}
             />
@@ -342,7 +383,11 @@ export const App = () => {
             <ApplicationsPage onOpen={openApplication} />
           ) : page === "documents" ? (
             <Suspense fallback={<div className="empty">…</div>}>
-              <DocumentsPage key={documentId} initialDocumentId={documentId} />
+              <DocumentsPage
+                key={`${documentId}:${documentVersionId}`}
+                initialDocumentId={documentId}
+                initialVersionId={documentVersionId}
+              />
             </Suspense>
           ) : page === "career" ? (
             <CareerPage />

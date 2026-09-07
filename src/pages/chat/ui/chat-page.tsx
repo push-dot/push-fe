@@ -21,7 +21,7 @@ export const ChatPage = ({
   applicationId: string;
   conversationId?: string;
   onConversation: (id: string) => void;
-  onNavigate: (page: string, resourceId?: string) => void;
+  onNavigate: (page: string, resourceId?: string, versionId?: string) => void;
 }) => {
   const t = useT();
   const scope = `${applicationId}:${conversationId || ""}`;
@@ -126,7 +126,9 @@ export const ChatPage = ({
                       key={`${attachment.type}:${attachment.id}`}
                       attachment={attachment}
                       applicationId={applicationId}
-                      onOpenDocument={(id) => onNavigate("documents", id)}
+                      onOpenDocument={(id, versionId) =>
+                        onNavigate("documents", id, versionId)
+                      }
                     />
                   ))}
                 </div>
