@@ -1,5 +1,9 @@
+import {
+  CompanySourceFields,
+  readCompanySources,
+} from "./company-source-fields";
 import { Approval } from "@/features/approval";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   request,
   useResources,
@@ -16,6 +20,8 @@ export const InterviewsPage = () => {
   const interviews = useResources("interviews");
   const apps = useResources("applications");
   const offers = useResources("offers");
+  const savedRevisions = useRef<Record<string, number>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [prep, setPrep] = useState<Record<string, Resource>>({});
   const [comparison, setComparison] = useState<Resource | null>(null);
   return (
@@ -99,15 +105,18 @@ export const InterviewsPage = () => {
               </p>
             </div>
             <Action
-              run={async () =>
-                setPrep({
-                  ...prep,
-                  [i.id]: await runOperation<Resource>(
-                    `interviews/${i.id}/prepare`,
-                    { expectedRevision: i.revision, ai: null },
-                  ),
-                })
-              }
+              disabled={saving[i.id]}
+              run={async () => {
+                const result = await runOperation<Resource>(
+                  `interviews/${i.id}/prepare`,
+                  { expectedRevision: i.revision, ai: null },
+                );
+                if (
+                  Math.max(savedRevisions.current[i.id] || 0, i.revision) ===
+                  i.revision
+                )
+                  setPrep((current) => ({ ...current, [i.id]: result }));
+              }}
             >
               {t("질문 준비", "Prepare questions")}
             </Action>
@@ -143,17 +152,80 @@ export const InterviewsPage = () => {
               )}
             </div>
           )}
+          <div className="company-research">
+            <h3>{t("회사 자료 검토", "Company source review")}</h3>
+            {prep[i.id]?.research?.length ? (
+              prep[i.id].research.map(
+                (
+                  item: {
+                    claim: string;
+                    sourceUrl: string;
+                    accessedAt: string;
+                    verificationStatus: string;
+                  },
+                  index: number,
+                ) => (
+                  <blockquote key={index}>
+                    <p className="source-text">{item.claim}</p>
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.sourceUrl}
+                    </a>
+                    <p className="muted">
+                      {t(
+                        "사용자 제공 원문 · 확인 일시",
+                        "User provided source · Accessed at",
+                      )}
+                      : {new Date(item.accessedAt).toLocaleString()}
+                    </p>
+                  </blockquote>
+                ),
+              )
+            ) : (
+              <p className="muted">
+                {i.companySources?.length
+                  ? t(
+                      "저장한 회사 자료를 질문 준비에 반영하세요.",
+                      "Prepare questions to review saved company sources.",
+                    )
+                  : t(
+                      "회사 자료의 출처와 원문을 아래에 추가하세요.",
+                      "Add company source URLs and text below.",
+                    )}
+              </p>
+            )}
+          </div>
           <Form
             resetOnSuccess={false}
             onSubmit={async (f) => {
-              await request(`interviews/${i.id}`, "PATCH", {
-                expectedRevision: i.revision,
-                notes: text(f, "notes"),
-                reflection: text(f, "reflection"),
-              });
-              await interviews.reload();
+              setSaving((current) => ({ ...current, [i.id]: true }));
+              try {
+                const updated = await request<Resource>(
+                  `interviews/${i.id}`,
+                  "PATCH",
+                  {
+                    expectedRevision: i.revision,
+                    notes: text(f, "notes"),
+                    reflection: text(f, "reflection"),
+                    companySources: readCompanySources(f),
+                  },
+                );
+                savedRevisions.current[i.id] = updated.revision;
+                setPrep((current) => {
+                  const next = { ...current };
+                  delete next[i.id];
+                  return next;
+                });
+                await interviews.reload();
+              } finally {
+                setSaving((current) => ({ ...current, [i.id]: false }));
+              }
             }}
           >
+            <CompanySourceFields sources={i.companySources || []} />
             <Field label={t("준비 메모", "Preparation notes")}>
               <textarea name="notes" defaultValue={i.notes} />
             </Field>

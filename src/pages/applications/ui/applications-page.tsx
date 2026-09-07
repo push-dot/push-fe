@@ -240,6 +240,19 @@ export const ApplicationsPage = ({
                   run={async () => {
                     await request(`applications/${app.id}`, "PATCH", {
                       expectedRevision: app.revision,
+                      stage: "REJECTED",
+                    });
+                    await apps.reload();
+                  }}
+                >
+                  {t("불합격 기록", "Record rejection")}
+                </Action>
+              )}
+              {!["ACCEPTED", "REJECTED", "WITHDRAWN"].includes(app.stage) && (
+                <Action
+                  run={async () => {
+                    await request(`applications/${app.id}`, "PATCH", {
+                      expectedRevision: app.revision,
                       stage: "WITHDRAWN",
                     });
                     await apps.reload();

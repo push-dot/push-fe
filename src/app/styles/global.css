@@ -1052,3 +1052,14 @@ td {
 .document-attachment-group > .approval {
   margin-bottom: 0;
 }
+
+.company-sources {
+  min-width: 0;
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.company-sources legend {
+  padding: 0 6px;
+}
