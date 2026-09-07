@@ -116,6 +116,32 @@ export const refresh = async (path: string) => {
       useCache.setState((s) => ({ loading: { ...s.loading, [path]: false } }));
   }
 };
+export const acknowledgeResource = (
+  account: string,
+  path: string,
+  resource: Resource,
+) => {
+  if (!account)
+    throw new Error("An account is required to cache an acknowledgment");
+  return commitCache(account, async () => {
+    const rows = await localUpdate<Resource[]>(
+      account,
+      `cache:${path}`,
+      (current) => {
+        const existing = current?.find((item) => item.id === resource.id);
+        if (existing && existing.revision > resource.revision) return current;
+        return [
+          resource,
+          ...(current || []).filter((item) => item.id !== resource.id),
+        ];
+      },
+    );
+    if (account === useSession.getState().accountId)
+      useCache.setState((state) => ({
+        data: { ...state.data, [path]: rows || [] },
+      }));
+  });
+};
 export const useResources = (path: string) => {
   const token = useSession((s) => s.accessToken);
   const accountId = useSession((s) => s.accountId);

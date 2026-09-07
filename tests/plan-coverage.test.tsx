@@ -34,6 +34,13 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("@/shared/api", () => ({
   request: state.request,
+  acknowledgeResource: async (
+    _account: string,
+    _path: string,
+    resource: typeof state.interview,
+  ) => {
+    state.interview = resource;
+  },
   runOperation: state.prepare,
   queueMutation: vi.fn(),
   synchronize: vi.fn(),

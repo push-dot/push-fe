@@ -28,6 +28,8 @@ import {
   refresh,
   applyCachedChanges,
   resetCache,
+  acknowledgeResource,
+  type Resource,
 } from "@/shared/api/resources";
 import { localRead, localWrite } from "@/shared/storage";
 beforeEach(() => {
@@ -97,5 +99,32 @@ it("ignores an older overlapping refresh after the newer response adds a resourc
   expect(await localRead("account", "cache:applications")).toEqual([
     newer,
     added,
+  ]);
+});
+
+it("keeps a persisted acknowledgment when an already pending stale list response arrives", async () => {
+  const old = {
+    id: "interview",
+    revision: 1,
+    createdAt: "",
+    updatedAt: "",
+    notes: "old",
+  } as Resource;
+  const acknowledged = { ...old, revision: 2, notes: "saved" };
+  await localWrite("account", "cache:interviews", [old]);
+  let release!: (rows: Resource[]) => void;
+  state.list.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+  );
+  const pending = refresh("interviews");
+  await vi.waitFor(() => expect(release).toBeTypeOf("function"));
+  await acknowledgeResource("account", "interviews", acknowledged);
+  release([old]);
+  await pending;
+  expect(await localRead("account", "cache:interviews")).toEqual([
+    acknowledged,
   ]);
 });
