@@ -2,7 +2,7 @@ name: Frontend verification
 on:
   pull_request:
   push:
-    branches: [develop, main]
+    branches: ["**"]
 permissions:
   contents: read
 jobs:

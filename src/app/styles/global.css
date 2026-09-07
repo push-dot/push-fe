@@ -2,7 +2,7 @@
   font-family:
     -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
     sans-serif;
-  color: #eeeeec;
+  color: var(--text);
   background: #1f1f1e;
   font-synthesis: none;
   font-weight: 400;
@@ -927,4 +927,58 @@ td {
     flex-wrap: nowrap;
     overflow: hidden;
   }
+}
+
+.workspace-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.operations-panel,
+.sync-panel {
+  position: relative;
+  z-index: 10;
+}
+.operations-panel > .panel,
+.sync-panel > .panel {
+  position: fixed;
+  right: 18px;
+  top: 72px;
+  width: min(640px, calc(100vw - 36px));
+  max-height: 70vh;
+  overflow: auto;
+  box-shadow: 0 15px 50px #0006;
+}
+.operation-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pinned-items {
+  margin: 12px 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .calendar-day details[open] {
+    position: fixed;
+    left: 20px;
+    right: 20px;
+    top: 20%;
+    max-height: 65vh;
+    overflow: auto;
+    z-index: 9;
+    background: var(--panel);
+    padding: 20px;
+    border: 1px solid var(--line);
+  }
+}
+
+[data-theme="light"] button.primary {
+  background: linear-gradient(160deg, #7950d2, #6941bb);
+  color: #fff;
+  border-color: #6840b7;
+}
+.brand {
+  color: #fff;
 }

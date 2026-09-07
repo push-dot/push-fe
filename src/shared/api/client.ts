@@ -1,3 +1,4 @@
+import { recordOperation } from "./operation-state";
 import ky, { HTTPError } from "ky";
 import { useSession } from "@/shared/auth";
 export type ApiError = Error & {
@@ -27,10 +28,16 @@ export const envelope = async <T>(
     const response = await ky(`${apiUrl.replace(/\/$/, "")}/${path}`, {
       method,
       headers,
-      json: body,
+      json: body instanceof FormData ? undefined : body,
+      body: body instanceof FormData ? body : undefined,
       retry: method === "GET" ? 1 : 0,
       timeout: 30000,
     });
+    if (
+      useSession.getState().generation !== generation ||
+      useSession.getState().apiUrl !== apiUrl
+    )
+      throw new Error("Session changed during request");
     if (response.status === 204) return { data: undefined as T };
     return await response.json<Envelope<T>>();
   } catch (error) {
@@ -123,7 +130,11 @@ export type Operation<T = unknown> = {
   status: string;
   result: { kind: string; value: T } | null;
   error: { message: string } | null;
-  inputRequest?: { message: string } | null;
+  inputRequest?: {
+    message: string;
+    fields: { name: string; label: string; type: "TEXT" | "FILE" }[];
+  } | null;
+  type?: string;
 };
 export const runOperation = async <T>(
   path: string,
@@ -132,6 +143,7 @@ export const runOperation = async <T>(
 ): Promise<T> => {
   let operation = await request<Operation<T>>(path, "POST", body);
   for (let i = 0; i < 120; i++) {
+    await recordOperation(operation);
     onProgress?.(operation);
     if (operation.status === "SUCCEEDED" && operation.result)
       return operation.result.value;

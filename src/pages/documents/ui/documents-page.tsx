@@ -19,7 +19,12 @@ import { Field, Form, Empty, Notice, Action, text } from "@/shared/ui";
 import { useT, useLabel } from "@/shared/config";
 import { useSession } from "@/shared/auth";
 import { localRead, localWrite } from "@/shared/storage";
+import { PinButton } from "@/features/pin";
 import { Approval } from "@/features/approval";
+import {
+  createEditorGuard,
+  completeVersionSave,
+} from "../model/editor-response";
 import { buildBlocks, type Block } from "../model/document-content";
 import {
   reconcileDraft,
@@ -44,13 +49,17 @@ const BlockIds = Extension.create({
     },
   ],
 });
-export const DocumentsPage = () => {
+export const DocumentsPage = ({
+  initialDocumentId = "",
+}: {
+  initialDocumentId?: string;
+}) => {
   const t = useT();
   const label = useLabel();
   const docs = useResources("documents");
   const apps = useResources("applications");
   const evidence = useResources("career-evidence");
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(initialDocumentId);
   const document = docs.data.find((d) => d.id === selected);
   const [versions, setVersions] = useState<Resource[]>([]);
   const [version, setVersion] = useState<Resource | null>(null);
@@ -77,10 +86,13 @@ export const DocumentsPage = () => {
   docRef.current = document;
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
+  const guard = useRef(createEditorGuard()).current;
+  guard.select(`${accountId}:${selected}`);
   const editor = useEditor({
     extensions: [StarterKit, BlockIds],
     content: { type: "doc", content: [{ type: "paragraph" }] },
     onUpdate: ({ editor }) => {
+      guard.edit();
       const current = docRef.current;
       if (!current) return;
       const content = editor.getJSON();
@@ -106,8 +118,10 @@ export const DocumentsPage = () => {
     },
   });
   const load = async (id: string) => {
+    const ticket = guard.ticket();
     const local = await localRead<Draft>(accountId, `draft:${id}`);
-    if (local && selectedRef.current === id) {
+    if (local && guard.matches(ticket)) {
+      draftRef.current = local;
       setDraft(local);
       editor?.commands.setContent(local.content as JSONContent, {
         emitUpdate: false,
@@ -118,11 +132,16 @@ export const DocumentsPage = () => {
         (await localRead<Resource[]>(accountId, `versions:${id}`)) || [],
     );
     await localWrite(accountId, `versions:${id}`, rows);
-    if (selectedRef.current !== id) return;
+    if (
+      selectedRef.current !== id ||
+      useSession.getState().accountId !== accountId
+    )
+      return;
     setVersions(rows);
     const latest = rows[0] || null;
     setVersion(latest);
-    if (selectedRef.current !== id) return;
+    if (!guard.matches(ticket)) return;
+    draftRef.current = local;
     setDraft(local);
     editor?.commands.setContent(
       (local?.content ||
@@ -150,8 +169,43 @@ export const DocumentsPage = () => {
   const recovery = document
     ? reconcileDraft(draft, document)
     : { status: "clean" };
+  const acceptVersion = async (
+    id: string,
+    sent: string | undefined,
+    result: { document: Resource; version: Resource },
+  ) => {
+    const active = () =>
+      selectedRef.current === id &&
+      useSession.getState().accountId === accountId;
+    const current = active()
+      ? draftRef.current
+      : await localRead<Draft>(accountId, `draft:${id}`);
+    const next = completeVersionSave(current, sent, result.document.revision);
+    if (active()) {
+      draftRef.current = next;
+      setDraft(next);
+      setVersion(result.version);
+      setVersions((rows) => [
+        result.version,
+        ...rows.filter((v) => v.id !== result.version.id),
+      ]);
+      if (!next)
+        editor?.commands.setContent(result.version.content, {
+          emitUpdate: false,
+        });
+    }
+    await localWrite(accountId, `draft:${id}`, next);
+    await docs.reload();
+    if (active())
+      setStatus(
+        next
+          ? t("새 편집은 초안으로 보존됨", "New edits kept as draft")
+          : t("버전 저장됨", "Version saved"),
+      );
+  };
   const save = async () => {
     if (!document || !editor) return;
+    const sent = draftRef.current?.mutation?.mutationId;
     const payload = buildBlocks(
       editor.getJSON(),
       evidence.data
@@ -173,12 +227,7 @@ export const DocumentsPage = () => {
       if ((error as { status?: number }).status === 409) await docs.reload();
       throw error;
     }
-    await localWrite(accountId, `draft:${document.id}`, null);
-    setDraft(null);
-    setVersion(result.version);
-    await docs.reload();
-    await load(document.id);
-    setStatus(t("버전 저장됨", "Version saved"));
+    await acceptVersion(document.id, sent, result);
   };
   const syncDraft = async () => {
     if (!draft?.mutation || !document) return;
@@ -239,7 +288,14 @@ export const DocumentsPage = () => {
         pageCount = result.pageCount;
         links = result.links;
       } else {
-        bytes = await renderDocx(document.title, renderBlocks, output.template);
+        bytes = await renderDocx(
+          document.title,
+          renderBlocks,
+          output.template,
+          new Uint8Array(
+            await (await fetch("/fonts/nanum-gothic.ttf")).arrayBuffer(),
+          ),
+        );
         links = output.blocks.some((b: Block) => /https?:\/\//.test(b.text));
       }
       const { validateExport } = await import("../model/export-validation");
@@ -382,6 +438,7 @@ export const DocumentsPage = () => {
           <div className="panel">
             <div className="row">
               <h2>{document.title}</h2>
+              <PinButton resourceType="DOCUMENT" resourceId={document.id} />
               <span className="muted">{status}</span>
               <select
                 aria-label={t("버전", "Version")}
@@ -389,6 +446,7 @@ export const DocumentsPage = () => {
                 onChange={(e) => {
                   const v = versions.find((v) => v.id === e.target.value);
                   if (v) {
+                    guard.edit();
                     setVersion(v);
                     editor?.commands.setContent(v.content, {
                       emitUpdate: false,
@@ -550,15 +608,16 @@ export const DocumentsPage = () => {
             ))}
             <Action
               run={async () => {
-                await runOperation(`documents/${document.id}/generate`, {
+                const sent = draftRef.current?.mutation?.mutationId;
+                const generated = await runOperation<{
+                  document: Resource;
+                  version: Resource;
+                }>(`documents/${document.id}/generate`, {
                   expectedRevision: document.revision,
                   evidenceIds,
                   ai: null,
                 });
-                await localWrite(accountId, `draft:${document.id}`, null);
-                setDraft(null);
-                await docs.reload();
-                await load(document.id);
+                await acceptVersion(document.id, sent, generated);
               }}
             >
               {t("원문 발췌로 작성", "Create from source excerpts")}
@@ -599,14 +658,17 @@ export const DocumentsPage = () => {
               <span className="badge">{label(proposal.claimStatus)}</span>
               <Action
                 run={async () => {
-                  await request(
+                  const sent = draftRef.current?.mutation?.mutationId;
+                  const applied = await request<{
+                    document: Resource;
+                    version: Resource;
+                  }>(
                     `documents/${document.id}/revisions/${proposal.id}/apply`,
                     "POST",
                     { expectedRevision: document.revision },
                   );
                   setProposal(null);
-                  await docs.reload();
-                  await load(document.id);
+                  await acceptVersion(document.id, sent, applied);
                 }}
               >
                 {t("적용", "Apply")}

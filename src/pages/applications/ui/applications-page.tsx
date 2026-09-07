@@ -2,11 +2,15 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useState, useRef } from "react";
 import {
   request,
+  queueMutation,
+  useOutbox,
+  synchronize,
   useResources,
   runOperation,
   type Resource,
 } from "@/shared/api";
 import { Field, Form, Empty, Notice, Action, text, lines } from "@/shared/ui";
+import { PinButton } from "@/features/pin";
 import { Approval } from "@/features/approval";
 import { useT, useLabel } from "@/shared/config";
 const stages = [
@@ -37,7 +41,16 @@ export const ApplicationsPage = ({
   const [analysis, setAnalysis] = useState<Resource | null>(null);
   const [draft, setDraft] = useState<Resource | null>(null);
   const [evidenceIds, setEvidenceIds] = useState<string[]>([]);
-  const app = apps.data.find((a) => a.id === selected);
+  const pending = useOutbox((s) => s.items);
+  const storedApp = apps.data.find((a) => a.id === selected);
+  const local = pending.find(
+    (p) =>
+      p.mutation.resourceId === selected &&
+      p.mutation.resourceType === "APPLICATION",
+  );
+  const app: Resource | undefined = storedApp
+    ? { ...storedApp, ...local?.mutation.payload }
+    : undefined;
   const job = jobs.data.find((j) => j.id === app?.jobId);
   return (
     <div className="page">
@@ -194,6 +207,7 @@ export const ApplicationsPage = ({
               <h2>
                 {job?.company} · {job?.title}
               </h2>
+              <PinButton resourceType="JOB" resourceId={app.jobId} />
               <button onClick={() => onOpen(app.id)}>
                 {t("채팅 열기", "Open chat")} ↗
               </button>
@@ -239,11 +253,16 @@ export const ApplicationsPage = ({
               resetOnSuccess={false}
               key={app.id}
               onSubmit={async (f) => {
-                await request(`applications/${app.id}`, "PATCH", {
-                  expectedRevision: app.revision,
-                  notes: text(f, "notes"),
+                await queueMutation({
+                  mutationId: crypto.randomUUID(),
+                  resourceType: "APPLICATION",
+                  resourceId: app.id,
+                  expectedRevision:
+                    local?.mutation.expectedRevision ?? app.revision,
+                  action: "UPDATE_NOTES",
+                  payload: { notes: text(f, "notes") },
                 });
-                await apps.reload();
+                if (navigator.onLine) void synchronize().catch(() => undefined);
               }}
             >
               <Field label={t("메모", "Notes")}>

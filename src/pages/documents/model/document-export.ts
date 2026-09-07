@@ -151,6 +151,7 @@ export const renderDocx = async (
   title: string,
   blocks: RenderBlock[],
   template: string,
+  fontBytes: Uint8Array,
 ) => {
   const size = template === "COMPACT" ? 20 : 22;
   const paragraphs = blocks.map((block) => {
@@ -161,7 +162,12 @@ export const renderDocx = async (
         children.push(
           new TextRun({
             text: block.text.slice(offset, link.start),
-            font: "NanumGothic",
+            font: {
+              ascii: "NanumGothic",
+              hAnsi: "NanumGothic",
+              eastAsia: "NanumGothic",
+              cs: "NanumGothic",
+            },
             size,
           }),
         );
@@ -172,7 +178,12 @@ export const renderDocx = async (
             new TextRun({
               text: block.text.slice(link.start, link.end),
               style: "Hyperlink",
-              font: "NanumGothic",
+              font: {
+                ascii: "NanumGothic",
+                hAnsi: "NanumGothic",
+                eastAsia: "NanumGothic",
+                cs: "NanumGothic",
+              },
               size,
             }),
           ],
@@ -184,7 +195,12 @@ export const renderDocx = async (
       children.push(
         new TextRun({
           text: block.text.slice(offset),
-          font: "NanumGothic",
+          font: {
+            ascii: "NanumGothic",
+            hAnsi: "NanumGothic",
+            eastAsia: "NanumGothic",
+            cs: "NanumGothic",
+          },
           size,
         }),
       );
@@ -197,9 +213,22 @@ export const renderDocx = async (
     await Packer.toArrayBuffer(
       new Document({
         creator: "Push",
+        fonts: [{ name: "NanumGothic", data: fontBytes as Buffer }],
         title,
         styles: {
-          default: { document: { run: { font: "NanumGothic", size } } },
+          default: {
+            document: {
+              run: {
+                font: {
+                  ascii: "NanumGothic",
+                  hAnsi: "NanumGothic",
+                  eastAsia: "NanumGothic",
+                  cs: "NanumGothic",
+                },
+                size,
+              },
+            },
+          },
         },
         sections: [
           {
@@ -214,7 +243,12 @@ export const renderDocx = async (
                 children: [
                   new TextRun({
                     text: title,
-                    font: "NanumGothic",
+                    font: {
+                      ascii: "NanumGothic",
+                      hAnsi: "NanumGothic",
+                      eastAsia: "NanumGothic",
+                      cs: "NanumGothic",
+                    },
                     color: template === "MODERN" ? "5839A6" : "222222",
                   }),
                 ],

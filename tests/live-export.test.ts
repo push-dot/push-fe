@@ -96,7 +96,13 @@ it.skipIf(!process.env.PUSH_LIVE_EXPORT)(
         );
         bytes = rendered.bytes;
         pageCount = rendered.pageCount;
-      } else bytes = await renderDocx(document.title, blocks, output.template);
+      } else
+        bytes = await renderDocx(
+          document.title,
+          blocks,
+          output.template,
+          readFileSync("public/fonts/nanum-gothic.ttf"),
+        );
       const validation = await validateExport(bytes, format, blocks);
       expect(validation).toEqual({
         atsText: true,

@@ -19,7 +19,12 @@ it("exports Korean, links, and long content into extractable multipage PDF and D
   expect(extracted).toContain("한글 경력 89");
   expect(pdf.pageCount).toBeGreaterThan(1);
   expect(pdf.links).toBe(true);
-  const docx = await renderDocx("자기소개서", blocks, "CLASSIC");
+  const docx = await renderDocx(
+    "자기소개서",
+    blocks,
+    "CLASSIC",
+    readFileSync("public/fonts/nanum-gothic.ttf"),
+  );
   writeFileSync("artifacts/korean.docx", docx);
   const xml = execFileSync("unzip", [
     "-p",
@@ -53,7 +58,12 @@ it("retains a named hyperlink from TipTap content in a DOCX export", async () =>
     },
     blocks,
   );
-  const bytes = await renderDocx("이력서", enriched, "MODERN");
+  const bytes = await renderDocx(
+    "이력서",
+    enriched,
+    "MODERN",
+    readFileSync("public/fonts/nanum-gothic.ttf"),
+  );
   writeFileSync("artifacts/linked.docx", bytes);
   const relationships = execFileSync("unzip", [
     "-p",
@@ -108,4 +118,25 @@ it("renders visible Korean and Latin glyphs instead of an extraction-only PDF", 
       for (let x = 57; x < 80; x++) if (pixels[y * width + x] < 180) ink++;
     expect(ink, `Visible glyph ${glyphs[row]}`).toBeGreaterThan(5);
   }
+});
+it("embeds the licensed Korean font in DOCX for machines without it installed", async () => {
+  const bytes = await renderDocx(
+    "한글",
+    [{ id: "b", text: "본문", evidenceRefs: [] }],
+    "CLASSIC",
+    readFileSync("public/fonts/nanum-gothic.ttf"),
+  );
+  writeFileSync("artifacts/embedded.docx", bytes);
+  const embedded = execFileSync(
+    "unzip",
+    ["-p", "artifacts/embedded.docx", "word/fonts/font1.odttf"],
+    { maxBuffer: 5 * 1024 * 1024 },
+  );
+  expect(embedded.length).toBe(2054744);
+  const table = execFileSync("unzip", [
+    "-p",
+    "artifacts/embedded.docx",
+    "word/fontTable.xml",
+  ]).toString();
+  expect(table).toContain("w:embedRegular");
 });

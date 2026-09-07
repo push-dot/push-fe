@@ -14,6 +14,8 @@ import {
   BriefcaseBusiness,
   Database,
 } from "lucide-react";
+import { SyncPanel } from "./sync-panel";
+import { OperationsPanel } from "./operations-panel";
 import { CareerPage } from "@/pages/career";
 import { ApplicationsPage } from "@/pages/applications";
 const DocumentsPage = lazy(() =>
@@ -34,6 +36,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
 export const App = () => {
   const t = useT();
+  const [documentId, setDocumentId] = useState("");
+  const pins = useResources("pins");
+  const documents = useResources("documents");
   const [page, setPage] = useState("chat");
   const [collapsed, setCollapsed] = useState(false);
   const [applicationId, setApplicationId] = useState("");
@@ -295,12 +300,16 @@ export const App = () => {
               </>
             )}
           </div>
-          <button
-            aria-label={t("설정", "Settings")}
-            onClick={() => setPage("settings")}
-          >
-            <Settings size={20} />
-          </button>
+          <div className="workspace-tools">
+            <SyncPanel />
+            <OperationsPanel />
+            <button
+              aria-label={t("설정", "Settings")}
+              onClick={() => setPage("settings")}
+            >
+              <Settings size={20} />
+            </button>
+          </div>
         </header>
         {!session.accessToken && page !== "settings" && (
           <div className="connection-banner">
@@ -330,7 +339,7 @@ export const App = () => {
             <ApplicationsPage onOpen={openApplication} />
           ) : page === "documents" ? (
             <Suspense fallback={<div className="empty">…</div>}>
-              <DocumentsPage />
+              <DocumentsPage key={documentId} initialDocumentId={documentId} />
             </Suspense>
           ) : page === "career" ? (
             <CareerPage />

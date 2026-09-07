@@ -1,25 +1,34 @@
+import { monthPeriod, dateKey, localDateTime } from "../model/calendar-period";
 import { useState } from "react";
-import { request, useResources } from "@/shared/api";
+import {
+  request,
+  useResources,
+  queueMutation,
+  useOutbox,
+  synchronize,
+  type Resource,
+} from "@/shared/api";
 import { Field, Form, Empty, Notice, Action, text } from "@/shared/ui";
 import { useT, useLabel } from "@/shared/config";
 export const CalendarPage = () => {
   const t = useT();
   const label = useLabel();
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
-  const from = new Date(`${month}-01T00:00:00`);
-  const to = new Date(
-    Date.UTC(from.getUTCFullYear(), from.getUTCMonth() + 1, 1),
-  );
+  const [month, setMonth] = useState(dateKey(new Date()).slice(0, 7));
+  const { from, to, days } = monthPeriod(month);
   const events = useResources(
     `calendar/events?from=${from.toISOString()}&to=${to.toISOString()}`,
   );
+  const outbox = useOutbox((s) => s.items);
+  const displayed: Resource[] = events.data.map((event) => ({
+    ...event,
+    ...outbox.find(
+      (item) =>
+        item.mutation.resourceType === "CALENDAR_EVENT" &&
+        item.mutation.resourceId === event.id,
+    )?.mutation.payload,
+  }));
   const apps = useResources("applications");
   const routines = useResources("routines");
-  const days = new Date(
-    from.getUTCFullYear(),
-    from.getUTCMonth() + 1,
-    0,
-  ).getDate();
   return (
     <div className="page wide">
       <div className="page-heading">
@@ -42,8 +51,8 @@ export const CalendarPage = () => {
           return (
             <div className="calendar-day" key={date}>
               <span>{i + 1}</span>
-              {events.data
-                .filter((e) => e.startsAt.slice(0, 10) === date)
+              {displayed
+                .filter((e) => dateKey(new Date(e.startsAt)) === date)
                 .map((e) => (
                   <details key={e.id}>
                     <summary>{e.title}</summary>
@@ -52,6 +61,60 @@ export const CalendarPage = () => {
                       {label(e.source)}
                     </small>
                     <p>{e.notes}</p>
+                    {e.source === "LOCAL" && (
+                      <Form
+                        resetOnSuccess={false}
+                        submitLabel={t("기기에 저장", "Save on device")}
+                        onSubmit={async (form) => {
+                          await queueMutation({
+                            mutationId: crypto.randomUUID(),
+                            resourceType: "CALENDAR_EVENT",
+                            resourceId: e.id,
+                            expectedRevision:
+                              outbox.find(
+                                (item) => item.mutation.resourceId === e.id,
+                              )?.mutation.expectedRevision ?? e.revision,
+                            action: "UPDATE_LOCAL",
+                            payload: {
+                              title: text(form, "title"),
+                              notes: text(form, "notes"),
+                              startsAt: new Date(
+                                text(form, "startsAt"),
+                              ).toISOString(),
+                              endsAt: new Date(
+                                text(form, "endsAt"),
+                              ).toISOString(),
+                              timeZone: e.timeZone,
+                            },
+                          });
+                          if (navigator.onLine)
+                            void synchronize().catch(() => undefined);
+                        }}
+                      >
+                        <Field label={t("제목", "Title")}>
+                          <input name="title" defaultValue={e.title} required />
+                        </Field>
+                        <Field label={t("메모", "Notes")}>
+                          <textarea name="notes" defaultValue={e.notes} />
+                        </Field>
+                        <Field label={t("시작", "Start")}>
+                          <input
+                            name="startsAt"
+                            type="datetime-local"
+                            required
+                            defaultValue={localDateTime(e.startsAt)}
+                          />
+                        </Field>
+                        <Field label={t("종료", "End")}>
+                          <input
+                            name="endsAt"
+                            type="datetime-local"
+                            required
+                            defaultValue={localDateTime(e.endsAt)}
+                          />
+                        </Field>
+                      </Form>
+                    )}
                   </details>
                 ))}
             </div>

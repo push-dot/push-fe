@@ -11,6 +11,7 @@ export const localRead = async <T>(
   key: string,
 ): Promise<T | null> => {
   if (!accountId) return null;
+  await pendingWrites.get(`${accountId}:${key}`)?.catch(() => undefined);
   if (isTauri()) {
     const value = await invoke<string | null>("local_read", { accountId, key });
     return value ? JSON.parse(value) : null;
