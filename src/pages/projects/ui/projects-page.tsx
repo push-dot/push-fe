@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   request,
+  listAll,
   useResources,
   runOperation,
   type Resource,
@@ -15,6 +16,7 @@ export const ProjectsPage = () => {
   const label = useLabel();
   const projects = useResources("projects");
   const apps = useResources("applications");
+  const [history, setHistory] = useState<Resource[]>([]);
   const [verification, setVerification] = useState<Resource | null>(null);
   const [run, setRun] = useState<Resource | null>(null);
   const [detected, setDetected] = useState<Resource[]>([]);
@@ -110,7 +112,22 @@ export const ProjectsPage = () => {
           >
             {t("프로젝트 폴더 만들기", "Create project folder")}
           </Action>
-          {selected === p.id && (
+          <Action
+            run={async () => {
+              setHistory(await listAll<Resource>(`projects/${p.id}/runs`));
+              setSelected(p.id);
+            }}
+          >
+            {t("실행 이력", "Run history")}
+          </Action>
+          {selected === p.id &&
+            history.map((item) => (
+              <button key={item.id} onClick={() => setRun(item)}>
+                {item.provider} · {label(item.state)} ·{" "}
+                {new Date(item.createdAt).toLocaleDateString()}
+              </button>
+            ))}
+          {selected === p.id && directory && (
             <Form
               submitLabel={t("명령 미리보기", "Preview command")}
               onSubmit={async (f) =>
@@ -177,36 +194,38 @@ export const ProjectsPage = () => {
               2,
             )}
           </pre>
-          <Approval
-            reviewContent={
-              <>
-                <p>{run.workingDirectory}</p>
-                <pre>
-                  {run.executable} {JSON.stringify(run.arguments)}
-                </pre>
-                <p className="source-text">{run.prompt}</p>
-              </>
-            }
-            kind="CLI_EXECUTE"
-            applicationId={run.applicationId}
-            targetId={run.id}
-            summary={t(
-              "외부 Terminal 실행 승인",
-              "Approve external Terminal execution",
-            )}
-            onApproved={async (approval) => {
-              const session = useSession.getState();
-              const started = await invoke<Resource>("launch_cli", {
-                apiBase: session.apiUrl,
-                accessToken: session.accessToken,
-                projectId: run.projectId,
-                runId: run.id,
-                expectedRevision: run.revision,
-                approvalId: approval.id,
-              });
-              setRun(started);
-            }}
-          />
+          {run.state === "APPROVAL_REQUIRED" && (
+            <Approval
+              reviewContent={
+                <>
+                  <p>{run.workingDirectory}</p>
+                  <pre>
+                    {run.executable} {JSON.stringify(run.arguments)}
+                  </pre>
+                  <p className="source-text">{run.prompt}</p>
+                </>
+              }
+              kind="CLI_EXECUTE"
+              applicationId={run.applicationId}
+              targetId={run.id}
+              summary={t(
+                "외부 Terminal 실행 승인",
+                "Approve external Terminal execution",
+              )}
+              onApproved={async (approval) => {
+                const session = useSession.getState();
+                const started = await invoke<Resource>("launch_cli", {
+                  apiBase: session.apiUrl,
+                  accessToken: session.accessToken,
+                  projectId: run.projectId,
+                  runId: run.id,
+                  expectedRevision: run.revision,
+                  approvalId: approval.id,
+                });
+                setRun(started);
+              }}
+            />
+          )}
           <div className="actions">
             <span className="badge">
               {label(run.state)} · {label(run.launchStatus || "")}
@@ -231,14 +250,16 @@ export const ProjectsPage = () => {
             <Action
               run={async () => {
                 const session = useSession.getState();
-                setRun(
-                  await invoke<Resource>("complete_cli", {
+                const completed = await invoke<Resource | null>(
+                  "complete_cli",
+                  {
                     apiBase: session.apiUrl,
                     accessToken: session.accessToken,
                     projectId: run.projectId,
                     runId: run.id,
-                  }),
+                  },
                 );
+                if (completed) setRun(completed);
               }}
             >
               {t(

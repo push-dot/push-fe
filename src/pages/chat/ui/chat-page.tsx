@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowUp, Plus, Sparkles, Lock, AudioLines } from "lucide-react";
 import {
   request,
+  refresh,
   useResources,
   runOperation,
   type Resource,
@@ -52,7 +53,7 @@ export const ChatPage = ({
         accessMode,
       });
       setInput(applicationId, "");
-      await messages.reload();
+      await refresh(`conversations/${id}/messages`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -196,7 +197,12 @@ export const ChatPage = ({
             >
               <option value="">{t("모델 설정", "Configure model")}</option>
               {models.data
-                .filter((m) => m.available)
+                .filter(
+                  (m) =>
+                    m.available &&
+                    (ai.credentialMode !== "MANAGED" ||
+                      m.provider === "OPENAI"),
+                )
                 .map((m) => (
                   <option key={m.model} value={m.model}>
                     {m.label}

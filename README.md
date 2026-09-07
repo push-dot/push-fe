@@ -18,7 +18,7 @@ npm run build
 npm run tauri dev
 ```
 
-Tests require `pdftotext` and `unzip`. The optional real API export test uses the ignored workspace `.env.local-test`, a running server, and an already finalized local test document:
+Tests require `pdftotext` and `unzip`. The optional real API export test uses externally supplied `DEV_AUTH_TOKEN` and optional `PUSH_API_URL`, and creates its own synthetic evidence/application/document:
 
 ```sh
 PUSH_LIVE_EXPORT=1 npm test -- tests/live-export.test.ts
@@ -34,4 +34,4 @@ PDFs embed the redistributable Nanum Gothic font; its SIL Open Font License is i
 
 ## External validation
 
-OAuth, real AI keys, Stripe billing, Google sync, production signing/notarization, and beta users require separately configured services. Browser previews cannot execute native CLI or copy project folders. URL/DOM job input currently requires pasted original text; an isolated native job browser collector is not yet implemented. Do not treat these unverified external paths as a completed release.
+OAuth, real AI keys, Stripe billing, Google sync, production signing/notarization, and beta users require separately configured services. Browser previews cannot execute native CLI or copy project folders. The native job browser opens an isolated remote view and collects original text only after the user chooses the collection action. Do not treat these unverified external paths as a completed release.

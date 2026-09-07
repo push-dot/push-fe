@@ -1,3 +1,4 @@
+import { Approval } from "@/features/approval";
 import { useState } from "react";
 import {
   request,
@@ -9,6 +10,8 @@ import { Field, Form, Empty, Notice, Action, text, lines } from "@/shared/ui";
 import { useT, useLabel } from "@/shared/config";
 export const InterviewsPage = () => {
   const t = useT();
+  const [applicationId, setApplicationId] = useState("");
+  const evidence = useResources("career-evidence");
   const label = useLabel();
   const interviews = useResources("interviews");
   const apps = useResources("applications");
@@ -31,14 +34,19 @@ export const InterviewsPage = () => {
               title: text(f, "title"),
               scheduledAt: new Date(text(f, "scheduledAt")).toISOString(),
               durationMinutes: 60,
-              evidenceIds: [],
+              evidenceIds: f.getAll("evidenceIds"),
             });
             await interviews.reload();
           }}
         >
           <div className="form-grid">
             <Field label={t("지원", "Application")}>
-              <select required name="applicationId">
+              <select
+                required
+                name="applicationId"
+                value={applicationId}
+                onChange={(e) => setApplicationId(e.target.value)}
+              >
                 <option value="">{t("선택", "Select")}</option>
                 {apps.data.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -54,6 +62,30 @@ export const InterviewsPage = () => {
               <input type="datetime-local" name="scheduledAt" required />
             </Field>
           </div>
+          {applicationId && (
+            <details>
+              <summary>
+                {t("면접 답변에 사용할 근거", "Evidence for interview answers")}
+              </summary>
+              {evidence.data.map((e) => (
+                <div key={e.id}>
+                  <label className="check">
+                    <input type="checkbox" name="evidenceIds" value={e.id} />
+                    {e.title}
+                  </label>
+                  <Approval
+                    kind="EVIDENCE_USE"
+                    applicationId={applicationId}
+                    targetId={e.id}
+                    summary={`${t("근거 사용", "Use evidence")}: ${e.title}`}
+                    reviewContent={
+                      <p className="source-text">{e.sourceText}</p>
+                    }
+                  />
+                </div>
+              ))}
+            </details>
+          )}
         </Form>
       </details>
       <Notice error={interviews.error} />

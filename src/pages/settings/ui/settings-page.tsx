@@ -10,7 +10,7 @@ import {
 import { usePreferences, useT, useLabel } from "@/shared/config";
 import { Field, Form, Notice, Action, text } from "@/shared/ui";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { isTauri } from "@tauri-apps/api/core";
+import { isTauri, invoke } from "@tauri-apps/api/core";
 let pendingVerifier = "";
 let pendingGeneration = 0;
 let integrationVerifier = "";
@@ -72,6 +72,11 @@ export const SettingsPage = () => {
   const keys = useResources("ai/keys");
   const [google, setGoogle] = useState<Resource | null>(null);
   const [billing, setBilling] = useState<Resource | null>(null);
+  const [update, setUpdate] = useState<{
+    available: boolean;
+    version?: string;
+    body?: string;
+  } | null>(null);
   const [message, setMessage] = useState("");
   return (
     <div className="page settings">
@@ -355,6 +360,41 @@ export const SettingsPage = () => {
           {t("구독 관리", "Manage subscription")}
         </Action>
       </section>
+      {isTauri() && (
+        <section className="panel">
+          <h2>{t("앱 업데이트", "App updates")}</h2>
+          <Action run={async () => setUpdate(await invoke("check_update"))}>
+            {t("업데이트 확인", "Check for updates")}
+          </Action>
+          {update && (
+            <p>
+              {update.available
+                ? update.version
+                : t("최신 버전입니다.", "Up to date.")}
+            </p>
+          )}
+          {update?.available && (
+            <>
+              <p>{update.body}</p>
+              <Action
+                run={async () => {
+                  await invoke("install_update", {
+                    expectedVersion: update.version,
+                  });
+                  setMessage(
+                    t(
+                      "설치되었습니다. 앱을 다시 시작하세요.",
+                      "Installed. Restart the app.",
+                    ),
+                  );
+                }}
+              >
+                {t("이 버전 설치", "Install this version")}
+              </Action>
+            </>
+          )}
+        </section>
+      )}
       <Notice error={message} />
     </div>
   );

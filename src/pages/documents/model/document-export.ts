@@ -62,7 +62,7 @@ export const renderPdf = async (
 ) => {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
-  const font = await pdf.embedFont(fontBytes, { subset: true });
+  const font = await pdf.embedFont(fontBytes, { subset: false });
   pdf.setTitle(title);
   pdf.setLanguage("ko-KR");
   const compact = template === "COMPACT";

@@ -21,7 +21,12 @@ import { useSession } from "@/shared/auth";
 import { localRead, localWrite } from "@/shared/storage";
 import { Approval } from "@/features/approval";
 import { buildBlocks, type Block } from "../model/document-content";
-import { reconcileDraft, makeDraft, type Draft } from "../model/draft";
+import {
+  reconcileDraft,
+  makeDraft,
+  applyDraftSync,
+  type Draft,
+} from "../model/draft";
 
 import { isTauri, invoke } from "@tauri-apps/api/core";
 const BlockIds = Extension.create({
@@ -190,11 +195,14 @@ export const DocumentsPage = () => {
     const outcome = result.results[0];
     if (outcome.status !== "APPLIED")
       throw new Error(outcome.error?.message || outcome.status);
-    const synced = {
-      ...draft,
-      revision: outcome.resource?.revision,
-      mutation: undefined,
-    };
+    if (!draftRef.current || draftRef.current.documentId !== document.id)
+      return;
+    const synced = applyDraftSync(
+      draftRef.current,
+      draft.mutation.mutationId,
+      outcome.resource!.revision,
+    );
+    draftRef.current = synced;
     setDraft(synced);
     await localWrite(accountId, `draft:${document.id}`, synced);
     setStatus(t("초안 동기화됨", "Draft synced"));

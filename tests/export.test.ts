@@ -62,3 +62,50 @@ it("retains a named hyperlink from TipTap content in a DOCX export", async () =>
   ]).toString();
   expect(relationships).toContain("https://example.com/work");
 });
+it("renders visible Korean and Latin glyphs instead of an extraction-only PDF", async () => {
+  const glyphs = [
+    "한",
+    "글",
+    "경",
+    "력",
+    "서",
+    "문",
+    "가",
+    "나",
+    "다",
+    "A",
+    "B",
+    "C",
+    "1",
+    "2",
+    "3",
+  ];
+  const pdf = await renderPdf(
+    "글꼴",
+    glyphs.map((text, i) => ({ id: String(i), text, evidenceRefs: [] })),
+    "CLASSIC",
+    readFileSync("public/fonts/nanum-gothic.ttf"),
+  );
+  writeFileSync("artifacts/glyphs.pdf", pdf.bytes);
+  execFileSync("pdftoppm", [
+    "-r",
+    "72",
+    "-gray",
+    "-singlefile",
+    "artifacts/glyphs.pdf",
+    "artifacts/glyphs",
+  ]);
+  const raster = readFileSync("artifacts/glyphs.pgm");
+  const header = raster
+    .toString("ascii", 0, 50)
+    .match(/^P5\n(\d+) (\d+)\n255\n/);
+  if (!header) throw new Error("Invalid raster");
+  const width = Number(header[1]);
+  const pixels = raster.subarray(header[0].length);
+  for (let row = 0; row < glyphs.length; row++) {
+    let ink = 0;
+    for (let y = 88 + row * 31; y < 104 + row * 31; y++)
+      for (let x = 57; x < 80; x++) if (pixels[y * width + x] < 180) ink++;
+    expect(ink, `Visible glyph ${glyphs[row]}`).toBeGreaterThan(5);
+  }
+});

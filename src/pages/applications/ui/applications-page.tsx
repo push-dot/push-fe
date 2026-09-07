@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { invoke, isTauri } from "@tauri-apps/api/core";
+import { useState, useRef } from "react";
 import {
   request,
   useResources,
@@ -24,6 +25,9 @@ export const ApplicationsPage = ({
   onOpen: (id: string) => void;
 }) => {
   const t = useT();
+  const sourceUrlRef = useRef<HTMLInputElement>(null);
+  const sourceTextRef = useRef<HTMLTextAreaElement>(null);
+  const sourceKindRef = useRef<HTMLSelectElement>(null);
   const label = useLabel();
   const apps = useResources("applications");
   const jobs = useResources("jobs");
@@ -77,15 +81,56 @@ export const ApplicationsPage = ({
           </div>
           <div className="form-grid">
             <Field label={t("수집 방식", "Source")}>
-              <select name="sourceKind">
+              <select name="sourceKind" ref={sourceKindRef}>
                 <option value="TEXT">{label("TEXT")}</option>
                 <option value="URL">{label("URL")}</option>
                 <option value="DOM">{label("DOM")}</option>
               </select>
             </Field>
             <Field label={t("공고 URL", "Job URL")}>
-              <input name="sourceUrl" type="url" />
+              <input name="sourceUrl" type="url" ref={sourceUrlRef} />
             </Field>
+          </div>
+          <div className="actions">
+            <Action
+              run={async () => {
+                if (!isTauri())
+                  throw new Error(
+                    t(
+                      "데스크톱 앱에서 공고 브라우저를 사용할 수 있습니다.",
+                      "Use the desktop app for the job browser.",
+                    ),
+                  );
+                await invoke("open_job_browser", {
+                  url: sourceUrlRef.current?.value || "",
+                });
+              }}
+            >
+              {t("공고 브라우저 열기", "Open job browser")}
+            </Action>
+            <Action
+              run={async () => {
+                if (!isTauri())
+                  throw new Error(
+                    t(
+                      "데스크톱 앱에서 본문을 가져올 수 있습니다.",
+                      "Use the desktop app to collect page text.",
+                    ),
+                  );
+                const page = await invoke<{
+                  sourceUrl: string;
+                  sourceText: string;
+                  title: string;
+                }>("collect_job_page");
+                if (sourceUrlRef.current)
+                  sourceUrlRef.current.value = page.sourceUrl;
+                if (sourceTextRef.current)
+                  sourceTextRef.current.value = page.sourceText;
+                if (sourceKindRef.current) sourceKindRef.current.value = "DOM";
+              }}
+            >
+              {t("열린 공고 본문 가져오기", "Collect opened job text")}
+            </Action>
           </div>
           <Field
             label={t(
@@ -93,7 +138,7 @@ export const ApplicationsPage = ({
               "Job text (required for URL/DOM too)",
             )}
           >
-            <textarea name="sourceText" rows={5} required />
+            <textarea name="sourceText" rows={5} required ref={sourceTextRef} />
           </Field>
           <div className="form-grid">
             <Field label={t("필수 기술", "Requirements")}>

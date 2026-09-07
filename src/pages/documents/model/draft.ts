@@ -66,3 +66,18 @@ export const makeDraft = (
     },
   };
 };
+export const applyDraftSync = (
+  draft: Draft,
+  mutationId: string,
+  revision: number,
+): Draft => {
+  if (draft.mutation?.mutationId === mutationId)
+    return { ...draft, revision, mutation: undefined };
+  return makeDraft(
+    { ...draft, revision },
+    { id: draft.documentId, revision: draft.baseRevision },
+    draft.content || {},
+    draft.blocks || [],
+    draft.evidenceIds,
+  );
+};

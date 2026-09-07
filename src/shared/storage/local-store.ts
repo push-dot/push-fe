@@ -24,11 +24,7 @@ export const localRead = async <T>(
     tx.oncomplete = () => db.close();
   });
 };
-export const localWrite = async (
-  accountId: string,
-  key: string,
-  value: unknown,
-) => {
+const writeRecord = async (accountId: string, key: string, value: unknown) => {
   if (!accountId) throw new Error("로그인이 필요합니다.");
   if (isTauri())
     return invoke("local_write", {
@@ -45,5 +41,17 @@ export const localWrite = async (
       resolve();
     };
     tx.onerror = () => reject(tx.error);
+  });
+};
+
+const pendingWrites = new Map<string, Promise<unknown>>();
+export const localWrite = (accountId: string, key: string, value: unknown) => {
+  const scope = `${accountId}:${key}`;
+  const pending = (pendingWrites.get(scope) || Promise.resolve())
+    .catch(() => undefined)
+    .then(() => writeRecord(accountId, key, value));
+  pendingWrites.set(scope, pending);
+  return pending.finally(() => {
+    if (pendingWrites.get(scope) === pending) pendingWrites.delete(scope);
   });
 };
