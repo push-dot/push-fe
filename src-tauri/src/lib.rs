@@ -1,6 +1,7 @@
 mod browser;
 pub mod cli;
 mod commands;
+pub mod directory;
 pub mod safety;
 pub mod storage;
 mod updater;

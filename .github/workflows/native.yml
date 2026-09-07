@@ -19,6 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       PUSH_API_BASE: ${{ vars.PUSH_API_BASE }}
+      VITE_API_URL: ${{ vars.PUSH_API_BASE }}
       PUSH_UPDATER_ENDPOINT: ${{ vars.PUSH_UPDATER_ENDPOINT }}
       PUSH_UPDATER_PUBLIC_KEY: ${{ vars.PUSH_UPDATER_PUBLIC_KEY }}
       APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}

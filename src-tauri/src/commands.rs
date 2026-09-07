@@ -288,6 +288,18 @@ pub async fn copy_project(
         .await
         .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
     pool.close().await;
+    let identity = crate::directory::DirectoryGuard::open(&root)?
+        .identity()
+        .to_string();
+    let pool = storage::database(&state.root.join("native.sqlite")).await?;
+    sqlx::query("CREATE TABLE IF NOT EXISTS project_directories(directory TEXT PRIMARY KEY,identity TEXT NOT NULL)").execute(&pool).await.map_err(|_|"LOCAL_STORAGE_UNAVAILABLE")?;
+    sqlx::query("INSERT INTO project_directories(directory,identity) VALUES(?,?)")
+        .bind(root.to_string_lossy().as_ref())
+        .bind(identity)
+        .execute(&pool)
+        .await
+        .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
+    pool.close().await;
     Ok(Some(json!({"workingDirectory":root})))
 }
 
@@ -510,22 +522,44 @@ pub async fn launch_cli(
     if known.is_none() {
         return Err("PROJECT_DIRECTORY_NOT_APPROVED".into());
     }
+    let directory = crate::directory::DirectoryGuard::open(&canonical)?;
+    let expected_identity: String =
+        sqlx::query_scalar("SELECT identity FROM project_directories WHERE directory=?")
+            .bind(&payload.working_directory)
+            .fetch_one(&pool)
+            .await
+            .map_err(|_| "PROJECT_DIRECTORY_RESELECT_REQUIRED")?;
+    if directory.identity() != expected_identity {
+        return Err("PROJECT_DIRECTORY_CHANGED".into());
+    }
     let id = device(&state.root)?;
     let stored = cli::StoredRun {
         payload,
         executable_path: path.to_string_lossy().into(),
         provider: provider.into(),
         project_id: project_id.clone(),
+        directory_identity: directory.identity().into(),
     };
-    storage::prepare(
+    let start_body = json!({"expectedRevision":expected_revision,"approvalId":approval_id,"detectedVersion":version,"deviceId":id});
+    let request_key = storage::prepare_request(
         &pool,
         &run_id,
         &id,
         hash,
         &serde_json::to_string(&stored).map_err(|_| "INVALID_PAYLOAD")?,
+        &start_body.to_string(),
     )
     .await?;
-    let started=post(&http,format!("{base}/projects/{project_id}/runs/{run_id}/start"),&access_token,json!({"expectedRevision":expected_revision,"approvalId":approval_id,"detectedVersion":version,"deviceId":id})).await?;
+    let started = post_start(
+        &http,
+        format!("{base}/projects/{project_id}/runs/{run_id}/start"),
+        &access_token,
+        start_body,
+        &pool,
+        &run_id,
+        &request_key,
+    )
+    .await?;
     if started["state"] != "RUNNING"
         || started["deviceId"] != id
         || started["payloadHash"] != hash
@@ -543,7 +577,7 @@ pub async fn launch_cli(
         None,
     )
     .await?;
-    storage::arm(&pool, &run_id).await?;
+    storage::arm_request(&pool, &run_id, &request_key).await?;
     if let Err(error) = open_terminal(&state.root, &run_id) {
         sqlx::query("UPDATE runs SET state='UNKNOWN' WHERE id=?")
             .bind(&run_id)
@@ -1069,5 +1103,122 @@ mod fault_tests {
         assert!(cli::project_commit(empty.path().to_str().unwrap())
             .await
             .is_err());
+    }
+}
+
+async fn post_start(
+    http: &reqwest::Client,
+    url: String,
+    token: &str,
+    body: Value,
+    pool: &SqlitePool,
+    id: &str,
+    key: &str,
+) -> Result<Value, String> {
+    let response = http
+        .post(url)
+        .bearer_auth(token)
+        .header("Idempotency-Key", key)
+        .json(&body)
+        .send()
+        .await
+        .map_err(|_| "API_RESULT_UNKNOWN")?;
+    let status = response.status();
+    let value: Value = response.json().await.map_err(|_| "API_RESULT_UNKNOWN")?;
+    if status.is_success() {
+        return value
+            .get("data")
+            .cloned()
+            .ok_or_else(|| "INVALID_API_RESPONSE".into());
+    }
+    let code = value
+        .pointer("/error/code")
+        .and_then(Value::as_str)
+        .filter(|v| v.len() < 100)
+        .ok_or("API_RESULT_UNKNOWN")?;
+    if status.is_client_error()
+        && status.as_u16() != 408
+        && status.as_u16() != 429
+        && code != "IDEMPOTENCY_CONFLICT"
+    {
+        storage::rejected_request(pool, id, key).await?;
+    }
+    Err(code.into())
+}
+#[cfg(test)]
+mod start_request_tests {
+    use super::*;
+    #[tokio::test]
+    async fn definitive_http_rejection_allows_new_approval_but_network_failure_keeps_key() {
+        use std::io::BufRead;
+        let dir = tempfile::tempdir().unwrap();
+        let pool = storage::database(&dir.path().join("db")).await.unwrap();
+        let body = json!({"approvalId":"expired"});
+        let key = storage::prepare_request(&pool, "run", "device", "hash", "{}", &body.to_string())
+            .await
+            .unwrap();
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+            let mut size = 0;
+            let mut received_key = String::new();
+            loop {
+                let mut line = String::new();
+                reader.read_line(&mut line).unwrap();
+                if line == "\r\n" {
+                    break;
+                }
+                if line.to_lowercase().starts_with("content-length:") {
+                    size = line.split(':').nth(1).unwrap().trim().parse().unwrap();
+                }
+                if line.to_lowercase().starts_with("idempotency-key:") {
+                    received_key = line.split(':').nth(1).unwrap().trim().into();
+                }
+            }
+            let mut bytes = vec![0; size];
+            reader.read_exact(&mut bytes).unwrap();
+            let error = json!({"error":{"code":"APPROVAL_STALE"}}).to_string();
+            write!(stream,"HTTP/1.1 409 Conflict\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",error.len(),error).unwrap();
+            received_key
+        });
+        let http = reqwest::Client::new();
+        assert_eq!(
+            post_start(&http, url, "fixture", body, &pool, "run", &key)
+                .await
+                .unwrap_err(),
+            "APPROVAL_STALE"
+        );
+        assert_eq!(server.join().unwrap(), key);
+        let fresh = json!({"approvalId":"fresh"});
+        let next =
+            storage::prepare_request(&pool, "run", "device", "hash", "{}", &fresh.to_string())
+                .await
+                .unwrap();
+        assert_ne!(next, key);
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let unavailable = format!("http://{}", listener.local_addr().unwrap());
+        drop(listener);
+        assert_eq!(
+            post_start(
+                &http,
+                unavailable,
+                "fixture",
+                fresh.clone(),
+                &pool,
+                "run",
+                &next
+            )
+            .await
+            .unwrap_err(),
+            "API_RESULT_UNKNOWN"
+        );
+        assert_eq!(
+            storage::prepare_request(&pool, "run", "device", "hash", "{}", &fresh.to_string())
+                .await
+                .unwrap(),
+            next
+        );
     }
 }

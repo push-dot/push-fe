@@ -170,6 +170,8 @@ pub struct StoredRun {
     pub executable_path: String,
     pub provider: String,
     pub project_id: String,
+    #[serde(default)]
+    pub directory_identity: String,
 }
 pub async fn run_in_terminal(id: &str, journal: &Path) -> Result<(), String> {
     use sqlx::Row;
@@ -182,11 +184,24 @@ pub async fn run_in_terminal(id: &str, journal: &Path) -> Result<(), String> {
         .map_err(|_| "RUN_NOT_CLAIMED")?;
     let stored: StoredRun = serde_json::from_str(row.get("payload")).map_err(|_| "INVALID_RUN")?;
     validate_payload(&stored.provider, &stored.payload, row.get("hash"))?;
+    let directory =
+        crate::directory::DirectoryGuard::open(Path::new(&stored.payload.working_directory));
+    let directory = match directory {
+        Ok(directory) if directory.identity() == stored.directory_identity => directory,
+        _ => {
+            sqlx::query("UPDATE runs SET state='UNKNOWN' WHERE id=? AND state='CLAIMED'")
+                .bind(id)
+                .execute(&pool)
+                .await
+                .map_err(|_| "LOCAL_STORAGE_UNAVAILABLE")?;
+            return Err("PROJECT_DIRECTORY_CHANGED".into());
+        }
+    };
     crate::storage::begin_execution(&pool, id).await?;
-    let result = tokio::process::Command::new(&stored.executable_path)
-        .args(&stored.payload.arguments)
-        .current_dir(&stored.payload.working_directory)
-        .spawn();
+    let mut command = tokio::process::Command::new(&stored.executable_path);
+    command.args(&stored.payload.arguments);
+    directory.configure(&mut command, Path::new(&stored.payload.working_directory));
+    let result = command.spawn();
     let mut child = match result {
         Ok(child) => child,
         Err(_) => {
@@ -251,6 +266,10 @@ mod runner_tests {
             executable_path: fixture.to_string_lossy().into(),
             provider: "CODEX".into(),
             project_id: uuid::Uuid::new_v4().to_string(),
+            directory_identity: crate::directory::DirectoryGuard::open(&root)
+                .unwrap()
+                .identity()
+                .into(),
         };
         let id = uuid::Uuid::new_v4().to_string();
         let journal = root.join("native.sqlite");
@@ -307,4 +326,73 @@ pub async fn project_commit(directory: &str) -> Result<String, String> {
         return Err("PROJECT_COMMIT_REQUIRED".into());
     }
     Ok(sha)
+}
+#[cfg(all(test, unix))]
+mod replacement_tests {
+    use super::*;
+    #[tokio::test]
+    async fn replacing_approved_directory_never_executes() {
+        use std::os::unix::fs::PermissionsExt;
+        for symlink in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let root = std::fs::canonicalize(temp.path()).unwrap();
+            let approved = root.join("approved");
+            let outside = root.join("outside");
+            std::fs::create_dir(&approved).unwrap();
+            std::fs::create_dir(&outside).unwrap();
+            let executable = root.join("fixture");
+            std::fs::write(&executable, "#!/bin/sh\ntouch unauthorized-marker\n").unwrap();
+            std::fs::set_permissions(&executable, std::fs::Permissions::from_mode(0o700)).unwrap();
+            let payload = RunPayload {
+                executable: "codex".into(),
+                arguments: vec!["fixture".into()],
+                working_directory: approved.to_string_lossy().into(),
+                prompt: "fixture".into(),
+            };
+            let hash = crate::safety::payload_hash(
+                "codex",
+                &payload.arguments,
+                &payload.working_directory,
+                &payload.prompt,
+            );
+            let stored = StoredRun {
+                payload,
+                executable_path: executable.to_string_lossy().into(),
+                provider: "CODEX".into(),
+                project_id: "fixture".into(),
+                directory_identity: crate::directory::DirectoryGuard::open(&approved)
+                    .unwrap()
+                    .identity()
+                    .into(),
+            };
+            let journal = root.join("db");
+            let pool = crate::storage::database(&journal).await.unwrap();
+            let id = uuid::Uuid::new_v4().to_string();
+            crate::storage::claim(
+                &pool,
+                &id,
+                "device",
+                &hash,
+                &serde_json::to_string(&stored).unwrap(),
+            )
+            .await
+            .unwrap();
+            std::fs::rename(&approved, root.join("original")).unwrap();
+            if symlink {
+                std::os::unix::fs::symlink(&outside, &approved).unwrap();
+            } else {
+                std::fs::rename(&outside, &approved).unwrap();
+            }
+            assert!(run_in_terminal(&id, &journal).await.is_err());
+            assert!(!approved.join("unauthorized-marker").exists());
+            assert_eq!(
+                sqlx::query_scalar::<_, String>("SELECT state FROM runs WHERE id=?")
+                    .bind(&id)
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap(),
+                "UNKNOWN"
+            );
+        }
+    }
 }
