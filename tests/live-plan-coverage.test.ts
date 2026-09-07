@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 import { request, runOperation, type Resource } from "@/shared/api";
 import { useSession } from "@/shared/auth";
+const canonicalTime = <T extends { accessedAt: string }>(value: T) => ({
+  ...value,
+  accessedAt: new Date(value.accessedAt).toISOString(),
+});
 it.skipIf(!process.env.PUSH_LIVE_EXPORT)(
   "persists source-backed interview research and records explicit rejection against the live API",
   async () => {
@@ -33,7 +37,9 @@ it.skipIf(!process.env.PUSH_LIVE_EXPORT)(
       {
         sourceUrl: "https://example.com/company",
         sourceText: "사용자가 확인한 테스트 회사 원문입니다.",
-        accessedAt: new Date(Date.now() - 86400000).toISOString(),
+        accessedAt: new Date(Date.now() - 86400000)
+          .toISOString()
+          .replace(/\.\d{3}Z$/, ".490Z"),
       },
     ];
     const updated = await request<Resource>(
@@ -42,13 +48,15 @@ it.skipIf(!process.env.PUSH_LIVE_EXPORT)(
       { expectedRevision: interview.revision, companySources },
     );
     expect(
-      (await request<Resource>(`interviews/${interview.id}`)).companySources,
+      (
+        await request<Resource>(`interviews/${interview.id}`)
+      ).companySources.map(canonicalTime),
     ).toEqual(companySources);
     const prepared = await runOperation<Resource>(
       `interviews/${interview.id}/prepare`,
       { expectedRevision: updated.revision, ai: null },
     );
-    expect(prepared.research).toEqual([
+    expect(prepared.research.map(canonicalTime)).toEqual([
       {
         claim: companySources[0].sourceText,
         sourceUrl: companySources[0].sourceUrl,
