@@ -28,6 +28,8 @@ const state = vi.hoisted(() => ({
     scheduledAt: "2026-09-20T00:00:00Z",
     revision: 1,
     companySources: [] as unknown[],
+    notes: "",
+    reflection: "",
   },
 }));
 vi.mock("@/shared/api", () => ({
@@ -147,4 +149,85 @@ it("saves company source text then prepares using refreshed revision and renders
   expect(screen.getAllByText("직접 확인한 회사 원문").length).toBeGreaterThan(
     0,
   );
+});
+
+it("refreshed server sources must remain in the form submitted at the refreshed revision", async () => {
+  state.interview = { ...state.interview, revision: 1, companySources: [] };
+  state.reload.mockResolvedValue(undefined);
+  state.request.mockResolvedValue({ ...state.interview, revision: 3 });
+  const ui = render(<InterviewsPage />);
+  const source = {
+    sourceUrl: "https://example.com/new",
+    sourceText: "Fetched source",
+    accessedAt: "2026-01-01T00:00:00Z",
+  };
+  state.interview = {
+    ...state.interview,
+    revision: 2,
+    companySources: [source],
+    notes: "Fetched notes",
+    reflection: "Fetched reflection",
+  };
+  ui.rerender(<InterviewsPage />);
+  fireEvent.submit(
+    screen.getByRole("button", { name: "회사 자료 추가" }).closest("form")!,
+  );
+  await waitFor(() => expect(state.request).toHaveBeenCalled());
+  expect(state.request.mock.calls[0][2].expectedRevision).toBe(2);
+  expect(state.request.mock.calls[0][2].companySources).toEqual([source]);
+  expect(state.request.mock.calls[0][2].notes).toBe("Fetched notes");
+  expect(state.request.mock.calls[0][2].reflection).toBe("Fetched reflection");
+});
+
+it("preserves dirty interview fields and their original revision when refreshed data conflicts", async () => {
+  const source = {
+    sourceUrl: "https://example.com/old",
+    sourceText: "Original source",
+    accessedAt: "2026-01-01T00:00:00Z",
+  };
+  state.interview = {
+    ...state.interview,
+    revision: 1,
+    notes: "Original notes",
+    reflection: "Original reflection",
+    companySources: [source],
+  };
+  state.reload.mockResolvedValue(undefined);
+  state.request.mockRejectedValue(
+    Object.assign(new Error("Revision conflict"), { status: 409 }),
+  );
+  const ui = render(<InterviewsPage />);
+  fireEvent.change(screen.getByLabelText("준비 메모"), {
+    target: { value: "Local notes in progress" },
+  });
+  state.interview = {
+    ...state.interview,
+    revision: 2,
+    notes: "Server changed notes",
+    reflection: "Server changed reflection",
+    companySources: [],
+  };
+  ui.rerender(<InterviewsPage />);
+  expect(
+    (screen.getByLabelText("준비 메모") as HTMLTextAreaElement).value,
+  ).toBe("Local notes in progress");
+  expect(
+    (screen.getByLabelText("면접 회고") as HTMLTextAreaElement).value,
+  ).toBe("Original reflection");
+  expect(
+    (screen.getByLabelText("회사 자료 1 원문") as HTMLTextAreaElement).value,
+  ).toBe("Original source");
+  fireEvent.submit(
+    screen.getByRole("button", { name: "회사 자료 추가" }).closest("form")!,
+  );
+  await screen.findByText("Revision conflict");
+  expect(state.request.mock.calls[0][2]).toEqual({
+    expectedRevision: 1,
+    notes: "Local notes in progress",
+    reflection: "Original reflection",
+    companySources: [source],
+  });
+  expect(
+    (screen.getByLabelText("준비 메모") as HTMLTextAreaElement).value,
+  ).toBe("Local notes in progress");
 });

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Field } from "@/shared/ui";
 import { useT } from "@/shared/config";
 export type CompanySource = {
@@ -14,13 +13,18 @@ const localTime = (value: string) => {
 };
 export const CompanySourceFields = ({
   sources,
+  onChange,
 }: {
   sources: CompanySource[];
+  onChange: (sources: CompanySource[]) => void;
 }) => {
   const t = useT();
-  const [rows, setRows] = useState(() =>
-    sources.map((source) => ({ ...source, key: crypto.randomUUID() })),
-  );
+  const update = (index: number, change: Partial<CompanySource>) =>
+    onChange(
+      sources.map((source, position) =>
+        position === index ? { ...source, ...change } : source,
+      ),
+    );
   return (
     <fieldset className="company-sources">
       <legend>
@@ -35,8 +39,8 @@ export const CompanySourceFields = ({
           "Enter the HTTPS source and text you reviewed. These sources are user provided, not automatically collected or independently verified.",
         )}
       </p>
-      {rows.map((row, index) => (
-        <div key={row.key} className="panel">
+      {sources.map((row, index) => (
+        <div key={index} className="panel">
           <Field
             label={t(
               `회사 자료 ${index + 1} 출처 URL`,
@@ -47,7 +51,10 @@ export const CompanySourceFields = ({
               type="url"
               pattern="https://.*"
               name="companySourceUrl"
-              defaultValue={row.sourceUrl}
+              value={row.sourceUrl}
+              onChange={(event) =>
+                update(index, { sourceUrl: event.target.value })
+              }
               required
             />
           </Field>
@@ -59,7 +66,10 @@ export const CompanySourceFields = ({
           >
             <textarea
               name="companySourceText"
-              defaultValue={row.sourceText}
+              value={row.sourceText}
+              onChange={(event) =>
+                update(index, { sourceText: event.target.value })
+              }
               maxLength={20000}
               required
             />
@@ -73,14 +83,23 @@ export const CompanySourceFields = ({
             <input
               type="datetime-local"
               name="companySourceAccessedAt"
-              defaultValue={localTime(row.accessedAt)}
+              value={row.accessedAt ? localTime(row.accessedAt) : ""}
+              onChange={(event) =>
+                update(index, {
+                  accessedAt: event.target.value
+                    ? new Date(event.target.value).toISOString()
+                    : "",
+                })
+              }
               max={localTime(new Date().toISOString())}
               required
             />
           </Field>
           <button
             type="button"
-            onClick={() => setRows(rows.filter((item) => item.key !== row.key))}
+            onClick={() =>
+              onChange(sources.filter((_, position) => position !== index))
+            }
           >
             {t("자료 삭제", "Remove source")}
           </button>
@@ -88,12 +107,11 @@ export const CompanySourceFields = ({
       ))}
       <button
         type="button"
-        disabled={rows.length >= 10}
+        disabled={sources.length >= 10}
         onClick={() =>
-          setRows([
-            ...rows,
+          onChange([
+            ...sources,
             {
-              key: crypto.randomUUID(),
               sourceUrl: "",
               sourceText: "",
               accessedAt: new Date().toISOString(),
@@ -106,13 +124,3 @@ export const CompanySourceFields = ({
     </fieldset>
   );
 };
-export const readCompanySources = (form: FormData): CompanySource[] =>
-  form
-    .getAll("companySourceUrl")
-    .map((url, index) => ({
-      sourceUrl: String(url).trim(),
-      sourceText: String(form.getAll("companySourceText")[index]).trim(),
-      accessedAt: new Date(
-        String(form.getAll("companySourceAccessedAt")[index]),
-      ).toISOString(),
-    }));

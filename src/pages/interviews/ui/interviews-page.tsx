@@ -1,7 +1,4 @@
-import {
-  CompanySourceFields,
-  readCompanySources,
-} from "./company-source-fields";
+import { InterviewEditor } from "./interview-editor";
 import { Approval } from "@/features/approval";
 import { useState, useRef } from "react";
 import {
@@ -198,20 +195,15 @@ export const InterviewsPage = () => {
               </p>
             )}
           </div>
-          <Form
-            resetOnSuccess={false}
-            onSubmit={async (f) => {
+          <InterviewEditor
+            interview={i}
+            onSave={async (patch) => {
               setSaving((current) => ({ ...current, [i.id]: true }));
               try {
                 const updated = await request<Resource>(
                   `interviews/${i.id}`,
                   "PATCH",
-                  {
-                    expectedRevision: i.revision,
-                    notes: text(f, "notes"),
-                    reflection: text(f, "reflection"),
-                    companySources: readCompanySources(f),
-                  },
+                  patch,
                 );
                 savedRevisions.current[i.id] = updated.revision;
                 setPrep((current) => {
@@ -220,19 +212,16 @@ export const InterviewsPage = () => {
                   return next;
                 });
                 await interviews.reload();
+                return updated;
+              } catch (error) {
+                if ((error as { status?: number }).status === 409)
+                  await interviews.reload();
+                throw error;
               } finally {
                 setSaving((current) => ({ ...current, [i.id]: false }));
               }
             }}
-          >
-            <CompanySourceFields sources={i.companySources || []} />
-            <Field label={t("준비 메모", "Preparation notes")}>
-              <textarea name="notes" defaultValue={i.notes} />
-            </Field>
-            <Field label={t("면접 회고", "Reflection")}>
-              <textarea name="reflection" defaultValue={i.reflection} />
-            </Field>
-          </Form>
+          />
         </div>
       ))}
       {!interviews.data.length && (
