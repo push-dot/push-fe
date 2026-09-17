@@ -1,1 +1,1 @@
-export { SettingsPage, completeAuth } from "./ui/settings-page";
+export { default as SettingsPage } from './ui/settings-page'

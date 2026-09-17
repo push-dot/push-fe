@@ -1,1 +1,1 @@
-export { Approval } from "./ui/approval";
+export { default as ApprovalCard } from './ui/approval-card'

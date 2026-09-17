@@ -1,1 +1,1 @@
-export { ApplicationsPage } from "./ui/applications-page";
+export { default as ApplicationsPage } from './ui/applications-page'
