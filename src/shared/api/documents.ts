@@ -73,9 +73,7 @@ export const listDocuments = async (
   )
 
 export const getDocument = async (id: string): Promise<PushDocument> => {
-  const env = await request<DataEnvelope<PushDocument>>(() =>
-    api.get(`documents/${id}`),
-  )
+  const env = await request<DataEnvelope<PushDocument>>(() => api.get(`documents/${id}`))
   return env.data
 }
 

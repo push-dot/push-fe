@@ -39,11 +39,7 @@ const DocumentsPage = () => {
       <CanvasHeader
         title="내 서류"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="plus" size={20} /> 새 문서
           </Button>
         }
@@ -73,10 +69,7 @@ const DocumentsPage = () => {
           </CardGrid>
         ) : null}
       </div>
-      <NewDocumentDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
+      <NewDocumentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   )
 }

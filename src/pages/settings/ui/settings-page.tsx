@@ -55,11 +55,7 @@ const SettingsPage = () => {
             </FormSection>
             <FormSection title="외관">
               <FormRow label="테마">
-                <Select
-                  aria-label="테마"
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                >
+                <Select aria-label="테마" value={theme} onChange={(e) => setTheme(e.target.value)}>
                   <option value="라이트">라이트</option>
                 </Select>
               </FormRow>

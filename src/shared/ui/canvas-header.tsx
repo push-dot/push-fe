@@ -6,11 +6,7 @@ type CanvasHeaderProps = {
   headingLevel?: 1 | 2
 }
 
-const CanvasHeader = ({
-  title,
-  actions,
-  headingLevel = 1,
-}: CanvasHeaderProps) => (
+const CanvasHeader = ({ title, actions, headingLevel = 1 }: CanvasHeaderProps) => (
   <div className="canvas-header">
     {headingLevel === 1 ? (
       <h1 className="canvas-header-title">{title}</h1>

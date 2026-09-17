@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { dDayLabel, formatDate, monthLabel } from '@/shared/lib/format'
 import {
   Button,
@@ -40,15 +40,14 @@ const CalendarPage = () => {
       showToast('동기화를 시작했어요', 'check')
       void load()
     } catch (e) {
-      showToast(
-        e instanceof Error ? e.message : '동기화하지 못했어요',
-        'circle-alert',
-      )
+      showToast(e instanceof Error ? e.message : '동기화하지 못했어요', 'circle-alert')
     }
   }
 
+  const [now] = useState(() => Date.now())
+
   const upcoming = [...items]
-    .filter((e) => new Date(e.endsAt).getTime() >= Date.now() - 86_400_000)
+    .filter((e) => new Date(e.endsAt).getTime() >= now - 86_400_000)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
 
   const monthSummary = upcoming
@@ -61,12 +60,7 @@ const CalendarPage = () => {
       <CanvasHeader
         title="캘린더"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            loading={syncing}
-            onClick={() => void onSync()}
-          >
+          <Button variant="primary" size="sm" loading={syncing} onClick={() => void onSync()}>
             <Icon name="calendar" size={20} /> 동기화
           </Button>
         }
@@ -99,10 +93,7 @@ const CalendarPage = () => {
                     title={event.title}
                     meta={`${formatDate(event.startsAt)} · ${TYPE_LABELS[event.type]}`}
                     trailing={
-                      <StatusChip
-                        tone={dday === 'D-DAY' ? 'error' : 'ready'}
-                        label={dday}
-                      />
+                      <StatusChip tone={dday === 'D-DAY' ? 'error' : 'ready'} label={dday} />
                     }
                   />
                 )

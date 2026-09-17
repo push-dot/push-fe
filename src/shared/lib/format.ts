@@ -27,15 +27,11 @@ export const formatDateTime = (iso: string): string =>
 export const dDayLabel = (isoDate: string): string => {
   const target = new Date(isoDate)
   const today = new Date()
-  const startOfDay = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  const diffDays = Math.round(
-    (startOfDay(target) - startOfDay(today)) / DAY_MS,
-  )
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const diffDays = Math.round((startOfDay(target) - startOfDay(today)) / DAY_MS)
   if (diffDays === 0) return 'D-DAY'
   if (diffDays > 0) return `D-${diffDays}`
   return `D+${Math.abs(diffDays)}`
 }
 
-export const monthLabel = (date: Date): string =>
-  `${date.getFullYear()}년 ${date.getMonth() + 1}월`
+export const monthLabel = (date: Date): string => `${date.getFullYear()}년 ${date.getMonth() + 1}월`

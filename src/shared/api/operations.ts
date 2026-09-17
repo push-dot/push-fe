@@ -4,21 +4,13 @@ import type { DataEnvelope } from './envelope'
 import type { Operation } from './conversations'
 
 export const getOperation = async (id: string): Promise<Operation> => {
-  const env = await request<DataEnvelope<Operation>>(() =>
-    api.get(`operations/${id}`),
-  )
+  const env = await request<DataEnvelope<Operation>>(() => api.get(`operations/${id}`))
   return env.data
 }
 
-const TERMINAL: Operation['status'][] = [
-  'SUCCEEDED',
-  'FAILED',
-  'CANCELLED',
-  'NEEDS_INPUT',
-]
+const TERMINAL: Operation['status'][] = ['SUCCEEDED', 'FAILED', 'CANCELLED', 'NEEDS_INPUT']
 
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms))
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 export const waitForOperation = async (
   id: string,

@@ -32,11 +32,7 @@ const InterviewPage = () => {
       <CanvasHeader
         title="면접"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="plus" size={20} /> 면접 준비
           </Button>
         }
@@ -76,10 +72,7 @@ const InterviewPage = () => {
           </>
         ) : null}
       </div>
-      <InterviewAddDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
+      <InterviewAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   )
 }

@@ -4,10 +4,7 @@ import { PROJECT_TAG_LABEL } from '@/shared/constants'
 import { Card, CanvasHeader, IconButton, StatusChip } from '@/shared/ui'
 import type { StatusChipTone } from '@/shared/ui'
 import type { CliRunState } from '@/shared/api'
-import {
-  isProjectConversation,
-  useConversationsStore,
-} from '@/entities/conversation'
+import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
 import { useProjectPanelsStore } from '../model/project-panels'
 
@@ -57,9 +54,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
             label={item.status}
             icon={item.status === 'VERIFIED' ? 'badge-check' : undefined}
           />
-          {item.summary ? (
-            <div className="card-meta">{item.summary}</div>
-          ) : null}
+          {item.summary ? <div className="card-meta">{item.summary}</div> : null}
         </Card>
       ))}
     </>
@@ -70,9 +65,7 @@ const ChatPage = () => {
   const { id = '' } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const conversation = useConversationsStore((s) =>
-    s.items.find((c) => c.id === id),
-  )
+  const conversation = useConversationsStore((s) => s.items.find((c) => c.id === id))
   const messages = useMessagesStore((s) => s.messages)
   const status = useMessagesStore((s) => s.status)
   const error = useMessagesStore((s) => s.error)
@@ -89,9 +82,7 @@ const ChatPage = () => {
     void load(id)
   }, [id, load])
 
-  const initialMessage = (
-    location.state as { initialMessage?: string } | null
-  )?.initialMessage
+  const initialMessage = (location.state as { initialMessage?: string } | null)?.initialMessage
 
   useEffect(() => {
     if (!initialMessage || status !== 'success') return
@@ -108,9 +99,7 @@ const ChatPage = () => {
         title={conversation?.title ?? '새 채팅'}
         actions={
           <>
-            {isProject ? (
-              <StatusChip tone="ready" label={PROJECT_TAG_LABEL} />
-            ) : null}
+            {isProject ? <StatusChip tone="ready" label={PROJECT_TAG_LABEL} /> : null}
             <IconButton icon="ellipsis" aria-label="더보기" />
           </>
         }
@@ -121,16 +110,9 @@ const ChatPage = () => {
         error={error}
         onRetry={() => void load(id)}
         onSelectSuggestion={(text) => void send(id, text)}
-        trailing={
-          isProject && projectId ? (
-            <ProjectPanels projectId={projectId} />
-          ) : null
-        }
+        trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />
-      <Composer
-        sending={sending}
-        onSend={(text) => void send(id, text)}
-      />
+      <Composer sending={sending} onSend={(text) => void send(id, text)} />
     </>
   )
 }

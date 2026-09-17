@@ -11,9 +11,8 @@ export const linkedEvidenceCount = (blocks: DocumentBlock[]): number => {
 export const isBlockSupported = (block: DocumentBlock): boolean =>
   block.claimStatus === 'SUPPORTED' && block.evidenceRefs.length > 0
 
-export const unsupportedBlocks = (
-  blocks: DocumentBlock[],
-): DocumentBlock[] => blocks.filter((b) => !isBlockSupported(b))
+export const unsupportedBlocks = (blocks: DocumentBlock[]): DocumentBlock[] =>
+  blocks.filter((b) => !isBlockSupported(b))
 
 export const canFinalizeDocument = (blocks: DocumentBlock[]): boolean =>
   blocks.length > 0 && blocks.every(isBlockSupported)

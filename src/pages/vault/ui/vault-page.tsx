@@ -48,11 +48,7 @@ const VaultPage = () => {
       <CanvasHeader
         title="커리어 볼트"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="plus" size={20} /> 근거 추가
           </Button>
         }
@@ -84,11 +80,7 @@ const VaultPage = () => {
                   <StatusChip
                     tone={STATUS_TONES[item.verificationStatus]}
                     label={item.verificationStatus}
-                    icon={
-                      item.verificationStatus === 'VERIFIED'
-                        ? 'badge-check'
-                        : undefined
-                    }
+                    icon={item.verificationStatus === 'VERIFIED' ? 'badge-check' : undefined}
                   />
                 }
               />
@@ -96,10 +88,7 @@ const VaultPage = () => {
           </DataList>
         ) : null}
       </div>
-      <EvidenceAddDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
+      <EvidenceAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </>
   )
 }

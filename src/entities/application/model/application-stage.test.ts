@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  canTransition,
-  isTerminalStage,
-  nextStage,
-  transitionStage,
-} from './application-stage'
+import { canTransition, isTerminalStage, nextStage, transitionStage } from './application-stage'
 
 describe('application stage machine', () => {
   it('moves forward one stage at a time', () => {

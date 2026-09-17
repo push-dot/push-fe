@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Message, MessageAttachment } from '@/shared/api'
 import { ApprovalCard } from '@/features/approval'
-import {
-  Card,
-  ErrorState,
-  Icon,
-  SkeletonRows,
-  SuggestChips,
-} from '@/shared/ui'
+import { Card, ErrorState, Icon, SkeletonRows, SuggestChips } from '@/shared/ui'
 import { HOME_SUGGESTIONS } from '@/shared/constants'
 
 const AttachmentView = ({ attachment }: { attachment: MessageAttachment }) => {
@@ -35,9 +29,7 @@ const MessageView = ({ message }: { message: Message }) => (
     <div
       className={[
         'chat-stream-msg',
-        message.role === 'USER'
-          ? 'chat-stream-msg-user'
-          : 'chat-stream-msg-ai',
+        message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
       ].join(' ')}
     >
       {message.text}

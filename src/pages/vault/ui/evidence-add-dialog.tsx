@@ -38,10 +38,7 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
       showToast('근거를 추가했어요', 'check')
       onClose()
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '추가하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '추가하지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -81,11 +78,7 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
             </option>
           ))}
         </Select>
-        <Input
-          placeholder="제목"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <Input placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Textarea
           placeholder="원문을 붙여넣으세요 (수치·경험은 원문 그대로)"
           value={sourceText}

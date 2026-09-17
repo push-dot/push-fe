@@ -47,11 +47,7 @@ const ApplicationsPage = () => {
       <CanvasHeader
         title="지원 관리"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setDialogOpen(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
             <Icon name="plus" size={20} /> 공고 추가
           </Button>
         }
@@ -90,10 +86,7 @@ const ApplicationsPage = () => {
           void create(job.id)
             .then(() => showToast('지원을 추가했어요', 'check'))
             .catch((e: unknown) =>
-              showToast(
-                e instanceof Error ? e.message : '지원을 만들지 못했어요',
-                'circle-alert',
-              ),
+              showToast(e instanceof Error ? e.message : '지원을 만들지 못했어요', 'circle-alert'),
             )
         }}
       />

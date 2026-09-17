@@ -22,8 +22,6 @@ export const HOME_SUGGESTIONS = [
 
 export const PROJECT_TAG_LABEL = '프로젝트'
 
-export const COMPOSER_PLACEHOLDER =
-  '메시지 입력 — UltraResume 등 추론 설정은 슬라이더 아이콘에서'
+export const COMPOSER_PLACEHOLDER = '메시지 입력 — UltraResume 등 추론 설정은 슬라이더 아이콘에서'
 
-export const COMMAND_INPUT_PLACEHOLDER =
-  '공고 URL을 붙여넣거나, 명령을 입력하세요'
+export const COMMAND_INPUT_PLACEHOLDER = '공고 URL을 붙여넣거나, 명령을 입력하세요'

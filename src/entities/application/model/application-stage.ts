@@ -11,10 +11,7 @@ export const APPLICATION_PIPELINE: readonly ApplicationStage[] = [
   'ACCEPTED',
 ] as const
 
-export const EXIT_STAGES: readonly ApplicationStage[] = [
-  'REJECTED',
-  'WITHDRAWN',
-] as const
+export const EXIT_STAGES: readonly ApplicationStage[] = ['REJECTED', 'WITHDRAWN'] as const
 
 export const TERMINAL_STAGES: readonly ApplicationStage[] = [
   'ACCEPTED',
@@ -22,8 +19,7 @@ export const TERMINAL_STAGES: readonly ApplicationStage[] = [
   'WITHDRAWN',
 ] as const
 
-export const isTerminalStage = (stage: ApplicationStage): boolean =>
-  TERMINAL_STAGES.includes(stage)
+export const isTerminalStage = (stage: ApplicationStage): boolean => TERMINAL_STAGES.includes(stage)
 
 export const nextStage = (from: ApplicationStage): ApplicationStage | null => {
   const index = APPLICATION_PIPELINE.indexOf(from)
@@ -31,10 +27,7 @@ export const nextStage = (from: ApplicationStage): ApplicationStage | null => {
   return APPLICATION_PIPELINE[index + 1]
 }
 
-export const canTransition = (
-  from: ApplicationStage,
-  to: ApplicationStage,
-): boolean => {
+export const canTransition = (from: ApplicationStage, to: ApplicationStage): boolean => {
   if (from === to) return false
   if (isTerminalStage(from)) return false
   if (to === nextStage(from)) return true

@@ -30,6 +30,5 @@ export const useProjectPanelsStore = create<ProjectPanelsState>()((set) => ({
       set({ status: 'error' })
     }
   },
-  reset: () =>
-    set({ projectId: null, runs: [], evidence: [], status: 'idle' }),
+  reset: () => set({ projectId: null, runs: [], evidence: [], status: 'idle' }),
 }))

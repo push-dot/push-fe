@@ -3,14 +3,7 @@ import { useParams } from 'react-router-dom'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { createDocumentExport } from '@/shared/api'
-import {
-  Button,
-  CanvasHeader,
-  ErrorState,
-  Icon,
-  SkeletonRows,
-  showToast,
-} from '@/shared/ui'
+import { Button, CanvasHeader, ErrorState, Icon, SkeletonRows, showToast } from '@/shared/ui'
 import { useDocumentsStore } from '@/entities/document'
 import { RENDERER_VERSION } from '../constants'
 
@@ -51,10 +44,7 @@ const DocEditorPage = () => {
       })
       showToast(`${format} 출력을 준비했어요`, 'file-down')
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '출력하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '출력하지 못했어요', 'circle-alert')
     } finally {
       setExporting(null)
     }
@@ -89,10 +79,7 @@ const DocEditorPage = () => {
       />
       {status === 'error' ? (
         <div className="canvas-body">
-          <ErrorState
-            message={error ?? undefined}
-            onRetry={() => void loadOne(id)}
-          />
+          <ErrorState message={error ?? undefined} onRetry={() => void loadOne(id)} />
         </div>
       ) : (
         <div className="editor">

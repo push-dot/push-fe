@@ -98,12 +98,7 @@ export const sendMessage = async (
 }
 
 export type OperationStatus =
-  | 'QUEUED'
-  | 'RUNNING'
-  | 'NEEDS_INPUT'
-  | 'SUCCEEDED'
-  | 'FAILED'
-  | 'CANCELLED'
+  'QUEUED' | 'RUNNING' | 'NEEDS_INPUT' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED'
 
 export type Operation = {
   id: string

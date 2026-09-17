@@ -6,9 +6,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 
 const Input = ({ error, className, ...rest }: InputProps) => (
   <input
-    className={['input', error ? 'is-error' : '', className ?? '']
-      .filter(Boolean)
-      .join(' ')}
+    className={['input', error ? 'is-error' : '', className ?? ''].filter(Boolean).join(' ')}
     {...rest}
   />
 )

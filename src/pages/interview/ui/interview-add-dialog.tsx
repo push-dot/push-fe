@@ -33,10 +33,7 @@ const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
       showToast('면접 준비를 만들었어요', 'check')
       onClose()
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '만들지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '만들지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -77,11 +74,7 @@ const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
             </option>
           ))}
         </Select>
-        <Input
-          placeholder="면접 이름"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <Input placeholder="면접 이름" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Input
           type="datetime-local"
           aria-label="면접 일시"
@@ -89,9 +82,7 @@ const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
           onChange={(e) => setScheduledAt(e.target.value)}
         />
         {applications.length === 0 ? (
-          <span className="form-row-hint">
-            먼저 지원 관리에서 공고를 추가해 주세요.
-          </span>
+          <span className="form-row-hint">먼저 지원 관리에서 공고를 추가해 주세요.</span>
         ) : null}
       </div>
     </Dialog>

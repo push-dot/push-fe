@@ -8,12 +8,7 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   'aria-label': string
 }
 
-const IconButton = ({
-  icon,
-  iconSize = 20,
-  className,
-  ...rest
-}: IconButtonProps) => (
+const IconButton = ({ icon, iconSize = 20, className, ...rest }: IconButtonProps) => (
   <button
     type="button"
     className={['icon-button', className ?? ''].filter(Boolean).join(' ')}

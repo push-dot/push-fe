@@ -2,14 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HOME_SUGGESTIONS, ROUTES } from '@/shared/constants'
 import { isHttpUrl } from '@/shared/lib/url'
-import {
-  Card,
-  CardGrid,
-  ErrorState,
-  SkeletonCardGrid,
-  SuggestChips,
-  showToast,
-} from '@/shared/ui'
+import { Card, CardGrid, ErrorState, SkeletonCardGrid, SuggestChips, showToast } from '@/shared/ui'
 import { StatusChip } from '@/shared/ui'
 import { stageChipTone, useApplicationsStore } from '@/entities/application'
 import { useConversationsStore } from '@/entities/conversation'
@@ -50,10 +43,7 @@ const HomePage = () => {
         state: { initialMessage: text },
       })
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '실행하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '실행하지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -71,10 +61,7 @@ const HomePage = () => {
             <div className="center">
               <h1 className="t-display">무엇을 도와드릴까요?</h1>
               <CommandInput onSubmit={(t) => void submit(t)} busy={busy} />
-              <SuggestChips
-                items={HOME_SUGGESTIONS}
-                onSelect={(t) => void submit(t)}
-              />
+              <SuggestChips items={HOME_SUGGESTIONS} onSelect={(t) => void submit(t)} />
             </div>
             {status === 'loading' ? (
               <>
@@ -97,10 +84,7 @@ const HomePage = () => {
                       meta={a.notes || undefined}
                       onClick={() => navigate(ROUTES.job(a.jobId))}
                     >
-                      <StatusChip
-                        tone={stageChipTone(a.stage)}
-                        label={a.stage}
-                      />
+                      <StatusChip tone={stageChipTone(a.stage)} label={a.stage} />
                     </Card>
                   ))}
                 </CardGrid>

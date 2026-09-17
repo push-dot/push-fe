@@ -22,9 +22,7 @@ export type AuthUser = {
   createdAt: string
 }
 
-export const startOAuth = async (
-  provider: AuthProvider,
-): Promise<OAuthStart> => {
+export const startOAuth = async (provider: AuthProvider): Promise<OAuthStart> => {
   const { verifier, challenge } = await createPkcePair()
   const env = await request<DataEnvelope<OAuthStart>>(() =>
     api.get(`auth/${provider}/start`, {

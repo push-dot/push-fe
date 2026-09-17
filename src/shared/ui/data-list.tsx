@@ -23,11 +23,7 @@ const DataListRow = ({ title, meta, trailing, onClick }: DataListRowProps) => {
   )
   if (onClick) {
     return (
-      <button
-        type="button"
-        className="data-list-row data-list-row-button"
-        onClick={onClick}
-      >
+      <button type="button" className="data-list-row data-list-row-button" onClick={onClick}>
         {inner}
       </button>
     )

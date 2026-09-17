@@ -44,10 +44,7 @@ const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
       onClose()
       navigate(ROUTES.document(doc.id))
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '문서를 만들지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '문서를 만들지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -76,11 +73,7 @@ const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
       }
     >
       <div className="form" style={{ gap: 'var(--space-12)' }}>
-        <Input
-          placeholder="문서 제목"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <Input placeholder="문서 제목" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Select
           aria-label="문서 종류"
           value={kind}
@@ -105,9 +98,7 @@ const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
           ))}
         </Select>
         {applications.length === 0 ? (
-          <span className="form-row-hint">
-            먼저 지원 관리에서 공고를 추가해 주세요.
-          </span>
+          <span className="form-row-hint">먼저 지원 관리에서 공고를 추가해 주세요.</span>
         ) : null}
       </div>
     </Dialog>

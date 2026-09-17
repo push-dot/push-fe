@@ -14,5 +14,4 @@ const STAGE_TONES: Record<ApplicationStage, StatusChipTone> = {
   WITHDRAWN: 'error',
 }
 
-export const stageChipTone = (stage: ApplicationStage): StatusChipTone =>
-  STAGE_TONES[stage]
+export const stageChipTone = (stage: ApplicationStage): StatusChipTone => STAGE_TONES[stage]

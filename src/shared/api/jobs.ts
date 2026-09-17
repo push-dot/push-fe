@@ -45,17 +45,13 @@ export const listJobs = async (
         ...(params.limit ? { limit: params.limit } : {}),
         ...(params.cursor ? { cursor: params.cursor } : {}),
         ...(params.query ? { query: params.query } : {}),
-        ...(params.archived !== undefined
-          ? { archived: String(params.archived) }
-          : {}),
+        ...(params.archived !== undefined ? { archived: String(params.archived) } : {}),
       },
     }),
   )
 
 export const getJob = async (id: string): Promise<JobPosting> => {
-  const env = await request<DataEnvelope<JobPosting>>(() =>
-    api.get(`jobs/${id}`),
-  )
+  const env = await request<DataEnvelope<JobPosting>>(() => api.get(`jobs/${id}`))
   return env.data
 }
 

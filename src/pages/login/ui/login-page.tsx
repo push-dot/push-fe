@@ -29,9 +29,7 @@ const LoginPage = () => {
     <div className="canvas">
       <div className="center">
         <Card title="Push">
-          <p className="t-body-sm">
-            채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱
-          </p>
+          <p className="t-body-sm">채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱</p>
         </Card>
         {failed ? (
           <ErrorState onRetry={() => setFailed(false)} />

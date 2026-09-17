@@ -19,10 +19,8 @@ let nextId = 1
 
 export const useToastStore = create<ToastState>()((set) => ({
   toasts: [],
-  show: (message, icon) =>
-    set((s) => ({ toasts: [...s.toasts, { id: nextId++, message, icon }] })),
-  dismiss: (id) =>
-    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  show: (message, icon) => set((s) => ({ toasts: [...s.toasts, { id: nextId++, message, icon }] })),
+  dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }))
 
 export const showToast = (message: string, icon: IconName = 'check'): void =>

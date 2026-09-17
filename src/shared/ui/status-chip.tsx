@@ -1,12 +1,7 @@
 import Icon from './icon'
 import type { IconName } from './icon'
 
-export type StatusChipTone =
-  | 'ready'
-  | 'running'
-  | 'verified'
-  | 'pending'
-  | 'error'
+export type StatusChipTone = 'ready' | 'running' | 'verified' | 'pending' | 'error'
 
 type StatusChipProps = {
   tone: StatusChipTone

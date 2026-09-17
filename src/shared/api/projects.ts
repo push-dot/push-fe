@@ -6,12 +6,7 @@ import { newIdempotencyKey } from '../lib/id'
 export type CliProvider = 'CODEX' | 'CLAUDE_CODE' | 'GROK_BUILD'
 
 export type CliRunState =
-  | 'DRAFT'
-  | 'APPROVAL_REQUIRED'
-  | 'RUNNING'
-  | 'VERIFYING'
-  | 'VERIFIED'
-  | 'FAILED'
+  'DRAFT' | 'APPROVAL_REQUIRED' | 'RUNNING' | 'VERIFYING' | 'VERIFIED' | 'FAILED'
 
 export type CliRun = {
   id: string

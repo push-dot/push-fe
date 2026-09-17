@@ -3,10 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { PROJECT_TAG_LABEL, ROUTES } from '@/shared/constants'
 import { Icon, IconButton, showToast } from '@/shared/ui'
 import type { IconName } from '@/shared/ui'
-import {
-  isProjectConversation,
-  useConversationsStore,
-} from '@/entities/conversation'
+import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
 import { useMessagesStore } from '@/features/chat'
 
 const NAV_ITEMS: { to: string; icon: IconName; label: string }[] = [
@@ -24,9 +21,7 @@ const Sidebar = () => {
   const conversations = useConversationsStore((s) => s.items)
   const loadConversations = useConversationsStore((s) => s.load)
   const createConversation = useConversationsStore((s) => s.create)
-  const sendingTo = useMessagesStore((s) =>
-    s.sending ? s.conversationId : null,
-  )
+  const sendingTo = useMessagesStore((s) => (s.sending ? s.conversationId : null))
 
   useEffect(() => {
     void loadConversations()
@@ -44,10 +39,7 @@ const Sidebar = () => {
       })
       navigate(ROUTES.chat(conversation.id))
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '채팅을 만들지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '채팅을 만들지 못했어요', 'circle-alert')
     }
   }
 
@@ -69,11 +61,7 @@ const Sidebar = () => {
       </div>
       <div className="sidebar-section">
         <div className="sidebar-label">채팅</div>
-        <button
-          type="button"
-          className="sidebar-item"
-          onClick={() => void newChat()}
-        >
+        <button type="button" className="sidebar-item" onClick={() => void newChat()}>
           <Icon name="square-pen" size={20} />
           <span className="sidebar-item-label">새 채팅</span>
         </button>
@@ -81,9 +69,7 @@ const Sidebar = () => {
           <button
             key={c.id}
             type="button"
-            className={
-              c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'
-            }
+            className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
             onClick={() => navigate(ROUTES.chat(c.id))}
           >
             <span className={dotClass(c.id)} />
@@ -101,9 +87,7 @@ const Sidebar = () => {
             key={item.to}
             type="button"
             className={
-              location.pathname.startsWith(item.to)
-                ? 'sidebar-item is-active'
-                : 'sidebar-item'
+              location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
             }
             onClick={() => navigate(item.to)}
           >
@@ -116,9 +100,7 @@ const Sidebar = () => {
         <button
           type="button"
           className={
-            location.pathname === ROUTES.settings
-              ? 'sidebar-item is-active'
-              : 'sidebar-item'
+            location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
           }
           onClick={() => navigate(ROUTES.settings)}
         >

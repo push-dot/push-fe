@@ -12,12 +12,7 @@ type JobAddDialogProps = {
   initialSource?: string
 }
 
-const JobAddDialog = ({
-  open,
-  onClose,
-  onCreated,
-  initialSource = '',
-}: JobAddDialogProps) => {
+const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDialogProps) => {
   const [company, setCompany] = useState('')
   const [title, setTitle] = useState('')
   const [source, setSource] = useState(initialSource)
@@ -42,10 +37,7 @@ const JobAddDialog = ({
       onCreated?.(job)
       onClose()
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '추가하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '추가하지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -61,22 +53,13 @@ const JobAddDialog = ({
           <Button variant="secondary" size="sm" onClick={onClose}>
             취소
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            loading={busy}
-            onClick={(e) => void submit(e)}
-          >
+          <Button variant="primary" size="sm" loading={busy} onClick={(e) => void submit(e)}>
             추가
           </Button>
         </>
       }
     >
-      <form
-        className="form"
-        onSubmit={(e) => void submit(e)}
-        style={{ gap: 'var(--space-12)' }}
-      >
+      <form className="form" onSubmit={(e) => void submit(e)} style={{ gap: 'var(--space-12)' }}>
         <Input
           placeholder="회사명"
           value={company}

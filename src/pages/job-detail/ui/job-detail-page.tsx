@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
-import {
-  Button,
-  CanvasHeader,
-  Card,
-  ErrorState,
-  Skeleton,
-  showToast,
-} from '@/shared/ui'
+import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/ui'
 import { useApplicationsStore } from '@/entities/application'
 import { useJobStore } from '@/entities/job'
 
@@ -28,9 +21,7 @@ const JobDetailPage = () => {
   }, [id, load])
 
   const latest = analyses[0] ?? null
-  const evidenceIds = new Set(
-    latest?.matched.flatMap((m) => m.evidenceIds) ?? [],
-  )
+  const evidenceIds = new Set(latest?.matched.flatMap((m) => m.evidenceIds) ?? [])
 
   const start = async () => {
     setBusy(true)
@@ -39,10 +30,7 @@ const JobDetailPage = () => {
       showToast('지원을 시작했어요', 'check')
       navigate(ROUTES.applications)
     } catch (e) {
-      showToast(
-        e instanceof Error ? e.message : '지원을 시작하지 못했어요',
-        'circle-alert',
-      )
+      showToast(e instanceof Error ? e.message : '지원을 시작하지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -50,11 +38,7 @@ const JobDetailPage = () => {
 
   return (
     <>
-      <CanvasHeader
-        title={
-          current ? `${current.company} — ${current.title}` : '공고 상세'
-        }
-      />
+      <CanvasHeader title={current ? `${current.company} — ${current.title}` : '공고 상세'} />
       <div className="canvas-body">
         {status === 'loading' ? (
           <>
@@ -64,10 +48,7 @@ const JobDetailPage = () => {
           </>
         ) : null}
         {status === 'error' ? (
-          <ErrorState
-            message={error ?? undefined}
-            onRetry={() => void load(id)}
-          />
+          <ErrorState message={error ?? undefined} onRetry={() => void load(id)} />
         ) : null}
         {status === 'success' && current ? (
           <>
@@ -78,9 +59,7 @@ const JobDetailPage = () => {
                 </p>
               ) : null}
               {current.requirements.length > 0 ? (
-                <p className="t-body-sm">
-                  핵심: {current.requirements.slice(0, 3).join(', ')}
-                </p>
+                <p className="t-body-sm">핵심: {current.requirements.slice(0, 3).join(', ')}</p>
               ) : null}
               {current.risks.length > 0 ? (
                 <p className="t-body-sm" style={{ color: 'var(--color-warn)' }}>
@@ -95,12 +74,7 @@ const JobDetailPage = () => {
                   : '아직 분석 결과가 없어요. 지원 준비를 시작하면 분석됩니다.'}
               </p>
             </Card>
-            <Button
-              variant="primary"
-              size="lg"
-              loading={busy}
-              onClick={() => void start()}
-            >
+            <Button variant="primary" size="lg" loading={busy} onClick={() => void start()}>
               지원 준비 시작
             </Button>
           </>

@@ -27,10 +27,7 @@ const Composer = ({ onSend, sending = false }: ComposerProps) => {
       await uploadSource(file, 'RESUME')
       showToast('파일을 올렸어요')
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '업로드하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '업로드하지 못했어요', 'circle-alert')
     }
   }
 

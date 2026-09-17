@@ -37,6 +37,5 @@ export const useJobStore = create<JobState>()((set) => ({
       })
     }
   },
-  reset: () =>
-    set({ current: null, analyses: [], status: 'idle', error: null }),
+  reset: () => set({ current: null, analyses: [], status: 'idle', error: null }),
 }))

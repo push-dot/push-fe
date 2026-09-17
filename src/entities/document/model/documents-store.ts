@@ -1,11 +1,6 @@
 import { create } from 'zustand'
 import type { DocumentVersion, PushDocument } from '@/shared/api'
-import {
-  createDocument,
-  getDocument,
-  getDocumentVersion,
-  listDocuments,
-} from '@/shared/api'
+import { createDocument, getDocument, getDocumentVersion, listDocuments } from '@/shared/api'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 

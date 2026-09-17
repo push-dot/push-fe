@@ -29,9 +29,7 @@ describe('routes', () => {
       initialEntries: ['/documents/doc-1'],
     })
     render(<RouterProvider router={router} />)
-    expect(
-      await screen.findByText('문서', {}, { timeout: 5000 }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('문서', {}, { timeout: 5000 })).toBeInTheDocument()
   })
 
   it('redirects to /login when signed out', async () => {
@@ -48,21 +46,14 @@ describe('routes', () => {
     const List = () => {
       const navigate = useNavigate()
       return (
-        <DocCard
-          title="이력서_2026"
-          meta="이력서"
-          onOpen={() => navigate('/documents/doc-9')}
-        />
+        <DocCard title="이력서_2026" meta="이력서" onOpen={() => navigate('/documents/doc-9')} />
       )
     }
     render(
       <MemoryRouter initialEntries={['/documents']}>
         <Routes>
           <Route path="/documents" element={<List />} />
-          <Route
-            path="/documents/:id"
-            element={<div data-testid="doc-editor" />}
-          />
+          <Route path="/documents/:id" element={<div data-testid="doc-editor" />} />
         </Routes>
       </MemoryRouter>,
     )

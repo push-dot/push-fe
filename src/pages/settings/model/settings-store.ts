@@ -36,8 +36,7 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
       set({
         me: me.status === 'fulfilled' ? me.value : null,
         billing: billing.status === 'fulfilled' ? billing.value : null,
-        models:
-          models.status === 'fulfilled' ? models.value.data : [],
+        models: models.status === 'fulfilled' ? models.value.data : [],
         status: 'success',
       })
     } catch (error) {

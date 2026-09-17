@@ -41,10 +41,7 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
       await decide(approvalId, decision)
       showToast(decision === 'APPROVED' ? '승인했어요' : '거부했어요')
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '처리하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '처리하지 못했어요', 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -60,9 +57,7 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
           summary.executable
             ? `$ ${summary.executable}${summary.arguments?.length ? ` ${summary.arguments.join(' ')}` : ''}`
             : null,
-          summary.workingDirectory
-            ? `디렉터리: ${summary.workingDirectory}`
-            : null,
+          summary.workingDirectory ? `디렉터리: ${summary.workingDirectory}` : null,
           summary.prompt ? `프롬프트: ${summary.prompt}` : null,
         ]
           .filter(Boolean)

@@ -11,11 +11,7 @@ vi.mock('@/shared/api', async (importOriginal) => {
   }
 })
 
-import {
-  createApplication,
-  listApplications,
-  patchApplication,
-} from '@/shared/api'
+import { createApplication, listApplications, patchApplication } from '@/shared/api'
 import { useApplicationsStore } from './applications-store'
 
 const app = (over: Partial<Application> = {}): Application => ({
@@ -65,9 +61,7 @@ describe('applications store', () => {
   it('moves stage with expectedRevision when transition is legal', async () => {
     const item = app({ stage: 'DISCOVERED', revision: 3 })
     useApplicationsStore.setState({ items: [item], status: 'success' })
-    vi.mocked(patchApplication).mockResolvedValue(
-      app({ stage: 'PREPARING', revision: 4 }),
-    )
+    vi.mocked(patchApplication).mockResolvedValue(app({ stage: 'PREPARING', revision: 4 }))
     await useApplicationsStore.getState().moveStage('a1', 'PREPARING')
     expect(patchApplication).toHaveBeenCalledWith('a1', {
       expectedRevision: 3,

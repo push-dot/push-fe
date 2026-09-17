@@ -44,9 +44,7 @@ export const listApplications = async (
   )
 
 export const getApplication = async (id: string): Promise<Application> => {
-  const env = await request<DataEnvelope<Application>>(() =>
-    api.get(`applications/${id}`),
-  )
+  const env = await request<DataEnvelope<Application>>(() => api.get(`applications/${id}`))
   return env.data
 }
 

@@ -44,9 +44,7 @@ const InferenceSettings = () => {
                 className={[
                   'button',
                   'button-sm',
-                  effort === o.value
-                    ? 'is-selected'
-                    : 'button-secondary',
+                  effort === o.value ? 'is-selected' : 'button-secondary',
                 ].join(' ')}
                 onClick={() => setEffort(o.value)}
               >
@@ -62,12 +60,7 @@ const InferenceSettings = () => {
             role="switch"
             aria-checked={ultraResume}
             aria-label="UltraResume"
-            className={[
-              'switch',
-              ultraResume ? 'is-on' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            className={['switch', ultraResume ? 'is-on' : ''].filter(Boolean).join(' ')}
             onClick={() => setUltraResume(!ultraResume)}
           >
             <span className="switch-thumb" />

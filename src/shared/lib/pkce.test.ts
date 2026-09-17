@@ -1,10 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import {
-  createPkceChallenge,
-  createPkcePair,
-  createPkceVerifier,
-} from './pkce'
+import { createPkceChallenge, createPkcePair, createPkceVerifier } from './pkce'
 
 const referenceS256 = (verifier: string): string =>
   createHash('sha256').update(verifier).digest('base64url')

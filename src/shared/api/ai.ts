@@ -18,9 +18,7 @@ export const listAiModels = async (params?: {
     api.get('ai/models', {
       searchParams: {
         ...(params?.provider ? { provider: params.provider } : {}),
-        ...(params?.credentialMode
-          ? { credentialMode: params.credentialMode }
-          : {}),
+        ...(params?.credentialMode ? { credentialMode: params.credentialMode } : {}),
       },
     }),
   )
@@ -34,8 +32,6 @@ export type BillingSummary = {
 }
 
 export const fetchBilling = async (): Promise<BillingSummary> => {
-  const env = await request<DataEnvelope<BillingSummary>>(() =>
-    api.get('billing'),
-  )
+  const env = await request<DataEnvelope<BillingSummary>>(() => api.get('billing'))
   return env.data
 }

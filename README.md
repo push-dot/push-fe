@@ -36,12 +36,12 @@ cargo tauri dev      # src-tauri/에서 데스크톱 앱으로 실행
 
 ## 스크립트
 
-| 명령 | 설명 |
-| --- | --- |
-| `npm run dev` | Vite 개발 서버 |
-| `npm run build` | 타입 체크 + 프로덕션 번들 |
-| `npm run test` | Vitest 단위 테스트 |
-| `npm run typecheck` | `tsc --noEmit` |
+| 명령                | 설명                      |
+| ------------------- | ------------------------- |
+| `npm run dev`       | Vite 개발 서버            |
+| `npm run build`     | 타입 체크 + 프로덕션 번들 |
+| `npm run test`      | Vitest 단위 테스트        |
+| `npm run typecheck` | `tsc --noEmit`            |
 
 ## 구조
 

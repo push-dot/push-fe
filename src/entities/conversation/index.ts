@@ -1,4 +1,1 @@
-export {
-  isProjectConversation,
-  useConversationsStore,
-} from './model/conversations-store'
+export { isProjectConversation, useConversationsStore } from './model/conversations-store'

@@ -12,15 +12,10 @@ export type SourceFile = {
   status: string
 }
 
-export const uploadSource = async (
-  file: File,
-  kind: EvidenceKind,
-): Promise<SourceFile> => {
+export const uploadSource = async (file: File, kind: EvidenceKind): Promise<SourceFile> => {
   const form = new FormData()
   form.append('file', file)
   form.append('kind', kind)
-  const env = await request<DataEnvelope<SourceFile>>(() =>
-    api.post('sources', { body: form }),
-  )
+  const env = await request<DataEnvelope<SourceFile>>(() => api.post('sources', { body: form }))
   return env.data
 }

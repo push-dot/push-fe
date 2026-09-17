@@ -79,11 +79,7 @@ export const useMessagesStore = create<MessagesState>()((set) => ({
       if (done.status === 'SUCCEEDED' && isChatMessageResult(result)) {
         const { userMessage, assistantMessage, approvalIds } = result.value
         set((s) => ({
-          messages: [
-            ...s.messages.filter((m) => m.id !== tempId),
-            userMessage,
-            assistantMessage,
-          ],
+          messages: [...s.messages.filter((m) => m.id !== tempId), userMessage, assistantMessage],
           sending: false,
         }))
         for (const id of approvalIds) {
@@ -94,20 +90,14 @@ export const useMessagesStore = create<MessagesState>()((set) => ({
           messages: s.messages.filter((m) => m.id !== tempId),
           sending: false,
         }))
-        showToast(
-          done.error?.message ?? '응답을 받지 못했어요',
-          'circle-alert',
-        )
+        showToast(done.error?.message ?? '응답을 받지 못했어요', 'circle-alert')
       }
     } catch (error) {
       set((s) => ({
         messages: s.messages.filter((m) => m.id !== tempId),
         sending: false,
       }))
-      showToast(
-        error instanceof Error ? error.message : '전송하지 못했어요',
-        'circle-alert',
-      )
+      showToast(error instanceof Error ? error.message : '전송하지 못했어요', 'circle-alert')
     }
   },
   reset: () =>

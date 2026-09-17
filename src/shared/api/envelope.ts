@@ -27,12 +27,7 @@ export class ApiError extends Error {
   readonly status: number
   readonly details?: Record<string, unknown>
 
-  constructor(
-    message: string,
-    code: string,
-    status: number,
-    details?: Record<string, unknown>,
-  ) {
+  constructor(message: string, code: string, status: number, details?: Record<string, unknown>) {
     super(message)
     this.name = 'ApiError'
     this.code = code
@@ -41,8 +36,7 @@ export class ApiError extends Error {
   }
 }
 
-export const NETWORK_ERROR_MESSAGE =
-  '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
+export const NETWORK_ERROR_MESSAGE = '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
 
 export const toApiError = async (error: unknown): Promise<ApiError> => {
   if (error instanceof HTTPError) {

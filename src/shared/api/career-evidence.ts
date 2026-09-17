@@ -3,19 +3,9 @@ import { request } from './envelope'
 import type { DataEnvelope, ListEnvelope, ListParams } from './envelope'
 import { newIdempotencyKey } from '../lib/id'
 
-export type EvidenceKind =
-  | 'RESUME'
-  | 'GITHUB'
-  | 'CAREER'
-  | 'EDUCATION'
-  | 'SKILL'
-  | 'PROJECT'
+export type EvidenceKind = 'RESUME' | 'GITHUB' | 'CAREER' | 'EDUCATION' | 'SKILL' | 'PROJECT'
 
-export type VerificationStatus =
-  | 'USER_PROVIDED'
-  | 'PENDING'
-  | 'VERIFIED'
-  | 'REJECTED'
+export type VerificationStatus = 'USER_PROVIDED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
 
 export type CareerEvidence = {
   id: string

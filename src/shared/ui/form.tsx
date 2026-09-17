@@ -1,16 +1,8 @@
 import type { ReactNode } from 'react'
 
-const Form = ({ children }: { children: ReactNode }) => (
-  <div className="form">{children}</div>
-)
+const Form = ({ children }: { children: ReactNode }) => <div className="form">{children}</div>
 
-const FormSection = ({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) => (
+const FormSection = ({ title, children }: { title: string; children: ReactNode }) => (
   <div className="form-section">
     <div className="form-section-title">{title}</div>
     {children}

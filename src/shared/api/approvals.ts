@@ -3,17 +3,9 @@ import { request } from './envelope'
 import type { DataEnvelope, ListEnvelope, ListParams } from './envelope'
 
 export type ApprovalKind =
-  | 'EVIDENCE_USE'
-  | 'DOCUMENT_FINALIZE'
-  | 'APPLICATION_SUBMIT'
-  | 'CLI_EXECUTE'
+  'EVIDENCE_USE' | 'DOCUMENT_FINALIZE' | 'APPLICATION_SUBMIT' | 'CLI_EXECUTE'
 
-export type ApprovalStatus =
-  | 'PENDING'
-  | 'APPROVED'
-  | 'DENIED'
-  | 'EXPIRED'
-  | 'CONSUMED'
+export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'DENIED' | 'EXPIRED' | 'CONSUMED'
 
 export type Approval = {
   id: string
