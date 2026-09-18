@@ -113,7 +113,6 @@ const ChatPage = () => {
         onTopReached={() => void loadMore()}
         onRetry={() => void load(id)}
         onRetrySend={() => void retry()}
-        onSelectSuggestion={(text) => void send(id, text)}
         trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />
       <Composer
