@@ -82,7 +82,7 @@ const Sidebar = () => {
           onClick={() => setCollapsed((v) => !v)}
         />
       </div>
-      <div className="sidebar-section">
+      <div className="sidebar-section sidebar-scroll">
         <div className="sidebar-label">채팅</div>
         <button type="button" className="sidebar-item" onClick={() => void newChat()}>
           <Icon name="square-pen" size={20} />
