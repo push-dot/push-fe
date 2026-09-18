@@ -6,10 +6,11 @@ import InferenceSettings from './inference-settings'
 
 type ComposerProps = {
   onSend: (text: string) => void
+  onAbort?: () => void
   sending?: boolean
 }
 
-const Composer = ({ onSend, sending = false }: ComposerProps) => {
+const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
   const [text, setText] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -63,13 +64,17 @@ const Composer = ({ onSend, sending = false }: ComposerProps) => {
             if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit()
           }}
         />
-        <IconButton
-          icon="send-horizontal"
-          iconSize={16}
-          aria-label="보내기"
-          onClick={submit}
-          disabled={!text.trim() || sending}
-        />
+        {sending ? (
+          <IconButton icon="square" iconSize={16} aria-label="응답 중단" onClick={onAbort} />
+        ) : (
+          <IconButton
+            icon="send-horizontal"
+            iconSize={16}
+            aria-label="보내기"
+            onClick={submit}
+            disabled={!text.trim()}
+          />
+        )}
       </div>
     </div>
   )

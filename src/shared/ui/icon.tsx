@@ -25,6 +25,8 @@ export type IconName =
   | 'plus'
   | 'circle-alert'
   | 'inbox'
+  | 'square'
+  | 'arrow-down'
 
 const STROKE_WIDTHS: Record<number, number> = { 16: 1.5, 20: 1.75, 24: 2 }
 

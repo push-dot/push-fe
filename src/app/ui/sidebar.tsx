@@ -21,7 +21,9 @@ const Sidebar = () => {
   const conversations = useConversationsStore((s) => s.items)
   const loadConversations = useConversationsStore((s) => s.load)
   const createConversation = useConversationsStore((s) => s.create)
-  const sendingTo = useMessagesStore((s) => (s.sending ? s.conversationId : null))
+  const sendingTo = useMessagesStore((s) =>
+    s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
+  )
 
   useEffect(() => {
     void loadConversations()

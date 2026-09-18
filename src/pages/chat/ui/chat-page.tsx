@@ -69,9 +69,16 @@ const ChatPage = () => {
   const messages = useMessagesStore((s) => s.messages)
   const status = useMessagesStore((s) => s.status)
   const error = useMessagesStore((s) => s.error)
-  const sending = useMessagesStore((s) => s.sending)
+  const sendStatus = useMessagesStore((s) => s.sendStatus)
+  const streamText = useMessagesStore((s) => s.streamText)
+  const failed = useMessagesStore((s) => s.failed)
+  const hasMore = useMessagesStore((s) => s.hasMore)
+  const loadingMore = useMessagesStore((s) => s.loadingMore)
   const load = useMessagesStore((s) => s.load)
+  const loadMore = useMessagesStore((s) => s.loadMore)
   const send = useMessagesStore((s) => s.send)
+  const retry = useMessagesStore((s) => s.retry)
+  const abort = useMessagesStore((s) => s.abort)
   const loadConversations = useConversationsStore((s) => s.load)
 
   useEffect(() => {
@@ -108,11 +115,22 @@ const ChatPage = () => {
         messages={messages}
         status={status}
         error={error}
+        sendStatus={sendStatus}
+        streamText={streamText}
+        failedText={failed?.error ?? null}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onTopReached={() => void loadMore()}
         onRetry={() => void load(id)}
+        onRetrySend={() => void retry()}
         onSelectSuggestion={(text) => void send(id, text)}
         trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />
-      <Composer sending={sending} onSend={(text) => void send(id, text)} />
+      <Composer
+        sending={sendStatus === 'sending' || sendStatus === 'streaming'}
+        onSend={(text) => void send(id, text)}
+        onAbort={abort}
+      />
     </>
   )
 }
