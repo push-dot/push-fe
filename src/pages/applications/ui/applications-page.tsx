@@ -14,6 +14,8 @@ import {
   showToast,
 } from '@/shared/ui'
 import { stageChipTone, useApplicationsStore } from '@/entities/application'
+import { resumeRun } from '@/shared/api/applications'
+import { useInferenceSettings } from '@/features/chat'
 import { JobAddDialog } from '@/features/job-add'
 
 const STAGE_META: Record<string, string> = {
@@ -36,11 +38,27 @@ const ApplicationsPage = () => {
   const error = useApplicationsStore((s) => s.error)
   const load = useApplicationsStore((s) => s.load)
   const create = useApplicationsStore((s) => s.create)
+  const aiOptions = useInferenceSettings((s) => s.aiOptions)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [runningId, setRunningId] = useState<string | null>(null)
 
   useEffect(() => {
     void load()
   }, [load])
+
+  const runResume = async (appId: string) => {
+    setRunningId(appId)
+    try {
+      const op = await resumeRun(appId, aiOptions())
+      const docId = (op.result as { document?: { id?: string } })?.document?.id
+      showToast('맞춤 이력서를 만들었어요', 'check')
+      if (docId) navigate(ROUTES.document(docId))
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : '이력서 생성에 실패했어요', 'circle-alert')
+    } finally {
+      setRunningId(null)
+    }
+  }
 
   return (
     <>
@@ -74,6 +92,17 @@ const ApplicationsPage = () => {
                 onClick={() => navigate(ROUTES.job(a.jobId))}
               >
                 <StatusChip tone={stageChipTone(a.stage)} label={a.stage} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={runningId === a.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void runResume(a.id)
+                  }}
+                >
+                  {runningId === a.id ? '생성 중…' : '맞춤 이력서 생성'}
+                </Button>
               </Card>
             ))}
           </CardGrid>
