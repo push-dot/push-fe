@@ -36,6 +36,7 @@ export type AiOptions = {
   model: string
   credentialMode: 'MANAGED' | 'BYOK'
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
+  ultraResume?: boolean
 }
 
 export type AccessMode = 'SUGGEST' | 'CONFIRM_ACTIONS'

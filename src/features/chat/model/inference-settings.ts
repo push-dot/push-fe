@@ -60,6 +60,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
       model: model.model,
       credentialMode: 'MANAGED',
       effort: s.effort,
+      ultraResume: s.ultraResume,
     }
   },
 }))
