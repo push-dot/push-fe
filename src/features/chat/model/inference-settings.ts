@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AccessMode, AiModel, AiOptions } from '@/shared/api'
-import { listAiModels } from '@/shared/api'
+import { fetchBilling, listAiModels } from '@/shared/api'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -11,6 +11,7 @@ type InferenceSettingsState = {
   models: AiModel[]
   modelsStatus: LoadStatus
   selectedModel: string | null
+  plan: string | null
   setEffort: (effort: 'LOW' | 'MEDIUM' | 'HIGH') => void
   setUltraResume: (on: boolean) => void
   setAccessMode: (mode: AccessMode) => void
@@ -26,12 +27,18 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   models: [],
   modelsStatus: 'idle',
   selectedModel: null,
+  plan: null,
   setEffort: (effort) => set({ effort }),
   setUltraResume: (ultraResume) => set({ ultraResume }),
   setAccessMode: (accessMode) => set({ accessMode }),
   setModel: (selectedModel) => set({ selectedModel }),
   loadModels: async () => {
     set({ modelsStatus: 'loading' })
+    void fetchBilling()
+      .then((b) => {
+        set((s) => ({ plan: b.plan, ultraResume: s.ultraResume && b.plan === 'ULTRA' }))
+      })
+      .catch(() => set({ plan: null }))
     try {
       const env = await listAiModels({
         provider: 'OPENAI',

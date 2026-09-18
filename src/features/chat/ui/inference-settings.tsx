@@ -12,6 +12,7 @@ const EFFORT_OPTIONS = [
 const InferenceSettings = () => {
   const effort = useInferenceSettings((s) => s.effort)
   const ultraResume = useInferenceSettings((s) => s.ultraResume)
+  const plan = useInferenceSettings((s) => s.plan)
   const models = useInferenceSettings((s) => s.models)
   const modelsStatus = useInferenceSettings((s) => s.modelsStatus)
   const setEffort = useInferenceSettings((s) => s.setEffort)
@@ -63,7 +64,11 @@ const InferenceSettings = () => {
             }}
           >
             {EFFORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
+              <option
+                key={o.value}
+                value={o.value}
+                disabled={o.value === 'ULTRA' && plan !== 'ULTRA'}
+              >
                 {o.label}
               </option>
             ))}
