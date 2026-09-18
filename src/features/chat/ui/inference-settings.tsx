@@ -30,7 +30,6 @@ const InferenceSettings = () => {
   return (
     <div className="inference-popover" role="dialog" aria-label="추론 설정">
       <div className="form-section">
-        <div className="form-section-title">추론 설정</div>
         <div className="form-row">
           <span className="form-row-label">모델</span>
           {modelsStatus === 'success' && availableModels.length === 0 ? (
