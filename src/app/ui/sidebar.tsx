@@ -17,6 +17,7 @@ const NAV_ITEMS: { to: string; icon: IconName; label: string }[] = [
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false)
+  const [peek, setPeek] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const conversations = useConversationsStore((s) => s.items)
@@ -73,77 +74,88 @@ const Sidebar = () => {
   const isBusy = (id: string) => sendingTo === id
 
   return (
-    <aside className={collapsed ? 'sidebar is-collapsed' : 'sidebar'}>
-      <div className="sidebar-head">
-        <span className="t-label">Push</span>
-        <IconButton
-          icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
-          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-          onClick={() => setCollapsed((v) => !v)}
-        />
-      </div>
-      <div className="sidebar-scroll">
-        <div className="sidebar-section">
-          <div className="sidebar-label">채팅</div>
-          <button type="button" className="sidebar-item" onClick={() => void newChat()}>
-            <Icon name="square-pen" size={20} />
-            <span className="sidebar-item-label">새 채팅</span>
-          </button>
-          {conversations.map((c) => (
-            <div
-              key={c.id}
-              className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
-              onClick={() => navigate(ROUTES.chat(c.id))}
-              role="button"
-            >
-              {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
-              <span className="sidebar-item-label">{c.title}</span>
-              {isProjectConversation(c) ? (
-                <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
-              ) : null}
-              <IconButton
-                className="sidebar-item-delete"
-                icon="trash-2"
-                iconSize={16}
-                aria-label="채팅 삭제"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  void removeChat(c.id)
-                }}
-              />
-            </div>
-          ))}
+    <>
+      {collapsed ? <div className="sidebar-edge" onMouseEnter={() => setPeek(true)} /> : null}
+      <aside
+        className={collapsed ? `sidebar is-hidden${peek ? ' is-peek' : ''}` : 'sidebar'}
+        onMouseLeave={() => {
+          if (collapsed) setPeek(false)
+        }}
+      >
+        <div className="sidebar-head">
+          <span className="t-label">Push</span>
+          <IconButton
+            icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
+            aria-label={collapsed ? '사이드바 고정' : '사이드바 접기'}
+            onClick={() => {
+              setCollapsed((v) => !v)
+              setPeek(false)
+            }}
+          />
         </div>
-        <div className="sidebar-section">
-          <div className="sidebar-label">기능</div>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.to}
-              type="button"
-              className={
-                location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
-              }
-              onClick={() => navigate(item.to)}
-            >
-              <Icon name={item.icon} size={20} />
-              <span className="sidebar-item-label">{item.label}</span>
+        <div className="sidebar-scroll">
+          <div className="sidebar-section">
+            <div className="sidebar-label">채팅</div>
+            <button type="button" className="sidebar-item" onClick={() => void newChat()}>
+              <Icon name="square-pen" size={20} />
+              <span className="sidebar-item-label">새 채팅</span>
             </button>
-          ))}
+            {conversations.map((c) => (
+              <div
+                key={c.id}
+                className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
+                onClick={() => navigate(ROUTES.chat(c.id))}
+                role="button"
+              >
+                {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
+                <span className="sidebar-item-label">{c.title}</span>
+                {isProjectConversation(c) ? (
+                  <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
+                ) : null}
+                <IconButton
+                  className="sidebar-item-delete"
+                  icon="trash-2"
+                  iconSize={16}
+                  aria-label="채팅 삭제"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void removeChat(c.id)
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="sidebar-section">
+            <div className="sidebar-label">기능</div>
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.to}
+                type="button"
+                className={
+                  location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
+                }
+                onClick={() => navigate(item.to)}
+              >
+                <Icon name={item.icon} size={20} />
+                <span className="sidebar-item-label">{item.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="sidebar-foot">
-        <button
-          type="button"
-          className={
-            location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
-          }
-          onClick={() => navigate(ROUTES.settings)}
-        >
-          <Icon name="settings" size={20} />
-          <span className="sidebar-item-label">설정</span>
-        </button>
-      </div>
-    </aside>
+        <div className="sidebar-foot">
+          <button
+            type="button"
+            className={
+              location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
+            }
+            onClick={() => navigate(ROUTES.settings)}
+          >
+            <Icon name="settings" size={20} />
+            <span className="sidebar-item-label">설정</span>
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }
 
