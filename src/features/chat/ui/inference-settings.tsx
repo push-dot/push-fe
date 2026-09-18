@@ -14,13 +14,16 @@ const InferenceSettings = () => {
   const modelsStatus = useInferenceSettings((s) => s.modelsStatus)
   const setEffort = useInferenceSettings((s) => s.setEffort)
   const setUltraResume = useInferenceSettings((s) => s.setUltraResume)
+  const setModel = useInferenceSettings((s) => s.setModel)
+  const selectedModel = useInferenceSettings((s) => s.selectedModel)
   const loadModels = useInferenceSettings((s) => s.loadModels)
 
   useEffect(() => {
     if (modelsStatus === 'idle') void loadModels()
   }, [modelsStatus, loadModels])
 
-  const activeModel = models.find((m) => m.available)
+  const availableModels = models.filter((m) => m.available)
+  const activeModel = availableModels.find((m) => m.model === selectedModel) ?? availableModels[0]
 
   return (
     <div className="inference-popover" role="dialog" aria-label="추론 설정">
@@ -28,11 +31,26 @@ const InferenceSettings = () => {
         <div className="form-section-title">추론 설정</div>
         <div className="form-row">
           <span className="form-row-label">모델</span>
-          <span className="form-row-hint">
-            {modelsStatus === 'success'
-              ? (activeModel?.label ?? '사용 가능한 모델 없음')
-              : 'OpenAI'}
-          </span>
+          <div className="inference-effort">
+            {modelsStatus === 'success' && availableModels.length === 0 ? (
+              <span className="form-row-hint">사용 가능한 모델 없음</span>
+            ) : (
+              availableModels.map((m) => (
+                <button
+                  key={m.model}
+                  type="button"
+                  className={[
+                    'button',
+                    'button-sm',
+                    activeModel?.model === m.model ? 'is-selected' : 'button-secondary',
+                  ].join(' ')}
+                  onClick={() => setModel(m.model)}
+                >
+                  {m.label}
+                </button>
+              ))
+            )}
+          </div>
         </div>
         <div className="form-row">
           <span className="form-row-label">추론 강도</span>

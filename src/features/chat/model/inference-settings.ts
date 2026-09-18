@@ -10,9 +10,11 @@ type InferenceSettingsState = {
   accessMode: AccessMode
   models: AiModel[]
   modelsStatus: LoadStatus
+  selectedModel: string | null
   setEffort: (effort: 'LOW' | 'MEDIUM' | 'HIGH') => void
   setUltraResume: (on: boolean) => void
   setAccessMode: (mode: AccessMode) => void
+  setModel: (model: string) => void
   loadModels: () => Promise<void>
   aiOptions: () => AiOptions | null
 }
@@ -23,9 +25,11 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   accessMode: 'SUGGEST',
   models: [],
   modelsStatus: 'idle',
+  selectedModel: null,
   setEffort: (effort) => set({ effort }),
   setUltraResume: (ultraResume) => set({ ultraResume }),
   setAccessMode: (accessMode) => set({ accessMode }),
+  setModel: (selectedModel) => set({ selectedModel }),
   loadModels: async () => {
     set({ modelsStatus: 'loading' })
     try {
@@ -40,7 +44,9 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   },
   aiOptions: () => {
     const s = get()
-    const model = s.models.find((m) => m.available)
+    const model =
+      s.models.find((m) => m.available && m.model === s.selectedModel) ??
+      s.models.find((m) => m.available)
     if (!model) return null
     return {
       provider: 'OPENAI',
