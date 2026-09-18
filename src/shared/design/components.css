@@ -251,35 +251,6 @@
   color: var(--color-text-muted);
 }
 
-/* ── command-input (홈 대형 명령창 — 버튼 내부) ── */
-.command-input {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  width: 100%;
-  max-width: 720px;
-  min-height: var(--size-button-lg);
-  padding: 0 var(--space-8) 0 var(--space-16);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-sm);
-}
-.command-input:focus-within {
-  outline: 2px solid var(--color-accent);
-}
-.command-input-field {
-  flex: 1;
-  border: 0;
-  outline: 0;
-  font-size: var(--fs-body);
-  color: var(--color-text);
-  background: transparent;
-}
-.command-input-field::placeholder {
-  color: var(--color-text-muted);
-}
-
 /* ── composer (채팅 하단 고정) ── */
 .composer {
   flex: none;
