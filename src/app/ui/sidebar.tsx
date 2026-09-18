@@ -82,52 +82,54 @@ const Sidebar = () => {
           onClick={() => setCollapsed((v) => !v)}
         />
       </div>
-      <div className="sidebar-section sidebar-scroll">
-        <div className="sidebar-label">채팅</div>
-        <button type="button" className="sidebar-item" onClick={() => void newChat()}>
-          <Icon name="square-pen" size={20} />
-          <span className="sidebar-item-label">새 채팅</span>
-        </button>
-        {conversations.map((c) => (
-          <div
-            key={c.id}
-            className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
-            onClick={() => navigate(ROUTES.chat(c.id))}
-            role="button"
-          >
-            {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
-            <span className="sidebar-item-label">{c.title}</span>
-            {isProjectConversation(c) ? (
-              <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
-            ) : null}
-            <IconButton
-              className="sidebar-item-delete"
-              icon="trash-2"
-              iconSize={16}
-              aria-label="채팅 삭제"
-              onClick={(e) => {
-                e.stopPropagation()
-                void removeChat(c.id)
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="sidebar-section">
-        <div className="sidebar-label">기능</div>
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.to}
-            type="button"
-            className={
-              location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
-            }
-            onClick={() => navigate(item.to)}
-          >
-            <Icon name={item.icon} size={20} />
-            <span className="sidebar-item-label">{item.label}</span>
+      <div className="sidebar-scroll">
+        <div className="sidebar-section">
+          <div className="sidebar-label">채팅</div>
+          <button type="button" className="sidebar-item" onClick={() => void newChat()}>
+            <Icon name="square-pen" size={20} />
+            <span className="sidebar-item-label">새 채팅</span>
           </button>
-        ))}
+          {conversations.map((c) => (
+            <div
+              key={c.id}
+              className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
+              onClick={() => navigate(ROUTES.chat(c.id))}
+              role="button"
+            >
+              {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
+              <span className="sidebar-item-label">{c.title}</span>
+              {isProjectConversation(c) ? (
+                <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
+              ) : null}
+              <IconButton
+                className="sidebar-item-delete"
+                icon="trash-2"
+                iconSize={16}
+                aria-label="채팅 삭제"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void removeChat(c.id)
+                }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="sidebar-section">
+          <div className="sidebar-label">기능</div>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.to}
+              type="button"
+              className={
+                location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
+              }
+              onClick={() => navigate(item.to)}
+            >
+              <Icon name={item.icon} size={20} />
+              <span className="sidebar-item-label">{item.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
       <div className="sidebar-foot">
         <button
