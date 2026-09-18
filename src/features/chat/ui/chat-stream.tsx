@@ -4,8 +4,7 @@ import { VList } from 'virtua'
 import type { VListHandle } from 'virtua'
 import type { Message, MessageAttachment } from '@/shared/api'
 import { ApprovalCard } from '@/features/approval'
-import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows, SuggestChips } from '@/shared/ui'
-import { HOME_SUGGESTIONS } from '@/shared/constants'
+import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/ui'
 import type { SendStatus } from '../model/messages-store'
 
 const TOP_LOAD_THRESHOLD = 120
@@ -68,7 +67,6 @@ type ChatStreamProps = {
   onTopReached?: () => void
   onRetry?: () => void
   onRetrySend?: () => void
-  onSelectSuggestion?: (text: string) => void
   trailing?: ReactNode
 }
 
@@ -84,7 +82,6 @@ const ChatStream = ({
   onTopReached,
   onRetry,
   onRetrySend,
-  onSelectSuggestion,
   trailing,
 }: ChatStreamProps) => {
   const listRef = useRef<VListHandle>(null)
@@ -130,11 +127,7 @@ const ChatStream = ({
     )
   }
   if (messages.length === 0 && !streaming) {
-    return (
-      <div className="chat-stream">
-        <SuggestChips items={HOME_SUGGESTIONS} onSelect={onSelectSuggestion} />
-      </div>
-    )
+    return <div className="chat-stream" />
   }
   return (
     <div className="chat-stream-virtual">

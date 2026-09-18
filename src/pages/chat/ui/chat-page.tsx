@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { PROJECT_TAG_LABEL } from '@/shared/constants'
-import { Card, CanvasHeader, IconButton, StatusChip } from '@/shared/ui'
+import { Card, StatusChip } from '@/shared/ui'
 import type { StatusChipTone } from '@/shared/ui'
 import type { CliRunState } from '@/shared/api'
 import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
@@ -102,15 +101,6 @@ const ChatPage = () => {
 
   return (
     <>
-      <CanvasHeader
-        title={conversation?.title ?? '새 채팅'}
-        actions={
-          <>
-            {isProject ? <StatusChip tone="ready" label={PROJECT_TAG_LABEL} /> : null}
-            <IconButton icon="ellipsis" aria-label="더보기" />
-          </>
-        }
-      />
       <ChatStream
         messages={messages}
         status={status}
@@ -123,7 +113,6 @@ const ChatPage = () => {
         onTopReached={() => void loadMore()}
         onRetry={() => void load(id)}
         onRetrySend={() => void retry()}
-        onSelectSuggestion={(text) => void send(id, text)}
         trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />
       <Composer
