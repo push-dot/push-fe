@@ -601,6 +601,9 @@
   font-size: var(--fs-caption);
   color: var(--color-text-muted);
 }
+.form-select {
+  max-width: 220px;
+}
 
 /* ── empty / error / skeleton ── */
 .empty-state {

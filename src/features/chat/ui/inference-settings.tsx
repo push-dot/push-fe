@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Select } from '@/shared/ui'
 import { useInferenceSettings } from '../model/inference-settings'
 
 const EFFORT_LABELS = [
@@ -31,26 +32,21 @@ const InferenceSettings = () => {
         <div className="form-section-title">추론 설정</div>
         <div className="form-row">
           <span className="form-row-label">모델</span>
-          <div className="inference-effort">
-            {modelsStatus === 'success' && availableModels.length === 0 ? (
-              <span className="form-row-hint">사용 가능한 모델 없음</span>
-            ) : (
-              availableModels.map((m) => (
-                <button
-                  key={m.model}
-                  type="button"
-                  className={[
-                    'button',
-                    'button-sm',
-                    activeModel?.model === m.model ? 'is-selected' : 'button-secondary',
-                  ].join(' ')}
-                  onClick={() => setModel(m.model)}
-                >
+          {modelsStatus === 'success' && availableModels.length === 0 ? (
+            <span className="form-row-hint">사용 가능한 모델 없음</span>
+          ) : (
+            <Select
+              className="form-select"
+              value={activeModel?.model ?? ''}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              {availableModels.map((m) => (
+                <option key={m.model} value={m.model}>
                   {m.label}
-                </button>
-              ))
-            )}
-          </div>
+                </option>
+              ))}
+            </Select>
+          )}
         </div>
         <div className="form-row">
           <span className="form-row-label">추론 강도</span>
