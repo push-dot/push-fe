@@ -2,6 +2,7 @@ import { api } from './client'
 import { request } from './envelope'
 import type { DataEnvelope, ListEnvelope, ListParams } from './envelope'
 import { newIdempotencyKey } from '../lib/id'
+import type { AiOptions, Operation } from './conversations'
 
 export type ApplicationStage =
   | 'DISCOVERED'
@@ -55,6 +56,16 @@ export const createApplication = async (body: {
   const env = await request<DataEnvelope<Application>>(() =>
     api.post('applications', {
       json: body,
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+    }),
+  )
+  return env.data
+}
+
+export const resumeRun = async (id: string, ai?: AiOptions | null): Promise<Operation> => {
+  const env = await request<DataEnvelope<Operation>>(() =>
+    api.post(`applications/${id}/resume-run`, {
+      json: { ai: ai ?? null },
       headers: { 'Idempotency-Key': newIdempotencyKey() },
     }),
   )
