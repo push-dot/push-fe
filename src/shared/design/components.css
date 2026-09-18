@@ -281,6 +281,14 @@
   color: var(--color-text-muted);
 }
 
+.home-composer {
+  width: 100%;
+  max-width: 720px;
+}
+.home-composer .composer {
+  margin: 0;
+}
+
 /* ── composer (채팅 하단 고정) ── */
 .composer {
   flex: none;

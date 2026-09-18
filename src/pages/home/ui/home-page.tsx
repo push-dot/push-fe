@@ -42,9 +42,11 @@ const HomePage = () => {
       <div className="canvas-body">
         <div className="center">
           <h1 className="t-display">무엇을 도와드릴까요?</h1>
+          <div className="home-composer">
+            <Composer sending={busy} onSend={(text) => void submit(text)} />
+          </div>
         </div>
       </div>
-      <Composer sending={busy} onSend={(text) => void submit(text)} />
       <JobAddDialog
         open={jobDialog.open}
         initialSource={jobDialog.source}
