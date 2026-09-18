@@ -6,7 +6,7 @@ const EFFORT_OPTIONS = [
   { value: 'LOW', label: '낮음' },
   { value: 'MEDIUM', label: '보통' },
   { value: 'HIGH', label: '높음' },
-  { value: 'ULTRA', label: '울트라 (이어서 진행)' },
+  { value: 'ULTRA', label: 'UltraResume' },
 ] as const
 
 const InferenceSettings = () => {
