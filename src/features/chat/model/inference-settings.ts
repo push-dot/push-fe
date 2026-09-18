@@ -7,6 +7,7 @@ type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 type InferenceSettingsState = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
   ultraResume: boolean
+  webSearch: boolean
   accessMode: AccessMode
   models: AiModel[]
   modelsStatus: LoadStatus
@@ -14,6 +15,7 @@ type InferenceSettingsState = {
   plan: string | null
   setEffort: (effort: 'LOW' | 'MEDIUM' | 'HIGH') => void
   setUltraResume: (on: boolean) => void
+  setWebSearch: (on: boolean) => void
   setAccessMode: (mode: AccessMode) => void
   setModel: (model: string) => void
   loadModels: () => Promise<void>
@@ -23,6 +25,7 @@ type InferenceSettingsState = {
 export const useInferenceSettings = create<InferenceSettingsState>()((set, get) => ({
   effort: 'MEDIUM',
   ultraResume: false,
+  webSearch: false,
   accessMode: 'SUGGEST',
   models: [],
   modelsStatus: 'idle',
@@ -30,6 +33,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   plan: null,
   setEffort: (effort) => set({ effort }),
   setUltraResume: (ultraResume) => set({ ultraResume }),
+  setWebSearch: (webSearch) => set({ webSearch }),
   setAccessMode: (accessMode) => set({ accessMode }),
   setModel: (selectedModel) => set({ selectedModel }),
   loadModels: async () => {
@@ -61,6 +65,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
       credentialMode: 'MANAGED',
       effort: s.effort,
       ultraResume: s.ultraResume,
+      webSearch: s.webSearch,
     }
   },
 }))

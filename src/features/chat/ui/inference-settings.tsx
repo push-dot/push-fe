@@ -12,6 +12,8 @@ const EFFORT_OPTIONS = [
 const InferenceSettings = () => {
   const effort = useInferenceSettings((s) => s.effort)
   const ultraResume = useInferenceSettings((s) => s.ultraResume)
+  const webSearch = useInferenceSettings((s) => s.webSearch)
+  const setWebSearch = useInferenceSettings((s) => s.setWebSearch)
   const plan = useInferenceSettings((s) => s.plan)
   const models = useInferenceSettings((s) => s.models)
   const modelsStatus = useInferenceSettings((s) => s.modelsStatus)
@@ -73,6 +75,19 @@ const InferenceSettings = () => {
               </option>
             ))}
           </Select>
+        </div>
+        <div className="form-row">
+          <span className="form-row-label">웹 검색</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={webSearch}
+            aria-label="웹 검색"
+            className={['switch', webSearch ? 'is-on' : ''].filter(Boolean).join(' ')}
+            onClick={() => setWebSearch(!webSearch)}
+          >
+            <span className="switch-thumb" />
+          </button>
         </div>
       </div>
     </div>

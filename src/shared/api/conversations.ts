@@ -37,6 +37,7 @@ export type AiOptions = {
   credentialMode: 'MANAGED' | 'BYOK'
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
   ultraResume?: boolean
+  webSearch?: boolean
 }
 
 export type AccessMode = 'SUGGEST' | 'CONFIRM_ACTIONS'
