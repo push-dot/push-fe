@@ -23,6 +23,7 @@
   gap: var(--space-4);
 }
 .sidebar-head {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -102,6 +103,7 @@
 }
 .sidebar-foot {
   margin-top: auto;
+  flex: none;
 }
 .sidebar-tag {
   flex: none;
