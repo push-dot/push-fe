@@ -2,10 +2,11 @@ import { useEffect } from 'react'
 import { Select } from '@/shared/ui'
 import { useInferenceSettings } from '../model/inference-settings'
 
-const EFFORT_LABELS = [
+const EFFORT_OPTIONS = [
   { value: 'LOW', label: '낮음' },
   { value: 'MEDIUM', label: '보통' },
   { value: 'HIGH', label: '높음' },
+  { value: 'ULTRA', label: '울트라 (이어서 진행)' },
 ] as const
 
 const InferenceSettings = () => {
@@ -50,35 +51,24 @@ const InferenceSettings = () => {
         </div>
         <div className="form-row">
           <span className="form-row-label">추론 강도</span>
-          <div className="inference-effort">
-            {EFFORT_LABELS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                className={[
-                  'button',
-                  'button-sm',
-                  effort === o.value ? 'is-selected' : 'button-secondary',
-                ].join(' ')}
-                onClick={() => setEffort(o.value)}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="form-row">
-          <span className="form-row-label">UltraResume</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={ultraResume}
-            aria-label="UltraResume"
-            className={['switch', ultraResume ? 'is-on' : ''].filter(Boolean).join(' ')}
-            onClick={() => setUltraResume(!ultraResume)}
+          <Select
+            className="form-select"
+            value={ultraResume ? 'ULTRA' : effort}
+            onChange={(e) => {
+              if (e.target.value === 'ULTRA') {
+                setUltraResume(true)
+              } else {
+                setUltraResume(false)
+                setEffort(e.target.value as 'LOW' | 'MEDIUM' | 'HIGH')
+              }
+            }}
           >
-            <span className="switch-thumb" />
-          </button>
+            {EFFORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
         </div>
       </div>
     </div>
