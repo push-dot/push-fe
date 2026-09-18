@@ -7,7 +7,10 @@ import type { Session } from '@/shared/auth/session'
 export type AuthProvider = 'google' | 'github'
 
 export const PKCE_VERIFIER_STORAGE_KEY = 'push:pkce-verifier'
-export const OAUTH_REDIRECT_URI = 'push://auth/callback'
+export const OAUTH_REDIRECT_URI =
+  '__TAURI_INTERNALS__' in window
+    ? 'push://auth/callback'
+    : `${window.location.origin}/auth/callback`
 
 export type OAuthStart = {
   authorizationUrl: string
