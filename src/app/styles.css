@@ -23,7 +23,8 @@ body {
   height: 100vh;
   min-width: 1024px;
   min-height: 640px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--color-bg);
   color: var(--color-text);
 }
