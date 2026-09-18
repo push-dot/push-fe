@@ -15,8 +15,8 @@ const Textarea = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <textarea className="input input-textarea" {...props} />
 )
 
-const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-  <select className="input" {...props} />
+const Select = ({ className, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select className={['input', className ?? ''].filter(Boolean).join(' ')} {...rest} />
 )
 
 export { Input, Textarea, Select }
