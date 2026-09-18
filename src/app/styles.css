@@ -68,7 +68,8 @@ body {
 .composer-wrap {
   position: relative;
   flex: none;
-  margin: 0 var(--space-24) var(--space-16);
+  width: 60%;
+  margin: 0 auto var(--space-24);
 }
 
 .composer-wrap .composer {
