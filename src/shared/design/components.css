@@ -22,6 +22,26 @@
   padding: var(--space-12) var(--space-8);
   gap: var(--space-4);
 }
+.sidebar-edge {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 100vh;
+  z-index: 50;
+}
+.sidebar.is-hidden {
+  display: none;
+}
+.sidebar.is-hidden.is-peek {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 60;
+  box-shadow: var(--shadow-md);
+}
 .sidebar-head {
   flex: none;
   display: flex;
