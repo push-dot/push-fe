@@ -21,6 +21,8 @@ const Sidebar = () => {
   const conversations = useConversationsStore((s) => s.items)
   const loadConversations = useConversationsStore((s) => s.load)
   const createConversation = useConversationsStore((s) => s.create)
+  const creating = useConversationsStore((s) => s.creating)
+  const archiveConversation = useConversationsStore((s) => s.archive)
   const sendingTo = useMessagesStore((s) =>
     s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
   )
@@ -34,6 +36,7 @@ const Sidebar = () => {
     : null
 
   const newChat = async () => {
+    if (creating) return
     try {
       const conversation = await createConversation({
         applicationId: null,
@@ -42,6 +45,15 @@ const Sidebar = () => {
       navigate(ROUTES.chat(conversation.id))
     } catch (error) {
       showToast(error instanceof Error ? error.message : '채팅을 만들지 못했어요', 'circle-alert')
+    }
+  }
+
+  const removeChat = async (id: string) => {
+    try {
+      await archiveConversation(id)
+      if (id === activeChatId) navigate(ROUTES.home)
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '채팅을 삭제하지 못했어요', 'circle-alert')
     }
   }
 
@@ -68,18 +80,28 @@ const Sidebar = () => {
           <span className="sidebar-item-label">새 채팅</span>
         </button>
         {conversations.map((c) => (
-          <button
+          <div
             key={c.id}
-            type="button"
             className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
             onClick={() => navigate(ROUTES.chat(c.id))}
+            role="button"
           >
             <span className={dotClass(c.id)} />
             <span className="sidebar-item-label">{c.title}</span>
             {isProjectConversation(c) ? (
               <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
             ) : null}
-          </button>
+            <IconButton
+              className="sidebar-item-delete"
+              icon="trash-2"
+              iconSize={16}
+              aria-label="채팅 삭제"
+              onClick={(e) => {
+                e.stopPropagation()
+                void removeChat(c.id)
+              }}
+            />
+          </div>
         ))}
       </div>
       <div className="sidebar-section">

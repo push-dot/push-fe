@@ -72,6 +72,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.sidebar-item-delete {
+  display: none;
+  flex: none;
+}
+.sidebar-item:hover .sidebar-item-delete {
+  display: inline-flex;
+}
 .sidebar-dot {
   width: var(--size-dot);
   height: var(--size-dot);

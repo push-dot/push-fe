@@ -33,7 +33,13 @@ export type {
 } from './documents'
 export { createCareerEvidence, listCareerEvidence } from './career-evidence'
 export type { CareerEvidence, EvidenceKind, VerificationStatus } from './career-evidence'
-export { createConversation, listConversations, listMessages, sendMessage } from './conversations'
+export {
+  archiveConversation,
+  createConversation,
+  listConversations,
+  listMessages,
+  sendMessage,
+} from './conversations'
 export { streamMessage } from './message-stream'
 export type { MessageStreamEvent, SendMessageBody } from './message-stream'
 export type {

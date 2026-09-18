@@ -66,6 +66,19 @@ export const createConversation = async (body: {
   return env.data
 }
 
+export const archiveConversation = async (
+  id: string,
+  expectedRevision: number,
+): Promise<Conversation> => {
+  const env = await request<DataEnvelope<Conversation>>(() =>
+    api.post(`conversations/${id}/archive`, {
+      json: { expectedRevision },
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+    }),
+  )
+  return env.data
+}
+
 export const listMessages = async (
   conversationId: string,
   params: ListParams = {},

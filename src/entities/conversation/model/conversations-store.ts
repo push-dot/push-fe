@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Conversation } from '@/shared/api'
-import { createConversation, listConversations } from '@/shared/api'
+import { archiveConversation, createConversation, listConversations } from '@/shared/api'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -8,14 +8,17 @@ type ConversationsState = {
   items: Conversation[]
   status: LoadStatus
   error: string | null
+  creating: boolean
   load: () => Promise<void>
   create: (body: { applicationId: string | null; title?: string }) => Promise<Conversation>
+  archive: (id: string) => Promise<void>
 }
 
 export const useConversationsStore = create<ConversationsState>()((set, get) => ({
   items: [],
   status: 'idle',
   error: null,
+  creating: false,
   load: async () => {
     if (get().status === 'loading') return
     set({ status: 'loading', error: null })
@@ -30,9 +33,21 @@ export const useConversationsStore = create<ConversationsState>()((set, get) => 
     }
   },
   create: async (body) => {
-    const created = await createConversation(body)
-    set((s) => ({ items: [created, ...s.items] }))
-    return created
+    if (get().creating) throw new Error('already creating')
+    set({ creating: true })
+    try {
+      const created = await createConversation(body)
+      set((s) => ({ items: [created, ...s.items] }))
+      return created
+    } finally {
+      set({ creating: false })
+    }
+  },
+  archive: async (id) => {
+    const conv = get().items.find((c) => c.id === id)
+    if (!conv) return
+    await archiveConversation(id, conv.revision)
+    set((s) => ({ items: s.items.filter((c) => c.id !== id) }))
   },
 }))
 
