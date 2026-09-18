@@ -4,6 +4,7 @@ import { PROJECT_TAG_LABEL, ROUTES } from '@/shared/constants'
 import { Icon, IconButton, showToast } from '@/shared/ui'
 import type { IconName } from '@/shared/ui'
 import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
+import { listMessages } from '@/shared/api'
 import { useMessagesStore } from '@/features/chat'
 
 const NAV_ITEMS: { to: string; icon: IconName; label: string }[] = [
@@ -37,6 +38,18 @@ const Sidebar = () => {
 
   const newChat = async () => {
     if (creating) return
+    const candidate = conversations.find((c) => c.title === '새 채팅')
+    if (candidate) {
+      try {
+        const env = await listMessages(candidate.id, { limit: 1 })
+        if (env.data.length === 0) {
+          navigate(ROUTES.chat(candidate.id))
+          return
+        }
+      } catch {
+        // fall through to create
+      }
+    }
     try {
       const conversation = await createConversation({
         applicationId: null,
@@ -57,11 +70,7 @@ const Sidebar = () => {
     }
   }
 
-  const dotClass = (id: string) => {
-    if (sendingTo === id) return 'sidebar-dot is-busy'
-    if (id === activeChatId) return 'sidebar-dot is-on'
-    return 'sidebar-dot'
-  }
+  const isBusy = (id: string) => sendingTo === id
 
   return (
     <aside className={collapsed ? 'sidebar is-collapsed' : 'sidebar'}>
@@ -86,7 +95,7 @@ const Sidebar = () => {
             onClick={() => navigate(ROUTES.chat(c.id))}
             role="button"
           >
-            <span className={dotClass(c.id)} />
+            {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
             <span className="sidebar-item-label">{c.title}</span>
             {isProjectConversation(c) ? (
               <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
