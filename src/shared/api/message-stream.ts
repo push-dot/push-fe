@@ -1,7 +1,6 @@
-import { API_BASE_URL } from '../constants'
-import { getAccessToken } from '../auth/session'
+import { api } from './client'
+import { ApiError, toApiError } from './envelope'
 import { newIdempotencyKey } from '../lib/id'
-import { ApiError } from './envelope'
 import type { AccessMode, AiOptions, Operation } from './conversations'
 
 export type MessageStreamEvent =
@@ -24,28 +23,16 @@ export const streamMessage = async function* (
   body: SendMessageBody,
   options: { signal?: AbortSignal } = {},
 ): AsyncGenerator<MessageStreamEvent> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Idempotency-Key': newIdempotencyKey(),
-  }
-  const token = getAccessToken()
-  if (token) headers['Authorization'] = `Bearer ${token}`
-  const resp = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages/stream`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-    signal: options.signal ?? null,
-  })
-  if (!resp.ok) {
-    const body = (await resp.json().catch(() => null)) as {
-      error?: { code?: string; message?: string; details?: Record<string, unknown> }
-    } | null
-    throw new ApiError(
-      body?.error?.message ?? 'request failed',
-      body?.error?.code ?? 'HTTP_ERROR',
-      resp.status,
-      body?.error?.details,
-    )
+  let resp: Response
+  try {
+    resp = await api.post(`conversations/${conversationId}/messages/stream`, {
+      json: body,
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+      timeout: false,
+      signal: options.signal,
+    })
+  } catch (error) {
+    throw await toApiError(error)
   }
   if (!resp.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
   const reader = resp.body.getReader()
