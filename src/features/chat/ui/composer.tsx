@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COMPOSER_PLACEHOLDER } from '@/shared/constants'
 import { IconButton, showToast } from '@/shared/ui'
 import { uploadSource } from '@/shared/api'
@@ -14,6 +14,18 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
   const [text, setText] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!settingsOpen) return
+    const onPointerDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [settingsOpen])
 
   const submit = () => {
     const value = text.trim()
@@ -33,7 +45,7 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
   }
 
   return (
-    <div className="composer-wrap">
+    <div className="composer-wrap" ref={wrapRef}>
       {settingsOpen ? <InferenceSettings /> : null}
       <div className="composer">
         <IconButton
