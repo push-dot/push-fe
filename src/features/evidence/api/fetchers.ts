@@ -43,7 +43,7 @@ export const importEvidence = async (file: File, sourceId: string): Promise<Care
         sourceId,
         text: '',
         contentHash: '',
-        format: file.type === 'text/plain' ? 'TEXT' : 'PDF',
+        format: file.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'TEXT',
         kind: 'RESUME',
         title: file.name,
       },
