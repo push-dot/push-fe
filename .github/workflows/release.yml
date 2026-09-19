@@ -1,0 +1,27 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  dmg:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: Build app bundle
+        run: npx tauri build --bundles dmg
+      - name: Publish release with stable asset name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dmg=$(ls src-tauri/target/release/bundle/dmg/Push_*_aarch64.dmg | head -1)
+          cp "$dmg" Push_aarch64.dmg
+          gh release create "${{ github.ref_name }}" Push_aarch64.dmg \
+            --title "Push ${{ github.ref_name }}" --latest
