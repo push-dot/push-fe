@@ -13,10 +13,13 @@
 - **Tauri v2** — 네이티브 데스크톱 셸 (`src-tauri`, Rust)
 - **React 19 + Vite** — UI
 - **ky** — API 클라이언트 (`src/shared/api`)
-- **Zustand** — 상태 관리
+- **TanStack Query** — 서버 상태 (`features/*/api/hooks.ts`)
+- **Zustand** — 로컬 UI 상태 (`features/*/stores.ts`)
+- **vanilla-extract** — 빌드타임 CSS (`src/theme`)
 - **TipTap** — 문서 에디터
-- **FSD** — `app` / `pages` / `features` / `entities` / `shared` 레이어 구조
+- **Feature-based** — `app` / `pages` / `features` / `shared` 구조
 - **Vitest + Testing Library** — 테스트
+- **ESLint + Prettier** — 린트/포맷
 
 ## 요구 사항
 
@@ -42,16 +45,24 @@ cargo tauri dev      # src-tauri/에서 데스크톱 앱으로 실행
 | `npm run build`     | 타입 체크 + 프로덕션 번들 |
 | `npm run test`      | Vitest 단위 테스트        |
 | `npm run typecheck` | `tsc --noEmit`            |
+| `npm run lint`      | ESLint                    |
+| `npm run format`    | Prettier                  |
 
 ## 구조
 
 ```
 src/
-  app/        라우트, 진입점, 전역 스타일
+  app/        라우트, 진입점, 앱 셸
   pages/      화면 (chat, documents, applications, …)
-  features/   사용자 기능 (chat, approval, job-add)
-  entities/   도메인 모델 (document, evidence, job, …)
-  shared/     api 클라이언트, auth, ui, lib, constants
+  features/   capability별 도메인 코드
+    {name}/
+      api/        fetchers.ts, schemas.ts, hooks.ts (TanStack Query)
+      components/ 기능 전용 컴포넌트
+      hooks.ts    일반 훅
+      stores.ts   Zustand (로컬 UI 상태)
+      constants.ts, types.ts, index.tsx (public 배럴)
+  shared/     api 클라이언트, auth, components, i18n, lib
+  theme/      vanilla-extract 테마
 src-tauri/    Tauri 셸, deep-link 플러그인
 ```
 
