@@ -101,7 +101,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
         provider: s.byokProvider,
         model: s.byokModel,
         credentialMode: 'BYOK',
-        effort: s.effort,
+        effort: s.ultraResume ? 'MAX' : s.effort,
         ultraResume: s.ultraResume,
         webSearch: s.webSearch,
       }
@@ -114,7 +114,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
       provider: 'OPENAI',
       model: model.model,
       credentialMode: 'MANAGED',
-      effort: s.effort,
+      effort: s.ultraResume ? 'MAX' : s.effort,
       ultraResume: s.ultraResume,
       webSearch: s.webSearch,
     }
