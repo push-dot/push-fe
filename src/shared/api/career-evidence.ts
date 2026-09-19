@@ -1,6 +1,7 @@
 import { api } from './client'
 import { request } from './envelope'
 import type { DataEnvelope, ListEnvelope, ListParams } from './envelope'
+import type { Operation } from './conversations'
 import { newIdempotencyKey } from '../lib/id'
 
 export type EvidenceKind = 'RESUME' | 'GITHUB' | 'CAREER' | 'EDUCATION' | 'SKILL' | 'PROJECT'
@@ -59,4 +60,29 @@ export const createCareerEvidence = async (body: {
     }),
   )
   return env.data
+}
+
+export const importEvidence = async (
+  file: File,
+  sourceId: string,
+): Promise<CareerEvidence> => {
+  const env = await request<DataEnvelope<Operation>>(() =>
+    api.post('career-evidence/import', {
+      json: {
+        sourceId,
+        text: '',
+        contentHash: '',
+        format: file.type === 'text/plain' ? 'TEXT' : 'PDF',
+        kind: 'RESUME',
+        title: file.name,
+      },
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+    }),
+  )
+  const evidence =
+    (env.data.result as { evidence?: CareerEvidence[] } | null)?.evidence ?? []
+  if (env.data.status !== 'SUCCEEDED' || evidence.length === 0) {
+    throw new Error(env.data.error?.message ?? 'evidence import failed')
+  }
+  return evidence[0]
 }

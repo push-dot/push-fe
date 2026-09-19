@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/ui'
-import { uploadSource } from '@/shared/api'
+import { importEvidence, uploadSource } from '@/shared/api'
 import { usePendingFiles } from '@/shared/lib/pending-files'
 import InferenceSettings from './inference-settings'
 
 type ComposerProps = {
-  onSend: (text: string) => void
+  onSend: (text: string, evidenceIds?: string[]) => void
   onAbort?: () => void
   sending?: boolean
 }
@@ -38,9 +38,12 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     const value = text.trim()
     if ((!value && pending.length === 0) || sending) return
     void (async () => {
+      const evidenceIds: string[] = []
       for (const file of pending) {
         try {
-          await uploadSource(file, 'RESUME')
+          const source = await uploadSource(file, 'RESUME')
+          const evidence = await importEvidence(file, source.id)
+          evidenceIds.push(evidence.id)
           showToast(t('composer.uploaded'))
         } catch (error) {
           showToast(
@@ -51,8 +54,8 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
         }
       }
       clearFiles()
-      if (value) {
-        onSend(value)
+      if (value || evidenceIds.length) {
+        onSend(value || pending.map((f) => f.name).join(', '), evidenceIds)
         setText('')
       }
     })()

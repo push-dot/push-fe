@@ -39,7 +39,7 @@ type MessagesState = {
   failed: FailedSend | null
   load: (conversationId: string) => Promise<void>
   loadMore: () => Promise<void>
-  send: (conversationId: string, text: string) => Promise<void>
+  send: (conversationId: string, text: string, evidenceIds?: string[]) => Promise<void>
   retry: () => Promise<void>
   abort: () => void
   reset: () => void
@@ -108,7 +108,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
     }
   },
 
-  send: async (conversationId, text) => {
+  send: async (conversationId, text, evidenceIds = []) => {
     const ai = useInferenceSettings.getState().aiOptions()
     if (!ai) {
       showToast(t('chat.modelConfigFailed'), 'circle-alert')
@@ -141,7 +141,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
         conversationId,
         {
           text,
-          context: { evidenceIds: [] },
+          context: { evidenceIds },
           ai,
           accessMode,
         },
