@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
@@ -20,6 +20,9 @@ const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
 ]
 
 const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
+
+const IS_MAC = /mac/i.test(navigator.platform)
+const MOD = IS_MAC ? '⌘' : 'Ctrl+'
 
 const SIDEBAR_MIN_W = 180
 const SIDEBAR_MAX_W = 340
@@ -95,7 +98,7 @@ const Sidebar = () => {
     ? location.pathname.split('/')[2]
     : null
 
-  const newChat = async () => {
+  const newChat = useCallback(async () => {
     if (creating) return
     const candidate = conversations.find((c) => NEW_CHAT_TITLES.has(c.title))
     if (candidate) {
@@ -118,7 +121,27 @@ const Sidebar = () => {
     } catch (error) {
       showToast(error instanceof Error ? error.message : t('toast.createChatFailed'), 'circle-alert')
     }
-  }
+  }, [conversations, createConversation, creating, navigate, t])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+      const k = e.key.toLowerCase()
+      if (k === 'b' && !e.shiftKey) {
+        e.preventDefault()
+        setCollapsed((v) => !v)
+        setPeek(false)
+      } else if (k === 'o' && e.shiftKey) {
+        e.preventDefault()
+        void newChat()
+      } else if (e.key === ',') {
+        e.preventDefault()
+        navigate(ROUTES.settings)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [newChat, navigate])
 
   const removeChat = async (id: string) => {
     try {
@@ -172,6 +195,7 @@ const Sidebar = () => {
           <IconButton
             icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
             aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
+            title={`${collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')} (${MOD}B)`}
             onClick={() => {
               setCollapsed((v) => !v)
               setPeek(false)
@@ -181,7 +205,12 @@ const Sidebar = () => {
         <div className="sidebar-scroll">
           <div className="sidebar-section">
             <div className="sidebar-label">{t('nav.chat')}</div>
-            <button type="button" className="sidebar-item" onClick={() => void newChat()}>
+            <button
+              type="button"
+              className="sidebar-item"
+              title={`${t('nav.newChat')} (${MOD}⇧O)`}
+              onClick={() => void newChat()}
+            >
               <Icon name="square-pen" size={20} />
               <span className="sidebar-item-label">{t('nav.newChat')}</span>
             </button>
@@ -244,6 +273,7 @@ const Sidebar = () => {
             className={
               location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
             }
+            title={`${t('nav.settings')} (${MOD},)`}
             onClick={() => navigate(ROUTES.settings)}
           >
             <Icon name="settings" size={20} />
