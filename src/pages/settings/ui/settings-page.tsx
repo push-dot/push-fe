@@ -86,6 +86,8 @@ const SettingsPage = () => {
                     >
                       <option value="OPENAI">OpenAI</option>
                       <option value="OPENROUTER">OpenRouter</option>
+                      <option value="CLAUDE">Claude (Anthropic)</option>
+                      <option value="GROK">Grok (xAI)</option>
                     </Select>
                   </FormRow>
                   <FormRow label={t('infer.apiKey')}>

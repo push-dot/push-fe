@@ -9,7 +9,7 @@ const BYOK_MODEL_STORAGE = 'push-byok-model'
 const BYOK_PROVIDER_STORAGE = 'push-byok-provider'
 const CREDENTIAL_MODE_STORAGE = 'push-credential-mode'
 
-export type ByokProvider = 'OPENAI' | 'OPENROUTER'
+export type ByokProvider = 'OPENAI' | 'OPENROUTER' | 'GROK' | 'CLAUDE'
 
 type InferenceSettingsState = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
@@ -45,9 +45,10 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   credentialMode: localStorage.getItem(CREDENTIAL_MODE_STORAGE) === 'BYOK' ? 'BYOK' : 'MANAGED',
   byokKey: localStorage.getItem(BYOK_KEY_STORAGE) ?? '',
   byokModel: localStorage.getItem(BYOK_MODEL_STORAGE) ?? 'gpt-4o-mini',
-  byokProvider: localStorage.getItem(BYOK_PROVIDER_STORAGE) === 'OPENROUTER'
-    ? 'OPENROUTER'
-    : 'OPENAI',
+  byokProvider: ((): ByokProvider => {
+    const v = localStorage.getItem(BYOK_PROVIDER_STORAGE)
+    return v === 'OPENROUTER' || v === 'GROK' || v === 'CLAUDE' ? v : 'OPENAI'
+  })(),
   models: [],
   modelsStatus: 'idle',
   selectedModel: null,
