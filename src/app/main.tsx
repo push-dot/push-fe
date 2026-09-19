@@ -5,20 +5,7 @@ import '@/shared/design/tokens.css'
 import '@/shared/design/components.css'
 import './styles.css'
 import { IconSprite } from '@/shared/ui'
-import { useSessionStore } from '@/shared/auth/session'
 import { ROUTE_CONFIG } from './routes'
-
-const devToken = import.meta.env.VITE_DEV_AUTH_TOKEN as string | undefined
-if (devToken) {
-  useSessionStore.setState({
-    session: {
-      accessToken: devToken,
-      refreshToken: '',
-      expiresIn: 900,
-      user: { id: 'dev', displayName: 'Dev', locale: 'ko' },
-    },
-  })
-}
 
 const router = createBrowserRouter(ROUTE_CONFIG)
 
