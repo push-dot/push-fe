@@ -16,7 +16,7 @@ import {
 import { stageChipTone, useApplicationsStore } from '@/features/applications'
 import { resumeRun } from '@/features/applications'
 import { useInferenceSettings } from '@/features/inference'
-import { JobAddDialog } from '@/features/job-add'
+import { JobAddDialog } from '@/features/jobs'
 
 const STAGE_META: Record<string, string> = {
   DISCOVERED: '공고 분석 중',

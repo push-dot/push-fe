@@ -6,9 +6,9 @@ import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
 import type { IconName } from '@/shared/components'
-import { isProjectConversation, useConversationsStore } from '@/features/conversations'
+import { isProjectConversation, useConversationsStore } from '@/features/chat'
 import { listMessages } from '@/features/chat'
-import type { Conversation } from '@/features/conversations'
+import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
 
 const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
