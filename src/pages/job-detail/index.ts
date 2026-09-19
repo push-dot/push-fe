@@ -1,1 +1,1 @@
-export { default as JobDetailPage } from './ui/job-detail-page'
+export { default as JobDetailPage } from './job-detail-page'

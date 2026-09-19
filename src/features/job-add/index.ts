@@ -1,1 +1,1 @@
-export { default as JobAddDialog } from './ui/job-add-dialog'
+export { default as JobAddDialog } from './components/job-add-dialog'

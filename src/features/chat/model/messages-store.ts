@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Message } from '@/shared/api'
 import { ApiError, listMessages, streamMessage } from '@/shared/api'
-import { useApprovalsStore } from '@/entities/approval'
+import { useApprovalsStore } from '@/features/approval'
 import { useInferenceSettings } from './inference-settings'
 import { showToast } from '@/shared/ui'
 import { t } from '@/shared/i18n'
