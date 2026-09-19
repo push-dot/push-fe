@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
-import { useApplicationsStore } from '@/features/applications'
-import { useInterviewsStore } from '../stores'
+import { useApplications } from '@/features/applications'
+import { useCreateInterview } from '../api/hooks'
 
 type InterviewAddDialogProps = {
   open: boolean
@@ -9,23 +9,19 @@ type InterviewAddDialogProps = {
 }
 
 const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
-  const applications = useApplicationsStore((s) => s.items)
-  const loadApplications = useApplicationsStore((s) => s.load)
-  const create = useInterviewsStore((s) => s.create)
+  const { data: applications = [] } = useApplications()
+  const create = useCreateInterview()
   const [applicationId, setApplicationId] = useState('')
   const [title, setTitle] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (open && applications.length === 0) void loadApplications()
-  }, [open, applications.length, loadApplications])
 
   const submit = async () => {
     if (!applicationId || !title.trim() || !scheduledAt) return
     setBusy(true)
     try {
-      await create({
+      await create.mutateAsync({
         applicationId,
         title: title.trim(),
         scheduledAt: new Date(scheduledAt).toISOString(),

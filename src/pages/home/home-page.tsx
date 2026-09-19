@@ -6,7 +6,7 @@ import { isHttpUrl } from '@/shared/lib/url'
 import { DropOverlay, showToast } from '@/shared/components'
 import { useExperiment } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/features/chat'
-import { useConversationsStore } from '@/features/chat'
+import { useCreateConversation } from '@/features/chat'
 import { Composer } from '@/features/chat'
 import { JobAddDialog } from '@/features/jobs'
 
@@ -15,7 +15,7 @@ const HomePage = () => {
   const greetingVariant = useExperiment('home-greeting')
   const dragging = useFileDrop()
   const navigate = useNavigate()
-  const createConversation = useConversationsStore((s) => s.create)
+  const createConversation = useCreateConversation()
   const [busy, setBusy] = useState(false)
   const [jobDialog, setJobDialog] = useState<{ open: boolean; source: string }>({
     open: false,
@@ -29,7 +29,7 @@ const HomePage = () => {
     }
     setBusy(true)
     try {
-      const conversation = await createConversation({
+      const conversation = await createConversation.mutateAsync({
         applicationId: null,
         title: text.slice(0, 40),
       })

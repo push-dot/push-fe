@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listAiModels } from '@/features/inference'
-import type { AiModel } from '@/features/inference'
+import { useAiModels, useByokModels } from '@/features/inference'
+
 import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
@@ -19,6 +18,8 @@ import {
 import { useInferenceSettings } from '@/features/inference'
 import type { ByokProvider } from '@/features/inference'
 import { useSettingsStore } from '@/features/settings'
+import { useMe } from '@/features/auth'
+import { useBilling } from '@/features/billing'
 import type { Theme } from '@/features/settings'
 
 const SettingsPage = () => {
@@ -26,14 +27,25 @@ const SettingsPage = () => {
   const navigate = useNavigate()
   const locale = useLocaleStore((s) => s.locale)
   const setLocale = useLocaleStore((s) => s.setLocale)
-  const me = useSettingsStore((s) => s.me)
-  const billing = useSettingsStore((s) => s.billing)
-  const models = useSettingsStore((s) => s.models)
-  const status = useSettingsStore((s) => s.status)
-  const error = useSettingsStore((s) => s.error)
+  const meQuery = useMe()
+  const billingQuery = useBilling()
+  const modelsQuery = useAiModels()
+  const me = meQuery.data ?? null
+  const billing = billingQuery.data ?? null
+  const models = modelsQuery.data ?? []
+  const status: 'loading' | 'error' | 'success' =
+    meQuery.isPending || billingQuery.isPending || modelsQuery.isPending
+      ? 'loading'
+      : meQuery.isError || billingQuery.isError || modelsQuery.isError
+        ? 'error'
+        : 'success'
+  const error = meQuery.error?.message ?? billingQuery.error?.message ?? modelsQuery.error?.message ?? null
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
-  const load = useSettingsStore((s) => s.load)
+  const load = async () => {
+    await Promise.all([meQuery.refetch(), billingQuery.refetch(), modelsQuery.refetch()])
+  }
+
   const credentialMode = useInferenceSettings((s) => s.credentialMode)
   const setCredentialMode = useInferenceSettings((s) => s.setCredentialMode)
   const byokKey = useInferenceSettings((s) => s.byokKey)
@@ -42,24 +54,9 @@ const SettingsPage = () => {
   const setByokModel = useInferenceSettings((s) => s.setByokModel)
   const byokProvider = useInferenceSettings((s) => s.byokProvider)
   const setByokProvider = useInferenceSettings((s) => s.setByokProvider)
-  const [byokModels, setByokModels] = useState<AiModel[]>([])
+  const byokModelsQuery = useByokModels(byokProvider, credentialMode === 'BYOK' ? byokKey : '')
+  const byokModels = byokModelsQuery.data ?? []
 
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  useEffect(() => {
-    if (credentialMode !== 'BYOK' || !byokKey) {
-      setByokModels([])
-      return
-    }
-    const timer = setTimeout(() => {
-      listAiModels({ provider: byokProvider, credentialMode: 'BYOK', byokKey })
-        .then((env) => setByokModels(env.data))
-        .catch(() => setByokModels([]))
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [credentialMode, byokProvider, byokKey])
 
   const modelLabel = models.find((m) => m.available)?.label ?? '—'
   const plan = billing?.plan ?? 'FREE'

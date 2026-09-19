@@ -8,7 +8,9 @@ import {
   RouterProvider,
   useNavigate,
 } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ROUTE_CONFIG } from './routes'
+import { queryClient } from '@/shared/api'
 import { useSessionStore } from '@/shared/auth/session'
 import { DocCard } from '@/shared/components'
 
@@ -28,7 +30,11 @@ describe('routes', () => {
     const router = createMemoryRouter(ROUTE_CONFIG, {
       initialEntries: ['/documents/doc-1'],
     })
-    render(<RouterProvider router={router} />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    )
     expect(await screen.findByText('문서', {}, { timeout: 5000 })).toBeInTheDocument()
   })
 
@@ -37,7 +43,11 @@ describe('routes', () => {
     const router = createMemoryRouter(ROUTE_CONFIG, {
       initialEntries: ['/documents'],
     })
-    render(<RouterProvider router={router} />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    )
     expect(await screen.findByText('Push')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/login')
   })

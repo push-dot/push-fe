@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Approval, ApprovalKind } from '../api/schemas'
-import { useApprovalsStore } from '../stores'
+import { useApproval, useDecideApproval } from '../api/hooks'
 import { Button, Icon, StatusChip, showToast } from '@/shared/components'
 
 const KIND_TITLES: Record<ApprovalKind, string> = {
@@ -23,22 +23,18 @@ type ApprovalCardProps = {
 }
 
 const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
-  const approval = useApprovalsStore((s) => s.byId[approvalId])
-  const summary = useApprovalsStore((s) => s.summaries[approvalId])
-  const ensure = useApprovalsStore((s) => s.ensure)
-  const decide = useApprovalsStore((s) => s.decide)
+  const { data } = useApproval(approvalId)
+  const approval = data?.approval ?? null
+  const summary = data?.targetSummary ?? null
+  const decide = useDecideApproval(approvalId)
   const [busy, setBusy] = useState(false)
-
-  useEffect(() => {
-    void ensure(approvalId)
-  }, [approvalId, ensure])
 
   if (!approval) return null
 
   const onDecide = async (decision: 'APPROVED' | 'DENIED') => {
     setBusy(true)
     try {
-      await decide(approvalId, decision)
+      await decide.mutateAsync(decision)
       showToast(decision === 'APPROVED' ? '승인했어요' : '거부했어요')
     } catch (error) {
       showToast(error instanceof Error ? error.message : '처리하지 못했어요', 'circle-alert')

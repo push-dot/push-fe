@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { dDayLabel, formatDate, monthLabel } from '@/shared/lib/format'
 import {
   Button,
@@ -13,7 +13,7 @@ import {
   StatusChip,
   showToast,
 } from '@/shared/components'
-import { useCalendarStore } from '@/features/calendar'
+import { useCalendarEvents, useSyncGoogle } from '@/features/calendar'
 
 const TYPE_LABELS: Record<string, string> = {
   INTERVIEW: '면접',
@@ -23,22 +23,13 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const CalendarPage = () => {
-  const items = useCalendarStore((s) => s.items)
-  const status = useCalendarStore((s) => s.status)
-  const error = useCalendarStore((s) => s.error)
-  const syncing = useCalendarStore((s) => s.syncing)
-  const load = useCalendarStore((s) => s.load)
-  const sync = useCalendarStore((s) => s.sync)
-
-  useEffect(() => {
-    void load()
-  }, [load])
+  const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCalendarEvents()
+  const syncMutation = useSyncGoogle()
 
   const onSync = async () => {
     try {
-      await sync()
+      await syncMutation.mutateAsync()
       showToast('동기화를 시작했어요', 'check')
-      void load()
     } catch (e) {
       showToast(e instanceof Error ? e.message : '동기화하지 못했어요', 'circle-alert')
     }
@@ -60,26 +51,26 @@ const CalendarPage = () => {
       <CanvasHeader
         title="캘린더"
         actions={
-          <Button variant="primary" size="sm" loading={syncing} onClick={() => void onSync()}>
+          <Button variant="primary" size="sm" loading={syncMutation.isPending} onClick={() => void onSync()}>
             <Icon name="calendar" size={20} /> 동기화
           </Button>
         }
       />
       <div className="canvas-body">
-        {status === 'loading' ? (
+        {isPending ? (
           <>
             <Skeleton height={96} />
             <Skeleton height={52} />
             <Skeleton height={52} />
           </>
         ) : null}
-        {status === 'error' ? (
-          <ErrorState message={error ?? undefined} onRetry={() => void load()} />
+        {isError ? (
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         ) : null}
-        {status === 'success' && items.length === 0 ? (
+        {isSuccess && items.length === 0 ? (
           <EmptyState message="다가오는 일정이 없어요" />
         ) : null}
-        {status === 'success' && items.length > 0 ? (
+        {isSuccess && items.length > 0 ? (
           <>
             <Card title={monthLabel(new Date())}>
               <p className="t-body-sm">{monthSummary}</p>

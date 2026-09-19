@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import type { DocumentKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
-import { useApplicationsStore } from '@/features/applications'
-import { useDocumentsStore } from '../stores'
+import { useApplications } from '@/features/applications'
+import { useCreateDocument } from '../api/hooks'
 
 const KIND_OPTIONS: { value: DocumentKind; label: string }[] = [
   { value: 'RESUME', label: '이력서' },
@@ -19,23 +19,19 @@ type NewDocumentDialogProps = {
 
 const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
   const navigate = useNavigate()
-  const applications = useApplicationsStore((s) => s.items)
-  const loadApplications = useApplicationsStore((s) => s.load)
-  const create = useDocumentsStore((s) => s.create)
+  const { data: applications = [] } = useApplications()
+  const create = useCreateDocument()
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<DocumentKind>('RESUME')
   const [applicationId, setApplicationId] = useState('')
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (open && applications.length === 0) void loadApplications()
-  }, [open, applications.length, loadApplications])
 
   const submit = async () => {
     if (!title.trim() || !applicationId) return
     setBusy(true)
     try {
-      const doc = await create({
+      const doc = await create.mutateAsync({
         applicationId,
         title: title.trim(),
         kind,

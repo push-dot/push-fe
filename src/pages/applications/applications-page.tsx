@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import {
@@ -13,7 +13,7 @@ import {
   StatusChip,
   showToast,
 } from '@/shared/components'
-import { stageChipTone, useApplicationsStore } from '@/features/applications'
+import { stageChipTone, useApplications, useCreateApplication } from '@/features/applications'
 import { resumeRun } from '@/features/applications'
 import { useInferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/jobs'
@@ -33,18 +33,12 @@ const STAGE_META: Record<string, string> = {
 
 const ApplicationsPage = () => {
   const navigate = useNavigate()
-  const items = useApplicationsStore((s) => s.items)
-  const status = useApplicationsStore((s) => s.status)
-  const error = useApplicationsStore((s) => s.error)
-  const load = useApplicationsStore((s) => s.load)
-  const create = useApplicationsStore((s) => s.create)
+  const { data: items = [], isPending, isError, isSuccess, error, refetch } = useApplications()
+  const createMutation = useCreateApplication()
   const aiOptions = useInferenceSettings((s) => s.aiOptions)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [runningId, setRunningId] = useState<string | null>(null)
 
-  useEffect(() => {
-    void load()
-  }, [load])
 
   const runResume = async (appId: string) => {
     setRunningId(appId)
@@ -76,18 +70,18 @@ const ApplicationsPage = () => {
         }
       />
       <div className="canvas-body">
-        {status === 'loading' ? <SkeletonCardGrid count={3} /> : null}
-        {status === 'error' ? (
-          <ErrorState message={error ?? undefined} onRetry={() => void load()} />
+        {isPending ? <SkeletonCardGrid count={3} /> : null}
+        {isError ? (
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         ) : null}
-        {status === 'success' && items.length === 0 ? (
+        {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 지원 내역이 없어요"
             actionLabel="공고 추가"
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
-        {status === 'success' && items.length > 0 ? (
+        {isSuccess && items.length > 0 ? (
           <CardGrid>
             {items.map((a) => (
               <Card
@@ -117,7 +111,7 @@ const ApplicationsPage = () => {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onCreated={(job) => {
-          void create(job.id)
+          void createMutation.mutateAsync(job.id)
             .then(() => showToast('지원을 추가했어요', 'check'))
             .catch((e: unknown) =>
               showToast(e instanceof Error ? e.message : '지원을 만들지 못했어요', 'circle-alert'),

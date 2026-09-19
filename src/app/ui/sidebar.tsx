@@ -6,7 +6,7 @@ import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
 import type { IconName } from '@/shared/components'
-import { isProjectConversation, useConversationsStore } from '@/features/chat'
+import { isProjectConversation, useArchiveConversation, useConversations, useCreateConversation, usePatchConversation } from '@/features/chat'
 import { listMessages } from '@/features/chat'
 import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
@@ -44,19 +44,16 @@ const Sidebar = () => {
   const [editing, setEditing] = useState<{ id: string; value: string } | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
-  const conversations = useConversationsStore((s) => s.items)
-  const loadConversations = useConversationsStore((s) => s.load)
-  const createConversation = useConversationsStore((s) => s.create)
-  const creating = useConversationsStore((s) => s.creating)
-  const archiveConversation = useConversationsStore((s) => s.archive)
-  const patchConversation = useConversationsStore((s) => s.patch)
+  const { data: conversations = [] } = useConversations()
+  const createConversation = useCreateConversation()
+  const archiveConversation = useArchiveConversation()
+  const patchConversation = usePatchConversation()
+  const creating = createConversation.isPending
   const sendingTo = useMessagesStore((s) =>
     s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
   )
 
-  useEffect(() => {
-    void loadConversations()
-  }, [loadConversations])
+
 
   useEffect(() => {
     if (!menu) return
@@ -113,7 +110,7 @@ const Sidebar = () => {
       }
     }
     try {
-      const conversation = await createConversation({
+      const conversation = await createConversation.mutateAsync({
         applicationId: null,
         title: t('nav.newChat'),
       })
@@ -145,7 +142,7 @@ const Sidebar = () => {
 
   const removeChat = async (id: string) => {
     try {
-      await archiveConversation(id)
+      await archiveConversation.mutateAsync(id)
       if (id === activeChatId) navigate(ROUTES.home)
     } catch (error) {
       showToast(error instanceof Error ? error.message : t('toast.deleteChatFailed'), 'circle-alert')
@@ -154,7 +151,7 @@ const Sidebar = () => {
 
   const togglePin = async (conv: Conversation) => {
     try {
-      await patchConversation(conv.id, { pinned: !conv.pinned })
+      await patchConversation.mutateAsync({ id: conv.id, patch: { pinned: !conv.pinned } })
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'error', 'circle-alert')
     }
@@ -167,7 +164,7 @@ const Sidebar = () => {
     setEditing(null)
     if (!conv || !title || title === conv.title) return
     try {
-      await patchConversation(conv.id, { title })
+      await patchConversation.mutateAsync({ id: conv.id, patch: { title } })
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'error', 'circle-alert')
     }

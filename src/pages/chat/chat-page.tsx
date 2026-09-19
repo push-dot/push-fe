@@ -5,9 +5,9 @@ import { Card, DropOverlay, StatusChip } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
 import { type CliRunState } from '@/features/projects'
-import { isProjectConversation, useConversationsStore } from '@/features/chat'
+import { isProjectConversation, useConversations } from '@/features/chat'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
-import { useProjectPanelsStore } from '@/features/projects'
+import { useProjectPanels } from '@/features/projects'
 
 const RUN_TONES: Record<CliRunState, StatusChipTone> = {
   DRAFT: 'pending',
@@ -20,13 +20,9 @@ const RUN_TONES: Record<CliRunState, StatusChipTone> = {
 
 const ProjectPanels = ({ projectId }: { projectId: string }) => {
   const t = useT()
-  const runs = useProjectPanelsStore((s) => s.runs)
-  const evidence = useProjectPanelsStore((s) => s.evidence)
-  const load = useProjectPanelsStore((s) => s.load)
-
-  useEffect(() => {
-    void load(projectId)
-  }, [projectId, load])
+  const { data } = useProjectPanels(projectId)
+  const runs = data?.runs ?? []
+  const evidence = data?.evidence ?? []
 
   return (
     <>
@@ -68,7 +64,8 @@ const ChatPage = () => {
   const { id = '' } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const conversation = useConversationsStore((s) => s.items.find((c) => c.id === id))
+  const { data: conversations = [] } = useConversations()
+  const conversation = conversations.find((c) => c.id === id)
   const messages = useMessagesStore((s) => s.messages)
   const status = useMessagesStore((s) => s.status)
   const error = useMessagesStore((s) => s.error)
@@ -82,11 +79,7 @@ const ChatPage = () => {
   const send = useMessagesStore((s) => s.send)
   const retry = useMessagesStore((s) => s.retry)
   const abort = useMessagesStore((s) => s.abort)
-  const loadConversations = useConversationsStore((s) => s.load)
 
-  useEffect(() => {
-    void loadConversations()
-  }, [loadConversations])
 
   useEffect(() => {
     void load(id)

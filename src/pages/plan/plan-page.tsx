@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { createBillingPortal, createCheckout } from '@/features/billing'
@@ -6,7 +6,7 @@ import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Button, CanvasHeader, Icon, showToast } from '@/shared/components'
-import { useSettingsStore } from '@/features/settings'
+import { useBilling } from '@/features/billing'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -41,13 +41,9 @@ const PLAN_CARDS: PlanCard[] = [
 const PlanPage = () => {
   const t = useT()
   const navigate = useNavigate()
-  const billing = useSettingsStore((s) => s.billing)
-  const load = useSettingsStore((s) => s.load)
+  const { data: billing } = useBilling()
   const [pending, setPending] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!billing) void load()
-  }, [billing, load])
 
   const plan = billing?.plan ?? 'FREE'
   const rank = { FREE: 0, PRO: 1, ULTRA: 2 } as const

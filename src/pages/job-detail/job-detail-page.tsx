@@ -1,24 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/components'
-import { useApplicationsStore } from '@/features/applications'
-import { useJobStore } from '@/features/jobs'
+import { useCreateApplication } from '@/features/applications'
+import { useJob } from '@/features/jobs'
 
 const JobDetailPage = () => {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const current = useJobStore((s) => s.current)
-  const analyses = useJobStore((s) => s.analyses)
-  const status = useJobStore((s) => s.status)
-  const error = useJobStore((s) => s.error)
-  const load = useJobStore((s) => s.load)
-  const createApplication = useApplicationsStore((s) => s.create)
+  const { data, isPending, isError, isSuccess, error, refetch } = useJob(id)
+  const current = data?.job ?? null
+  const analyses = data?.analyses ?? []
+  const createApplication = useCreateApplication()
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    void load(id)
-  }, [id, load])
 
   const latest = analyses[0] ?? null
   const evidenceIds = new Set(latest?.matched.flatMap((m) => m.evidenceIds) ?? [])
@@ -26,7 +21,7 @@ const JobDetailPage = () => {
   const start = async () => {
     setBusy(true)
     try {
-      await createApplication(id)
+      await createApplication.mutateAsync(id)
       showToast('지원을 시작했어요', 'check')
       navigate(ROUTES.applications)
     } catch (e) {
@@ -40,17 +35,17 @@ const JobDetailPage = () => {
     <>
       <CanvasHeader title={current ? `${current.company} — ${current.title}` : '공고 상세'} />
       <div className="canvas-body">
-        {status === 'loading' ? (
+        {isPending ? (
           <>
             <Skeleton height={96} />
             <Skeleton height={96} />
             <Skeleton height={96} />
           </>
         ) : null}
-        {status === 'error' ? (
-          <ErrorState message={error ?? undefined} onRetry={() => void load(id)} />
+        {isError ? (
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         ) : null}
-        {status === 'success' && current ? (
+        {isSuccess && current ? (
           <>
             <Card title="요구사항 분석">
               {latest ? (

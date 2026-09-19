@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { EvidenceKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
-import { useEvidenceStore } from '../stores'
+import { useCreateEvidence } from '../api/hooks'
 
 const KIND_OPTIONS: { value: EvidenceKind; label: string }[] = [
   { value: 'CAREER', label: '경력' },
@@ -18,7 +18,7 @@ type EvidenceAddDialogProps = {
 }
 
 const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
-  const create = useEvidenceStore((s) => s.create)
+  const create = useCreateEvidence()
   const [kind, setKind] = useState<EvidenceKind>('CAREER')
   const [title, setTitle] = useState('')
   const [sourceText, setSourceText] = useState('')
@@ -29,7 +29,7 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
     if (!title.trim() || !sourceText.trim()) return
     setBusy(true)
     try {
-      await create({
+      await create.mutateAsync({
         kind,
         title: title.trim(),
         sourceText: sourceText.trim(),

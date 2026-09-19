@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { formatRelativeTime } from '@/shared/lib/format'
@@ -13,7 +13,7 @@ import {
   Icon,
   SkeletonCardGrid,
 } from '@/shared/components'
-import { useDocumentsStore } from '@/features/documents'
+import { useDocuments } from '@/features/documents'
 import { NewDocumentDialog } from '@/features/documents'
 
 const KIND_LABELS: Record<DocumentKind, string> = {
@@ -24,15 +24,9 @@ const KIND_LABELS: Record<DocumentKind, string> = {
 
 const DocumentsPage = () => {
   const navigate = useNavigate()
-  const items = useDocumentsStore((s) => s.items)
-  const status = useDocumentsStore((s) => s.status)
-  const error = useDocumentsStore((s) => s.error)
-  const load = useDocumentsStore((s) => s.load)
+  const { data: items = [], isPending, isError, isSuccess, error, refetch } = useDocuments()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  useEffect(() => {
-    void load()
-  }, [load])
 
   return (
     <>
@@ -45,18 +39,18 @@ const DocumentsPage = () => {
         }
       />
       <div className="canvas-body">
-        {status === 'loading' ? <SkeletonCardGrid count={3} /> : null}
-        {status === 'error' ? (
-          <ErrorState message={error ?? undefined} onRetry={() => void load()} />
+        {isPending ? <SkeletonCardGrid count={3} /> : null}
+        {isError ? (
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         ) : null}
-        {status === 'success' && items.length === 0 ? (
+        {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 문서가 없어요"
             actionLabel="새 문서"
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
-        {status === 'success' && items.length > 0 ? (
+        {isSuccess && items.length > 0 ? (
           <CardGrid>
             {items.map((doc) => (
               <DocCard

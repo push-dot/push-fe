@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
 import { type VerificationStatus } from '@/features/evidence'
 import {
@@ -13,7 +13,7 @@ import {
   StatusChip,
 } from '@/shared/components'
 import type { StatusChipTone } from '@/shared/components'
-import { useEvidenceStore } from '@/features/evidence'
+import { useCareerEvidence } from '@/features/evidence'
 import { EvidenceAddDialog } from '@/features/evidence'
 
 const STATUS_TONES: Record<VerificationStatus, StatusChipTone> = {
@@ -33,15 +33,9 @@ const KIND_LABELS: Record<string, string> = {
 }
 
 const VaultPage = () => {
-  const items = useEvidenceStore((s) => s.items)
-  const status = useEvidenceStore((s) => s.status)
-  const error = useEvidenceStore((s) => s.error)
-  const load = useEvidenceStore((s) => s.load)
+  const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCareerEvidence()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  useEffect(() => {
-    void load()
-  }, [load])
 
   return (
     <>
@@ -54,22 +48,22 @@ const VaultPage = () => {
         }
       />
       <div className="canvas-body">
-        {status === 'loading' ? (
+        {isPending ? (
           <DataList>
             <SkeletonRows count={3} height={52} />
           </DataList>
         ) : null}
-        {status === 'error' ? (
-          <ErrorState message={error ?? undefined} onRetry={() => void load()} />
+        {isError ? (
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         ) : null}
-        {status === 'success' && items.length === 0 ? (
+        {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 근거가 없어요"
             actionLabel="근거 추가"
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
-        {status === 'success' && items.length > 0 ? (
+        {isSuccess && items.length > 0 ? (
           <DataList>
             {items.map((item) => (
               <DataListRow

@@ -4,17 +4,14 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { createDocumentExport } from '@/features/documents'
 import { Button, CanvasHeader, ErrorState, Icon, SkeletonRows, showToast } from '@/shared/components'
-import { useDocumentsStore } from '@/features/documents'
+import { useDocument } from '@/features/documents'
 import { RENDERER_VERSION } from './constants'
 
 const DocEditorPage = () => {
   const { id = '' } = useParams()
-  const current = useDocumentsStore((s) => s.current)
-  const currentVersion = useDocumentsStore((s) => s.currentVersion)
-  const status = useDocumentsStore((s) => s.currentStatus)
-  const error = useDocumentsStore((s) => s.currentError)
-  const loadOne = useDocumentsStore((s) => s.loadOne)
-  const resetCurrent = useDocumentsStore((s) => s.resetCurrent)
+  const { data, isPending, isError, error, refetch } = useDocument(id)
+  const current = data?.document ?? null
+  const currentVersion = data?.version ?? null
   const [exporting, setExporting] = useState<'PDF' | 'DOCX' | null>(null)
 
   const editor = useEditor({
@@ -22,10 +19,6 @@ const DocEditorPage = () => {
     editorProps: { attributes: { class: 'editor-body' } },
   })
 
-  useEffect(() => {
-    void loadOne(id)
-    return () => resetCurrent()
-  }, [id, loadOne, resetCurrent])
 
   useEffect(() => {
     if (editor && currentVersion) {
@@ -77,13 +70,13 @@ const DocEditorPage = () => {
           </>
         }
       />
-      {status === 'error' ? (
+      {isError ? (
         <div className="canvas-body">
-          <ErrorState message={error ?? undefined} onRetry={() => void loadOne(id)} />
+          <ErrorState message={error?.message} onRetry={() => void refetch()} />
         </div>
       ) : (
         <div className="editor">
-          {status === 'loading' || status === 'idle' ? (
+          {isPending ? (
             <div className="editor-body">
               <SkeletonRows count={6} height={20} />
             </div>
