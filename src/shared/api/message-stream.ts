@@ -39,6 +39,7 @@ export const streamMessage = async function* (
   }
   if (!resp.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
   const reader = resp.body.getReader()
+  options.signal?.addEventListener('abort', () => void reader.cancel())
   const decoder = new TextDecoder()
   let buf = ''
   for (;;) {
