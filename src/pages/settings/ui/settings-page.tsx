@@ -15,6 +15,7 @@ import {
   SkeletonRows,
 } from '@/shared/ui'
 import { useInferenceSettings } from '@/features/chat'
+import type { ByokProvider } from '@/features/chat/model/inference-settings'
 import { useSettingsStore } from '../model/settings-store'
 import type { Theme } from '../model/settings-store'
 
@@ -37,6 +38,8 @@ const SettingsPage = () => {
   const setByokKey = useInferenceSettings((s) => s.setByokKey)
   const byokModel = useInferenceSettings((s) => s.byokModel)
   const setByokModel = useInferenceSettings((s) => s.setByokModel)
+  const byokProvider = useInferenceSettings((s) => s.byokProvider)
+  const setByokProvider = useInferenceSettings((s) => s.setByokProvider)
 
   useEffect(() => {
     void load()
@@ -74,6 +77,17 @@ const SettingsPage = () => {
               </FormRow>
               {credentialMode === 'BYOK' ? (
                 <>
+                  <FormRow label={t('settings.byokProvider')}>
+                    <Select
+                      className="form-select"
+                      aria-label={t('settings.byokProvider')}
+                      value={byokProvider}
+                      onChange={(e) => setByokProvider(e.target.value as ByokProvider)}
+                    >
+                      <option value="OPENAI">OpenAI</option>
+                      <option value="OPENROUTER">OpenRouter</option>
+                    </Select>
+                  </FormRow>
                   <FormRow label={t('infer.apiKey')}>
                     <Input
                       type="password"

@@ -4,7 +4,7 @@ import type { DataEnvelope, ListEnvelope } from './envelope'
 import { newIdempotencyKey } from '../lib/id'
 
 export type AiModel = {
-  provider: 'OPENAI' | 'CLAUDE' | 'GEMINI' | 'GROK'
+  provider: 'OPENAI' | 'OPENROUTER' | 'CLAUDE' | 'GEMINI' | 'GROK'
   model: string
   label: string
   available: boolean

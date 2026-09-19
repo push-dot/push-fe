@@ -32,7 +32,7 @@ export type Message = {
 }
 
 export type AiOptions = {
-  provider: 'OPENAI' | 'CLAUDE' | 'GEMINI' | 'GROK'
+  provider: 'OPENAI' | 'OPENROUTER' | 'CLAUDE' | 'GEMINI' | 'GROK'
   model: string
   credentialMode: 'MANAGED' | 'BYOK'
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
