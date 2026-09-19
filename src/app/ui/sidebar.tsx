@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
@@ -7,6 +8,7 @@ import { Icon, IconButton, showToast } from '@/shared/ui'
 import type { IconName } from '@/shared/ui'
 import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
 import { listMessages } from '@/shared/api'
+import type { Conversation } from '@/shared/api'
 import { useMessagesStore } from '@/features/chat'
 
 const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
@@ -19,10 +21,24 @@ const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
 
 const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
 
+const SIDEBAR_MIN_W = 180
+const SIDEBAR_MAX_W = 340
+const SIDEBAR_W_KEY = 'push-sidebar-w'
+
+const storedWidth = (): number => {
+  const w = Number(localStorage.getItem(SIDEBAR_W_KEY))
+  return w >= SIDEBAR_MIN_W && w <= SIDEBAR_MAX_W ? w : 220
+}
+
+type MenuState = { conv: Conversation; x: number; y: number }
+
 const Sidebar = () => {
   const t = useT()
   const [collapsed, setCollapsed] = useState(false)
   const [peek, setPeek] = useState(false)
+  const [width, setWidth] = useState(storedWidth)
+  const [menu, setMenu] = useState<MenuState | null>(null)
+  const [editing, setEditing] = useState<{ id: string; value: string } | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const conversations = useConversationsStore((s) => s.items)
@@ -30,6 +46,7 @@ const Sidebar = () => {
   const createConversation = useConversationsStore((s) => s.create)
   const creating = useConversationsStore((s) => s.creating)
   const archiveConversation = useConversationsStore((s) => s.archive)
+  const patchConversation = useConversationsStore((s) => s.patch)
   const sendingTo = useMessagesStore((s) =>
     s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
   )
@@ -37,6 +54,42 @@ const Sidebar = () => {
   useEffect(() => {
     void loadConversations()
   }, [loadConversations])
+
+  useEffect(() => {
+    if (!menu) return
+    const close = () => setMenu(null)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenu(null)
+    }
+    window.addEventListener('click', close)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('blur', close)
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('blur', close)
+    }
+  }, [menu])
+
+  const startResize = (e: ReactMouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = width
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.min(SIDEBAR_MAX_W, Math.max(SIDEBAR_MIN_W, startW + ev.clientX - startX))
+      setWidth(next)
+    }
+    const onUp = (ev: MouseEvent) => {
+      const next = Math.min(SIDEBAR_MAX_W, Math.max(SIDEBAR_MIN_W, startW + ev.clientX - startX))
+      localStorage.setItem(SIDEBAR_W_KEY, String(next))
+      document.body.classList.remove('is-resizing')
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    document.body.classList.add('is-resizing')
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
 
   const activeChatId = location.pathname.startsWith('/chat/')
     ? location.pathname.split('/')[2]
@@ -76,6 +129,32 @@ const Sidebar = () => {
     }
   }
 
+  const togglePin = async (conv: Conversation) => {
+    try {
+      await patchConversation(conv.id, { pinned: !conv.pinned })
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'error', 'circle-alert')
+    }
+  }
+
+  const commitRename = async () => {
+    if (!editing) return
+    const title = editing.value.trim()
+    const conv = conversations.find((c) => c.id === editing.id)
+    setEditing(null)
+    if (!conv || !title || title === conv.title) return
+    try {
+      await patchConversation(conv.id, { title })
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'error', 'circle-alert')
+    }
+  }
+
+  const openMenu = (e: ReactMouseEvent, conv: Conversation) => {
+    e.preventDefault()
+    setMenu({ conv, x: e.clientX, y: e.clientY })
+  }
+
   const isBusy = (id: string) => sendingTo === id
 
   return (
@@ -83,6 +162,7 @@ const Sidebar = () => {
       {collapsed ? <div className="sidebar-edge" onMouseEnter={() => setPeek(true)} /> : null}
       <aside
         className={collapsed ? `sidebar is-hidden${peek ? ' is-peek' : ''}` : 'sidebar'}
+        style={collapsed ? undefined : { width }}
         onMouseLeave={() => {
           if (collapsed) setPeek(false)
         }}
@@ -110,23 +190,30 @@ const Sidebar = () => {
                 key={c.id}
                 className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
                 onClick={() => navigate(ROUTES.chat(c.id))}
+                onContextMenu={(e) => openMenu(e, c)}
                 role="button"
               >
                 {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
-                <span className="sidebar-item-label">{c.title}</span>
+                {editing?.id === c.id ? (
+                  <input
+                    className="sidebar-item-input"
+                    value={editing.value}
+                    autoFocus
+                    onChange={(e) => setEditing({ id: c.id, value: e.target.value })}
+                    onBlur={() => void commitRename()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void commitRename()
+                      if (e.key === 'Escape') setEditing(null)
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="sidebar-item-label">{c.title}</span>
+                )}
+                {c.pinned ? <Icon name="pin" size={14} className="sidebar-item-pin" /> : null}
                 {isProjectConversation(c) ? (
                   <span className="sidebar-tag">{t('nav.projectTag')}</span>
                 ) : null}
-                <IconButton
-                  className="sidebar-item-delete"
-                  icon="trash-2"
-                  iconSize={16}
-                  aria-label={t('nav.deleteChat')}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void removeChat(c.id)
-                  }}
-                />
               </div>
             ))}
           </div>
@@ -159,7 +246,45 @@ const Sidebar = () => {
             <span className="sidebar-item-label">{t('nav.settings')}</span>
           </button>
         </div>
+        {!collapsed ? (
+          <div className="sidebar-resizer" onMouseDown={startResize} aria-hidden="true" />
+        ) : null}
       </aside>
+      {menu ? (
+        <div
+          className="context-menu"
+          style={{
+            left: Math.min(menu.x, window.innerWidth - 170),
+            top: Math.min(menu.y, window.innerHeight - 140),
+          }}
+          role="menu"
+        >
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => setEditing({ id: menu.conv.id, value: menu.conv.title })}
+          >
+            <Icon name="pencil" size={14} />
+            {t('menu.rename')}
+          </button>
+          <button
+            type="button"
+            className="context-menu-item"
+            onClick={() => void togglePin(menu.conv)}
+          >
+            <Icon name={menu.conv.pinned ? 'pin-off' : 'pin'} size={14} />
+            {menu.conv.pinned ? t('menu.unpin') : t('menu.pin')}
+          </button>
+          <button
+            type="button"
+            className="context-menu-item is-danger"
+            onClick={() => void removeChat(menu.conv.id)}
+          >
+            <Icon name="trash-2" size={14} />
+            {t('menu.delete')}
+          </button>
+        </div>
+      ) : null}
     </>
   )
 }

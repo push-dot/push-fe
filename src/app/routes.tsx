@@ -11,6 +11,7 @@ import { VaultPage } from '@/pages/vault'
 import { InterviewPage } from '@/pages/interview'
 import { CalendarPage } from '@/pages/calendar'
 import { SettingsPage } from '@/pages/settings'
+import { PlanPage } from '@/pages/plan'
 import AppShell from './ui/app-shell'
 
 export const ROUTE_CONFIG: RouteObject[] = [
@@ -29,6 +30,7 @@ export const ROUTE_CONFIG: RouteObject[] = [
       { path: '/interview', element: <InterviewPage /> },
       { path: '/calendar', element: <CalendarPage /> },
       { path: '/settings', element: <SettingsPage /> },
+      { path: '/settings/plan', element: <PlanPage /> },
     ],
   },
 ]

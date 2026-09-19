@@ -12,6 +12,7 @@ export const ROUTES = {
   interview: '/interview',
   calendar: '/calendar',
   settings: '/settings',
+  plan: '/settings/plan',
 } as const
 
 export const PROJECT_TAG_LABEL = '프로젝트'

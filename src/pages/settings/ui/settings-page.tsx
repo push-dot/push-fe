@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { openUrl } from '@tauri-apps/plugin-opener'
-import { createBillingPortal, createCheckout } from '@/shared/api'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
 import {
@@ -10,16 +10,17 @@ import {
   Form,
   FormRow,
   FormSection,
+  Input,
   Select,
   SkeletonRows,
-  showToast,
 } from '@/shared/ui'
-import { persistTheme, useSettingsStore } from '../model/settings-store'
-
-const isTauri = () => '__TAURI_INTERNALS__' in window
+import { useInferenceSettings } from '@/features/chat'
+import { useSettingsStore } from '../model/settings-store'
+import type { Theme } from '../model/settings-store'
 
 const SettingsPage = () => {
   const t = useT()
+  const navigate = useNavigate()
   const locale = useLocaleStore((s) => s.locale)
   const setLocale = useLocaleStore((s) => s.setLocale)
   const me = useSettingsStore((s) => s.me)
@@ -30,32 +31,16 @@ const SettingsPage = () => {
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
   const load = useSettingsStore((s) => s.load)
-  const [billingPending, setBillingPending] = useState(false)
+  const credentialMode = useInferenceSettings((s) => s.credentialMode)
+  const setCredentialMode = useInferenceSettings((s) => s.setCredentialMode)
+  const byokKey = useInferenceSettings((s) => s.byokKey)
+  const setByokKey = useInferenceSettings((s) => s.setByokKey)
+  const byokModel = useInferenceSettings((s) => s.byokModel)
+  const setByokModel = useInferenceSettings((s) => s.setByokModel)
 
   useEffect(() => {
     void load()
   }, [load])
-
-  const save = () => {
-    persistTheme(theme)
-    showToast(t('common.saved'), 'check')
-  }
-
-  const openBillingUrl = async (fn: () => Promise<string>) => {
-    setBillingPending(true)
-    try {
-      const url = await fn()
-      if (isTauri()) {
-        await openUrl(url)
-      } else {
-        window.location.assign(url)
-      }
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t('common.loadFailed'), 'circle-alert')
-    } finally {
-      setBillingPending(false)
-    }
-  }
 
   const modelLabel = models.find((m) => m.available)?.label ?? '—'
   const plan = billing?.plan ?? 'FREE'
@@ -76,45 +61,54 @@ const SettingsPage = () => {
             </FormSection>
             <FormSection title={t('settings.ai')}>
               <FormRow label={t('settings.model')} hint={modelLabel} />
+              <FormRow label={t('settings.credentials')}>
+                <Select
+                  className="form-select"
+                  aria-label={t('settings.credentials')}
+                  value={credentialMode}
+                  onChange={(e) => setCredentialMode(e.target.value as 'MANAGED' | 'BYOK')}
+                >
+                  <option value="MANAGED">{t('infer.managed')}</option>
+                  <option value="BYOK">{t('infer.byok')}</option>
+                </Select>
+              </FormRow>
+              {credentialMode === 'BYOK' ? (
+                <>
+                  <FormRow label={t('infer.apiKey')}>
+                    <Input
+                      type="password"
+                      value={byokKey}
+                      placeholder="sk-..."
+                      autoComplete="off"
+                      onChange={(e) => setByokKey(e.target.value)}
+                    />
+                  </FormRow>
+                  <FormRow label={t('settings.byokModel')}>
+                    <Input
+                      type="text"
+                      value={byokModel}
+                      placeholder="gpt-4o-mini"
+                      autoComplete="off"
+                      onChange={(e) => setByokModel(e.target.value)}
+                    />
+                  </FormRow>
+                  <FormRow label="" hint={t('infer.byokHint')} />
+                </>
+              ) : null}
             </FormSection>
             <FormSection title={t('settings.plan')}>
-              <FormRow label={t('settings.currentPlan')} hint={plan} />
-              {plan !== 'ULTRA' ? (
-                <FormRow label="Pro">
+              <FormRow label={t('settings.currentPlan')}>
+                <div className="form-row-plan">
+                  <span className="form-row-hint">{plan}</span>
                   <Button
                     variant="secondary"
                     size="sm"
-                    loading={billingPending}
-                    onClick={() => void openBillingUrl(() => createCheckout('PRO'))}
+                    onClick={() => navigate(ROUTES.plan)}
                   >
                     {t('settings.upgrade')}
                   </Button>
-                </FormRow>
-              ) : null}
-              {plan === 'FREE' ? (
-                <FormRow label="Ultra">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={billingPending}
-                    onClick={() => void openBillingUrl(() => createCheckout('ULTRA'))}
-                  >
-                    {t('settings.upgrade')}
-                  </Button>
-                </FormRow>
-              ) : null}
-              {plan !== 'FREE' ? (
-                <FormRow label={t('settings.manageBilling')}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={billingPending}
-                    onClick={() => void openBillingUrl(createBillingPortal)}
-                  >
-                    {t('settings.manageBilling')}
-                  </Button>
-                </FormRow>
-              ) : null}
+                </div>
+              </FormRow>
             </FormSection>
             <FormSection title={t('settings.appearance')}>
               <FormRow label={t('settings.language')}>
@@ -133,15 +127,13 @@ const SettingsPage = () => {
                   className="form-select"
                   aria-label={t('settings.theme')}
                   value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
+                  onChange={(e) => setTheme(e.target.value as Theme)}
                 >
-                  <option value="라이트">{t('settings.themeLight')}</option>
+                  <option value="light">{t('settings.themeLight')}</option>
+                  <option value="dark">{t('settings.themeDark')}</option>
                 </Select>
               </FormRow>
             </FormSection>
-            <Button variant="primary" size="md" onClick={save}>
-              {t('common.save')}
-            </Button>
           </Form>
         ) : null}
       </div>

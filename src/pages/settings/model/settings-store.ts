@@ -6,14 +6,26 @@ type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
 const APPEARANCE_KEY = 'push-appearance'
 
+export type Theme = 'light' | 'dark'
+
+const storedTheme = (): Theme => {
+  const v = localStorage.getItem(APPEARANCE_KEY)
+  return v === 'dark' ? 'dark' : 'light'
+}
+
+export const applyTheme = (theme: Theme): void => {
+  document.documentElement.dataset.theme = theme
+  localStorage.setItem(APPEARANCE_KEY, theme)
+}
+
 type SettingsState = {
   me: AuthUser | null
   billing: BillingSummary | null
   models: AiModel[]
   status: LoadStatus
   error: string | null
-  theme: string
-  setTheme: (theme: string) => void
+  theme: Theme
+  setTheme: (theme: Theme) => void
   load: () => Promise<void>
 }
 
@@ -23,8 +35,11 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   models: [],
   status: 'idle',
   error: null,
-  theme: localStorage.getItem(APPEARANCE_KEY) ?? '라이트',
-  setTheme: (theme) => set({ theme }),
+  theme: storedTheme(),
+  setTheme: (theme) => {
+    applyTheme(theme)
+    set({ theme })
+  },
   load: async () => {
     set({ status: 'loading', error: null })
     try {
@@ -47,7 +62,3 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
     }
   },
 }))
-
-export const persistTheme = (theme: string): void => {
-  localStorage.setItem(APPEARANCE_KEY, theme)
-}
