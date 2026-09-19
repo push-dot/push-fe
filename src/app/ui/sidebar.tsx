@@ -268,7 +268,7 @@ const Sidebar = () => {
             className="context-menu-item"
             onClick={() => setEditing({ id: menu.conv.id, value: menu.conv.title })}
           >
-            <Icon name="pencil" size={14} />
+            <Icon name="pencil" size={16} />
             {t('menu.rename')}
           </button>
           <button
@@ -276,7 +276,7 @@ const Sidebar = () => {
             className="context-menu-item"
             onClick={() => void togglePin(menu.conv)}
           >
-            <Icon name={menu.conv.pinned ? 'pin-off' : 'pin'} size={14} />
+            <Icon name={menu.conv.pinned ? 'pin-off' : 'pin'} size={16} />
             {menu.conv.pinned ? t('menu.unpin') : t('menu.pin')}
           </button>
           <button
@@ -284,7 +284,7 @@ const Sidebar = () => {
             className="context-menu-item is-danger"
             onClick={() => void removeChat(menu.conv.id)}
           >
-            <Icon name="trash-2" size={14} />
+            <Icon name="trash-2" size={16} />
             {t('menu.delete')}
           </button>
         </div>
