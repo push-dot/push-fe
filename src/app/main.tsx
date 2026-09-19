@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import '@/shared/design/tokens.css'
+import '@/shared/design/theme.css'
 import '@/shared/design/components.css'
-import './styles.css'
+import './app.css'
 import { IconSprite } from '@/shared/ui'
 import { ROUTE_CONFIG } from './routes'
 
