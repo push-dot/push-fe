@@ -50,7 +50,8 @@ export const importEvidence = async (file: File, sourceId: string): Promise<Care
       headers: { 'Idempotency-Key': newIdempotencyKey() },
     }),
   )
-  const evidence = (env.data.result as { evidence?: CareerEvidence[] } | null)?.evidence ?? []
+  const result = env.data.result as { value?: { evidence?: CareerEvidence[] } } | null
+  const evidence = result?.value?.evidence ?? []
   if (env.data.status !== 'SUCCEEDED' || evidence.length === 0) {
     throw new Error(env.data.error?.message ?? 'evidence import failed')
   }
