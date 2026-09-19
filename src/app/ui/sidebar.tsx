@@ -210,7 +210,11 @@ const Sidebar = () => {
                 ) : (
                   <span className="sidebar-item-label">{c.title}</span>
                 )}
-                {c.pinned ? <Icon name="pin" size={14} className="sidebar-item-pin" /> : null}
+                {c.pinned ? (
+                  <span className="sidebar-item-pin">
+                    <Icon name="pin" size={16} />
+                  </span>
+                ) : null}
                 {isProjectConversation(c) ? (
                   <span className="sidebar-tag">{t('nav.projectTag')}</span>
                 ) : null}
