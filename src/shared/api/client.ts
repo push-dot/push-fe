@@ -8,7 +8,7 @@ let refreshing: Promise<Session> | null = null
 
 const refreshSession = (): Promise<Session> => {
   refreshing ??= ky
-    .post(`${API_BASE_URL}auth/refresh`, {
+    .post(`${API_BASE_URL}/auth/refresh`, {
       json: { refreshToken: useSessionStore.getState().session?.refreshToken ?? '' },
     })
     .json<DataEnvelope<Session>>()
