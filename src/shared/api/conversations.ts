@@ -94,24 +94,6 @@ export const listMessages = async (
     }),
   )
 
-export const sendMessage = async (
-  conversationId: string,
-  body: {
-    text: string
-    context: { documentId?: string; versionId?: string; evidenceIds: string[] }
-    ai: AiOptions
-    accessMode: AccessMode
-  },
-): Promise<Operation> => {
-  const env = await request<DataEnvelope<Operation>>(() =>
-    api.post(`conversations/${conversationId}/messages`, {
-      json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
-    }),
-  )
-  return env.data
-}
-
 export type OperationStatus =
   'QUEUED' | 'RUNNING' | 'NEEDS_INPUT' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED'
 

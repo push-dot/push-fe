@@ -1,5 +1,5 @@
 export { api } from './client'
-export { ApiError, NETWORK_ERROR_MESSAGE, request, toApiError } from './envelope'
+export { ApiError, networkErrorMessage, request, toApiError } from './envelope'
 export type { ApiErrorBody, DataEnvelope, ListEnvelope, ListParams, PageInfo } from './envelope'
 export { exchangeCode, fetchMe, logout, startOAuth } from './auth'
 export type { AuthProvider, AuthUser, OAuthStart } from './auth'
@@ -38,7 +38,6 @@ export {
   createConversation,
   listConversations,
   listMessages,
-  sendMessage,
 } from './conversations'
 export { streamMessage } from './message-stream'
 export type { MessageStreamEvent, SendMessageBody } from './message-stream'

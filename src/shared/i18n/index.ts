@@ -68,6 +68,11 @@ const dict = {
     'chat.jumpLatest': '최신 메시지로 이동',
     'common.retry': '다시 시도',
     'common.loadFailed': '불러오지 못했어요',
+    'common.networkError': '네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
+    'chat.loadMoreFailed': '이전 메시지를 불러오지 못했어요',
+    'chat.modelConfigFailed': 'AI 모델 설정을 불러오지 못했어요',
+    'chat.noResponse': '응답을 받지 못했어요',
+    'chat.sendFailed': '전송하지 못했어요',
     'common.save': '저장',
     'common.saved': '저장했어요',
     'settings.account': '계정',
@@ -132,6 +137,11 @@ const dict = {
     'chat.jumpLatest': 'Jump to latest',
     'common.retry': 'Retry',
     'common.loadFailed': 'Could not load',
+    'common.networkError': 'Check your network and try again.',
+    'chat.loadMoreFailed': 'Could not load earlier messages',
+    'chat.modelConfigFailed': 'Could not load model settings',
+    'chat.noResponse': 'No response received',
+    'chat.sendFailed': 'Could not send',
     'common.save': 'Save',
     'common.saved': 'Saved',
     'settings.account': 'Account',
@@ -151,6 +161,9 @@ const dict = {
 } as const
 
 export type MsgKey = keyof (typeof dict)['ko']
+
+export const t = (key: MsgKey): string =>
+  dict[useLocaleStore.getState().locale][key]
 
 export const useT = () => {
   const locale = useLocaleStore((s) => s.locale)

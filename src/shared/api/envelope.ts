@@ -1,6 +1,6 @@
 import { HTTPError, TimeoutError } from 'ky'
 import type { ResponsePromise } from 'ky'
-import { useLocaleStore } from '../i18n'
+import { t } from '../i18n'
 
 export type ApiErrorBody = {
   code: string
@@ -37,12 +37,7 @@ export class ApiError extends Error {
   }
 }
 
-export const NETWORK_ERROR_MESSAGE = '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
-
-export const networkErrorMessage = () =>
-  useLocaleStore.getState().locale === 'en'
-    ? 'Check your network and try again.'
-    : NETWORK_ERROR_MESSAGE
+export const networkErrorMessage = () => t('common.networkError')
 
 export const toApiError = async (error: unknown): Promise<ApiError> => {
   if (error instanceof HTTPError) {
