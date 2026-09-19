@@ -6,7 +6,10 @@ type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
 const BYOK_KEY_STORAGE = 'push-byok-key'
 const BYOK_MODEL_STORAGE = 'push-byok-model'
+const BYOK_PROVIDER_STORAGE = 'push-byok-provider'
 const CREDENTIAL_MODE_STORAGE = 'push-credential-mode'
+
+export type ByokProvider = 'OPENAI' | 'OPENROUTER'
 
 type InferenceSettingsState = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
@@ -16,6 +19,7 @@ type InferenceSettingsState = {
   credentialMode: 'MANAGED' | 'BYOK'
   byokKey: string
   byokModel: string
+  byokProvider: ByokProvider
   models: AiModel[]
   modelsStatus: LoadStatus
   selectedModel: string | null
@@ -27,6 +31,7 @@ type InferenceSettingsState = {
   setCredentialMode: (mode: 'MANAGED' | 'BYOK') => void
   setByokKey: (key: string) => void
   setByokModel: (model: string) => void
+  setByokProvider: (provider: ByokProvider) => void
   setModel: (model: string) => void
   loadModels: () => Promise<void>
   aiOptions: () => AiOptions | null
@@ -40,6 +45,9 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   credentialMode: localStorage.getItem(CREDENTIAL_MODE_STORAGE) === 'BYOK' ? 'BYOK' : 'MANAGED',
   byokKey: localStorage.getItem(BYOK_KEY_STORAGE) ?? '',
   byokModel: localStorage.getItem(BYOK_MODEL_STORAGE) ?? 'gpt-4o-mini',
+  byokProvider: localStorage.getItem(BYOK_PROVIDER_STORAGE) === 'OPENROUTER'
+    ? 'OPENROUTER'
+    : 'OPENAI',
   models: [],
   modelsStatus: 'idle',
   selectedModel: null,
@@ -59,6 +67,10 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   setByokModel: (byokModel) => {
     localStorage.setItem(BYOK_MODEL_STORAGE, byokModel)
     set({ byokModel })
+  },
+  setByokProvider: (byokProvider) => {
+    localStorage.setItem(BYOK_PROVIDER_STORAGE, byokProvider)
+    set({ byokProvider })
   },
   setModel: (selectedModel) => set({ selectedModel }),
   loadModels: async () => {
@@ -83,7 +95,7 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
     if (s.credentialMode === 'BYOK') {
       if (!s.byokKey || !s.byokModel) return null
       return {
-        provider: 'OPENAI',
+        provider: s.byokProvider,
         model: s.byokModel,
         credentialMode: 'BYOK',
         effort: s.effort,
