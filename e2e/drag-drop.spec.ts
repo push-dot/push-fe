@@ -5,7 +5,7 @@ import { authedPage } from './fixtures'
 const PDF_PATH =
   '/Users/cyjoon/.paseo/uploads/upload_c105e269-6e22-403b-8c69-d95ac706e6ab/________________.pdf'
 
-test('drag a pdf onto chat page shows overlay and uploads', async ({ page }) => {
+test('drag a pdf onto chat page shows overlay, chip, then uploads on send', async ({ page }) => {
   await authedPage(page, '/')
   await page.locator('button.sidebar-item', { hasText: '새 채팅' }).click()
   await page.waitForURL(/\/chat\//)
@@ -23,5 +23,9 @@ test('drag a pdf onto chat page shows overlay and uploads', async ({ page }) => 
 
   await page.dispatchEvent('body', 'drop', { dataTransfer })
   await expect(page.locator('.drop-overlay')).toBeHidden()
+  await expect(page.locator('.file-chip')).toContainText('resume.pdf')
+
+  await page.getByRole('button', { name: '보내기' }).click()
+  await expect(page.locator('.file-chip')).toHaveCount(0)
   await expect(page.locator('.toast')).toContainText('파일을 올렸어요', { timeout: 15_000 })
 })
