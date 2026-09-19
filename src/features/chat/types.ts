@@ -1,3 +1,2 @@
-export type { Conversation, Message, MessageAttachment, MessageRole } from './api/schemas'
-export type { MessageStreamEvent, SendMessageBody } from './api/fetchers'
+export type { Conversation, Message, MessageAttachment, MessageRole, MessageStreamEvent, SendMessageBody } from './api/schemas'
 export type { SendStatus } from './stores'

@@ -1,3 +1,6 @@
+import type { Operation } from '@/shared/api'
+import type { AccessMode, AiOptions } from '@/features/inference'
+
 export type Conversation = {
   id: string
   revision: number
@@ -25,3 +28,18 @@ export type Message = {
   operationId: string | null
   createdAt: string
 }
+export type MessageStreamEvent =
+  | { type: 'token'; text: string }
+  | { type: 'done'; operation: Operation }
+  | {
+      type: 'error'
+      error: { code: string; message: string; details?: Record<string, unknown> }
+    }
+
+export type SendMessageBody = {
+  text: string
+  context: { documentId?: string; versionId?: string; evidenceIds: string[] }
+  ai: AiOptions
+  accessMode: AccessMode
+}
+

@@ -3,27 +3,9 @@ import { request } from '@/shared/api'
 import type { DataEnvelope } from '@/shared/api'
 import { createPkcePair } from '@/shared/lib/pkce'
 import type { Session } from '@/shared/auth/session'
-import type { AuthProvider } from './schemas'
+import type { AuthProvider, AuthUser, OAuthStart } from './schemas'
 
-export const PKCE_VERIFIER_STORAGE_KEY = 'push:pkce-verifier'
-export const OAUTH_REDIRECT_URI =
-  '__TAURI_INTERNALS__' in window
-    ? 'push://auth/callback'
-    : `${window.location.origin}/auth/callback`
-
-export type OAuthStart = {
-  authorizationUrl: string
-  state: string
-  expiresAt: string
-}
-
-export type AuthUser = {
-  id: string
-  displayName: string
-  locale: string
-  createdAt: string
-}
-
+import { OAUTH_REDIRECT_URI, PKCE_VERIFIER_STORAGE_KEY } from '../constants'
 export const startOAuth = async (provider: AuthProvider): Promise<OAuthStart> => {
   const { verifier, challenge } = await createPkcePair()
   const env = await request<DataEnvelope<OAuthStart>>(() =>

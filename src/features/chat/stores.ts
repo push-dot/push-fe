@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Conversation, Message } from './api/schemas'
 import { archiveConversation, createConversation, listConversations, listMessages, patchConversation, streamMessage } from './api/fetchers'
+import type { AccessMode, AiOptions } from '@/features/inference'
 import { useInferenceSettings } from '@/features/inference'
 import { useApprovalsStore } from '@/features/approval'
 import { ApiError } from '@/shared/api'
@@ -49,7 +50,14 @@ type MessagesState = {
 
 let abortCtrl: AbortController | null = null
 
-export const useMessagesStore = create<MessagesState>()((set, get) => ({
+export type MessagesDeps = {
+  aiOptions: () => AiOptions | null
+  accessMode: () => AccessMode
+  byokKey: () => string
+  ensureApproval: (id: string) => void
+}
+
+export const createMessagesStore = (deps: MessagesDeps) => create<MessagesState>()((set, get) => ({
   conversationId: null,
   messages: [],
   status: 'idle',
@@ -111,12 +119,12 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
   },
 
   send: async (conversationId, text, evidenceIds = []) => {
-    const ai = useInferenceSettings.getState().aiOptions()
+    const ai = deps.aiOptions()
     if (!ai) {
       showToast(t('chat.modelConfigFailed'), 'circle-alert')
       return
     }
-    const accessMode = useInferenceSettings.getState().accessMode
+    const accessMode = deps.accessMode()
     abortCtrl?.abort()
     const controller = new AbortController()
     abortCtrl = controller
@@ -151,7 +159,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
           signal: controller.signal,
           byokKey:
             ai.credentialMode === 'BYOK'
-              ? useInferenceSettings.getState().byokKey
+              ? deps.byokKey()
               : undefined,
         },
       )) {
@@ -175,7 +183,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
               streamText: '',
             }))
             for (const id of approvalIds) {
-              void useApprovalsStore.getState().ensure(id)
+              deps.ensureApproval(id)
             }
           } else {
             throw new ApiError(
@@ -315,3 +323,10 @@ export const useConversationsStore = create<ConversationsState>()((set, get) => 
 
 export const isProjectConversation = (conversation: Conversation): boolean =>
   conversation.projectId != null
+
+export const useMessagesStore = createMessagesStore({
+  aiOptions: () => useInferenceSettings.getState().aiOptions(),
+  accessMode: () => useInferenceSettings.getState().accessMode,
+  byokKey: () => useInferenceSettings.getState().byokKey,
+  ensureApproval: (id) => void useApprovalsStore.getState().ensure(id),
+})

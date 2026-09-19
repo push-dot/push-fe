@@ -1,9 +1,8 @@
 import { api, ApiError, toApiError } from '@/shared/api'
 import { request } from '@/shared/api'
-import type { DataEnvelope, ListEnvelope, ListParams, Operation } from '@/shared/api'
+import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { AccessMode, AiOptions } from '@/features/inference'
-import type { Conversation, Message } from './schemas'
+import type { Conversation, Message, MessageStreamEvent, SendMessageBody } from './schemas'
 
 export const listConversations = async (
   params: ListParams & { applicationId?: string } = {},
@@ -69,21 +68,6 @@ export const listMessages = async (
       },
     }),
   )
-
-export type MessageStreamEvent =
-  | { type: 'token'; text: string }
-  | { type: 'done'; operation: Operation }
-  | {
-      type: 'error'
-      error: { code: string; message: string; details?: Record<string, unknown> }
-    }
-
-export type SendMessageBody = {
-  text: string
-  context: { documentId?: string; versionId?: string; evidenceIds: string[] }
-  ai: AiOptions
-  accessMode: AccessMode
-}
 
 export const streamMessage = async function* (
   conversationId: string,
