@@ -144,7 +144,13 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
           ai,
           accessMode,
         },
-        { signal: controller.signal },
+        {
+          signal: controller.signal,
+          byokKey:
+            ai.credentialMode === 'BYOK'
+              ? useInferenceSettings.getState().byokKey
+              : undefined,
+        },
       )) {
         if (ev.type === 'token') {
           partial += ev.text

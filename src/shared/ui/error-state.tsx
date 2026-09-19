@@ -1,5 +1,6 @@
 import Button from './button'
-import { NETWORK_ERROR_MESSAGE } from '../api/envelope'
+import { useT } from '../i18n'
+import { networkErrorMessage } from '../api/envelope'
 
 type ErrorStateProps = {
   title?: string
@@ -7,20 +8,19 @@ type ErrorStateProps = {
   onRetry?: () => void
 }
 
-const ErrorState = ({
-  title = '불러오지 못했어요',
-  message = NETWORK_ERROR_MESSAGE,
-  onRetry,
-}: ErrorStateProps) => (
-  <div className="error-state">
-    <div className="t-h3">{title}</div>
-    <p className="t-body-sm">{message}</p>
-    {onRetry ? (
-      <Button variant="secondary" size="md" onClick={onRetry}>
-        다시 시도
-      </Button>
-    ) : null}
-  </div>
-)
+const ErrorState = ({ title, message, onRetry }: ErrorStateProps) => {
+  const t = useT()
+  return (
+    <div className="error-state">
+      <div className="t-h3">{title ?? t('common.loadFailed')}</div>
+      <p className="t-body-sm">{message ?? networkErrorMessage()}</p>
+      {onRetry ? (
+        <Button variant="secondary" size="md" onClick={onRetry}>
+          {t('common.retry')}
+        </Button>
+      ) : null}
+    </div>
+  )
+}
 
 export default ErrorState

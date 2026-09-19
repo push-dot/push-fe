@@ -62,11 +62,18 @@ export const createApplication = async (body: {
   return env.data
 }
 
-export const resumeRun = async (id: string, ai?: AiOptions | null): Promise<Operation> => {
+export const resumeRun = async (
+  id: string,
+  ai?: AiOptions | null,
+  byokKey?: string,
+): Promise<Operation> => {
   const env = await request<DataEnvelope<Operation>>(() =>
     api.post(`applications/${id}/resume-run`, {
       json: { ai: ai ?? null },
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
+      headers: {
+        'Idempotency-Key': newIdempotencyKey(),
+        ...(byokKey ? { 'X-Byok-Key': byokKey } : {}),
+      },
     }),
   )
   return env.data

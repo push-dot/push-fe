@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { COMPOSER_PLACEHOLDER } from '@/shared/constants'
+import { useT } from '@/shared/i18n'
 import { IconButton, showToast } from '@/shared/ui'
 import { uploadSource } from '@/shared/api'
 import InferenceSettings from './inference-settings'
@@ -11,6 +11,7 @@ type ComposerProps = {
 }
 
 const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
+  const t = useT()
   const [text, setText] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -38,9 +39,9 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     if (!file) return
     try {
       await uploadSource(file, 'RESUME')
-      showToast('파일을 올렸어요')
+      showToast(t('composer.uploaded'))
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '업로드하지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('composer.uploadFailed'), 'circle-alert')
     }
   }
 
@@ -50,7 +51,7 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
       <div className="composer">
         <IconButton
           icon="paperclip"
-          aria-label="파일 첨부"
+          aria-label={t('composer.attach')}
           onClick={() => fileRef.current?.click()}
         />
         <input
@@ -64,12 +65,12 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
         />
         <IconButton
           icon="sliders-horizontal"
-          aria-label="추론 설정"
+          aria-label={t('composer.inference')}
           onClick={() => setSettingsOpen((v) => !v)}
         />
         <input
           className="composer-field"
-          placeholder={COMPOSER_PLACEHOLDER}
+          placeholder={t('composer.placeholder')}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
@@ -77,12 +78,12 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
           }}
         />
         {sending ? (
-          <IconButton icon="square" iconSize={16} aria-label="응답 중단" onClick={onAbort} />
+          <IconButton icon="square" iconSize={16} aria-label={t('composer.stop')} onClick={onAbort} />
         ) : (
           <IconButton
             icon="send-horizontal"
             iconSize={16}
-            aria-label="보내기"
+            aria-label={t('composer.send')}
             onClick={submit}
             disabled={!text.trim()}
           />

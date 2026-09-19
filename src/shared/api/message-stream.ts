@@ -21,13 +21,16 @@ export type SendMessageBody = {
 export const streamMessage = async function* (
   conversationId: string,
   body: SendMessageBody,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal; byokKey?: string } = {},
 ): AsyncGenerator<MessageStreamEvent> {
   let resp: Response
   try {
     resp = await api.post(`conversations/${conversationId}/messages/stream`, {
       json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
+      headers: {
+        'Idempotency-Key': newIdempotencyKey(),
+        ...(options.byokKey ? { 'X-Byok-Key': options.byokKey } : {}),
+      },
       timeout: false,
       signal: options.signal,
     })

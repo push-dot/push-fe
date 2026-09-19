@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { VList } from 'virtua'
 import type { VListHandle } from 'virtua'
 import type { Message, MessageAttachment } from '@/shared/api'
+import { useT } from '@/shared/i18n'
 import { ApprovalCard } from '@/features/approval'
 import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/ui'
 import type { SendStatus } from '../model/messages-store'
@@ -11,6 +12,7 @@ const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80
 
 const AttachmentView = ({ attachment }: { attachment: MessageAttachment }) => {
+  const t = useT()
   if (attachment.type === 'APPROVAL') {
     return <ApprovalCard approvalId={attachment.id} />
   }
@@ -18,14 +20,14 @@ const AttachmentView = ({ attachment }: { attachment: MessageAttachment }) => {
     return (
       <Card title={attachment.title}>
         <span className="card-meta">
-          <Icon name="link-2" size={16} /> 근거 연결됨
+          <Icon name="link-2" size={16} /> {t('chat.evidenceLinked')}
         </span>
       </Card>
     )
   }
   return (
     <Card title={attachment.title}>
-      <span className="card-meta">문서 버전</span>
+      <span className="card-meta">{t('chat.docVersion')}</span>
     </Card>
   )
 }
@@ -84,6 +86,7 @@ const ChatStream = ({
   onRetrySend,
   trailing,
 }: ChatStreamProps) => {
+  const t = useT()
   const listRef = useRef<VListHandle>(null)
   const atBottomRef = useRef(true)
   const [showJump, setShowJump] = useState(false)
@@ -131,7 +134,7 @@ const ChatStream = ({
   }
   return (
     <div className="chat-stream-virtual">
-      {loadingMore ? <div className="chat-stream-loading">이전 메시지 불러오는 중…</div> : null}
+      {loadingMore ? <div className="chat-stream-loading">{t('chat.loadingMore')}</div> : null}
       <VList ref={listRef} className="chat-vlist" shift onScroll={onScroll}>
         {messages.map((m) => (
           <MessageView key={m.id} message={m} />
@@ -144,7 +147,7 @@ const ChatStream = ({
               <span>{failedText}</span>
               {onRetrySend ? (
                 <Button size="sm" variant="secondary" onClick={onRetrySend}>
-                  다시 시도
+                  {t('common.retry')}
                 </Button>
               ) : null}
             </div>
@@ -156,7 +159,7 @@ const ChatStream = ({
         <IconButton
           className="chat-jump-bottom"
           icon="arrow-down"
-          aria-label="최신 메시지로 이동"
+          aria-label={t('chat.jumpLatest')}
           onClick={jumpToBottom}
         />
       ) : null}

@@ -1,21 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { PROJECT_TAG_LABEL, ROUTES } from '@/shared/constants'
+import { ROUTES } from '@/shared/constants'
+import { useT } from '@/shared/i18n'
+import type { MsgKey } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/ui'
 import type { IconName } from '@/shared/ui'
 import { isProjectConversation, useConversationsStore } from '@/entities/conversation'
 import { listMessages } from '@/shared/api'
 import { useMessagesStore } from '@/features/chat'
 
-const NAV_ITEMS: { to: string; icon: IconName; label: string }[] = [
-  { to: ROUTES.documents, icon: 'file-text', label: '내 서류' },
-  { to: ROUTES.applications, icon: 'briefcase', label: '지원 관리' },
-  { to: ROUTES.vault, icon: 'archive', label: '커리어 볼트' },
-  { to: ROUTES.interview, icon: 'mic', label: '면접' },
-  { to: ROUTES.calendar, icon: 'calendar', label: '캘린더' },
+const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
+  { to: ROUTES.documents, icon: 'file-text', labelKey: 'nav.documents' },
+  { to: ROUTES.applications, icon: 'briefcase', labelKey: 'nav.applications' },
+  { to: ROUTES.vault, icon: 'archive', labelKey: 'nav.vault' },
+  { to: ROUTES.interview, icon: 'mic', labelKey: 'nav.interview' },
+  { to: ROUTES.calendar, icon: 'calendar', labelKey: 'nav.calendar' },
 ]
 
+const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
+
 const Sidebar = () => {
+  const t = useT()
   const [collapsed, setCollapsed] = useState(false)
   const [peek, setPeek] = useState(false)
   const location = useLocation()
@@ -39,7 +44,7 @@ const Sidebar = () => {
 
   const newChat = async () => {
     if (creating) return
-    const candidate = conversations.find((c) => c.title === '새 채팅')
+    const candidate = conversations.find((c) => NEW_CHAT_TITLES.has(c.title))
     if (candidate) {
       try {
         const env = await listMessages(candidate.id, { limit: 1 })
@@ -54,11 +59,11 @@ const Sidebar = () => {
     try {
       const conversation = await createConversation({
         applicationId: null,
-        title: '새 채팅',
+        title: t('nav.newChat'),
       })
       navigate(ROUTES.chat(conversation.id))
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '채팅을 만들지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('toast.createChatFailed'), 'circle-alert')
     }
   }
 
@@ -67,7 +72,7 @@ const Sidebar = () => {
       await archiveConversation(id)
       if (id === activeChatId) navigate(ROUTES.home)
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '채팅을 삭제하지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('toast.deleteChatFailed'), 'circle-alert')
     }
   }
 
@@ -86,7 +91,7 @@ const Sidebar = () => {
           <span className="t-label">Push</span>
           <IconButton
             icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
-            aria-label={collapsed ? '사이드바 고정' : '사이드바 접기'}
+            aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
             onClick={() => {
               setCollapsed((v) => !v)
               setPeek(false)
@@ -95,10 +100,10 @@ const Sidebar = () => {
         </div>
         <div className="sidebar-scroll">
           <div className="sidebar-section">
-            <div className="sidebar-label">채팅</div>
+            <div className="sidebar-label">{t('nav.chat')}</div>
             <button type="button" className="sidebar-item" onClick={() => void newChat()}>
               <Icon name="square-pen" size={20} />
-              <span className="sidebar-item-label">새 채팅</span>
+              <span className="sidebar-item-label">{t('nav.newChat')}</span>
             </button>
             {conversations.map((c) => (
               <div
@@ -110,13 +115,13 @@ const Sidebar = () => {
                 {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
                 <span className="sidebar-item-label">{c.title}</span>
                 {isProjectConversation(c) ? (
-                  <span className="sidebar-tag">{PROJECT_TAG_LABEL}</span>
+                  <span className="sidebar-tag">{t('nav.projectTag')}</span>
                 ) : null}
                 <IconButton
                   className="sidebar-item-delete"
                   icon="trash-2"
                   iconSize={16}
-                  aria-label="채팅 삭제"
+                  aria-label={t('nav.deleteChat')}
                   onClick={(e) => {
                     e.stopPropagation()
                     void removeChat(c.id)
@@ -126,7 +131,7 @@ const Sidebar = () => {
             ))}
           </div>
           <div className="sidebar-section">
-            <div className="sidebar-label">기능</div>
+            <div className="sidebar-label">{t('nav.features')}</div>
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.to}
@@ -137,7 +142,7 @@ const Sidebar = () => {
                 onClick={() => navigate(item.to)}
               >
                 <Icon name={item.icon} size={20} />
-                <span className="sidebar-item-label">{item.label}</span>
+                <span className="sidebar-item-label">{t(item.labelKey)}</span>
               </button>
             ))}
           </div>
@@ -151,7 +156,7 @@ const Sidebar = () => {
             onClick={() => navigate(ROUTES.settings)}
           >
             <Icon name="settings" size={20} />
-            <span className="sidebar-item-label">설정</span>
+            <span className="sidebar-item-label">{t('nav.settings')}</span>
           </button>
         </div>
       </aside>

@@ -4,9 +4,11 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { startOAuth } from '@/shared/api'
 import type { AuthProvider } from '@/shared/api'
 import { useSessionStore } from '@/shared/auth/session'
+import { useT } from '@/shared/i18n'
 import { Button, Card, ErrorState } from '@/shared/ui'
 
 const LoginPage = () => {
+  const t = useT()
   const session = useSessionStore((s) => s.session)
   const [pending, setPending] = useState<AuthProvider | null>(null)
   const [failed, setFailed] = useState(false)
@@ -34,7 +36,7 @@ const LoginPage = () => {
     <div className="canvas">
       <div className="center">
         <Card title="Push">
-          <p className="t-body-sm">채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱</p>
+          <p className="t-body-sm">{t('app.tagline')}</p>
         </Card>
         {failed ? (
           <ErrorState onRetry={() => setFailed(false)} />
@@ -46,7 +48,7 @@ const LoginPage = () => {
               loading={pending === 'google'}
               onClick={() => void start('google')}
             >
-              Google로 계속
+              {t('login.google')}
             </Button>
             <Button
               variant="secondary"
@@ -54,7 +56,7 @@ const LoginPage = () => {
               loading={pending === 'github'}
               onClick={() => void start('github')}
             >
-              GitHub로 계속
+              {t('login.github')}
             </Button>
           </>
         )}
