@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from '@/shared/i18n'
-import { IconButton, showToast } from '@/shared/ui'
+import { Icon, IconButton, showToast } from '@/shared/ui'
 import { uploadSource } from '@/shared/api'
+import { usePendingFiles } from '@/shared/lib/pending-files'
 import InferenceSettings from './inference-settings'
 
 type ComposerProps = {
@@ -28,26 +29,60 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     return () => document.removeEventListener('mousedown', onPointerDown)
   }, [settingsOpen])
 
+  const pending = usePendingFiles((s) => s.files)
+  const addFiles = usePendingFiles((s) => s.add)
+  const removeFile = usePendingFiles((s) => s.remove)
+  const clearFiles = usePendingFiles((s) => s.clear)
+
   const submit = () => {
     const value = text.trim()
-    if (!value || sending) return
-    onSend(value)
-    setText('')
+    if ((!value && pending.length === 0) || sending) return
+    void (async () => {
+      for (const file of pending) {
+        try {
+          await uploadSource(file, 'RESUME')
+          showToast(t('composer.uploaded'))
+        } catch (error) {
+          showToast(
+            error instanceof Error ? error.message : t('composer.uploadFailed'),
+            'circle-alert',
+          )
+          return
+        }
+      }
+      clearFiles()
+      if (value) {
+        onSend(value)
+        setText('')
+      }
+    })()
   }
 
-  const onAttach = async (file: File | undefined) => {
-    if (!file) return
-    try {
-      await uploadSource(file, 'RESUME')
-      showToast(t('composer.uploaded'))
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : t('composer.uploadFailed'), 'circle-alert')
-    }
+  const onAttach = (file: File | undefined) => {
+    if (file) addFiles([file])
   }
 
   return (
     <div className="composer-wrap" ref={wrapRef}>
       {settingsOpen ? <InferenceSettings /> : null}
+      {pending.length ? (
+        <div className="composer-files">
+          {pending.map((file, i) => (
+            <span key={`${file.name}-${i}`} className="file-chip">
+              <Icon name="file-text" size={16} />
+              <span className="file-chip-name">{file.name}</span>
+              <button
+                type="button"
+                className="file-chip-remove"
+                aria-label={t('composer.removeFile')}
+                onClick={() => removeFile(i)}
+              >
+                <Icon name="x" size={16} />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
       <div className="composer">
         <IconButton
           icon="paperclip"
@@ -59,7 +94,7 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
           type="file"
           hidden
           onChange={(e) => {
-            void onAttach(e.target.files?.[0])
+            onAttach(e.target.files?.[0])
             e.target.value = ''
           }}
         />
@@ -85,7 +120,7 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
             iconSize={16}
             aria-label={t('composer.send')}
             onClick={submit}
-            disabled={!text.trim()}
+            disabled={!text.trim() && pending.length === 0}
           />
         )}
       </div>
