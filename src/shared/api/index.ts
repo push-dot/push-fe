@@ -1,5 +1,5 @@
 export { api } from './client'
-export { ApiError, NETWORK_ERROR_MESSAGE, request, toApiError } from './envelope'
+export { ApiError, networkErrorMessage, request, toApiError } from './envelope'
 export type { ApiErrorBody, DataEnvelope, ListEnvelope, ListParams, PageInfo } from './envelope'
 export { exchangeCode, fetchMe, logout, startOAuth } from './auth'
 export type { AuthProvider, AuthUser, OAuthStart } from './auth'
@@ -38,7 +38,6 @@ export {
   createConversation,
   listConversations,
   listMessages,
-  sendMessage,
 } from './conversations'
 export { streamMessage } from './message-stream'
 export type { MessageStreamEvent, SendMessageBody } from './message-stream'
@@ -68,7 +67,7 @@ export { listCalendarEvents, syncGoogle } from './calendar'
 export type { CalendarEvent } from './calendar'
 export { createInterview, listInterviews, prepareInterview } from './interviews'
 export type { InterviewSession } from './interviews'
-export { fetchBilling, listAiModels } from './ai'
+export { createBillingPortal, createCheckout, fetchBilling, listAiModels } from './ai'
 export type { AiModel, BillingSummary } from './ai'
 export { getOperation, waitForOperation } from './operations'
 export { uploadSource } from './sources'

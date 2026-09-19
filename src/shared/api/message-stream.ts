@@ -21,13 +21,16 @@ export type SendMessageBody = {
 export const streamMessage = async function* (
   conversationId: string,
   body: SendMessageBody,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal; byokKey?: string } = {},
 ): AsyncGenerator<MessageStreamEvent> {
   let resp: Response
   try {
     resp = await api.post(`conversations/${conversationId}/messages/stream`, {
       json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
+      headers: {
+        'Idempotency-Key': newIdempotencyKey(),
+        ...(options.byokKey ? { 'X-Byok-Key': options.byokKey } : {}),
+      },
       timeout: false,
       signal: options.signal,
     })
@@ -44,14 +47,21 @@ export const streamMessage = async function* (
     buf += decoder.decode(value, { stream: true })
     let idx = buf.indexOf('\n\n')
     while (idx >= 0) {
-      const frame = buf.slice(0, idx)
+      yield* parseFrame(buf.slice(0, idx))
       buf = buf.slice(idx + 2)
-      for (const line of frame.split('\n')) {
-        if (line.startsWith('data: ')) {
-          yield JSON.parse(line.slice(6)) as MessageStreamEvent
-        }
-      }
       idx = buf.indexOf('\n\n')
+    }
+  }
+  if (buf.trim()) yield* parseFrame(buf)
+}
+
+const parseFrame = function* (frame: string): Generator<MessageStreamEvent> {
+  for (const line of frame.split('\n')) {
+    if (!line.startsWith('data: ')) continue
+    try {
+      yield JSON.parse(line.slice(6)) as MessageStreamEvent
+    } catch {
+      yield { type: 'error', error: { code: 'STREAM_PARSE', message: 'malformed stream frame' } }
     }
   }
 }

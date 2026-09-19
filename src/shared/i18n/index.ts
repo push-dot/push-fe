@@ -1,0 +1,171 @@
+import { create } from 'zustand'
+
+export type Locale = 'ko' | 'en'
+
+const LOCALE_KEY = 'push-locale'
+
+const stored = localStorage.getItem(LOCALE_KEY)
+
+type I18nState = {
+  locale: Locale
+  setLocale: (locale: Locale) => void
+}
+
+export const useLocaleStore = create<I18nState>()((set) => ({
+  locale: stored === 'en' ? 'en' : 'ko',
+  setLocale: (locale) => {
+    localStorage.setItem(LOCALE_KEY, locale)
+    set({ locale })
+  },
+}))
+
+const dict = {
+  ko: {
+    'app.tagline': '채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱',
+    'login.google': 'Google로 계속',
+    'login.github': 'GitHub로 계속',
+    'nav.chat': '채팅',
+    'nav.newChat': '새 채팅',
+    'nav.deleteChat': '채팅 삭제',
+    'nav.features': '기능',
+    'nav.documents': '내 서류',
+    'nav.applications': '지원 관리',
+    'nav.vault': '커리어 볼트',
+    'nav.interview': '면접',
+    'nav.calendar': '캘린더',
+    'nav.settings': '설정',
+    'nav.projectTag': '프로젝트',
+    'nav.pinSidebar': '사이드바 고정',
+    'nav.collapseSidebar': '사이드바 접기',
+    'toast.createChatFailed': '채팅을 만들지 못했어요',
+    'toast.deleteChatFailed': '채팅을 삭제하지 못했어요',
+    'toast.runFailed': '실행하지 못했어요',
+    'home.title': '무엇을 도와드릴까요?',
+    'composer.placeholder': '메시지 입력',
+    'composer.attach': '파일 첨부',
+    'composer.inference': '추론 설정',
+    'composer.stop': '응답 중단',
+    'composer.send': '보내기',
+    'composer.uploaded': '파일을 올렸어요',
+    'composer.uploadFailed': '업로드하지 못했어요',
+    'infer.model': '모델',
+    'infer.noModels': '사용 가능한 모델 없음',
+    'infer.effort': '추론 강도',
+    'infer.low': '낮음',
+    'infer.medium': '보통',
+    'infer.high': '높음',
+    'infer.webSearch': '웹 검색',
+    'infer.credential': '자격 증명',
+    'infer.managed': 'Push 제공',
+    'infer.byok': '내 API 키',
+    'infer.apiKey': 'API 키',
+    'infer.byokHint': '키는 이 기기에만 저장돼요',
+    'chat.running': '실행 상태',
+    'chat.verified': '검증 결과',
+    'chat.evidenceLinked': '근거 연결됨',
+    'chat.docVersion': '문서 버전',
+    'chat.loadingMore': '이전 메시지 불러오는 중…',
+    'chat.jumpLatest': '최신 메시지로 이동',
+    'common.retry': '다시 시도',
+    'common.loadFailed': '불러오지 못했어요',
+    'common.networkError': '네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
+    'chat.loadMoreFailed': '이전 메시지를 불러오지 못했어요',
+    'chat.modelConfigFailed': 'AI 모델 설정을 불러오지 못했어요',
+    'chat.noResponse': '응답을 받지 못했어요',
+    'chat.sendFailed': '전송하지 못했어요',
+    'common.save': '저장',
+    'common.saved': '저장했어요',
+    'settings.account': '계정',
+    'settings.name': '이름',
+    'settings.locale': '로캘',
+    'settings.language': '언어',
+    'settings.ai': 'AI',
+    'settings.model': '모델',
+    'settings.plan': '요금제',
+    'settings.currentPlan': '현재 플랜',
+    'settings.upgrade': '업그레이드',
+    'settings.manageBilling': '결제 관리',
+    'settings.appearance': '외관',
+    'settings.theme': '테마',
+    'settings.themeLight': '라이트',
+  },
+  en: {
+    'app.tagline': 'A desktop app for managing applications, documents, and projects via chat',
+    'login.google': 'Continue with Google',
+    'login.github': 'Continue with GitHub',
+    'nav.chat': 'Chats',
+    'nav.newChat': 'New chat',
+    'nav.deleteChat': 'Delete chat',
+    'nav.features': 'Features',
+    'nav.documents': 'Documents',
+    'nav.applications': 'Applications',
+    'nav.vault': 'Career Vault',
+    'nav.interview': 'Interview',
+    'nav.calendar': 'Calendar',
+    'nav.settings': 'Settings',
+    'nav.projectTag': 'Project',
+    'nav.pinSidebar': 'Pin sidebar',
+    'nav.collapseSidebar': 'Collapse sidebar',
+    'toast.createChatFailed': 'Could not create chat',
+    'toast.deleteChatFailed': 'Could not delete chat',
+    'toast.runFailed': 'Run failed',
+    'home.title': 'What can I help with?',
+    'composer.placeholder': 'Type a message',
+    'composer.attach': 'Attach file',
+    'composer.inference': 'Inference settings',
+    'composer.stop': 'Stop',
+    'composer.send': 'Send',
+    'composer.uploaded': 'File uploaded',
+    'composer.uploadFailed': 'Upload failed',
+    'infer.model': 'Model',
+    'infer.noModels': 'No models available',
+    'infer.effort': 'Effort',
+    'infer.low': 'Low',
+    'infer.medium': 'Medium',
+    'infer.high': 'High',
+    'infer.webSearch': 'Web search',
+    'infer.credential': 'Credentials',
+    'infer.managed': 'Managed by Push',
+    'infer.byok': 'My API key',
+    'infer.apiKey': 'API key',
+    'infer.byokHint': 'Key stays on this device',
+    'chat.running': 'Run status',
+    'chat.verified': 'Verification',
+    'chat.evidenceLinked': 'Evidence linked',
+    'chat.docVersion': 'Document version',
+    'chat.loadingMore': 'Loading earlier messages…',
+    'chat.jumpLatest': 'Jump to latest',
+    'common.retry': 'Retry',
+    'common.loadFailed': 'Could not load',
+    'common.networkError': 'Check your network and try again.',
+    'chat.loadMoreFailed': 'Could not load earlier messages',
+    'chat.modelConfigFailed': 'Could not load model settings',
+    'chat.noResponse': 'No response received',
+    'chat.sendFailed': 'Could not send',
+    'common.save': 'Save',
+    'common.saved': 'Saved',
+    'settings.account': 'Account',
+    'settings.name': 'Name',
+    'settings.locale': 'Locale',
+    'settings.language': 'Language',
+    'settings.ai': 'AI',
+    'settings.model': 'Model',
+    'settings.plan': 'Plan',
+    'settings.currentPlan': 'Current plan',
+    'settings.upgrade': 'Upgrade',
+    'settings.manageBilling': 'Manage billing',
+    'settings.appearance': 'Appearance',
+    'settings.theme': 'Theme',
+    'settings.themeLight': 'Light',
+  },
+} as const
+
+export type MsgKey = keyof (typeof dict)['ko']
+
+export const t = (key: MsgKey): string =>
+  dict[useLocaleStore.getState().locale][key]
+
+export const useT = () => {
+  const locale = useLocaleStore((s) => s.locale)
+  return (key: MsgKey): string => dict[locale][key]
+}

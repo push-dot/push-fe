@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useT } from '@/shared/i18n'
 import { Card, StatusChip } from '@/shared/ui'
 import type { StatusChipTone } from '@/shared/ui'
 import type { CliRunState } from '@/shared/api'
@@ -17,6 +18,7 @@ const RUN_TONES: Record<CliRunState, StatusChipTone> = {
 }
 
 const ProjectPanels = ({ projectId }: { projectId: string }) => {
+  const t = useT()
   const runs = useProjectPanelsStore((s) => s.runs)
   const evidence = useProjectPanelsStore((s) => s.evidence)
   const load = useProjectPanelsStore((s) => s.load)
@@ -28,7 +30,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
   return (
     <>
       {runs.map((run) => (
-        <Card key={run.id} title="실행 상태">
+        <Card key={run.id} title={t('chat.running')}>
           <StatusChip
             tone={RUN_TONES[run.state]}
             label={run.state}
@@ -41,7 +43,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
         </Card>
       ))}
       {evidence.map((item) => (
-        <Card key={item.id} title="검증 결과">
+        <Card key={item.id} title={t('chat.verified')}>
           <StatusChip
             tone={
               item.status === 'VERIFIED'

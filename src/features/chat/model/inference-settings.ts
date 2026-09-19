@@ -4,11 +4,18 @@ import { fetchBilling, listAiModels } from '@/shared/api'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
+const BYOK_KEY_STORAGE = 'push-byok-key'
+const BYOK_MODEL_STORAGE = 'push-byok-model'
+const CREDENTIAL_MODE_STORAGE = 'push-credential-mode'
+
 type InferenceSettingsState = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH'
   ultraResume: boolean
   webSearch: boolean
   accessMode: AccessMode
+  credentialMode: 'MANAGED' | 'BYOK'
+  byokKey: string
+  byokModel: string
   models: AiModel[]
   modelsStatus: LoadStatus
   selectedModel: string | null
@@ -17,6 +24,9 @@ type InferenceSettingsState = {
   setUltraResume: (on: boolean) => void
   setWebSearch: (on: boolean) => void
   setAccessMode: (mode: AccessMode) => void
+  setCredentialMode: (mode: 'MANAGED' | 'BYOK') => void
+  setByokKey: (key: string) => void
+  setByokModel: (model: string) => void
   setModel: (model: string) => void
   loadModels: () => Promise<void>
   aiOptions: () => AiOptions | null
@@ -27,6 +37,9 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   ultraResume: false,
   webSearch: false,
   accessMode: 'SUGGEST',
+  credentialMode: localStorage.getItem(CREDENTIAL_MODE_STORAGE) === 'BYOK' ? 'BYOK' : 'MANAGED',
+  byokKey: localStorage.getItem(BYOK_KEY_STORAGE) ?? '',
+  byokModel: localStorage.getItem(BYOK_MODEL_STORAGE) ?? 'gpt-4o-mini',
   models: [],
   modelsStatus: 'idle',
   selectedModel: null,
@@ -35,6 +48,18 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   setUltraResume: (ultraResume) => set({ ultraResume }),
   setWebSearch: (webSearch) => set({ webSearch }),
   setAccessMode: (accessMode) => set({ accessMode }),
+  setCredentialMode: (credentialMode) => {
+    localStorage.setItem(CREDENTIAL_MODE_STORAGE, credentialMode)
+    set({ credentialMode })
+  },
+  setByokKey: (byokKey) => {
+    localStorage.setItem(BYOK_KEY_STORAGE, byokKey)
+    set({ byokKey })
+  },
+  setByokModel: (byokModel) => {
+    localStorage.setItem(BYOK_MODEL_STORAGE, byokModel)
+    set({ byokModel })
+  },
   setModel: (selectedModel) => set({ selectedModel }),
   loadModels: async () => {
     set({ modelsStatus: 'loading' })
@@ -55,6 +80,17 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   },
   aiOptions: () => {
     const s = get()
+    if (s.credentialMode === 'BYOK') {
+      if (!s.byokKey || !s.byokModel) return null
+      return {
+        provider: 'OPENAI',
+        model: s.byokModel,
+        credentialMode: 'BYOK',
+        effort: s.effort,
+        ultraResume: s.ultraResume,
+        webSearch: s.webSearch,
+      }
+    }
     const model =
       s.models.find((m) => m.available && m.model === s.selectedModel) ??
       s.models.find((m) => m.available)

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export type SessionUser = {
   id: string
@@ -19,22 +20,16 @@ type SessionState = {
   clearSession: () => void
 }
 
-const devToken = import.meta.env.VITE_DEV_AUTH_TOKEN as string | undefined
-
-const devSession: Session | null = devToken
-  ? {
-      accessToken: devToken,
-      refreshToken: '',
-      expiresIn: 900,
-      user: { id: 'dev', displayName: 'Dev User', locale: 'ko' },
-    }
-  : null
-
-export const useSessionStore = create<SessionState>()((set) => ({
-  session: devSession,
-  setSession: (session) => set({ session }),
-  clearSession: () => set({ session: null }),
-}))
+export const useSessionStore = create<SessionState>()(
+  persist(
+    (set) => ({
+      session: null,
+      setSession: (session) => set({ session }),
+      clearSession: () => set({ session: null }),
+    }),
+    { name: 'push-session' },
+  ),
+)
 
 export const getAccessToken = (): string | null =>
   useSessionStore.getState().session?.accessToken ?? null

@@ -49,7 +49,12 @@ const ApplicationsPage = () => {
   const runResume = async (appId: string) => {
     setRunningId(appId)
     try {
-      const op = await resumeRun(appId, aiOptions())
+      const st = useInferenceSettings.getState()
+      const op = await resumeRun(
+        appId,
+        aiOptions(),
+        st.credentialMode === 'BYOK' ? st.byokKey : undefined,
+      )
       const docId = (op.result as { document?: { id?: string } })?.document?.id
       showToast('맞춤 이력서를 만들었어요', 'check')
       if (docId) navigate(ROUTES.document(docId))

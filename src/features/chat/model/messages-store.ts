@@ -4,6 +4,7 @@ import { ApiError, listMessages, streamMessage } from '@/shared/api'
 import { useApprovalsStore } from '@/entities/approval'
 import { useInferenceSettings } from './inference-settings'
 import { showToast } from '@/shared/ui'
+import { t } from '@/shared/i18n'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 export type SendStatus = 'idle' | 'sending' | 'streaming' | 'failed'
@@ -103,14 +104,14 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
       }))
     } catch {
       set({ loadingMore: false })
-      showToast('이전 메시지를 불러오지 못했어요', 'circle-alert')
+      showToast(t('chat.loadMoreFailed'), 'circle-alert')
     }
   },
 
   send: async (conversationId, text) => {
     const ai = useInferenceSettings.getState().aiOptions()
     if (!ai) {
-      showToast('AI 모델 설정을 불러오지 못했어요', 'circle-alert')
+      showToast(t('chat.modelConfigFailed'), 'circle-alert')
       return
     }
     const accessMode = useInferenceSettings.getState().accessMode
@@ -144,7 +145,13 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
           ai,
           accessMode,
         },
-        { signal: controller.signal },
+        {
+          signal: controller.signal,
+          byokKey:
+            ai.credentialMode === 'BYOK'
+              ? useInferenceSettings.getState().byokKey
+              : undefined,
+        },
       )) {
         if (ev.type === 'token') {
           partial += ev.text
@@ -170,7 +177,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
             }
           } else {
             throw new ApiError(
-              operation.error?.message ?? '응답을 받지 못했어요',
+              operation.error?.message ?? t('chat.noResponse'),
               operation.error?.code ?? 'OPERATION_FAILED',
               0,
             )
@@ -192,7 +199,7 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
         failed: {
           tempId,
           text,
-          error: error instanceof Error ? error.message : '전송하지 못했어요',
+          error: error instanceof Error ? error.message : t('chat.sendFailed'),
         },
       })
     }
