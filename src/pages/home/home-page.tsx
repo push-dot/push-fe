@@ -23,7 +23,7 @@ const HomePage = () => {
   })
 
   const submit = async (text: string, evidenceIds: string[] = []) => {
-    if (isHttpUrl(text)) {
+    if (isHttpUrl(text) && evidenceIds.length === 0) {
       setJobDialog({ open: true, source: text })
       return
     }
