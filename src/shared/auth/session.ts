@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export type SessionUser = {
   id: string
@@ -19,11 +20,16 @@ type SessionState = {
   clearSession: () => void
 }
 
-export const useSessionStore = create<SessionState>()((set) => ({
-  session: null,
-  setSession: (session) => set({ session }),
-  clearSession: () => set({ session: null }),
-}))
+export const useSessionStore = create<SessionState>()(
+  persist(
+    (set) => ({
+      session: null,
+      setSession: (session) => set({ session }),
+      clearSession: () => set({ session: null }),
+    }),
+    { name: 'push-session' },
+  ),
+)
 
 export const getAccessToken = (): string | null =>
   useSessionStore.getState().session?.accessToken ?? null
