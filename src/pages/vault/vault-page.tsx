@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
-import type { VerificationStatus } from '@/shared/api'
+import { VerificationStatus } from '@/features/evidence'
 import {
   Button,
   CanvasHeader,
@@ -11,10 +11,10 @@ import {
   Icon,
   SkeletonRows,
   StatusChip,
-} from '@/shared/ui'
-import type { StatusChipTone } from '@/shared/ui'
+} from '@/shared/components'
+import type { StatusChipTone } from '@/shared/components'
 import { useEvidenceStore } from '@/features/evidence'
-import EvidenceAddDialog from './evidence-add-dialog'
+import { EvidenceAddDialog } from '@/features/evidence'
 
 const STATUS_TONES: Record<VerificationStatus, StatusChipTone> = {
   VERIFIED: 'verified',

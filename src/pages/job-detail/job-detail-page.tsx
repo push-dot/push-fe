@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
-import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/ui'
+import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/components'
 import { useApplicationsStore } from '@/features/applications'
 import { useJobStore } from '@/features/jobs'
 

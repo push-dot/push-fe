@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import type { Approval, ApprovalKind } from '@/shared/api'
-import { useApprovalsStore } from '@/features/approval'
-import { Button, Icon, StatusChip, showToast } from '@/shared/ui'
+import { Approval, ApprovalKind } from '../api'
+import { useApprovalsStore } from '../hooks'
+import { Button, Icon, StatusChip, showToast } from '@/shared/components'
 
 const KIND_TITLES: Record<ApprovalKind, string> = {
   CLI_EXECUTE: 'CLI 실행 승인',

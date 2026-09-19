@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listAiModels } from '@/shared/api'
-import type { AiModel } from '@/shared/api'
+import { listAiModels } from '@/features/settings'
+import { AiModel } from '@/features/settings'
 import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
@@ -15,11 +15,11 @@ import {
   Input,
   Select,
   SkeletonRows,
-} from '@/shared/ui'
+} from '@/shared/components'
 import { useInferenceSettings } from '@/features/chat'
-import type { ByokProvider } from '@/features/chat/model/inference-settings'
-import { useSettingsStore } from './model/settings-store'
-import type { Theme } from './model/settings-store'
+import type { ByokProvider } from '@/features/chat'
+import { useSettingsStore } from '@/features/settings'
+import type { Theme } from '@/features/settings'
 
 const SettingsPage = () => {
   const t = useT()

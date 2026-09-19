@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useT } from '@/shared/i18n'
-import { Card, DropOverlay, StatusChip } from '@/shared/ui'
-import { useFileDrop } from '@/shared/lib/file-drop'
-import type { StatusChipTone } from '@/shared/ui'
-import type { CliRunState } from '@/shared/api'
+import { Card, DropOverlay, StatusChip } from '@/shared/components'
+import { useFileDrop } from '@/features/chat'
+import type { StatusChipTone } from '@/shared/components'
+import { CliRunState } from '@/features/projects'
 import { isProjectConversation, useConversationsStore } from '@/features/chat'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
-import { useProjectPanelsStore } from './model/project-panels'
+import { useProjectPanelsStore } from '@/features/projects'
 
 const RUN_TONES: Record<CliRunState, StatusChipTone> = {
   DRAFT: 'pending',

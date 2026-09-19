@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import type { JobPosting } from '@/shared/api'
-import { createJob } from '@/shared/api'
-import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/ui'
+import { JobPosting } from '@/features/jobs'
+import { createJob } from '@/features/jobs'
+import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
 import { isHttpUrl } from '@/shared/lib/url'
 
 type JobAddDialogProps = {

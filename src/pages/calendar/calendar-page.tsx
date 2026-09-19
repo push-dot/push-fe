@@ -12,8 +12,8 @@ import {
   Skeleton,
   StatusChip,
   showToast,
-} from '@/shared/ui'
-import { useCalendarStore } from './model/calendar-store'
+} from '@/shared/components'
+import { useCalendarStore } from '@/features/calendar'
 
 const TYPE_LABELS: Record<string, string> = {
   INTERVIEW: '면접',

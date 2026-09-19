@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useSessionStore } from '@/shared/auth/session'
-import { ToastHost } from '@/shared/ui'
+import { ToastHost } from '@/shared/components'
 import { useInferenceSettings } from '@/features/chat'
-import { applyTheme, useSettingsStore } from '@/pages/settings/model/settings-store'
+import { applyTheme, useSettingsStore } from '@/features/settings'
 import Sidebar from './sidebar'
 
 const AppShell = () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { DocumentBlock } from '@/shared/api'
+import { DocumentBlock } from '@/features/documents'
 import {
   canFinalizeDocument,
   isBlockSupported,

@@ -10,7 +10,7 @@ import {
 } from 'react-router-dom'
 import { ROUTE_CONFIG } from './routes'
 import { useSessionStore } from '@/shared/auth/session'
-import { DocCard } from '@/shared/ui'
+import { DocCard } from '@/shared/components'
 
 const seedSession = () =>
   useSessionStore.setState({
