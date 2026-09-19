@@ -50,6 +50,7 @@ const PlanPage = () => {
   }, [billing, load])
 
   const plan = billing?.plan ?? 'FREE'
+  const rank = { FREE: 0, PRO: 1, ULTRA: 2 } as const
 
   const openBillingUrl = async (fn: () => Promise<string>, key: string) => {
     setPending(key)
@@ -121,6 +122,15 @@ const PlanPage = () => {
                     onClick={() => void openBillingUrl(createBillingPortal, 'portal')}
                   >
                     {t('settings.manageBilling')}
+                  </Button>
+                ) : rank[card.id] < rank[plan as keyof typeof rank] ? (
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={pending === card.id}
+                    onClick={() => void openBillingUrl(createBillingPortal, card.id)}
+                  >
+                    {t('plan.downgrade')}
                   </Button>
                 ) : (
                   <Button
