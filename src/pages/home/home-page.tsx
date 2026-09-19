@@ -6,7 +6,7 @@ import { isHttpUrl } from '@/shared/lib/url'
 import { DropOverlay, showToast } from '@/shared/components'
 import { useExperiment } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/features/chat'
-import { useConversationsStore } from '@/features/chat'
+import { useConversationsStore } from '@/features/conversations'
 import { Composer } from '@/features/chat'
 import { JobAddDialog } from '@/features/job-add'
 

@@ -1,60 +1,9 @@
 import { api, ApiError, toApiError } from '@/shared/api'
 import { request } from '@/shared/api'
-import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
+import type { ListEnvelope, ListParams, Operation } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { Conversation, Message, AiOptions, AccessMode } from './schemas'
-
-export const listConversations = async (
-  params: ListParams & { applicationId?: string } = {},
-): Promise<ListEnvelope<Conversation>> =>
-  request(() =>
-    api.get('conversations', {
-      searchParams: {
-        ...(params.limit ? { limit: params.limit } : {}),
-        ...(params.cursor ? { cursor: params.cursor } : {}),
-        ...(params.applicationId ? { applicationId: params.applicationId } : {}),
-      },
-    }),
-  )
-
-export const createConversation = async (body: {
-  applicationId: string | null
-  title?: string
-}): Promise<Conversation> => {
-  const env = await request<DataEnvelope<Conversation>>(() =>
-    api.post('conversations', {
-      json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
-    }),
-  )
-  return env.data
-}
-
-export const patchConversation = async (
-  id: string,
-  expectedRevision: number,
-  patch: { title?: string; pinned?: boolean },
-): Promise<Conversation> => {
-  const env = await request<DataEnvelope<Conversation>>(() =>
-    api.patch(`conversations/${id}`, {
-      json: { expectedRevision, ...patch },
-    }),
-  )
-  return env.data
-}
-
-export const archiveConversation = async (
-  id: string,
-  expectedRevision: number,
-): Promise<Conversation> => {
-  const env = await request<DataEnvelope<Conversation>>(() =>
-    api.post(`conversations/${id}/archive`, {
-      json: { expectedRevision },
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
-    }),
-  )
-  return env.data
-}
+import type { AccessMode, AiOptions } from '@/features/inference'
+import type { Message } from './schemas'
 
 export const listMessages = async (
   conversationId: string,
@@ -68,27 +17,6 @@ export const listMessages = async (
       },
     }),
   )
-
-export type OperationStatus =
-  'QUEUED' | 'RUNNING' | 'NEEDS_INPUT' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED'
-
-export type Operation = {
-  id: string
-  type: string
-  applicationId: string | null
-  status: OperationStatus
-  progress: number | null
-  result: unknown
-  error: { code: string; message: string; retryable: boolean } | null
-  inputRequest: {
-    code: string
-    message: string
-    fields: { name: string; label: string; type: 'TEXT' | 'FILE' }[]
-  } | null
-  createdAt: string
-  updatedAt: string
-}
-
 
 export type MessageStreamEvent =
   | { type: 'token'; text: string }

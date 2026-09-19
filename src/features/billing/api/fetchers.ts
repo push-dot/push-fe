@@ -1,31 +1,8 @@
 import { api } from '@/shared/api'
 import { request } from '@/shared/api'
-import type { DataEnvelope, ListEnvelope } from '@/shared/api'
+import type { DataEnvelope } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { AiModel } from './schemas'
-
-export const listAiModels = async (params?: {
-  provider?: string
-  credentialMode?: 'MANAGED' | 'BYOK'
-  byokKey?: string
-}): Promise<ListEnvelope<AiModel>> =>
-  request(() =>
-    api.get('ai/models', {
-      searchParams: {
-        ...(params?.provider ? { provider: params.provider } : {}),
-        ...(params?.credentialMode ? { credentialMode: params.credentialMode } : {}),
-      },
-      headers: params?.byokKey ? { 'X-Byok-Key': params.byokKey } : {},
-    }),
-  )
-
-export type BillingSummary = {
-  subscriptionStatus: string
-  plan: string
-  periodEndsAt: string | null
-  balanceMicroCredits: number
-  reservedMicroCredits: number
-}
+import type { BillingSummary } from './schemas'
 
 export const fetchBilling = async (): Promise<BillingSummary> => {
   const env = await request<DataEnvelope<BillingSummary>>(() => api.get('billing'))

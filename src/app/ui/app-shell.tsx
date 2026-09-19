@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useSessionStore } from '@/shared/auth/session'
 import { ToastHost } from '@/shared/components'
-import { useInferenceSettings } from '@/features/chat'
+import { useInferenceSettings } from '@/features/inference'
 import { applyTheme, useSettingsStore } from '@/features/settings'
 import Sidebar from './sidebar'
 

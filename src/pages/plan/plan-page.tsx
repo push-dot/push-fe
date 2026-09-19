@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { createBillingPortal, createCheckout } from '@/features/settings'
+import { createBillingPortal, createCheckout } from '@/features/billing'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'

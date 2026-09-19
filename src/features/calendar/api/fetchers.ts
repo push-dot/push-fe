@@ -1,7 +1,7 @@
 import { api } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { ListEnvelope, ListParams } from '@/shared/api'
-import type { Operation } from '@/features/chat'
+import type { Operation } from '@/shared/api'
 import type { CalendarEvent } from './schemas'
 
 export const listCalendarEvents = async (

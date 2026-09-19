@@ -15,7 +15,7 @@ import {
 } from '@/shared/components'
 import { stageChipTone, useApplicationsStore } from '@/features/applications'
 import { resumeRun } from '@/features/applications'
-import { useInferenceSettings } from '@/features/chat'
+import { useInferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/job-add'
 
 const STAGE_META: Record<string, string> = {

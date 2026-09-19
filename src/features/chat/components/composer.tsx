@@ -3,7 +3,7 @@ import { useT } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
 import { importEvidence, uploadSource } from '@/features/evidence'
 import { usePendingFiles } from '../stores'
-import InferenceSettings from './inference-settings'
+import { InferenceSettings } from '@/features/inference'
 
 type ComposerProps = {
   onSend: (text: string, evidenceIds?: string[]) => void

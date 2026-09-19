@@ -2,7 +2,8 @@ import { api } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { AiOptions, Operation } from '@/features/chat'
+import type { AiOptions } from '@/features/inference'
+import type { Operation } from '@/shared/api'
 import type { ApplicationStage, Application } from './schemas'
 
 export const listApplications = async (

@@ -1,16 +1,3 @@
-
-
-export type Conversation = {
-  id: string
-  revision: number
-  applicationId: string | null
-  projectId?: string
-  title: string
-  pinned: boolean
-  createdAt: string
-  updatedAt: string
-}
-
 export type MessageRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
 
 export type MessageAttachment =
@@ -27,14 +14,3 @@ export type Message = {
   operationId: string | null
   createdAt: string
 }
-
-export type AiOptions = {
-  provider: 'OPENAI' | 'OPENROUTER' | 'CLAUDE' | 'GEMINI' | 'GROK'
-  model: string
-  credentialMode: 'MANAGED' | 'BYOK'
-  effort: 'LOW' | 'MEDIUM' | 'HIGH'
-  ultraResume?: boolean
-  webSearch?: boolean
-}
-
-export type AccessMode = 'SUGGEST' | 'CONFIRM_ACTIONS'

@@ -1,7 +1,7 @@
 import { api } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
-import type { Operation } from '@/features/chat'
+import type { Operation } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
 import type { CareerEvidence, EvidenceKind, SourceFile } from './schemas'
 

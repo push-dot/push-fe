@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listAiModels } from '@/features/settings'
-import { type AiModel } from '@/features/settings'
+import { listAiModels } from '@/features/inference'
+import type { AiModel } from '@/features/inference'
 import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
@@ -16,8 +16,8 @@ import {
   Select,
   SkeletonRows,
 } from '@/shared/components'
-import { useInferenceSettings } from '@/features/chat'
-import type { ByokProvider } from '@/features/chat'
+import { useInferenceSettings } from '@/features/inference'
+import type { ByokProvider } from '@/features/inference'
 import { useSettingsStore } from '@/features/settings'
 import type { Theme } from '@/features/settings'
 

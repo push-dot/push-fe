@@ -5,7 +5,7 @@ import { Card, DropOverlay, StatusChip } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
 import { type CliRunState } from '@/features/projects'
-import { isProjectConversation, useConversationsStore } from '@/features/chat'
+import { isProjectConversation, useConversationsStore } from '@/features/conversations'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
 import { useProjectPanelsStore } from '@/features/projects'
 
