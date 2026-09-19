@@ -1,1 +1,1 @@
-export { default as InterviewPage } from './ui/interview-page'
+export { default as InterviewPage } from './interview-page'

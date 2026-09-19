@@ -1,1 +1,1 @@
-export { default as DocEditorPage } from './ui/doc-editor-page'
+export { default as DocEditorPage } from './doc-editor-page'
