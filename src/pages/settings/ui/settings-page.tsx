@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { listAiModels } from '@/shared/api'
+import type { AiModel } from '@/shared/api'
 import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
@@ -40,10 +42,24 @@ const SettingsPage = () => {
   const setByokModel = useInferenceSettings((s) => s.setByokModel)
   const byokProvider = useInferenceSettings((s) => s.byokProvider)
   const setByokProvider = useInferenceSettings((s) => s.setByokProvider)
+  const [byokModels, setByokModels] = useState<AiModel[]>([])
 
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (credentialMode !== 'BYOK' || !byokKey) {
+      setByokModels([])
+      return
+    }
+    const timer = setTimeout(() => {
+      listAiModels({ provider: byokProvider, credentialMode: 'BYOK', byokKey })
+        .then((env) => setByokModels(env.data))
+        .catch(() => setByokModels([]))
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [credentialMode, byokProvider, byokKey])
 
   const modelLabel = models.find((m) => m.available)?.label ?? '—'
   const plan = billing?.plan ?? 'FREE'
@@ -100,13 +116,31 @@ const SettingsPage = () => {
                     />
                   </FormRow>
                   <FormRow label={t('settings.byokModel')}>
-                    <Input
-                      type="text"
-                      value={byokModel}
-                      placeholder="gpt-4o-mini"
-                      autoComplete="off"
-                      onChange={(e) => setByokModel(e.target.value)}
-                    />
+                    {byokModels.length > 0 ? (
+                      <Select
+                        className="form-select"
+                        aria-label={t('settings.byokModel')}
+                        value={byokModel}
+                        onChange={(e) => setByokModel(e.target.value)}
+                      >
+                        {!byokModels.some((m) => m.model === byokModel) ? (
+                          <option value={byokModel}>{byokModel}</option>
+                        ) : null}
+                        {byokModels.map((m) => (
+                          <option key={m.model} value={m.model}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Input
+                        type="text"
+                        value={byokModel}
+                        placeholder="gpt-4o-mini"
+                        autoComplete="off"
+                        onChange={(e) => setByokModel(e.target.value)}
+                      />
+                    )}
                   </FormRow>
                   <FormRow label="" hint={t('infer.byokHint')} />
                 </>

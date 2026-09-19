@@ -14,6 +14,7 @@ export type AiModel = {
 export const listAiModels = async (params?: {
   provider?: string
   credentialMode?: 'MANAGED' | 'BYOK'
+  byokKey?: string
 }): Promise<ListEnvelope<AiModel>> =>
   request(() =>
     api.get('ai/models', {
@@ -21,6 +22,7 @@ export const listAiModels = async (params?: {
         ...(params?.provider ? { provider: params.provider } : {}),
         ...(params?.credentialMode ? { credentialMode: params.credentialMode } : {}),
       },
+      headers: params?.byokKey ? { 'X-Byok-Key': params.byokKey } : {},
     }),
   )
 
