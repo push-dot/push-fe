@@ -4,6 +4,7 @@ import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import { isHttpUrl } from '@/shared/lib/url'
 import { DropOverlay, showToast } from '@/shared/ui'
+import { useExperiment } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/shared/lib/file-drop'
 import { useConversationsStore } from '@/entities/conversation'
 import { Composer } from '@/features/chat'
@@ -11,6 +12,7 @@ import { JobAddDialog } from '@/features/job-add'
 
 const HomePage = () => {
   const t = useT()
+  const greetingVariant = useExperiment('home-greeting')
   const dragging = useFileDrop()
   const navigate = useNavigate()
   const createConversation = useConversationsStore((s) => s.create)
@@ -46,7 +48,9 @@ const HomePage = () => {
       {dragging ? <DropOverlay /> : null}
       <div className="canvas-body">
         <div className="center">
-          <h1 className="t-display">{t('home.title')}</h1>
+          <h1 className="t-display">
+            {t(greetingVariant === 'B' ? 'home.titleAlt' : 'home.title')}
+          </h1>
         </div>
       </div>
       <Composer
