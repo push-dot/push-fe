@@ -25,3 +25,22 @@ jobs:
           cp "$dmg" Push_aarch64.dmg
           gh release create "${{ github.ref_name }}" Push_aarch64.dmg \
             --title "Push ${{ github.ref_name }}" --latest
+  nsis:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: Build app bundle
+        run: npx tauri build --bundles nsis
+      - name: Publish release with stable asset name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/Push_*_x64-setup.exe | Select-Object -First 1
+          Copy-Item $exe.FullName Push_x64-setup.exe
+          gh release upload "${{ github.ref_name }}" Push_x64-setup.exe --clobber
