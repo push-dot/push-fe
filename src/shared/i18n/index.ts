@@ -220,8 +220,7 @@ const dict = {
 
 export type MsgKey = keyof (typeof dict)['ko']
 
-export const t = (key: MsgKey): string =>
-  dict[useLocaleStore.getState().locale][key]
+export const t = (key: MsgKey): string => dict[useLocaleStore.getState().locale][key]
 
 export const useT = () => {
   const locale = useLocaleStore((s) => s.locale)

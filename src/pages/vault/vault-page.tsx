@@ -36,7 +36,6 @@ const VaultPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCareerEvidence()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-
   return (
     <>
       <CanvasHeader
@@ -53,9 +52,7 @@ const VaultPage = () => {
             <SkeletonRows count={3} height={52} />
           </DataList>
         ) : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 근거가 없어요"

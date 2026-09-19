@@ -26,7 +26,6 @@ const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
   const [applicationId, setApplicationId] = useState('')
   const [busy, setBusy] = useState(false)
 
-
   const submit = async () => {
     if (!title.trim() || !applicationId) return
     setBusy(true)

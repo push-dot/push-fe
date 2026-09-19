@@ -27,9 +27,7 @@
   "plugins": {
     "deep-link": {
       "desktop": {
-        "schemes": [
-          "push"
-        ]
+        "schemes": ["push"]
       }
     }
   },

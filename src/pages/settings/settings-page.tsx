@@ -39,7 +39,8 @@ const SettingsPage = () => {
       : meQuery.isError || billingQuery.isError || modelsQuery.isError
         ? 'error'
         : 'success'
-  const error = meQuery.error?.message ?? billingQuery.error?.message ?? modelsQuery.error?.message ?? null
+  const error =
+    meQuery.error?.message ?? billingQuery.error?.message ?? modelsQuery.error?.message ?? null
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
   const load = async () => {
@@ -56,7 +57,6 @@ const SettingsPage = () => {
   const setByokProvider = useInferenceSettings((s) => s.setByokProvider)
   const byokModelsQuery = useByokModels(byokProvider, credentialMode === 'BYOK' ? byokKey : '')
   const byokModels = byokModelsQuery.data ?? []
-
 
   const modelLabel = models.find((m) => m.available)?.label ?? '—'
   const plan = billing?.plan ?? 'FREE'
@@ -147,11 +147,7 @@ const SettingsPage = () => {
               <FormRow label={t('settings.currentPlan')}>
                 <div className="form-row-plan">
                   <span className="form-row-hint">{plan}</span>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(ROUTES.plan)}
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.plan)}>
                     {t('settings.upgrade')}
                   </Button>
                 </div>

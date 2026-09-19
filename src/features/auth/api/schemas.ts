@@ -1,5 +1,3 @@
-
-
 export type AuthProvider = 'google' | 'github'
 export type OAuthStart = {
   authorizationUrl: string
@@ -13,4 +11,3 @@ export type AuthUser = {
   locale: string
   createdAt: string
 }
-

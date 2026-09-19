@@ -57,197 +57,195 @@ export type MessagesDeps = {
   ensureApproval: (id: string) => void
 }
 
-export const createMessagesStore = (deps: MessagesDeps) => create<MessagesState>()((set, get) => ({
-  conversationId: null,
-  messages: [],
-  status: 'idle',
-  error: null,
-  nextCursor: null,
-  hasMore: false,
-  loadingMore: false,
-  sendStatus: 'idle',
-  streamText: '',
-  failed: null,
+export const createMessagesStore = (deps: MessagesDeps) =>
+  create<MessagesState>()((set, get) => ({
+    conversationId: null,
+    messages: [],
+    status: 'idle',
+    error: null,
+    nextCursor: null,
+    hasMore: false,
+    loadingMore: false,
+    sendStatus: 'idle',
+    streamText: '',
+    failed: null,
 
-  load: async (conversationId) => {
-    set({
-      conversationId,
-      status: 'loading',
-      error: null,
-      messages: [],
-      nextCursor: null,
-      hasMore: false,
-      sendStatus: 'idle',
-      streamText: '',
-      failed: null,
-    })
-    try {
-      const env = await listMessages(conversationId, { limit: PAGE_SIZE })
+    load: async (conversationId) => {
       set({
-        messages: [...env.data].reverse(),
-        status: 'success',
-        nextCursor: env.page.nextCursor,
-        hasMore: env.page.hasMore,
-      })
-    } catch (error) {
-      set({
-        status: 'error',
-        error: error instanceof Error ? error.message : 'error',
-      })
-    }
-  },
-
-  loadMore: async () => {
-    const { conversationId, nextCursor, hasMore, loadingMore } = get()
-    if (!conversationId || !hasMore || loadingMore || !nextCursor) return
-    set({ loadingMore: true })
-    try {
-      const env = await listMessages(conversationId, {
-        limit: PAGE_SIZE,
-        cursor: nextCursor,
-      })
-      set((s) => ({
-        messages: [...[...env.data].reverse(), ...s.messages],
-        nextCursor: env.page.nextCursor,
-        hasMore: env.page.hasMore,
-        loadingMore: false,
-      }))
-    } catch {
-      set({ loadingMore: false })
-      showToast(t('chat.loadMoreFailed'), 'circle-alert')
-    }
-  },
-
-  send: async (conversationId, text, evidenceIds = []) => {
-    const ai = deps.aiOptions()
-    if (!ai) {
-      showToast(t('chat.modelConfigFailed'), 'circle-alert')
-      return
-    }
-    const accessMode = deps.accessMode()
-    abortCtrl?.abort()
-    const controller = new AbortController()
-    abortCtrl = controller
-    const tempId = `local-${crypto.randomUUID()}`
-    const optimistic: Message = {
-      id: tempId,
-      conversationId,
-      role: 'USER',
-      text,
-      attachments: [],
-      operationId: null,
-      createdAt: new Date().toISOString(),
-    }
-    set((s) => ({
-      conversationId: s.conversationId ?? conversationId,
-      messages: [...s.messages, optimistic],
-      sendStatus: 'sending',
-      streamText: '',
-      failed: null,
-    }))
-    let partial = ''
-    try {
-      for await (const ev of streamMessage(
         conversationId,
-        {
-          text,
-          context: { evidenceIds },
-          ai,
-          accessMode,
-        },
-        {
-          signal: controller.signal,
-          byokKey:
-            ai.credentialMode === 'BYOK'
-              ? deps.byokKey()
-              : undefined,
-        },
-      )) {
-        if (ev.type === 'token') {
-          partial += ev.text
-          set({ sendStatus: 'streaming', streamText: partial })
-        } else if (ev.type === 'error') {
-          throw new ApiError(ev.error.message, ev.error.code, 0, ev.error.details)
-        } else if (ev.type === 'done') {
-          const { operation } = ev
-          const result = operation.result
-          if (operation.status === 'SUCCEEDED' && isChatMessageResult(result)) {
-            const { userMessage, assistantMessage, approvalIds } = result.value
-            set((s) => ({
-              messages: [
-                ...s.messages.filter((m) => m.id !== tempId),
-                userMessage,
-                assistantMessage,
-              ],
-              sendStatus: 'idle',
-              streamText: '',
-            }))
-            for (const id of approvalIds) {
-              deps.ensureApproval(id)
-            }
-          } else {
-            throw new ApiError(
-              operation.error?.message ?? t('chat.noResponse'),
-              operation.error?.code ?? 'OPERATION_FAILED',
-              0,
-            )
-          }
-        }
-      }
-    } catch (error) {
-      if (!controller.signal.aborted) {
+        status: 'loading',
+        error: null,
+        messages: [],
+        nextCursor: null,
+        hasMore: false,
+        sendStatus: 'idle',
+        streamText: '',
+        failed: null,
+      })
+      try {
+        const env = await listMessages(conversationId, { limit: PAGE_SIZE })
         set({
-          sendStatus: 'failed',
-          streamText: '',
-          failed: {
-            tempId,
-            text,
-            error: error instanceof Error ? error.message : t('chat.sendFailed'),
-          },
+          messages: [...env.data].reverse(),
+          status: 'success',
+          nextCursor: env.page.nextCursor,
+          hasMore: env.page.hasMore,
+        })
+      } catch (error) {
+        set({
+          status: 'error',
+          error: error instanceof Error ? error.message : 'error',
         })
       }
-    } finally {
-      if (controller.signal.aborted) {
+    },
+
+    loadMore: async () => {
+      const { conversationId, nextCursor, hasMore, loadingMore } = get()
+      if (!conversationId || !hasMore || loadingMore || !nextCursor) return
+      set({ loadingMore: true })
+      try {
+        const env = await listMessages(conversationId, {
+          limit: PAGE_SIZE,
+          cursor: nextCursor,
+        })
         set((s) => ({
-          messages: s.messages.filter((m) => m.id !== tempId),
-          sendStatus: 'idle',
-          streamText: '',
+          messages: [...[...env.data].reverse(), ...s.messages],
+          nextCursor: env.page.nextCursor,
+          hasMore: env.page.hasMore,
+          loadingMore: false,
         }))
+      } catch {
+        set({ loadingMore: false })
+        showToast(t('chat.loadMoreFailed'), 'circle-alert')
       }
-    }
-  },
+    },
 
-  retry: async () => {
-    const { conversationId, failed } = get()
-    if (!conversationId || !failed) return
-    set((s) => ({
-      messages: s.messages.filter((m) => m.id !== failed.tempId),
-      failed: null,
-    }))
-    await get().send(conversationId, failed.text)
-  },
+    send: async (conversationId, text, evidenceIds = []) => {
+      const ai = deps.aiOptions()
+      if (!ai) {
+        showToast(t('chat.modelConfigFailed'), 'circle-alert')
+        return
+      }
+      const accessMode = deps.accessMode()
+      abortCtrl?.abort()
+      const controller = new AbortController()
+      abortCtrl = controller
+      const tempId = `local-${crypto.randomUUID()}`
+      const optimistic: Message = {
+        id: tempId,
+        conversationId,
+        role: 'USER',
+        text,
+        attachments: [],
+        operationId: null,
+        createdAt: new Date().toISOString(),
+      }
+      set((s) => ({
+        conversationId: s.conversationId ?? conversationId,
+        messages: [...s.messages, optimistic],
+        sendStatus: 'sending',
+        streamText: '',
+        failed: null,
+      }))
+      let partial = ''
+      try {
+        for await (const ev of streamMessage(
+          conversationId,
+          {
+            text,
+            context: { evidenceIds },
+            ai,
+            accessMode,
+          },
+          {
+            signal: controller.signal,
+            byokKey: ai.credentialMode === 'BYOK' ? deps.byokKey() : undefined,
+          },
+        )) {
+          if (ev.type === 'token') {
+            partial += ev.text
+            set({ sendStatus: 'streaming', streamText: partial })
+          } else if (ev.type === 'error') {
+            throw new ApiError(ev.error.message, ev.error.code, 0, ev.error.details)
+          } else if (ev.type === 'done') {
+            const { operation } = ev
+            const result = operation.result
+            if (operation.status === 'SUCCEEDED' && isChatMessageResult(result)) {
+              const { userMessage, assistantMessage, approvalIds } = result.value
+              set((s) => ({
+                messages: [
+                  ...s.messages.filter((m) => m.id !== tempId),
+                  userMessage,
+                  assistantMessage,
+                ],
+                sendStatus: 'idle',
+                streamText: '',
+              }))
+              for (const id of approvalIds) {
+                deps.ensureApproval(id)
+              }
+            } else {
+              throw new ApiError(
+                operation.error?.message ?? t('chat.noResponse'),
+                operation.error?.code ?? 'OPERATION_FAILED',
+                0,
+              )
+            }
+          }
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          set({
+            sendStatus: 'failed',
+            streamText: '',
+            failed: {
+              tempId,
+              text,
+              error: error instanceof Error ? error.message : t('chat.sendFailed'),
+            },
+          })
+        }
+      } finally {
+        if (controller.signal.aborted) {
+          set((s) => ({
+            messages: s.messages.filter((m) => m.id !== tempId),
+            sendStatus: 'idle',
+            streamText: '',
+          }))
+        }
+      }
+    },
 
-  abort: () => {
-    abortCtrl?.abort()
-  },
+    retry: async () => {
+      const { conversationId, failed } = get()
+      if (!conversationId || !failed) return
+      set((s) => ({
+        messages: s.messages.filter((m) => m.id !== failed.tempId),
+        failed: null,
+      }))
+      await get().send(conversationId, failed.text)
+    },
 
-  reset: () => {
-    abortCtrl?.abort()
-    abortCtrl = null
-    set({
-      conversationId: null,
-      messages: [],
-      status: 'idle',
-      error: null,
-      nextCursor: null,
-      hasMore: false,
-      loadingMore: false,
-      sendStatus: 'idle',
-      streamText: '',
-      failed: null,
-    })
-  },
-}))
+    abort: () => {
+      abortCtrl?.abort()
+    },
+
+    reset: () => {
+      abortCtrl?.abort()
+      abortCtrl = null
+      set({
+        conversationId: null,
+        messages: [],
+        status: 'idle',
+        error: null,
+        nextCursor: null,
+        hasMore: false,
+        loadingMore: false,
+        sendStatus: 'idle',
+        streamText: '',
+        failed: null,
+      })
+    },
+  }))
 
 type PendingFilesState = {
   files: File[]

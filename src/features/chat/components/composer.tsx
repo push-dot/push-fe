@@ -116,7 +116,12 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
           }}
         />
         {sending ? (
-          <IconButton icon="square" iconSize={16} aria-label={t('composer.stop')} onClick={onAbort} />
+          <IconButton
+            icon="square"
+            iconSize={16}
+            aria-label={t('composer.stop')}
+            onClick={onAbort}
+          />
         ) : (
           <IconButton
             icon="send-horizontal"

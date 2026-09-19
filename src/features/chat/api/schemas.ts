@@ -42,4 +42,3 @@ export type SendMessageBody = {
   ai: AiOptions
   accessMode: AccessMode
 }
-

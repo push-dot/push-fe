@@ -53,10 +53,7 @@ const HomePage = () => {
           </h1>
         </div>
       </div>
-      <Composer
-        sending={busy}
-        onSend={(text, evidenceIds) => void submit(text, evidenceIds)}
-      />
+      <Composer sending={busy} onSend={(text, evidenceIds) => void submit(text, evidenceIds)} />
       <JobAddDialog
         open={jobDialog.open}
         initialSource={jobDialog.source}

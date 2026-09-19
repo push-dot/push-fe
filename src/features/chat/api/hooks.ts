@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { archiveConversation, createConversation, listConversations, patchConversation } from './fetchers'
+import {
+  archiveConversation,
+  createConversation,
+  listConversations,
+  patchConversation,
+} from './fetchers'
 import type { Conversation } from './schemas'
 
 const keys = {
@@ -31,9 +36,7 @@ export const useArchiveConversation = () => {
       return archiveConversation(id, conv.revision)
     },
     onSuccess: (_, id) => {
-      qc.setQueryData<Conversation[]>(keys.list, (old) =>
-        (old ?? []).filter((c) => c.id !== id),
-      )
+      qc.setQueryData<Conversation[]>(keys.list, (old) => (old ?? []).filter((c) => c.id !== id))
     },
   })
 }

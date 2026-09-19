@@ -27,7 +27,6 @@ const DocumentsPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useDocuments()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-
   return (
     <>
       <CanvasHeader
@@ -40,9 +39,7 @@ const DocumentsPage = () => {
       />
       <div className="canvas-body">
         {isPending ? <SkeletonCardGrid count={3} /> : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 문서가 없어요"

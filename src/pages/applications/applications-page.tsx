@@ -39,7 +39,6 @@ const ApplicationsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [runningId, setRunningId] = useState<string | null>(null)
 
-
   const runResume = async (appId: string) => {
     setRunningId(appId)
     try {
@@ -71,9 +70,7 @@ const ApplicationsPage = () => {
       />
       <div className="canvas-body">
         {isPending ? <SkeletonCardGrid count={3} /> : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 지원 내역이 없어요"
@@ -111,7 +108,8 @@ const ApplicationsPage = () => {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onCreated={(job) => {
-          void createMutation.mutateAsync(job.id)
+          void createMutation
+            .mutateAsync(job.id)
             .then(() => showToast('지원을 추가했어요', 'check'))
             .catch((e: unknown) =>
               showToast(e instanceof Error ? e.message : '지원을 만들지 못했어요', 'circle-alert'),

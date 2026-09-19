@@ -44,7 +44,6 @@ const PlanPage = () => {
   const { data: billing } = useBilling()
   const [pending, setPending] = useState<string | null>(null)
 
-
   const plan = billing?.plan ?? 'FREE'
   const rank = { FREE: 0, PRO: 1, ULTRA: 2 } as const
 
@@ -88,9 +87,7 @@ const PlanPage = () => {
                   <span className="plan-card-name">
                     {card.id === 'FREE' ? 'Free' : t(card.nameKey)}
                   </span>
-                  {isCurrent ? (
-                    <span className="plan-card-badge">{t('plan.current')}</span>
-                  ) : null}
+                  {isCurrent ? <span className="plan-card-badge">{t('plan.current')}</span> : null}
                 </div>
                 <div className="plan-card-price">
                   {card.priceKey ? (
@@ -133,7 +130,9 @@ const PlanPage = () => {
                     variant={card.id === 'ULTRA' ? 'primary' : 'secondary'}
                     size="md"
                     loading={pending === card.id}
-                    onClick={() => void openBillingUrl(() => createCheckout(card.id as 'PRO' | 'ULTRA'), card.id)}
+                    onClick={() =>
+                      void openBillingUrl(() => createCheckout(card.id as 'PRO' | 'ULTRA'), card.id)
+                    }
                   >
                     {t('settings.upgrade')}
                   </Button>

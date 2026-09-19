@@ -25,7 +25,5 @@ test('byok credentials live in settings, not chat popover', async ({ page }) => 
   await expect(page.locator('select[aria-label="BYOK 프로바이더"]')).toBeVisible()
   await page.goto('/')
   await page.getByRole('button', { name: '추론 설정' }).click()
-  await expect(
-    page.locator('.inference-popover').getByText('자격 증명'),
-  ).toHaveCount(0)
+  await expect(page.locator('.inference-popover').getByText('자격 증명')).toHaveCount(0)
 })

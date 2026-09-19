@@ -51,7 +51,12 @@ const CalendarPage = () => {
       <CanvasHeader
         title="캘린더"
         actions={
-          <Button variant="primary" size="sm" loading={syncMutation.isPending} onClick={() => void onSync()}>
+          <Button
+            variant="primary"
+            size="sm"
+            loading={syncMutation.isPending}
+            onClick={() => void onSync()}
+          >
             <Icon name="calendar" size={20} /> 동기화
           </Button>
         }
@@ -64,12 +69,8 @@ const CalendarPage = () => {
             <Skeleton height={52} />
           </>
         ) : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
-        {isSuccess && items.length === 0 ? (
-          <EmptyState message="다가오는 일정이 없어요" />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
+        {isSuccess && items.length === 0 ? <EmptyState message="다가오는 일정이 없어요" /> : null}
         {isSuccess && items.length > 0 ? (
           <>
             <Card title={monthLabel(new Date())}>

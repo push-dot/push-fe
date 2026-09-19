@@ -1,5 +1,3 @@
-
-
 export type ApprovalKind =
   'EVIDENCE_USE' | 'DOCUMENT_FINALIZE' | 'APPLICATION_SUBMIT' | 'CLI_EXECUTE'
 

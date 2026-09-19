@@ -6,7 +6,13 @@ import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
 import type { IconName } from '@/shared/components'
-import { isProjectConversation, useArchiveConversation, useConversations, useCreateConversation, usePatchConversation } from '@/features/chat'
+import {
+  isProjectConversation,
+  useArchiveConversation,
+  useConversations,
+  useCreateConversation,
+  usePatchConversation,
+} from '@/features/chat'
 import { listMessages } from '@/features/chat'
 import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
@@ -52,8 +58,6 @@ const Sidebar = () => {
   const sendingTo = useMessagesStore((s) =>
     s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
   )
-
-
 
   useEffect(() => {
     if (!menu) return
@@ -116,7 +120,10 @@ const Sidebar = () => {
       })
       navigate(ROUTES.chat(conversation.id))
     } catch (error) {
-      showToast(error instanceof Error ? error.message : t('toast.createChatFailed'), 'circle-alert')
+      showToast(
+        error instanceof Error ? error.message : t('toast.createChatFailed'),
+        'circle-alert',
+      )
     }
   }, [conversations, createConversation, creating, navigate, t])
 
@@ -145,7 +152,10 @@ const Sidebar = () => {
       await archiveConversation.mutateAsync(id)
       if (id === activeChatId) navigate(ROUTES.home)
     } catch (error) {
-      showToast(error instanceof Error ? error.message : t('toast.deleteChatFailed'), 'circle-alert')
+      showToast(
+        error instanceof Error ? error.message : t('toast.deleteChatFailed'),
+        'circle-alert',
+      )
     }
   }
 

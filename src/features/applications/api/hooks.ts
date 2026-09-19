@@ -9,8 +9,7 @@ const keys = {
 
 const list = () => listApplications({ limit: 50 }).then((env) => env.data)
 
-export const useApplications = () =>
-  useQuery({ queryKey: keys.list, queryFn: list })
+export const useApplications = () => useQuery({ queryKey: keys.list, queryFn: list })
 
 export const useCreateApplication = () => {
   const qc = useQueryClient()

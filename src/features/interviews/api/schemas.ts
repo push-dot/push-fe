@@ -1,5 +1,3 @@
-
-
 export type InterviewSession = {
   id: string
   revision: number

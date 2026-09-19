@@ -5,5 +5,4 @@ const keys = {
   summary: ['billing'] as const,
 }
 
-export const useBilling = () =>
-  useQuery({ queryKey: keys.summary, queryFn: fetchBilling })
+export const useBilling = () => useQuery({ queryKey: keys.summary, queryFn: fetchBilling })

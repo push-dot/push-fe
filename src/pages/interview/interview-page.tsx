@@ -18,7 +18,6 @@ const InterviewPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useInterviews()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-
   const reflected = items.filter((s) => s.reflection)
 
   return (
@@ -37,9 +36,7 @@ const InterviewPage = () => {
             <SkeletonRows count={3} height={52} />
           </DataList>
         ) : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
             message="아직 면접 준비가 없어요"

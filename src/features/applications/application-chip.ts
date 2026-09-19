@@ -1,4 +1,4 @@
-import type {  ApplicationStage  } from './api/schemas'
+import type { ApplicationStage } from './api/schemas'
 import type { StatusChipTone } from '@/shared/components'
 
 const STAGE_TONES: Record<ApplicationStage, StatusChipTone> = {

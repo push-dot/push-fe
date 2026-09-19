@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type {  Message  } from './api/schemas'
+import type { Message } from './api/schemas'
 import type { Operation } from '@/shared/api'
 
 vi.mock('./api/fetchers', async (importOriginal) => {
@@ -11,7 +11,7 @@ vi.mock('./api/fetchers', async (importOriginal) => {
   }
 })
 
-import {  listMessages, streamMessage  } from './api/fetchers'
+import { listMessages, streamMessage } from './api/fetchers'
 
 import { useInferenceSettings } from '@/features/inference'
 import { useMessagesStore } from './stores'

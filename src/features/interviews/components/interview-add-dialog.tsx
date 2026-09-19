@@ -16,7 +16,6 @@ const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
   const [scheduledAt, setScheduledAt] = useState('')
   const [busy, setBusy] = useState(false)
 
-
   const submit = async () => {
     if (!applicationId || !title.trim() || !scheduledAt) return
     setBusy(true)

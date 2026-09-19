@@ -3,7 +3,14 @@ import { useParams } from 'react-router-dom'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { createDocumentExport } from '@/features/documents'
-import { Button, CanvasHeader, ErrorState, Icon, SkeletonRows, showToast } from '@/shared/components'
+import {
+  Button,
+  CanvasHeader,
+  ErrorState,
+  Icon,
+  SkeletonRows,
+  showToast,
+} from '@/shared/components'
 import { useDocument } from '@/features/documents'
 import { RENDERER_VERSION } from './constants'
 
@@ -18,7 +25,6 @@ const DocEditorPage = () => {
     extensions: [StarterKit],
     editorProps: { attributes: { class: 'editor-body' } },
   })
-
 
   useEffect(() => {
     if (editor && currentVersion) {

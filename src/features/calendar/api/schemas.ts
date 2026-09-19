@@ -1,5 +1,3 @@
-
-
 export type CalendarEvent = {
   id: string
   revision: number

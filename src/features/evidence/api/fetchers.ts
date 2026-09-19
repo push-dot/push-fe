@@ -36,10 +36,7 @@ export const createCareerEvidence = async (body: {
   return env.data
 }
 
-export const importEvidence = async (
-  file: File,
-  sourceId: string,
-): Promise<CareerEvidence> => {
+export const importEvidence = async (file: File, sourceId: string): Promise<CareerEvidence> => {
   const env = await request<DataEnvelope<Operation>>(() =>
     api.post('career-evidence/import', {
       json: {
@@ -53,14 +50,12 @@ export const importEvidence = async (
       headers: { 'Idempotency-Key': newIdempotencyKey() },
     }),
   )
-  const evidence =
-    (env.data.result as { evidence?: CareerEvidence[] } | null)?.evidence ?? []
+  const evidence = (env.data.result as { evidence?: CareerEvidence[] } | null)?.evidence ?? []
   if (env.data.status !== 'SUCCEEDED' || evidence.length === 0) {
     throw new Error(env.data.error?.message ?? 'evidence import failed')
   }
   return evidence[0]
 }
-
 
 export const uploadSource = async (file: File, kind: EvidenceKind): Promise<SourceFile> => {
   const form = new FormData()

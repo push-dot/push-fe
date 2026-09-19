@@ -1,5 +1,3 @@
-
-
 export type JobPosting = {
   id: string
   revision: number

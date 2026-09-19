@@ -1,5 +1,3 @@
-
-
 export type CliProvider = 'CODEX' | 'CLAUDE_CODE' | 'GROK_BUILD'
 
 export type CliRunState =

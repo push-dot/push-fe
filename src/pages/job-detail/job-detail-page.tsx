@@ -14,7 +14,6 @@ const JobDetailPage = () => {
   const createApplication = useCreateApplication()
   const [busy, setBusy] = useState(false)
 
-
   const latest = analyses[0] ?? null
   const evidenceIds = new Set(latest?.matched.flatMap((m) => m.evidenceIds) ?? [])
 
@@ -42,9 +41,7 @@ const JobDetailPage = () => {
             <Skeleton height={96} />
           </>
         ) : null}
-        {isError ? (
-          <ErrorState message={error?.message} onRetry={() => void refetch()} />
-        ) : null}
+        {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && current ? (
           <>
             <Card title="요구사항 분석">

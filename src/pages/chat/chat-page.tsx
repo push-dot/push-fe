@@ -80,7 +80,6 @@ const ChatPage = () => {
   const retry = useMessagesStore((s) => s.retry)
   const abort = useMessagesStore((s) => s.abort)
 
-
   useEffect(() => {
     void load(id)
   }, [id, load])

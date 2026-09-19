@@ -1,5 +1,3 @@
-
-
 export type EvidenceKind = 'RESUME' | 'GITHUB' | 'CAREER' | 'EDUCATION' | 'SKILL' | 'PROJECT'
 
 export type VerificationStatus = 'USER_PROVIDED' | 'PENDING' | 'VERIFIED' | 'REJECTED'

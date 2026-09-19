@@ -2,7 +2,13 @@ import { api } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { DocumentKind, DocumentTemplate, PushDocument, DocumentVersion, DocumentExport } from './schemas'
+import type {
+  DocumentKind,
+  DocumentTemplate,
+  PushDocument,
+  DocumentVersion,
+  DocumentExport,
+} from './schemas'
 
 export const listDocuments = async (
   params: ListParams & { applicationId?: string; kind?: DocumentKind } = {},

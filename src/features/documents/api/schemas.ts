@@ -1,5 +1,3 @@
-
-
 export type DocumentKind = 'RESUME' | 'PORTFOLIO' | 'COVER_LETTER'
 export type DocumentTemplate = 'CLASSIC' | 'MODERN' | 'COMPACT'
 export type DocumentStatus = 'DRAFT' | 'FINALIZED' | 'ARCHIVED'

@@ -2,7 +2,12 @@ import { create } from 'zustand'
 import type { AccessMode, AiModel, AiOptions } from './api/schemas'
 import { listAiModels } from './api/fetchers'
 import { fetchBilling } from '@/features/billing'
-import { BYOK_KEY_STORAGE, BYOK_MODEL_STORAGE, BYOK_PROVIDER_STORAGE, CREDENTIAL_MODE_STORAGE } from './constants'
+import {
+  BYOK_KEY_STORAGE,
+  BYOK_MODEL_STORAGE,
+  BYOK_PROVIDER_STORAGE,
+  CREDENTIAL_MODE_STORAGE,
+} from './constants'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 

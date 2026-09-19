@@ -8,9 +8,7 @@ test('new chat sends message and streams a reply', async ({ page }) => {
   await page.fill('.composer-field', '안녕')
   await page.getByRole('button', { name: '보내기' }).click()
   await expect(page.locator('.chat-stream-msg-user').first()).toContainText('안녕')
-  await expect(
-    page.locator('.chat-stream-msg-ai').last(),
-  ).not.toBeEmpty({ timeout: 45_000 })
+  await expect(page.locator('.chat-stream-msg-ai').last()).not.toBeEmpty({ timeout: 45_000 })
 })
 
 test('inference popover groups models by provider', async ({ page }) => {
