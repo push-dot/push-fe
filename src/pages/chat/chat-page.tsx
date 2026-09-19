@@ -86,12 +86,12 @@ const ChatPage = () => {
 
   const initialState = location.state as {
     initialMessage?: string
-    initialEvidenceIds?: string[]
+    initialEvidence?: { id: string; title: string }[]
   } | null
 
   useEffect(() => {
     if (!initialState?.initialMessage || status !== 'success') return
-    void send(id, initialState.initialMessage, initialState.initialEvidenceIds)
+    void send(id, initialState.initialMessage, initialState.initialEvidence)
     navigate(location.pathname, { replace: true, state: null })
   }, [initialState, status, id, send, navigate, location.pathname])
 
@@ -117,7 +117,7 @@ const ChatPage = () => {
       />
       <Composer
         sending={sendStatus === 'sending' || sendStatus === 'streaming'}
-        onSend={(text, evidenceIds) => void send(id, text, evidenceIds)}
+        onSend={(text, evidence) => void send(id, text, evidence)}
         onAbort={abort}
       />
     </>

@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useT } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
 import { importEvidence, uploadSource } from '@/features/evidence'
+import type { CareerEvidence } from '@/features/evidence'
 import { usePendingFiles } from '../stores'
 import { InferenceSettings } from '@/features/inference'
 
 type ComposerProps = {
-  onSend: (text: string, evidenceIds?: string[]) => void
+  onSend: (text: string, evidence?: Pick<CareerEvidence, 'id' | 'title'>[]) => void
   onAbort?: () => void
   sending?: boolean
 }
@@ -38,12 +39,12 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     const value = text.trim()
     if ((!value && pending.length === 0) || sending) return
     void (async () => {
-      const evidenceIds: string[] = []
+      const evidence: Pick<CareerEvidence, 'id' | 'title'>[] = []
       for (const file of pending) {
         try {
           const source = await uploadSource(file, 'RESUME')
-          const evidence = await importEvidence(file, source.id)
-          evidenceIds.push(evidence.id)
+          const ev = await importEvidence(file, source.id)
+          evidence.push({ id: ev.id, title: ev.title })
           showToast(t('composer.uploaded'))
         } catch (error) {
           showToast(
@@ -54,8 +55,8 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
         }
       }
       clearFiles()
-      if (value || evidenceIds.length) {
-        onSend(value || pending.map((f) => f.name).join(', '), evidenceIds)
+      if (value || evidence.length) {
+        onSend(value || pending.map((f) => f.name).join(', '), evidence)
         setText('')
       }
     })()

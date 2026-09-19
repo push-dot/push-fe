@@ -22,8 +22,8 @@ const HomePage = () => {
     source: '',
   })
 
-  const submit = async (text: string, evidenceIds: string[] = []) => {
-    if (isHttpUrl(text) && evidenceIds.length === 0) {
+  const submit = async (text: string, evidence: { id: string; title: string }[] = []) => {
+    if (isHttpUrl(text) && evidence.length === 0) {
       setJobDialog({ open: true, source: text })
       return
     }
@@ -34,7 +34,7 @@ const HomePage = () => {
         title: text.slice(0, 40),
       })
       navigate(ROUTES.chat(conversation.id), {
-        state: { initialMessage: text, initialEvidenceIds: evidenceIds },
+        state: { initialMessage: text, initialEvidence: evidence },
       })
     } catch (error) {
       showToast(error instanceof Error ? error.message : t('toast.runFailed'), 'circle-alert')
@@ -53,7 +53,7 @@ const HomePage = () => {
           </h1>
         </div>
       </div>
-      <Composer sending={busy} onSend={(text, evidenceIds) => void submit(text, evidenceIds)} />
+      <Composer sending={busy} onSend={(text, evidence) => void submit(text, evidence)} />
       <JobAddDialog
         open={jobDialog.open}
         initialSource={jobDialog.source}

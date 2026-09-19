@@ -42,7 +42,7 @@ type MessagesState = {
   failed: FailedSend | null
   load: (conversationId: string) => Promise<void>
   loadMore: () => Promise<void>
-  send: (conversationId: string, text: string, evidenceIds?: string[]) => Promise<void>
+  send: (conversationId: string, text: string, evidence?: { id: string; title: string }[]) => Promise<void>
   retry: () => Promise<void>
   abort: () => void
   reset: () => void
@@ -119,7 +119,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       }
     },
 
-    send: async (conversationId, text, evidenceIds = []) => {
+    send: async (conversationId, text, evidence = []) => {
       const ai = deps.aiOptions()
       if (!ai) {
         showToast(t('chat.modelConfigFailed'), 'circle-alert')
@@ -135,7 +135,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         conversationId,
         role: 'USER',
         text,
-        attachments: [],
+        attachments: evidence.map((e) => ({ type: 'EVIDENCE' as const, id: e.id, title: e.title })),
         operationId: null,
         createdAt: new Date().toISOString(),
       }
@@ -152,7 +152,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           conversationId,
           {
             text,
-            context: { evidenceIds },
+            context: { evidenceIds: evidence.map((e) => e.id) },
             ai,
             accessMode,
           },
