@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { startOAuth } from '@/shared/api'
-import type { AuthProvider } from '@/shared/api'
+import { startOAuth } from '@/features/auth'
+import { AuthProvider } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
 import { useT } from '@/shared/i18n'
-import { Button, Card, ErrorState } from '@/shared/ui'
+import { Button, Card, ErrorState } from '@/shared/components'
 
 const LoginPage = () => {
   const t = useT()

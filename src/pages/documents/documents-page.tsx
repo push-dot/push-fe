@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { formatRelativeTime } from '@/shared/lib/format'
-import type { DocumentKind } from '@/shared/api'
+import { DocumentKind } from '@/features/documents'
 import {
   CanvasHeader,
   Button,
@@ -12,9 +12,9 @@ import {
   ErrorState,
   Icon,
   SkeletonCardGrid,
-} from '@/shared/ui'
+} from '@/shared/components'
 import { useDocumentsStore } from '@/features/documents'
-import NewDocumentDialog from './new-document-dialog'
+import { NewDocumentDialog } from '@/features/documents'
 
 const KIND_LABELS: Record<DocumentKind, string> = {
   RESUME: '이력서',

@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { VList } from 'virtua'
 import type { VListHandle } from 'virtua'
-import type { Message, MessageAttachment } from '@/shared/api'
+import { Message, MessageAttachment } from '../api-conversations'
 import { useT } from '@/shared/i18n'
 import { ApprovalCard } from '@/features/approval'
-import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/ui'
-import type { SendStatus } from '../model/messages-store'
+import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/components'
+import type { SendStatus } from '../hooks'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80

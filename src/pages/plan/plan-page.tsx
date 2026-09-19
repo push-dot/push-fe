@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { createBillingPortal, createCheckout } from '@/shared/api'
+import { createBillingPortal, createCheckout } from '@/features/settings'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
-import { Button, CanvasHeader, Icon, showToast } from '@/shared/ui'
-import { useSettingsStore } from '@/pages/settings/model/settings-store'
+import { Button, CanvasHeader, Icon, showToast } from '@/shared/components'
+import { useSettingsStore } from '@/features/settings'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 

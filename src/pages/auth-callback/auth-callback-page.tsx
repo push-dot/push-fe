@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import { exchangeCode } from '@/shared/api'
+import { exchangeCode } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
 import type { Session } from '@/shared/auth/session'
-import { ErrorState, Skeleton } from '@/shared/ui'
+import { ErrorState, Skeleton } from '@/shared/components'
 
 const inflight = new Map<string, Promise<Session>>()
 

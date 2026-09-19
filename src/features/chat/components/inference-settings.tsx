@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
-import { Input, Select } from '@/shared/ui'
-import type { AiModel } from '@/shared/api'
-import { useInferenceSettings } from '../model/inference-settings'
+import { Input, Select } from '@/shared/components'
+import { AiModel } from '@/features/settings'
+import { useInferenceSettings } from '../hooks'
 
 const EFFORT_OPTIONS: { value: string; labelKey: MsgKey | null }[] = [
   { value: 'LOW', labelKey: 'infer.low' },

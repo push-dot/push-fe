@@ -1,4 +1,4 @@
-import type { DocumentBlock } from '@/shared/api'
+import { DocumentBlock } from '@/features/documents'
 
 export const linkedEvidenceCount = (blocks: DocumentBlock[]): number => {
   const ids = new Set<string>()

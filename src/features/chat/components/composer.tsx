@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from '@/shared/i18n'
-import { Icon, IconButton, showToast } from '@/shared/ui'
-import { importEvidence, uploadSource } from '@/shared/api'
-import { usePendingFiles } from '@/shared/lib/pending-files'
+import { Icon, IconButton, showToast } from '@/shared/components'
+import { importEvidence, uploadSource } from '@/features/evidence'
+import { usePendingFiles } from '../pending-files'
 import InferenceSettings from './inference-settings'
 
 type ComposerProps = {

@@ -1,5 +1,5 @@
-import type { ApplicationStage } from '@/shared/api'
-import type { StatusChipTone } from '@/shared/ui'
+import { ApplicationStage } from './api'
+import type { StatusChipTone } from '@/shared/components'
 
 const STAGE_TONES: Record<ApplicationStage, StatusChipTone> = {
   DISCOVERED: 'pending',

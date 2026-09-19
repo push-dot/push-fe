@@ -10,9 +10,9 @@ import {
   ErrorState,
   Icon,
   SkeletonRows,
-} from '@/shared/ui'
-import { useInterviewsStore } from './model/interviews-store'
-import InterviewAddDialog from './interview-add-dialog'
+} from '@/shared/components'
+import { useInterviewsStore } from '@/features/interviews'
+import { InterviewAddDialog } from '@/features/interviews'
 
 const InterviewPage = () => {
   const items = useInterviewsStore((s) => s.items)

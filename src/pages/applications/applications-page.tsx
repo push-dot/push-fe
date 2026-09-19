@@ -12,9 +12,9 @@ import {
   SkeletonCardGrid,
   StatusChip,
   showToast,
-} from '@/shared/ui'
+} from '@/shared/components'
 import { stageChipTone, useApplicationsStore } from '@/features/applications'
-import { resumeRun } from '@/shared/api/applications'
+import { resumeRun } from '@/features/applications'
 import { useInferenceSettings } from '@/features/chat'
 import { JobAddDialog } from '@/features/job-add'
 
