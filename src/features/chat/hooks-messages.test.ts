@@ -1,24 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Message } from './api-conversations'
-import type { Operation } from './api-conversations'
+import type { Message } from './api'
+import type { Operation } from './api'
 
-vi.mock('./api-conversations', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api-conversations')>()
+vi.mock('./api', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./api')>()
   return {
     ...mod,
     listMessages: vi.fn(),
-  }
-})
-vi.mock('./api-stream', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api-stream')>()
-  return {
-    ...mod,
     streamMessage: vi.fn(),
   }
 })
 
-import { listMessages } from './api-conversations'
-import { streamMessage } from './api-stream'
+import { listMessages, streamMessage } from './api'
 
 import { useInferenceSettings, useMessagesStore } from './hooks'
 
