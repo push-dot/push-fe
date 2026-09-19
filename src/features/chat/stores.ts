@@ -125,7 +125,6 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
 }))
 
 
-type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
 type ConversationsState = {
   items: Conversation[]
@@ -189,7 +188,6 @@ export const isProjectConversation = (conversation: Conversation): boolean =>
   conversation.projectId != null
 
 
-type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 export type SendStatus = 'idle' | 'sending' | 'streaming' | 'failed'
 
 const PAGE_SIZE = 50

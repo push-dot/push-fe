@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listAiModels } from '@/features/settings'
-import { AiModel } from '@/features/settings'
+import { type AiModel } from '@/features/settings'
 import { ROUTES } from '@/shared/constants'
 import { useLocaleStore, useT } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'

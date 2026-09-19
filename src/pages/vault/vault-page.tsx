@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
-import { VerificationStatus } from '@/features/evidence'
+import { type VerificationStatus } from '@/features/evidence'
 import {
   Button,
   CanvasHeader,

@@ -1,1 +1,1 @@
-export type { ApprovalKind, ApprovalStatus, Approval, ApprovalSummary } from './api/fetchers'
+export type { ApprovalKind, ApprovalStatus, Approval, ApprovalSummary } from './api/schemas'

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { JobPosting } from '@/features/jobs'
+import { type JobPosting } from '@/features/jobs'
 import { createJob } from '@/features/jobs'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
 import { isHttpUrl } from '@/shared/lib/url'

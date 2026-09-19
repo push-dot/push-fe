@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Input, Select } from '@/shared/components'
-import { AiModel } from '@/features/settings'
+import { type AiModel } from '@/features/settings'
 import { useInferenceSettings } from '../stores'
 
 const EFFORT_OPTIONS: { value: string; labelKey: MsgKey | null }[] = [

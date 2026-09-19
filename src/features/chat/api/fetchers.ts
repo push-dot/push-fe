@@ -1,4 +1,4 @@
-import { api } from '@/shared/api'
+import { api, ApiError, toApiError } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'

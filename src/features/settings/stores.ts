@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import {  AiModel, BillingSummary  } from './api/fetchers'
-import { AuthUser } from '@/features/auth'
-import {  fetchBilling, listAiModels  } from './api/fetchers'
+import type { AiModel } from './api/schemas'
+import type { BillingSummary } from './api/fetchers'
+import type { AuthUser } from '@/features/auth'
+import { fetchBilling, listAiModels } from './api/fetchers'
 import { fetchMe } from '@/features/auth'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'

@@ -1,7 +1,7 @@
 import { api } from './client'
 import { request } from './envelope'
 import type { DataEnvelope } from './envelope'
-import type { Operation } from './conversations'
+import type { Operation } from '@/features/chat/api/fetchers'
 
 export const getOperation = async (id: string): Promise<Operation> => {
   const env = await request<DataEnvelope<Operation>>(() => api.get(`operations/${id}`))

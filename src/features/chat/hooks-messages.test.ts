@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type {  Message  } from './api/schemas'
-import {  Operation  } from './api/fetchers'
+import { type Operation } from './api/fetchers'
 
 vi.mock('./api/fetchers', async (importOriginal) => {
   const mod = await importOriginal<typeof import('./api/fetchers')>()

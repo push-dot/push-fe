@@ -1,2 +1,1 @@
-export type { SourceFile } from './api-sources'
-export type { EvidenceKind, VerificationStatus, CareerEvidence } from './api/fetchers'
+export type { EvidenceKind, VerificationStatus, CareerEvidence, SourceFile } from './api/schemas'

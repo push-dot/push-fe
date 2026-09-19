@@ -1,1 +1,1 @@
-export type { JobPosting, GapAnalysis } from './api/fetchers'
+export type { JobPosting, GapAnalysis } from './api/schemas'
