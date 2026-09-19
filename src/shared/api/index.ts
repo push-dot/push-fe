@@ -31,7 +31,7 @@ export type {
   EvidenceRef,
   PushDocument,
 } from './documents'
-export { createCareerEvidence, listCareerEvidence } from './career-evidence'
+export { createCareerEvidence, importEvidence, listCareerEvidence } from './career-evidence'
 export type { CareerEvidence, EvidenceKind, VerificationStatus } from './career-evidence'
 export {
   archiveConversation,
