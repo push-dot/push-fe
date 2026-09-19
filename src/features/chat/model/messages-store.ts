@@ -185,23 +185,25 @@ export const useMessagesStore = create<MessagesState>()((set, get) => ({
         }
       }
     } catch (error) {
+      if (!controller.signal.aborted) {
+        set({
+          sendStatus: 'failed',
+          streamText: '',
+          failed: {
+            tempId,
+            text,
+            error: error instanceof Error ? error.message : t('chat.sendFailed'),
+          },
+        })
+      }
+    } finally {
       if (controller.signal.aborted) {
         set((s) => ({
           messages: s.messages.filter((m) => m.id !== tempId),
           sendStatus: 'idle',
           streamText: '',
         }))
-        return
       }
-      set({
-        sendStatus: 'failed',
-        streamText: '',
-        failed: {
-          tempId,
-          text,
-          error: error instanceof Error ? error.message : t('chat.sendFailed'),
-        },
-      })
     }
   },
 
