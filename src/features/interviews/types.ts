@@ -1,1 +1,1 @@
-export type { InterviewSession } from './api'
+export type { InterviewSession } from './api/fetchers'

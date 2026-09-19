@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Application } from './api'
+import type {  Application  } from './api/schemas'
 
-vi.mock('./api', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api')>()
+vi.mock('./api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./api/fetchers')>()
   return {
     ...mod,
     listApplications: vi.fn(),
@@ -11,8 +11,8 @@ vi.mock('./api', async (importOriginal) => {
   }
 })
 
-import { createApplication, listApplications, patchApplication } from './api'
-import { useApplicationsStore } from './hooks'
+import {  createApplication, listApplications, patchApplication  } from './api/fetchers'
+import { useApplicationsStore } from './stores'
 
 const app = (over: Partial<Application> = {}): Application => ({
   id: 'a1',

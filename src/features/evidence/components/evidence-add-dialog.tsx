@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { EvidenceKind } from '../api'
+import type { EvidenceKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
-import { useEvidenceStore } from '../hooks'
+import { useEvidenceStore } from '../stores'
 
 const KIND_OPTIONS: { value: EvidenceKind; label: string }[] = [
   { value: 'CAREER', label: '경력' },

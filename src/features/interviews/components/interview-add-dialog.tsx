@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
 import { useApplicationsStore } from '@/features/applications'
-import { useInterviewsStore } from '../hooks'
+import { useInterviewsStore } from '../stores'
 
 type InterviewAddDialogProps = {
   open: boolean

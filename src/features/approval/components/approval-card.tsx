@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Approval, ApprovalKind } from '../api'
-import { useApprovalsStore } from '../hooks'
+import type { Approval, ApprovalKind } from '../api/schemas'
+import { useApprovalsStore } from '../stores'
 import { Button, Icon, StatusChip, showToast } from '@/shared/components'
 
 const KIND_TITLES: Record<ApprovalKind, string> = {

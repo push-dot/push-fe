@@ -1,4 +1,4 @@
-import { ApplicationStage } from './api'
+import type {  ApplicationStage  } from './api/schemas'
 
 export const APPLICATION_PIPELINE: readonly ApplicationStage[] = [
   'DISCOVERED',

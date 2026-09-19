@@ -1,2 +1,2 @@
-export type { AiModel, BillingSummary } from './api'
-export type { Theme } from './hooks'
+export type { AiModel, BillingSummary } from './api/fetchers'
+export type { Theme } from './stores'

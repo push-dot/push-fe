@@ -1,1 +1,1 @@
-export type { AuthProvider, OAuthStart, AuthUser } from './api'
+export type { AuthProvider, OAuthStart, AuthUser } from './api/fetchers'

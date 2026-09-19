@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
-import { DocumentKind } from '../api'
+import type { DocumentKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
 import { useApplicationsStore } from '@/features/applications'
-import { useDocumentsStore } from '../hooks'
+import { useDocumentsStore } from '../stores'
 
 const KIND_OPTIONS: { value: DocumentKind; label: string }[] = [
   { value: 'RESUME', label: '이력서' },

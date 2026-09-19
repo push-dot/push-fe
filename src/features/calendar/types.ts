@@ -1,1 +1,1 @@
-export type { CalendarEvent } from './api'
+export type { CalendarEvent } from './api/fetchers'
