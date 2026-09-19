@@ -1,6 +1,6 @@
 [package]
 name = "push"
-version = "0.2.2"
+version = "0.3.0"
 description = "Push — 채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱"
 authors = ["push"]
 edition = "2021"
