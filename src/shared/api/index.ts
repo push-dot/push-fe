@@ -38,6 +38,7 @@ export {
   createConversation,
   listConversations,
   listMessages,
+  patchConversation,
 } from './conversations'
 export { streamMessage } from './message-stream'
 export type { MessageStreamEvent, SendMessageBody } from './message-stream'
