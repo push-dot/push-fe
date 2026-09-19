@@ -1,6 +1,11 @@
 import { create } from 'zustand'
 import type { Conversation } from '@/shared/api'
-import { archiveConversation, createConversation, listConversations } from '@/shared/api'
+import {
+  archiveConversation,
+  createConversation,
+  listConversations,
+  patchConversation,
+} from '@/shared/api'
 
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -12,6 +17,7 @@ type ConversationsState = {
   load: () => Promise<void>
   create: (body: { applicationId: string | null; title?: string }) => Promise<Conversation>
   archive: (id: string) => Promise<void>
+  patch: (id: string, patch: { title?: string; pinned?: boolean }) => Promise<void>
 }
 
 export const useConversationsStore = create<ConversationsState>()((set, get) => ({
@@ -48,6 +54,16 @@ export const useConversationsStore = create<ConversationsState>()((set, get) => 
     if (!conv) return
     await archiveConversation(id, conv.revision)
     set((s) => ({ items: s.items.filter((c) => c.id !== id) }))
+  },
+  patch: async (id, patch) => {
+    const conv = get().items.find((c) => c.id === id)
+    if (!conv) return
+    const updated = await patchConversation(id, conv.revision, patch)
+    set((s) => ({
+      items: [...s.items.map((c) => (c.id === id ? updated : c))].sort(
+        (a, b) => Number(b.pinned) - Number(a.pinned),
+      ),
+    }))
   },
 }))
 

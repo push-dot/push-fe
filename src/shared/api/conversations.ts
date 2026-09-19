@@ -68,6 +68,19 @@ export const createConversation = async (body: {
   return env.data
 }
 
+export const patchConversation = async (
+  id: string,
+  expectedRevision: number,
+  patch: { title?: string; pinned?: boolean },
+): Promise<Conversation> => {
+  const env = await request<DataEnvelope<Conversation>>(() =>
+    api.patch(`conversations/${id}`, {
+      json: { expectedRevision, ...patch },
+    }),
+  )
+  return env.data
+}
+
 export const archiveConversation = async (
   id: string,
   expectedRevision: number,

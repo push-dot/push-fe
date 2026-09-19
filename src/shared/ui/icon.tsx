@@ -20,6 +20,8 @@ export type IconName =
   | 'x'
   | 'ellipsis'
   | 'trash-2'
+  | 'pin'
+  | 'pin-off'
   | 'file-down'
   | 'pencil'
   | 'plus'
