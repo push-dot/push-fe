@@ -127,7 +127,7 @@ const PlanPage = () => {
                     variant={card.id === 'ULTRA' ? 'primary' : 'secondary'}
                     size="md"
                     loading={pending === card.id}
-                    onClick={() => void openBillingUrl(() => createCheckout(card.id), card.id)}
+                    onClick={() => void openBillingUrl(() => createCheckout(card.id as 'PRO' | 'ULTRA'), card.id)}
                   >
                     {t('settings.upgrade')}
                   </Button>
