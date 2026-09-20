@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 import type { Message, MessageAttachment } from '../api/schemas'
 import { useT } from '@/shared/i18n'
 import { ApprovalCard } from '@/features/approval'
-import { Button, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/components'
+import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
+import { downloadVersionExport } from '@/features/documents'
 import type { SendStatus } from '../stores'
 
 const TOP_LOAD_THRESHOLD = 120
@@ -20,40 +21,79 @@ const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; u
     attachment.type === 'EVIDENCE'
       ? t('chat.evidenceLinked')
       : t('chat.docVersion')
+  const exportAs = (format: 'PDF' | 'DOCX') => {
+    if (attachment.type !== 'DOCUMENT_VERSION') return
+    void downloadVersionExport(
+      attachment.documentId, attachment.id, format, attachment.title,
+    ).catch((error: unknown) => {
+      showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
+    })
+  }
   return (
     <div className={user ? 'chat-attach-chip chat-attach-chip-user' : 'chat-attach-chip'}>
       <Icon name="link-2" size={16} />
       <span className="chat-attach-chip-title">{attachment.title}</span>
       <span className="chat-attach-chip-meta">{label}</span>
+      {attachment.type === 'DOCUMENT_VERSION' ? (
+        <span className="chat-attach-chip-actions">
+          <Button size="sm" variant="secondary" onClick={() => exportAs('PDF')}>
+            {t('chat.exportPdf')}
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => exportAs('DOCX')}>
+            {t('chat.exportDocx')}
+          </Button>
+        </span>
+      ) : null}
     </div>
   )
 }
 
-const MessageView = ({ message }: { message: Message }) => (
-  <div className="chat-stream-row">
-    <div
-      className={[
-        'chat-stream-msg',
-        message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
-      ].join(' ')}
-    >
-      {message.role === 'USER' ? (
-        message.text
-      ) : (
-        <div className="chat-md">
-          <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
+const MessageView = ({ message }: { message: Message }) => {
+  const t = useT()
+  const copy = () => {
+    void navigator.clipboard.writeText(message.text).then(() => {
+      showToast(t('chat.copied'), 'check')
+    })
+  }
+  return (
+    <div className="chat-stream-row">
+      <div
+        className={[
+          'chat-stream-msg',
+          message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
+        ].join(' ')}
+      >
+        {message.role === 'USER' ? (
+          message.text
+        ) : (
+          <div className="chat-md">
+            <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
+          </div>
+        )}
+      </div>
+      {message.attachments.map((a, i) => (
+        <AttachmentView
+          key={`${message.id}-${i}`}
+          attachment={a}
+          user={message.role === 'USER'}
+        />
+      ))}
+      {message.role === 'ASSISTANT' && message.text ? (
+        <div className="chat-msg-actions">
+          <button
+            type="button"
+            className="chat-msg-action"
+            aria-label={t('chat.copy')}
+            onClick={copy}
+          >
+            <Icon name="copy" size={16} />
+            <span>{t('chat.copy')}</span>
+          </button>
         </div>
-      )}
+      ) : null}
     </div>
-    {message.attachments.map((a, i) => (
-      <AttachmentView
-        key={`${message.id}-${i}`}
-        attachment={a}
-        user={message.role === 'USER'}
-      />
-    ))}
-  </div>
-)
+  )
+}
 
 const StreamingBubble = ({ text, status }: { text: string; status?: string }) => (
   <div className="chat-stream-row">

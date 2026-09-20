@@ -13,7 +13,12 @@ import {
   StatusChip,
   showToast,
 } from '@/shared/components'
-import { useCalendarEvents, useSyncGoogle } from '@/features/calendar'
+import {
+  connectGoogle,
+  useCalendarEvents,
+  useGoogleStatus,
+  useSyncGoogle,
+} from '@/features/calendar'
 
 const TYPE_LABELS: Record<string, string> = {
   INTERVIEW: '면접',
@@ -24,6 +29,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const CalendarPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCalendarEvents()
+  const google = useGoogleStatus()
   const syncMutation = useSyncGoogle()
 
   const onSync = async () => {
@@ -32,6 +38,14 @@ const CalendarPage = () => {
       showToast('동기화를 시작했어요', 'check')
     } catch (e) {
       showToast(e instanceof Error ? e.message : '동기화하지 못했어요', 'circle-alert')
+    }
+  }
+
+  const onConnect = async () => {
+    try {
+      window.location.href = await connectGoogle()
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : '연결하지 못했어요', 'circle-alert')
     }
   }
 
@@ -51,14 +65,20 @@ const CalendarPage = () => {
       <CanvasHeader
         title="캘린더"
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            loading={syncMutation.isPending}
-            onClick={() => void onSync()}
-          >
-            <Icon name="calendar" size={20} /> 동기화
-          </Button>
+          google.data && !google.data.connected ? (
+            <Button variant="primary" size="sm" onClick={() => void onConnect()}>
+              <Icon name="calendar" size={20} /> Google 연결
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              loading={syncMutation.isPending}
+              onClick={() => void onSync()}
+            >
+              <Icon name="calendar" size={20} /> 동기화
+            </Button>
+          )
         }
       />
       <div className="canvas-body">

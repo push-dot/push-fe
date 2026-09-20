@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Conversation, Message } from './api/schemas'
-import { listMessages, streamMessage } from './api/fetchers'
+import { listMessages, streamActive, streamMessage } from './api/fetchers'
 import type { AccessMode, AiOptions } from '@/features/inference'
 import { useInferenceSettings } from '@/features/inference'
 import { ensureApproval } from '@/features/approval'
@@ -42,6 +42,7 @@ type MessagesState = {
   streamStatus: string
   failed: FailedSend | null
   load: (conversationId: string) => Promise<void>
+  attachStream: (conversationId: string) => Promise<void>
   loadMore: () => Promise<void>
   send: (conversationId: string, text: string, evidence?: { id: string; title: string }[]) => Promise<void>
   retry: () => Promise<void>
@@ -53,6 +54,7 @@ let abortCtrl: AbortController | null = null
 
 export type MessagesDeps = {
   aiOptions: () => AiOptions | null
+  ensureModels: () => Promise<void>
   accessMode: () => AccessMode
   byokKey: () => string
   ensureApproval: (id: string) => void
@@ -73,6 +75,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
     failed: null,
 
     load: async (conversationId) => {
+      abortCtrl?.abort()
       set({
         conversationId,
         status: 'loading',
@@ -93,11 +96,74 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           nextCursor: env.page.nextCursor,
           hasMore: env.page.hasMore,
         })
+        void get().attachStream(conversationId)
       } catch (error) {
         set({
           status: 'error',
           error: error instanceof Error ? error.message : 'error',
         })
+      }
+    },
+
+    attachStream: async (conversationId) => {
+      const { sendStatus } = get()
+      if (sendStatus === 'sending' || sendStatus === 'streaming') return
+      abortCtrl?.abort()
+      const controller = new AbortController()
+      abortCtrl = controller
+      let partial = ''
+      try {
+        for await (const ev of streamActive(conversationId, {
+          signal: controller.signal,
+        })) {
+          if (get().conversationId !== conversationId) break
+          if (ev.type === 'token') {
+            partial += ev.text
+            set({ sendStatus: 'streaming', streamText: partial })
+          } else if (ev.type === 'status') {
+            set({ sendStatus: 'streaming', streamStatus: ev.text })
+          } else if (ev.type === 'error') {
+            showToast(ev.error.message, 'circle-alert')
+            set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
+            return
+          } else if (ev.type === 'done') {
+            const { operation } = ev
+            const result = operation?.result
+            if (operation?.status === 'SUCCEEDED' && isChatMessageResult(result)) {
+              const { userMessage, assistantMessage, approvalIds } = result.value
+              set((s) => ({
+                messages: [
+                  ...s.messages.filter(
+                    (m) => m.id !== userMessage.id && m.id !== assistantMessage.id,
+                  ),
+                  userMessage,
+                  assistantMessage,
+                ],
+                sendStatus: 'idle',
+                streamText: '',
+                streamStatus: '',
+              }))
+              for (const id of approvalIds) {
+                deps.ensureApproval(id)
+              }
+            } else {
+              const env = await listMessages(conversationId, { limit: PAGE_SIZE })
+              set({
+                messages: [...env.data].reverse(),
+                sendStatus: 'idle',
+                streamText: '',
+                streamStatus: '',
+              })
+            }
+            return
+          }
+        }
+      } catch {
+        // aborted or network failure; only clear transient stream state
+      } finally {
+        if (controller.signal.aborted) {
+          set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
+        }
       }
     },
 
@@ -123,7 +189,11 @@ export const createMessagesStore = (deps: MessagesDeps) =>
     },
 
     send: async (conversationId, text, evidence = []) => {
-      const ai = deps.aiOptions()
+      let ai = deps.aiOptions()
+      if (!ai) {
+        await deps.ensureModels()
+        ai = deps.aiOptions()
+      }
       if (!ai) {
         showToast(t('chat.modelConfigFailed'), 'circle-alert')
         return
@@ -273,6 +343,7 @@ export const usePendingFiles = create<PendingFilesState>()((set) => ({
 
 export const useMessagesStore = createMessagesStore({
   aiOptions: () => useInferenceSettings.getState().aiOptions(),
+  ensureModels: () => useInferenceSettings.getState().loadModels(),
   accessMode: () => useInferenceSettings.getState().accessMode,
   byokKey: () => useInferenceSettings.getState().byokKey,
   ensureApproval: (id) => void ensureApproval(id),

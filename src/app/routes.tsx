@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router-dom'
 import { LoginPage } from '@/pages/login'
 import { AuthCallbackPage } from '@/pages/auth-callback'
+import { GoogleCallbackPage } from '@/pages/google-callback'
 import { HomePage } from '@/pages/home'
 import { ChatPage } from '@/pages/chat'
 import { DocumentsPage } from '@/pages/documents'
@@ -17,6 +18,10 @@ import AppShell from './ui/app-shell'
 export const ROUTE_CONFIG: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/auth/callback', element: <AuthCallbackPage /> },
+  {
+    path: '/integrations/google/callback',
+    element: <GoogleCallbackPage />,
+  },
   {
     element: <AppShell />,
     children: [

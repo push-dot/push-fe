@@ -29,6 +29,7 @@ export type IconName =
   | 'inbox'
   | 'square'
   | 'arrow-down'
+  | 'copy'
 
 const STROKE_WIDTHS: Record<number, number> = { 16: 1.5, 20: 1.75, 24: 2 }
 
