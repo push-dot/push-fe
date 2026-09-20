@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { assignInlineVars } from '@vanilla-extract/dynamic'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
+import { menuX, menuY } from '@/theme/recipes.css'
 import { useT } from '@/shared/i18n'
 import { type CareerEvidence, type VerificationStatus, useArchiveEvidence } from '@/features/evidence'
 import {
@@ -115,10 +117,10 @@ const VaultPage = () => {
       {menu ? (
         <div
           className="context-menu"
-          style={{
-            left: Math.min(menu.x, window.innerWidth - 170),
-            top: Math.min(menu.y, window.innerHeight - 140),
-          }}
+          style={assignInlineVars({
+            [menuX]: `${Math.min(menu.x, window.innerWidth - 170)}px`,
+            [menuY]: `${Math.min(menu.y, window.innerHeight - 140)}px`,
+          })}
           role="menu"
         >
           <button

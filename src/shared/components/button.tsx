@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { button } from '../../theme/recipes.css'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -20,11 +21,7 @@ const Button = ({
   ...rest
 }: ButtonProps) => {
   const classes = [
-    'button',
-    `button-${variant}`,
-    `button-${size}`,
-    selected ? 'is-selected' : '',
-    loading ? 'is-loading' : '',
+    button({ variant, size, selected, loading }),
     className ?? '',
   ]
     .filter(Boolean)

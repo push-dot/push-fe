@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { sprinkles } from '@/theme/sprinkles.css'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
 import { useApplications } from '@/features/applications'
 import { useCreateInterview } from '../api/hooks'
@@ -56,7 +57,7 @@ const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
         </>
       }
     >
-      <div className="form" style={{ gap: 'var(--space-12)' }}>
+      <div className={['form', sprinkles({ gap: 's12' })].join(' ')}>
         <Select
           aria-label="연결할 지원"
           value={applicationId}

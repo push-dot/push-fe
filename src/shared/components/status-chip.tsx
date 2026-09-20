@@ -1,3 +1,4 @@
+import { statusChip } from '../../theme/recipes.css'
 import Icon from './icon'
 import type { IconName } from './icon'
 
@@ -10,7 +11,7 @@ type StatusChipProps = {
 }
 
 const StatusChip = ({ tone, label, icon }: StatusChipProps) => (
-  <span className={`status-chip status-chip-${tone}`}>
+  <span className={statusChip({ tone })}>
     {icon ? <Icon name={icon} size={16} /> : null}
     {label}
   </span>

@@ -1,5 +1,6 @@
-import { globalStyle, keyframes } from '@vanilla-extract/css'
+import { fallbackVar, globalStyle, keyframes } from '@vanilla-extract/css'
 import { vars } from './vars.css'
+import { menuX, menuY } from './recipes.css'
 
 globalStyle('.screen', {
   width: vars.frame.w,
@@ -134,6 +135,8 @@ globalStyle('body.is-resizing', {
 })
 globalStyle('.context-menu', {
   position: 'fixed',
+  left: fallbackVar(menuX, '0px'),
+  top: fallbackVar(menuY, '0px'),
   zIndex: 100,
   minWidth: '150px',
   display: 'flex',
@@ -220,95 +223,6 @@ globalStyle('.canvas-body', {
   display: 'flex',
   flexDirection: 'column',
   gap: vars.space.s24,
-})
-
-globalStyle('.button', {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: vars.space.s8,
-  border: 0,
-  borderRadius: vars.radius.md,
-  fontSize: vars.fs.bodySm,
-  fontWeight: vars.fw.medium,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  transition: `background ${vars.motion.base}`,
-})
-globalStyle('.button-sm', {
-  height: vars.size.buttonSm,
-  padding: `0 ${vars.space.s12}`,
-})
-globalStyle('.button-md', {
-  height: vars.size.buttonMd,
-  padding: `0 ${vars.space.s16}`,
-})
-globalStyle('.button-lg', {
-  height: vars.size.buttonLg,
-  padding: `0 ${vars.space.s24}`,
-  fontSize: vars.fs.body,
-})
-globalStyle('.button-primary', {
-  background: vars.color.accent,
-  color: vars.color.bg,
-})
-globalStyle('.button-primary:hover', {
-  background: vars.color.accentPressed,
-})
-globalStyle('.button-primary:active', {
-  background: vars.color.accentPressed,
-})
-globalStyle('.button-secondary', {
-  background: vars.color.surface1,
-  color: vars.color.text,
-  border: `1px solid ${vars.color.border}`,
-})
-globalStyle('.button-secondary:hover', {
-  background: vars.color.surface2,
-})
-globalStyle('.button-ghost', {
-  background: 'transparent',
-  color: vars.color.textMuted,
-})
-globalStyle('.button-ghost:hover', {
-  background: vars.color.surface1,
-  color: vars.color.text,
-})
-globalStyle('.button-danger', {
-  background: vars.color.danger,
-  color: vars.color.bg,
-})
-globalStyle('.button.is-selected', {
-  background: vars.color.accentSoft,
-  color: vars.color.accent,
-})
-globalStyle('.button:active', {
-  filter: 'brightness(0.96)',
-})
-globalStyle('.button:disabled', {
-  opacity: 0.45,
-  cursor: 'not-allowed',
-})
-globalStyle('.button.is-loading', {
-  opacity: 0.6,
-  pointerEvents: 'none',
-})
-
-globalStyle('.icon-button', {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minWidth: vars.size.tapMin,
-  minHeight: vars.size.tapMin,
-  border: 0,
-  borderRadius: vars.radius.md,
-  background: 'transparent',
-  color: vars.color.textMuted,
-  cursor: 'pointer',
-})
-globalStyle('.icon-button:hover', {
-  background: vars.color.surface1,
-  color: vars.color.text,
 })
 
 globalStyle('.input', {
@@ -667,37 +581,6 @@ globalStyle('.editor-body', {
   margin: '0 auto',
 })
 
-globalStyle('.status-chip', {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: vars.space.s4,
-  minHeight: vars.space.s24,
-  padding: `0 ${vars.space.s8}`,
-  borderRadius: vars.radius.full,
-  fontSize: vars.fs.label,
-  fontWeight: vars.fw.medium,
-})
-globalStyle('.status-chip-ready', {
-  background: vars.color.accentSoft,
-  color: vars.color.accent,
-})
-globalStyle('.status-chip-running', {
-  background: vars.color.accentSoft,
-  color: vars.color.accent,
-})
-globalStyle('.status-chip-verified', {
-  background: vars.color.surface1,
-  color: vars.color.success,
-})
-globalStyle('.status-chip-pending', {
-  background: vars.color.surface1,
-  color: vars.color.warn,
-})
-globalStyle('.status-chip-error', {
-  background: vars.color.surface1,
-  color: vars.color.danger,
-})
-
 globalStyle('.data-list', {
   display: 'flex',
   flexDirection: 'column',
@@ -788,12 +671,6 @@ globalStyle('.error-state', {
   color: vars.color.danger,
   textAlign: 'center',
 })
-globalStyle('.skeleton', {
-  borderRadius: vars.radius.md,
-  background: vars.color.surface2,
-  minHeight: vars.space.s16,
-})
-
 globalStyle('.dialog-backdrop', {
   position: 'absolute',
   inset: 0,
