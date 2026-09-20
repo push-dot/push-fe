@@ -25,19 +25,6 @@
 - **추론 설정** — 접근 모드(관리형/BYOK), 역할별(generate/research) 모델 선택, effort 조정
 - **지원 관리·커리어 볼트·면접 준비** — 이력서 외 커리어 라이프사이클 전체
 
-## 스크린샷
-
-| | |
-| --- | --- |
-| ![홈 컴포저](docs/screenshots/02-composer.png) | ![스트리밍](docs/screenshots/03-streaming.png) |
-| 홈 컴포저 | 응답 스트리밍 |
-| ![Fit score 게이트](docs/screenshots/04-gate-2-fit-score.png) | ![템플릿 게이트](docs/screenshots/04-gate-5-template.png) |
-| Fit score 게이트 | 템플릿 선택 게이트 |
-| ![이탈 후 복귀](docs/screenshots/05-nav-back.png) | ![최종 화면](docs/screenshots/06-final.png) |
-| 이탈 후 복귀 · 스트림 재연결 | 최종 응답 · 문서보내기 칩 |
-| ![문서 편집기](docs/screenshots/08-doc-editor.png) | ![지원 관리](docs/screenshots/10-applications.png) |
-| 문서 편집기 · PDF/DOCX보내기 | 지원 관리 |
-
 ## 스택
 
 - **Tauri v2** — 네이티브 데스크톱 셸 (`src-tauri`, Rust)
@@ -45,7 +32,7 @@
 - **ky** — API 클라이언트 (`src/shared/api`)
 - **TanStack Query** — 서버 상태 (`features/*/api/hooks.ts`)
 - **Zustand** — 로컬 UI 상태 (`features/*/stores.ts`)
-- **vanilla-extract** — 디자인 시스템은 [@pushdot/design](https://github.com/push-dot/push-design) 패키지로 분리 (토큰 contract + 라이트/다크 테마, `recipe` variants, `sprinkles`, `createVar`/`assignInlineVars`)
+- **vanilla-extract** — 디자인 시스템은 `@push/design-system` 인레포 패키지 (`packages/design-system`, 토큰 contract + 라이트/다크 테마, `recipe` variants, `sprinkles`, `createVar`/`assignInlineVars`, Storybook)
 - **TipTap** — 문서 에디터
 - **Feature-based** — `app` / `pages` / `features` / `shared` 구조
 - **Vitest + Testing Library** — 테스트
