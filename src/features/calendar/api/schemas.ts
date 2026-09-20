@@ -1,3 +1,12 @@
+export type GoogleStatus = {
+  enabled: boolean
+  connected: boolean
+  scopes: string[]
+  gmailStatus: string
+  calendarStatus: string
+  lastSyncedAt: string | null
+}
+
 export type CalendarEvent = {
   id: string
   revision: number
