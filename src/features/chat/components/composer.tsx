@@ -107,13 +107,26 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
           aria-label={t('composer.inference')}
           onClick={() => setSettingsOpen((v) => !v)}
         />
-        <input
+        <textarea
           className="composer-field"
+          rows={1}
           placeholder={t('composer.placeholder')}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value)
+            e.currentTarget.style.height = 'auto'
+            e.currentTarget.style.height =
+              `${Math.min(e.currentTarget.scrollHeight, 160)}px`
+          }}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit()
+            if (
+              e.key === 'Enter' &&
+              !e.shiftKey &&
+              !e.nativeEvent.isComposing
+            ) {
+              e.preventDefault()
+              submit()
+            }
           }}
         />
         {sending ? (

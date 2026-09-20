@@ -54,6 +54,7 @@ let abortCtrl: AbortController | null = null
 
 export type MessagesDeps = {
   aiOptions: () => AiOptions | null
+  ensureModels: () => Promise<void>
   accessMode: () => AccessMode
   byokKey: () => string
   ensureApproval: (id: string) => void
@@ -188,7 +189,11 @@ export const createMessagesStore = (deps: MessagesDeps) =>
     },
 
     send: async (conversationId, text, evidence = []) => {
-      const ai = deps.aiOptions()
+      let ai = deps.aiOptions()
+      if (!ai) {
+        await deps.ensureModels()
+        ai = deps.aiOptions()
+      }
       if (!ai) {
         showToast(t('chat.modelConfigFailed'), 'circle-alert')
         return
@@ -338,6 +343,7 @@ export const usePendingFiles = create<PendingFilesState>()((set) => ({
 
 export const useMessagesStore = createMessagesStore({
   aiOptions: () => useInferenceSettings.getState().aiOptions(),
+  ensureModels: () => useInferenceSettings.getState().loadModels(),
   accessMode: () => useInferenceSettings.getState().accessMode,
   byokKey: () => useInferenceSettings.getState().byokKey,
   ensureApproval: (id) => void ensureApproval(id),
