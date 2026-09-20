@@ -51,20 +51,4 @@
 - **Vitest + Testing Library** — 테스트
 - **ESLint + Prettier** — 린트/포맷
 
-## 구조
 
-```
-src/
-  app/        라우트, 진입점, 앱 셸
-  pages/      화면 (chat, documents, applications, …)
-  features/   capability별 도메인 코드
-    {name}/
-      api/        fetchers.ts, schemas.ts, hooks.ts (TanStack Query)
-      components/ 기능 전용 컴포넌트
-      hooks.ts    일반 훅
-      stores.ts   Zustand (로컬 UI 상태)
-      constants.ts, types.ts, index.tsx (public 배럴)
-  shared/     api 클라이언트, auth, components, i18n, lib
-  theme/      vanilla-extract 테마
-src-tauri/    Tauri 셸, deep-link 플러그인
-```
