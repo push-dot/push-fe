@@ -1,1 +1,1 @@
-export { Skeleton, SkeletonCardGrid, SkeletonRows } from '@pushdot/design'
+export { Skeleton, SkeletonCardGrid, SkeletonRows } from '@push/design-system'

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sprinkles } from '@pushdot/design'
+import { sprinkles } from '@push/design-system'
 import type { EvidenceKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
 import { useCreateEvidence } from '../api/hooks'

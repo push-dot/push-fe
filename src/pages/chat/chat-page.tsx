@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useT } from '@/shared/i18n'
 import { Card, DropOverlay, Icon, StatusChip } from '@/shared/components'
+import { cardMeta } from '@push/design-system'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
 import { type CliRunState } from '@/features/projects'
@@ -33,7 +34,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
             label={run.state}
             icon={run.state === 'RUNNING' ? <Icon name="loader-circle" size={16} /> : undefined}
           />
-          <div className="card-meta">
+          <div className={cardMeta}>
             {run.executable}
             {run.arguments.length ? ` ${run.arguments.join(' ')}` : ''}
           </div>
@@ -52,7 +53,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
             label={item.status}
             icon={item.status === 'VERIFIED' ? 'badge-check' : undefined}
           />
-          {item.summary ? <div className="card-meta">{item.summary}</div> : null}
+          {item.summary ? <div className={cardMeta}>{item.summary}</div> : null}
         </Card>
       ))}
     </>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { formSelect } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Input, Select } from '@/shared/components'
@@ -68,7 +69,7 @@ const InferenceSettings = () => {
             <span className="form-row-hint">{t('infer.noModels')}</span>
           ) : (
             <Select
-              className="form-select"
+              className={formSelect}
               value={activeModel?.model ?? ''}
               onChange={(e) => setModel(e.target.value)}
             >
@@ -87,7 +88,7 @@ const InferenceSettings = () => {
         <div className="form-row">
           <span className="form-row-label">{t('infer.effort')}</span>
           <Select
-            className="form-select"
+            className={formSelect}
             value={ultraResume ? 'ULTRA' : effort}
             onChange={(e) => {
               if (e.target.value === 'ULTRA') {
