@@ -147,6 +147,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         messages: [...s.messages, optimistic],
         sendStatus: 'sending',
         streamText: '',
+        streamStatus: '',
         failed: null,
       }))
       let partial = ''
