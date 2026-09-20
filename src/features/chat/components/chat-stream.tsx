@@ -48,9 +48,10 @@ const MessageView = ({ message }: { message: Message }) => (
   </div>
 )
 
-const StreamingBubble = ({ text }: { text: string }) => (
+const StreamingBubble = ({ text, status }: { text: string; status?: string }) => (
   <div className="chat-stream-row">
     <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
+      {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
       {text || ' '}
       <span className="chat-stream-cursor" />
     </div>
@@ -63,6 +64,7 @@ type ChatStreamProps = {
   error?: string | null
   sendStatus?: SendStatus
   streamText?: string
+  streamStatus?: string
   failedText?: string | null
   hasMore?: boolean
   loadingMore?: boolean
@@ -78,6 +80,7 @@ const ChatStream = ({
   error,
   sendStatus = 'idle',
   streamText = '',
+  streamStatus = '',
   failedText = null,
   hasMore = false,
   loadingMore = false,
@@ -139,7 +142,7 @@ const ChatStream = ({
         {messages.map((m) => (
           <MessageView key={m.id} message={m} />
         ))}
-        {streaming ? <StreamingBubble text={streamText} /> : null}
+        {streaming ? <StreamingBubble text={streamText} status={streamStatus} /> : null}
         {failedText !== null ? (
           <div className="chat-stream-row">
             <div className="chat-stream-failed">

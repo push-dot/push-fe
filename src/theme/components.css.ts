@@ -421,6 +421,11 @@ globalStyle('.chat-stream-msg-live .chat-stream-cursor', {
   background: 'currentColor',
   animation: `${chatCursorBlink} 0.9s steps(2) infinite`,
 })
+globalStyle('.chat-stream-status', {
+  fontSize: vars.fs.caption,
+  color: vars.color.textMuted,
+  marginBottom: vars.space.s8,
+})
 globalStyle('.chat-stream-loading', {
   position: 'absolute',
   top: 0,
