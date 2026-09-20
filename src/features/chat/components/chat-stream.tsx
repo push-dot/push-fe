@@ -2,35 +2,30 @@ import { useEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ReactNode } from 'react'
-import { VList } from 'virtua'
-import type { VListHandle } from 'virtua'
 import type { Message, MessageAttachment } from '../api/schemas'
 import { useT } from '@/shared/i18n'
 import { ApprovalCard } from '@/features/approval'
-import { Button, Card, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/components'
+import { Button, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/components'
 import type { SendStatus } from '../stores'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80
 
-const AttachmentView = ({ attachment }: { attachment: MessageAttachment }) => {
+const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; user?: boolean }) => {
   const t = useT()
   if (attachment.type === 'APPROVAL') {
     return <ApprovalCard approvalId={attachment.id} />
   }
-  if (attachment.type === 'EVIDENCE') {
-    return (
-      <Card title={attachment.title}>
-        <span className="card-meta">
-          <Icon name="link-2" size={16} /> {t('chat.evidenceLinked')}
-        </span>
-      </Card>
-    )
-  }
+  const label =
+    attachment.type === 'EVIDENCE'
+      ? t('chat.evidenceLinked')
+      : t('chat.docVersion')
   return (
-    <Card title={attachment.title}>
-      <span className="card-meta">{t('chat.docVersion')}</span>
-    </Card>
+    <div className={user ? 'chat-attach-chip chat-attach-chip-user' : 'chat-attach-chip'}>
+      <Icon name="link-2" size={16} />
+      <span className="chat-attach-chip-title">{attachment.title}</span>
+      <span className="chat-attach-chip-meta">{label}</span>
+    </div>
   )
 }
 
@@ -51,7 +46,11 @@ const MessageView = ({ message }: { message: Message }) => (
       )}
     </div>
     {message.attachments.map((a, i) => (
-      <AttachmentView key={`${message.id}-${i}`} attachment={a} />
+      <AttachmentView
+        key={`${message.id}-${i}`}
+        attachment={a}
+        user={message.role === 'USER'}
+      />
     ))}
   </div>
 )
@@ -102,32 +101,34 @@ const ChatStream = ({
   trailing,
 }: ChatStreamProps) => {
   const t = useT()
-  const listRef = useRef<VListHandle>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const atBottomRef = useRef(true)
   const [showJump, setShowJump] = useState(false)
 
   const streaming = sendStatus === 'sending' || sendStatus === 'streaming'
 
   useEffect(() => {
-    if (!atBottomRef.current || messages.length === 0) return
-    listRef.current?.scrollToIndex(messages.length - 1, { align: 'end' })
-  }, [messages.length, streamText])
+    const el = listRef.current
+    if (!el || !atBottomRef.current) return
+    el.scrollTop = el.scrollHeight
+  }, [messages.length, streamText, streaming])
 
-  const onScroll = (offset: number) => {
-    const list = listRef.current
-    if (!list) return
-    const atBottom = list.scrollSize - offset - list.viewportSize < BOTTOM_THRESHOLD
+  const onScroll = () => {
+    const el = listRef.current
+    if (!el) return
+    const atBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < BOTTOM_THRESHOLD
     atBottomRef.current = atBottom
     setShowJump(!atBottom)
-    if (offset < TOP_LOAD_THRESHOLD && hasMore && !loadingMore) onTopReached?.()
+    if (el.scrollTop < TOP_LOAD_THRESHOLD && hasMore && !loadingMore) {
+      onTopReached?.()
+    }
   }
 
   const jumpToBottom = () => {
     atBottomRef.current = true
     setShowJump(false)
-    if (messages.length > 0) {
-      listRef.current?.scrollToIndex(messages.length - 1, { align: 'end' })
-    }
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }
 
   if (status === 'loading') {
@@ -150,7 +151,7 @@ const ChatStream = ({
   return (
     <div className="chat-stream-virtual">
       {loadingMore ? <div className="chat-stream-loading">{t('chat.loadingMore')}</div> : null}
-      <VList ref={listRef} className="chat-vlist" shift onScroll={onScroll}>
+      <div ref={listRef} className="chat-vlist" onScroll={onScroll}>
         {messages.map((m) => (
           <MessageView key={m.id} message={m} />
         ))}
@@ -169,7 +170,7 @@ const ChatStream = ({
           </div>
         ) : null}
         {trailing}
-      </VList>
+      </div>
       {showJump ? (
         <IconButton
           className="chat-jump-bottom"

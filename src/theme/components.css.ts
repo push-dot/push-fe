@@ -379,6 +379,11 @@ globalStyle('.chat-stream', {
 })
 globalStyle('.chat-vlist', {
   flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  overscrollBehavior: 'contain',
+  display: 'flex',
+  flexDirection: 'column',
 })
 globalStyle('.chat-stream-row', {
   display: 'flex',
@@ -480,6 +485,33 @@ globalStyle('.chat-md hr', {
   border: 'none',
   borderTop: `1px solid ${vars.color.border}`,
   margin: `${vars.space.s12} 0`,
+})
+globalStyle('.chat-attach-chip', {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: vars.space.s8,
+  alignSelf: 'flex-start',
+  maxWidth: '280px',
+  padding: `${vars.space.s8} ${vars.space.s12}`,
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.border}`,
+  background: vars.color.surface1,
+  fontSize: vars.fs.caption,
+  color: vars.color.textMuted,
+})
+globalStyle('.chat-attach-chip-user', {
+  alignSelf: 'flex-end',
+})
+globalStyle('.chat-attach-chip-title', {
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  color: vars.color.text,
+  fontWeight: vars.fw.medium,
+})
+globalStyle('.chat-attach-chip-meta', {
+  flexShrink: 0,
 })
 globalStyle('.chat-stream-status', {
   fontSize: vars.fs.caption,
