@@ -1,5 +1,11 @@
+import { assignInlineVars } from '@vanilla-extract/dynamic'
+import { skeleton, skeletonHeight } from '../../theme/recipes.css'
+
 const Skeleton = ({ height = 16 }: { height?: number }) => (
-  <div className="skeleton" style={{ height }} />
+  <div
+    className={skeleton}
+    style={assignInlineVars({ [skeletonHeight]: `${height}px` })}
+  />
 )
 
 const SkeletonCardGrid = ({ count = 3 }: { count?: number }) => (

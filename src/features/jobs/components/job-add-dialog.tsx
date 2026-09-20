@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { sprinkles } from '@/theme/sprinkles.css'
 import type { FormEvent } from 'react'
 import type { JobPosting } from '../api/schemas'
 import { createJob } from '../api/fetchers'
@@ -59,7 +60,7 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
         </>
       }
     >
-      <form className="form" onSubmit={(e) => void submit(e)} style={{ gap: 'var(--space-12)' }}>
+      <form className={['form', sprinkles({ gap: 's12' })].join(' ')} onSubmit={(e) => void submit(e)}>
         <Input
           placeholder="회사명"
           value={company}
@@ -76,7 +77,7 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
           value={isHttpUrl(source) ? 'URL' : 'TEXT'}
           onChange={() => undefined}
           aria-label="수집 방식"
-          style={{ display: 'none' }}
+          className={sprinkles({ display: 'none' })}
         />
         <Textarea
           placeholder="공고 URL 또는 공고 원문을 붙여넣으세요"

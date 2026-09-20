@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
+import { assignInlineVars } from '@vanilla-extract/dynamic'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
+import { menuX, menuY } from '@/theme/recipes.css'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
@@ -294,10 +296,10 @@ const Sidebar = () => {
       {menu ? (
         <div
           className="context-menu"
-          style={{
-            left: Math.min(menu.x, window.innerWidth - 170),
-            top: Math.min(menu.y, window.innerHeight - 140),
-          }}
+          style={assignInlineVars({
+            [menuX]: `${Math.min(menu.x, window.innerWidth - 170)}px`,
+            [menuY]: `${Math.min(menu.y, window.innerHeight - 140)}px`,
+          })}
           role="menu"
         >
           <button

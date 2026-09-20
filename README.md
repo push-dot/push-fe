@@ -45,7 +45,7 @@
 - **ky** — API 클라이언트 (`src/shared/api`)
 - **TanStack Query** — 서버 상태 (`features/*/api/hooks.ts`)
 - **Zustand** — 로컬 UI 상태 (`features/*/stores.ts`)
-- **vanilla-extract** — 빌드타임 CSS (`src/theme`)
+- **vanilla-extract** — theme contract + 라이트/다크 테마, `recipe` variants(Button·StatusChip), `sprinkles` 유틸리티, `createVar`/`assignInlineVars`로 런타임 값 연결 (`src/theme`)
 - **TipTap** — 문서 에디터
 - **Feature-based** — `app` / `pages` / `features` / `shared` 구조
 - **Vitest + Testing Library** — 테스트

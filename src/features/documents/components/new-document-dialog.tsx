@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { sprinkles } from '@/theme/sprinkles.css'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import type { DocumentKind } from '../api/schemas'
@@ -67,7 +68,7 @@ const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
         </>
       }
     >
-      <div className="form" style={{ gap: 'var(--space-12)' }}>
+      <div className={['form', sprinkles({ gap: 's12' })].join(' ')}>
         <Input placeholder="문서 제목" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Select
           aria-label="문서 종류"

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
+import { sprinkles } from '@/theme/sprinkles.css'
 import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/components'
 import { useCreateApplication } from '@/features/applications'
 import { useJob } from '@/features/jobs'
@@ -54,7 +55,7 @@ const JobDetailPage = () => {
                 <p className="t-body-sm">핵심: {current.requirements.slice(0, 3).join(', ')}</p>
               ) : null}
               {current.risks.length > 0 ? (
-                <p className="t-body-sm" style={{ color: 'var(--color-warn)' }}>
+                <p className={['t-body-sm', sprinkles({ color: 'warn' })].join(' ')}>
                   위험: {current.risks.join(', ')}
                 </p>
               ) : null}
