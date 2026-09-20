@@ -36,6 +36,19 @@ export const createCareerEvidence = async (body: {
   return env.data
 }
 
+export const archiveCareerEvidence = async (
+  id: string,
+  expectedRevision: number,
+): Promise<CareerEvidence> => {
+  const env = await request<DataEnvelope<CareerEvidence>>(() =>
+    api.post(`career-evidence/${id}/archive`, {
+      json: { expectedRevision },
+      headers: { 'Idempotency-Key': newIdempotencyKey() },
+    }),
+  )
+  return env.data
+}
+
 export const importEvidence = async (file: File, sourceId: string): Promise<CareerEvidence> => {
   const env = await request<DataEnvelope<Operation>>(() =>
     api.post('career-evidence/import', {

@@ -30,6 +30,7 @@ export type Message = {
 }
 export type MessageStreamEvent =
   | { type: 'token'; text: string }
+  | { type: 'status'; text: string }
   | { type: 'done'; operation: Operation }
   | {
       type: 'error'

@@ -379,6 +379,11 @@ globalStyle('.chat-stream', {
 })
 globalStyle('.chat-vlist', {
   flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  overscrollBehavior: 'contain',
+  display: 'flex',
+  flexDirection: 'column',
 })
 globalStyle('.chat-stream-row', {
   display: 'flex',
@@ -420,6 +425,98 @@ globalStyle('.chat-stream-msg-live .chat-stream-cursor', {
   verticalAlign: 'text-bottom',
   background: 'currentColor',
   animation: `${chatCursorBlink} 0.9s steps(2) infinite`,
+})
+globalStyle('.chat-md', {
+  whiteSpace: 'normal',
+})
+globalStyle('.chat-md p', {
+  margin: `0 0 ${vars.space.s8}`,
+})
+globalStyle('.chat-md > :last-child', {
+  marginBottom: 0,
+})
+globalStyle('.chat-md h1, .chat-md h2, .chat-md h3, .chat-md h4', {
+  margin: `${vars.space.s12} 0 ${vars.space.s8}`,
+  lineHeight: 1.3,
+})
+globalStyle('.chat-md h1', { fontSize: vars.fs.h1 })
+globalStyle('.chat-md h2', { fontSize: vars.fs.h2 })
+globalStyle('.chat-md h3, .chat-md h4', { fontSize: vars.fs.body })
+globalStyle('.chat-md ul, .chat-md ol', {
+  margin: `0 0 ${vars.space.s8}`,
+  paddingLeft: vars.space.s24,
+})
+globalStyle('.chat-md table', {
+  borderCollapse: 'collapse',
+  margin: `0 0 ${vars.space.s8}`,
+  fontSize: vars.fs.bodySm,
+  width: '100%',
+})
+globalStyle('.chat-md th, .chat-md td', {
+  border: `1px solid ${vars.color.border}`,
+  padding: `${vars.space.s4} ${vars.space.s8}`,
+  textAlign: 'left',
+})
+globalStyle('.chat-md th', {
+  background: vars.color.surface2,
+})
+globalStyle('.chat-md pre', {
+  background: vars.color.surface2,
+  borderRadius: vars.radius.md,
+  padding: vars.space.s8,
+  overflowX: 'auto',
+  fontSize: vars.fs.bodySm,
+  margin: `0 0 ${vars.space.s8}`,
+})
+globalStyle('.chat-md code', {
+  fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+  fontSize: '0.9em',
+})
+globalStyle('.chat-md blockquote', {
+  borderLeft: `3px solid ${vars.color.border}`,
+  margin: `0 0 ${vars.space.s8}`,
+  paddingLeft: vars.space.s8,
+  color: vars.color.textMuted,
+})
+globalStyle('.chat-md a', {
+  color: vars.color.accent,
+})
+globalStyle('.chat-md hr', {
+  border: 'none',
+  borderTop: `1px solid ${vars.color.border}`,
+  margin: `${vars.space.s12} 0`,
+})
+globalStyle('.chat-attach-chip', {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: vars.space.s8,
+  alignSelf: 'flex-start',
+  maxWidth: '280px',
+  padding: `${vars.space.s8} ${vars.space.s12}`,
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.border}`,
+  background: vars.color.surface1,
+  fontSize: vars.fs.caption,
+  color: vars.color.textMuted,
+})
+globalStyle('.chat-attach-chip-user', {
+  alignSelf: 'flex-end',
+})
+globalStyle('.chat-attach-chip-title', {
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  color: vars.color.text,
+  fontWeight: vars.fw.medium,
+})
+globalStyle('.chat-attach-chip-meta', {
+  flexShrink: 0,
+})
+globalStyle('.chat-stream-status', {
+  fontSize: vars.fs.caption,
+  color: vars.color.textMuted,
+  marginBottom: vars.space.s8,
 })
 globalStyle('.chat-stream-loading', {
   position: 'absolute',

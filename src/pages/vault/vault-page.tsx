@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { MouseEvent as ReactMouseEvent } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
-import { type VerificationStatus } from '@/features/evidence'
+import { useT } from '@/shared/i18n'
+import { type CareerEvidence, type VerificationStatus, useArchiveEvidence } from '@/features/evidence'
 import {
   Button,
   CanvasHeader,
@@ -32,9 +34,38 @@ const KIND_LABELS: Record<string, string> = {
   PROJECT: '프로젝트',
 }
 
+type MenuState = { x: number; y: number; item: CareerEvidence }
+
 const VaultPage = () => {
+  const t = useT()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCareerEvidence()
+  const archiveEvidence = useArchiveEvidence()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [menu, setMenu] = useState<MenuState | null>(null)
+
+  useEffect(() => {
+    if (!menu) return
+    const close = () => setMenu(null)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenu(null)
+    }
+    window.addEventListener('click', close)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('blur', close)
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('blur', close)
+    }
+  }, [menu])
+
+  const openMenu = (e: ReactMouseEvent, item: CareerEvidence) => {
+    e.preventDefault()
+    setMenu({ x: e.clientX, y: e.clientY, item })
+  }
+
+  const removeItem = (item: CareerEvidence) =>
+    archiveEvidence.mutate({ id: item.id, revision: item.revision })
 
   return (
     <>
@@ -63,23 +94,43 @@ const VaultPage = () => {
         {isSuccess && items.length > 0 ? (
           <DataList>
             {items.map((item) => (
-              <DataListRow
-                key={item.id}
-                title={item.title}
-                meta={`${KIND_LABELS[item.kind]} · ${formatRelativeTime(item.createdAt)}`}
-                trailing={
-                  <StatusChip
-                    tone={STATUS_TONES[item.verificationStatus]}
-                    label={item.verificationStatus}
-                    icon={item.verificationStatus === 'VERIFIED' ? 'badge-check' : undefined}
-                  />
-                }
-              />
+              <div key={item.id} onContextMenu={(e) => openMenu(e, item)}>
+                <DataListRow
+                  title={item.title}
+                  meta={`${KIND_LABELS[item.kind]} · ${formatRelativeTime(item.createdAt)}`}
+                  trailing={
+                    <StatusChip
+                      tone={STATUS_TONES[item.verificationStatus]}
+                      label={item.verificationStatus}
+                      icon={item.verificationStatus === 'VERIFIED' ? 'badge-check' : undefined}
+                    />
+                  }
+                />
+              </div>
             ))}
           </DataList>
         ) : null}
       </div>
       <EvidenceAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      {menu ? (
+        <div
+          className="context-menu"
+          style={{
+            left: Math.min(menu.x, window.innerWidth - 170),
+            top: Math.min(menu.y, window.innerHeight - 140),
+          }}
+          role="menu"
+        >
+          <button
+            type="button"
+            className="context-menu-item is-danger"
+            onClick={() => removeItem(menu.item)}
+          >
+            <Icon name="trash-2" size={16} />
+            {t('menu.delete')}
+          </button>
+        </div>
+      ) : null}
     </>
   )
 }
