@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { assignInlineVars } from '@vanilla-extract/dynamic'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
-import { menuX, menuY } from '@/theme/recipes.css'
+import { menuX, menuY } from '@pushdot/design'
 import { useT } from '@/shared/i18n'
 import { type CareerEvidence, type VerificationStatus, useArchiveEvidence } from '@/features/evidence'
 import {
@@ -104,7 +104,7 @@ const VaultPage = () => {
                     <StatusChip
                       tone={STATUS_TONES[item.verificationStatus]}
                       label={item.verificationStatus}
-                      icon={item.verificationStatus === 'VERIFIED' ? 'badge-check' : undefined}
+                      icon={item.verificationStatus === 'VERIFIED' ? <Icon name="badge-check" size={16} /> : undefined}
                     />
                   }
                 />

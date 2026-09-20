@@ -1,5 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css'
-import { vars } from '@/theme/vars.css'
+import { vars } from '@pushdot/design'
 
 globalStyle('*', {
   boxSizing: 'border-box',

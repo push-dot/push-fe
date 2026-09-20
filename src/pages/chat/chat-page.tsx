@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useT } from '@/shared/i18n'
-import { Card, DropOverlay, StatusChip } from '@/shared/components'
+import { Card, DropOverlay, Icon, StatusChip } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
 import { type CliRunState } from '@/features/projects'
@@ -31,7 +31,7 @@ const ProjectPanels = ({ projectId }: { projectId: string }) => {
           <StatusChip
             tone={RUN_TONES[run.state]}
             label={run.state}
-            icon={run.state === 'RUNNING' ? 'loader-circle' : undefined}
+            icon={run.state === 'RUNNING' ? <Icon name="loader-circle" size={16} /> : undefined}
           />
           <div className="card-meta">
             {run.executable}
