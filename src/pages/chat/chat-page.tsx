@@ -71,6 +71,7 @@ const ChatPage = () => {
   const error = useMessagesStore((s) => s.error)
   const sendStatus = useMessagesStore((s) => s.sendStatus)
   const streamText = useMessagesStore((s) => s.streamText)
+  const streamStatus = useMessagesStore((s) => s.streamStatus)
   const failed = useMessagesStore((s) => s.failed)
   const hasMore = useMessagesStore((s) => s.hasMore)
   const loadingMore = useMessagesStore((s) => s.loadingMore)
@@ -107,6 +108,7 @@ const ChatPage = () => {
         error={error}
         sendStatus={sendStatus}
         streamText={streamText}
+        streamStatus={streamStatus}
         failedText={failed?.error ?? null}
         hasMore={hasMore}
         loadingMore={loadingMore}

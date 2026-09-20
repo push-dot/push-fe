@@ -39,6 +39,7 @@ type MessagesState = {
   loadingMore: boolean
   sendStatus: SendStatus
   streamText: string
+  streamStatus: string
   failed: FailedSend | null
   load: (conversationId: string) => Promise<void>
   loadMore: () => Promise<void>
@@ -68,6 +69,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
     loadingMore: false,
     sendStatus: 'idle',
     streamText: '',
+    streamStatus: '',
     failed: null,
 
     load: async (conversationId) => {
@@ -80,6 +82,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         hasMore: false,
         sendStatus: 'idle',
         streamText: '',
+        streamStatus: '',
         failed: null,
       })
       try {
@@ -164,6 +167,8 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           if (ev.type === 'token') {
             partial += ev.text
             set({ sendStatus: 'streaming', streamText: partial })
+          } else if (ev.type === 'status') {
+            set({ streamStatus: ev.text })
           } else if (ev.type === 'error') {
             throw new ApiError(ev.error.message, ev.error.code, 0, ev.error.details)
           } else if (ev.type === 'done') {
@@ -179,6 +184,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
                 ],
                 sendStatus: 'idle',
                 streamText: '',
+                streamStatus: '',
               }))
               for (const id of approvalIds) {
                 deps.ensureApproval(id)
@@ -197,6 +203,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           set({
             sendStatus: 'failed',
             streamText: '',
+            streamStatus: '',
             failed: {
               tempId,
               text,
@@ -210,6 +217,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             messages: s.messages.filter((m) => m.id !== tempId),
             sendStatus: 'idle',
             streamText: '',
+            streamStatus: '',
           }))
         }
       }
@@ -242,6 +250,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         loadingMore: false,
         sendStatus: 'idle',
         streamText: '',
+        streamStatus: '',
         failed: null,
       })
     },
