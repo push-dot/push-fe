@@ -51,29 +51,6 @@
 - **Vitest + Testing Library** — 테스트
 - **ESLint + Prettier** — 린트/포맷
 
-## 시작하기
-
-요구 사항: Node.js 22+, Rust stable과 macOS Xcode(Tauri 빌드), 실행 중인 push-be API(기본 포트 8080).
-
-```sh
-npm install
-npm run dev          # Vite dev server → http://localhost:5173
-cargo tauri dev      # src-tauri/에서 데스크톱 앱으로 실행
-```
-
-개발 인증은 `.env.development`의 `VITE_DEV_AUTH_TOKEN`과 서버의 `APP_ENV=development` + `DEV_AUTH_TOKEN`이 필요하다.
-
-## 스크립트
-
-| 명령 | 설명 |
-| --- | --- |
-| `npm run dev` | Vite 개발 서버 |
-| `npm run build` | 타입 체크 + 프로덕션 번들 |
-| `npm run test` | Vitest 단위 테스트 |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier |
-
 ## 구조
 
 ```
@@ -91,6 +68,3 @@ src/
   theme/      vanilla-extract 테마
 src-tauri/    Tauri 셸, deep-link 플러그인
 ```
-
-> [!NOTE]
-> 이 저장소는 `push-workspace`의 git submodule로 연결되어 있다. 상위 저장소에서 작업할 때는 `git submodule update --init --recursive`로 체크아웃한다.
