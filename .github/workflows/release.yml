@@ -37,10 +37,20 @@ jobs:
       - run: npm ci
       - name: Build app bundle
         run: npx tauri build --bundles nsis
-      - name: Publish release with stable asset name
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Smoke test installed app
         run: |
           $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/Push_*_x64-setup.exe | Select-Object -First 1
           Copy-Item $exe.FullName Push_x64-setup.exe
-          gh release upload "${{ github.ref_name }}" Push_x64-setup.exe --clobber
+          Start-Process .\Push_x64-setup.exe -ArgumentList '/S' -Wait
+          $app = "$env:LOCALAPPDATA\Programs\Push\Push.exe"
+          if (-not (Test-Path $app)) { throw "installed binary not found at $app" }
+          $proc = Start-Process $app -PassThru
+          Start-Sleep -Seconds 15
+          $alive = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
+          if (-not $alive) { throw "Push exited within 15s of launch" }
+          Stop-Process -Id $proc.Id -Force
+          Write-Output "SMOKE_OK"
+      - name: Publish release with stable asset name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" Push_x64-setup.exe --clobber
