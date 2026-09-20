@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { ReactNode } from 'react'
 import { VList } from 'virtua'
 import type { VListHandle } from 'virtua'
@@ -40,7 +42,13 @@ const MessageView = ({ message }: { message: Message }) => (
         message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
       ].join(' ')}
     >
-      {message.text}
+      {message.role === 'USER' ? (
+        message.text
+      ) : (
+        <div className="chat-md">
+          <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
+        </div>
+      )}
     </div>
     {message.attachments.map((a, i) => (
       <AttachmentView key={`${message.id}-${i}`} attachment={a} />
@@ -52,7 +60,11 @@ const StreamingBubble = ({ text, status }: { text: string; status?: string }) =>
   <div className="chat-stream-row">
     <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
       {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
-      {text || ' '}
+      {text ? (
+        <div className="chat-md">
+          <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+        </div>
+      ) : ' '}
       <span className="chat-stream-cursor" />
     </div>
   </div>

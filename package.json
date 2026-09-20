@@ -25,7 +25,9 @@
     "ky": "^1.7.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.0",
+    "remark-gfm": "^4.0.1",
     "virtua": "^0.51.3",
     "zustand": "^5.0.5"
   },
