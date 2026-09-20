@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
-import { sprinkles } from '@pushdot/design'
+import { sprinkles } from '@push/design-system'
 import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/components'
 import { useCreateApplication } from '@/features/applications'
 import { useJob } from '@/features/jobs'

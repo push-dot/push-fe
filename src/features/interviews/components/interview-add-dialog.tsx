@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sprinkles } from '@pushdot/design'
+import { sprinkles } from '@push/design-system'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
 import { useApplications } from '@/features/applications'
 import { useCreateInterview } from '../api/hooks'

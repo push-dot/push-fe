@@ -1,5 +1,5 @@
 import spriteRaw from '@/theme/icons.svg?raw'
-import { sprinkles } from '@pushdot/design'
+import { sprinkles } from '@push/design-system'
 
 const IconSprite = () => (
   <div

@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { iconButton } from '@pushdot/design'
+import { iconButton } from '@push/design-system'
 import Icon from './icon'
 import type { IconName } from './icon'
 

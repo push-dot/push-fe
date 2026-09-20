@@ -1,0 +1,30 @@
+{
+  "name": "@push/design-system",
+  "version": "0.1.0",
+  "description": "Push design system — vanilla-extract tokens, recipes, sprinkles, primitives",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles": "./src/theme.css.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "@vanilla-extract/css": "^1.15.0",
+    "@vanilla-extract/dynamic": "^2.0.0",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@vanilla-extract/css": "^1.21.2",
+    "@vanilla-extract/dynamic": "^2.1.5",
+    "@vanilla-extract/recipes": "^0.5.7",
+    "@vanilla-extract/sprinkles": "^1.7.1",
+    "react": "^19.0.0"
+  },
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  }
+}

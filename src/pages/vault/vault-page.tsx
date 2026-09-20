@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { assignInlineVars } from '@vanilla-extract/dynamic'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { formatRelativeTime } from '@/shared/lib/format'
-import { menuX, menuY } from '@pushdot/design'
+import { menuX, menuY } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import { type CareerEvidence, type VerificationStatus, useArchiveEvidence } from '@/features/evidence'
 import {

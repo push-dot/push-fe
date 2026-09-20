@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { formRowHint, formSelect } from '@push/design-system'
 import { useAiModels, useByokModels } from '@/features/inference'
 
 import { ROUTES } from '@/shared/constants'
@@ -79,7 +80,7 @@ const SettingsPage = () => {
               <FormRow label={t('settings.model')} hint={modelLabel} />
               <FormRow label={t('settings.credentials')}>
                 <Select
-                  className="form-select"
+                  className={formSelect}
                   aria-label={t('settings.credentials')}
                   value={credentialMode}
                   onChange={(e) => setCredentialMode(e.target.value as 'MANAGED' | 'BYOK')}
@@ -92,7 +93,7 @@ const SettingsPage = () => {
                 <>
                   <FormRow label={t('settings.byokProvider')}>
                     <Select
-                      className="form-select"
+                      className={formSelect}
                       aria-label={t('settings.byokProvider')}
                       value={byokProvider}
                       onChange={(e) => setByokProvider(e.target.value as ByokProvider)}
@@ -115,7 +116,7 @@ const SettingsPage = () => {
                   <FormRow label={t('settings.byokModel')}>
                     {byokModels.length > 0 ? (
                       <Select
-                        className="form-select"
+                        className={formSelect}
                         aria-label={t('settings.byokModel')}
                         value={byokModel}
                         onChange={(e) => setByokModel(e.target.value)}
@@ -146,7 +147,7 @@ const SettingsPage = () => {
             <FormSection title={t('settings.plan')}>
               <FormRow label={t('settings.currentPlan')}>
                 <div className="form-row-plan">
-                  <span className="form-row-hint">{plan}</span>
+                  <span className={formRowHint}>{plan}</span>
                   <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.plan)}>
                     {t('settings.upgrade')}
                   </Button>
@@ -156,7 +157,7 @@ const SettingsPage = () => {
             <FormSection title={t('settings.appearance')}>
               <FormRow label={t('settings.language')}>
                 <Select
-                  className="form-select"
+                  className={formSelect}
                   aria-label={t('settings.language')}
                   value={locale}
                   onChange={(e) => setLocale(e.target.value as Locale)}
@@ -167,7 +168,7 @@ const SettingsPage = () => {
               </FormRow>
               <FormRow label={t('settings.theme')}>
                 <Select
-                  className="form-select"
+                  className={formSelect}
                   aria-label={t('settings.theme')}
                   value={theme}
                   onChange={(e) => setTheme(e.target.value as Theme)}

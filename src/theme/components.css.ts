@@ -1,6 +1,6 @@
 import { fallbackVar, globalStyle, keyframes } from '@vanilla-extract/css'
-import { vars } from '@pushdot/design'
-import { menuX, menuY } from '@pushdot/design'
+import { vars } from '@push/design-system'
+import { menuX, menuY } from '@push/design-system'
 
 globalStyle('.screen', {
   width: vars.frame.w,
@@ -198,24 +198,6 @@ globalStyle('.canvas', {
   flexDirection: 'column',
   minWidth: 0,
 })
-globalStyle('.canvas-header', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  minHeight: vars.size.canvasHeader,
-  padding: `0 ${vars.space.s24}`,
-  borderBottom: `1px solid ${vars.color.border}`,
-  flex: 'none',
-})
-globalStyle('.canvas-header-title', {
-  fontSize: vars.fs.h1,
-  fontWeight: vars.fw.semi,
-})
-globalStyle('.canvas-header-actions', {
-  display: 'flex',
-  gap: vars.space.s8,
-  alignItems: 'center',
-})
 globalStyle('.canvas-body', {
   flex: 1,
   overflowY: 'auto',
@@ -225,27 +207,6 @@ globalStyle('.canvas-body', {
   gap: vars.space.s24,
 })
 
-globalStyle('.input', {
-  width: '100%',
-  minHeight: vars.size.buttonMd,
-  padding: `0 ${vars.space.s12}`,
-  border: `1px solid ${vars.color.border}`,
-  borderRadius: vars.radius.md,
-  background: vars.color.bg,
-  color: vars.color.text,
-  fontSize: vars.fs.bodySm,
-})
-globalStyle('.input:focus', {
-  outline: `2px solid ${vars.color.accent}`,
-  outlineOffset: 0,
-})
-globalStyle('.input.is-error', {
-  borderColor: vars.color.danger,
-})
-globalStyle('.input:disabled', {
-  background: vars.color.surface1,
-  color: vars.color.textMuted,
-})
 
 globalStyle('.composer', {
   flex: 'none',
@@ -521,52 +482,6 @@ globalStyle('.approval-card-actions', {
   justifyContent: 'flex-end',
 })
 
-globalStyle('.card', {
-  background: vars.color.surface1,
-  borderRadius: vars.radius.lg,
-  padding: vars.space.s16,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.space.s8,
-})
-globalStyle('.card-title', {
-  fontSize: vars.fs.h3,
-  fontWeight: vars.fw.semi,
-  overflow: 'hidden',
-  display: '-webkit-box',
-  WebkitLineClamp: 2,
-  WebkitBoxOrient: 'vertical',
-})
-globalStyle('.card-meta', {
-  fontSize: vars.fs.caption,
-  color: vars.color.textMuted,
-})
-globalStyle('.card-grid', {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: vars.space.s16,
-})
-globalStyle('.doc-card', {
-  background: vars.color.surface1,
-  borderRadius: vars.radius.lg,
-  padding: vars.space.s16,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.space.s8,
-  cursor: 'pointer',
-  border: '1px solid transparent',
-})
-globalStyle('.doc-card:hover', {
-  borderColor: vars.color.border,
-})
-globalStyle('.doc-card-title', {
-  fontSize: vars.fs.h3,
-  fontWeight: vars.fw.semi,
-})
-globalStyle('.doc-card-meta', {
-  fontSize: vars.fs.caption,
-  color: vars.color.textMuted,
-})
 
 globalStyle('.editor', {
   flex: 1,
@@ -581,73 +496,7 @@ globalStyle('.editor-body', {
   margin: '0 auto',
 })
 
-globalStyle('.data-list', {
-  display: 'flex',
-  flexDirection: 'column',
-})
-globalStyle('.data-list-row', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.s12,
-  minHeight: vars.size.buttonLg,
-  padding: `${vars.space.s8} ${vars.space.s16}`,
-  borderBottom: `1px solid ${vars.color.border}`,
-})
-globalStyle('.data-list-row:hover', {
-  background: vars.color.surface1,
-})
-globalStyle('.data-list-main', {
-  flex: 1,
-  minWidth: 0,
-})
 
-globalStyle('.form', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.space.s24,
-  maxWidth: '640px',
-})
-globalStyle('.form-section', {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.space.s8,
-})
-globalStyle('.form-section-title', {
-  fontSize: vars.fs.h3,
-  fontWeight: vars.fw.semi,
-  paddingBottom: vars.space.s8,
-  borderBottom: `1px solid ${vars.color.border}`,
-})
-globalStyle('.form-row', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: vars.space.s16,
-  minHeight: vars.size.buttonMd,
-})
-globalStyle('.form-row-label', {
-  fontSize: vars.fs.bodySm,
-})
-globalStyle('.form-row-hint', {
-  fontSize: vars.fs.caption,
-  color: vars.color.textMuted,
-})
-globalStyle('.form-select', {
-  appearance: 'none',
-  width: 'auto',
-  minWidth: '200px',
-  maxWidth: '240px',
-  paddingRight: vars.space.s24,
-  backgroundColor: vars.color.surface1,
-  backgroundImage:
-    "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
-  backgroundRepeat: 'no-repeat',
-  backgroundPosition: `right ${vars.space.s8} center`,
-  cursor: 'pointer',
-})
-globalStyle('.form-select:hover', {
-  backgroundColor: vars.color.surface2,
-})
 
 globalStyle('.empty-state', {
   display: 'flex',
@@ -670,34 +519,6 @@ globalStyle('.error-state', {
   padding: vars.space.s24,
   color: vars.color.danger,
   textAlign: 'center',
-})
-globalStyle('.dialog-backdrop', {
-  position: 'absolute',
-  inset: 0,
-  background: vars.color.overlay,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: vars.z.dialog,
-})
-globalStyle('.dialog', {
-  width: vars.size.dialogW,
-  background: vars.color.bg,
-  borderRadius: vars.radius.lg,
-  boxShadow: vars.shadow.md,
-  padding: vars.space.s24,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.space.s16,
-})
-globalStyle('.dialog-title', {
-  fontSize: vars.fs.h2,
-  fontWeight: vars.fw.semi,
-})
-globalStyle('.dialog-actions', {
-  display: 'flex',
-  gap: vars.space.s8,
-  justifyContent: 'flex-end',
 })
 
 globalStyle('.toast', {

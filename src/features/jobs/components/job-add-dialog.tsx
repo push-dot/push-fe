@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sprinkles } from '@pushdot/design'
+import { sprinkles } from '@push/design-system'
 import type { FormEvent } from 'react'
 import type { JobPosting } from '../api/schemas'
 import { createJob } from '../api/fetchers'

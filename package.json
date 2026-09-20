@@ -15,7 +15,7 @@
     "test:e2e:tauri": "wdio run wdio.conf.ts"
   },
   "dependencies": {
-    "@pushdot/design": "file:../push-design",
+    "@push/design-system": "0.1.0",
     "@tanstack/react-query": "^5.103.1",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-deep-link": "^2.4.10",
@@ -34,6 +34,8 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
+    "@storybook/addon-essentials": "^8.6.18",
+    "@storybook/react-vite": "^8.6.18",
     "@tauri-apps/cli": "^2.11.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -58,9 +60,13 @@
     "globals": "^17.12.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.9.7",
+    "storybook": "^8.6.18",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^6.3.5",
     "vitest": "^3.1.4"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

@@ -1,2 +1,2 @@
-export { StatusChip as default } from '@pushdot/design'
-export type { StatusChipTone, StatusChipProps } from '@pushdot/design'
+export { StatusChip as default } from '@push/design-system'
+export type { StatusChipTone, StatusChipProps } from '@push/design-system'
