@@ -88,9 +88,33 @@ export const streamMessage = async function* (
   } catch (error) {
     throw await toApiError(error)
   }
+  yield* readEvents(resp, options.signal)
+}
+
+export const streamActive = async function* (
+  conversationId: string,
+  options: { signal?: AbortSignal } = {},
+): AsyncGenerator<MessageStreamEvent> {
+  let resp: Response
+  try {
+    resp = await api.get(
+      `conversations/${conversationId}/messages/stream/active`,
+      { timeout: false, signal: options.signal },
+    )
+  } catch (error) {
+    throw await toApiError(error)
+  }
+  if (resp.status === 204) return
+  yield* readEvents(resp, options.signal)
+}
+
+const readEvents = async function* (
+  resp: Response,
+  signal?: AbortSignal,
+): AsyncGenerator<MessageStreamEvent> {
   if (!resp.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
   const reader = resp.body.getReader()
-  options.signal?.addEventListener('abort', () => void reader.cancel())
+  signal?.addEventListener('abort', () => void reader.cancel())
   const decoder = new TextDecoder()
   let buf = ''
   for (;;) {
