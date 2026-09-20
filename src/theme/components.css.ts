@@ -1,6 +1,6 @@
 import { fallbackVar, globalStyle, keyframes } from '@vanilla-extract/css'
-import { vars } from './vars.css'
-import { menuX, menuY } from './recipes.css'
+import { vars } from '@pushdot/design'
+import { menuX, menuY } from '@pushdot/design'
 
 globalStyle('.screen', {
   width: vars.frame.w,

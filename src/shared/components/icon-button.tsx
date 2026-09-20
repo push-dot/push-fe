@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { iconButton } from '../../theme/recipes.css'
+import { iconButton } from '@pushdot/design'
 import Icon from './icon'
 import type { IconName } from './icon'
 

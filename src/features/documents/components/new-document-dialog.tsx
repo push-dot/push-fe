@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sprinkles } from '@/theme/sprinkles.css'
+import { sprinkles } from '@pushdot/design'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import type { DocumentKind } from '../api/schemas'
