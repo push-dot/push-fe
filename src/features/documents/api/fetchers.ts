@@ -68,6 +68,25 @@ export const getDocumentVersion = async (
   return env.data
 }
 
+export const downloadVersionExport = async (
+  documentId: string,
+  versionId: string,
+  format: 'PDF' | 'DOCX',
+  title: string,
+): Promise<void> => {
+  const resp = await api.get(
+    `documents/${documentId}/versions/${versionId}/export`,
+    { searchParams: { format } },
+  )
+  const blob = await resp.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${title}.${format.toLowerCase()}`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export const createDocumentExport = async (
   documentId: string,
   body: {

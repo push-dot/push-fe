@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { api } from '@/shared/api'
+import { downloadVersionExport } from '@/features/documents'
 import {
   Button,
   CanvasHeader,
@@ -35,17 +35,8 @@ const DocEditorPage = () => {
     if (!current || !currentVersion) return
     setExporting(format)
     try {
-      const resp = await api.get(
-        `documents/${current.id}/versions/${currentVersion.id}/export`,
-        { searchParams: { format } },
-      )
-      const blob = await resp.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${current.title}.${format.toLowerCase()}`
-      a.click()
-      URL.revokeObjectURL(url)
+      await downloadVersionExport(
+        current.id, currentVersion.id, format, current.title)
       showToast(`${format} 파일을 저장했어요`, 'file-down')
     } catch (error) {
       showToast(error instanceof Error ? error.message : '출력하지 못했어요', 'circle-alert')

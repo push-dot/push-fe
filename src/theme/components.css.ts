@@ -513,6 +513,32 @@ globalStyle('.chat-attach-chip-title', {
 globalStyle('.chat-attach-chip-meta', {
   flexShrink: 0,
 })
+globalStyle('.chat-attach-chip-actions', {
+  display: 'inline-flex',
+  gap: vars.space.s8,
+  flexShrink: 0,
+})
+globalStyle('.chat-msg-actions', {
+  display: 'flex',
+  alignSelf: 'flex-start',
+  marginTop: vars.space.s8,
+})
+globalStyle('.chat-msg-action', {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: vars.space.s8,
+  padding: `${vars.space.s8} ${vars.space.s12}`,
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.border}`,
+  background: 'transparent',
+  color: vars.color.textMuted,
+  fontSize: vars.fs.caption,
+  cursor: 'pointer',
+})
+globalStyle('.chat-msg-action:hover', {
+  background: vars.color.surface1,
+  color: vars.color.text,
+})
 globalStyle('.chat-stream-status', {
   fontSize: vars.fs.caption,
   color: vars.color.textMuted,
