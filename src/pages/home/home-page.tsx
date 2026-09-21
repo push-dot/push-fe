@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import { isHttpUrl } from '@/shared/lib/url'
 import { DropOverlay, showToast } from '@/shared/components'
-import { useExperiment } from '@/shared/lib/experiment'
+import { useExperiment, useExperimentConversion } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/features/chat'
 import { useCreateConversation } from '@/features/chat'
 import { Composer } from '@/features/chat'
@@ -13,6 +13,7 @@ import { JobAddDialog } from '@/features/jobs'
 const HomePage = () => {
   const t = useT()
   const greetingVariant = useExperiment('home-greeting')
+  const trackGreetingConversion = useExperimentConversion('home-greeting')
   const dragging = useFileDrop()
   const navigate = useNavigate()
   const createConversation = useCreateConversation()
@@ -33,6 +34,7 @@ const HomePage = () => {
         applicationId: null,
         title: text.slice(0, 40),
       })
+      trackGreetingConversion()
       navigate(ROUTES.chat(conversation.id), {
         state: { initialMessage: text, initialEvidence: evidence },
       })
