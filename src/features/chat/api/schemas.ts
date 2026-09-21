@@ -29,12 +29,13 @@ export type Message = {
   createdAt: string
 }
 export type MessageStreamEvent =
-  | { type: 'token'; text: string }
-  | { type: 'status'; text: string }
-  | { type: 'done'; operation: Operation }
+  | { type: 'token'; text: string; seq?: number }
+  | { type: 'status'; text: string; seq?: number }
+  | { type: 'done'; operation: Operation; seq?: number }
   | {
       type: 'error'
       error: { code: string; message: string; details?: Record<string, unknown> }
+      seq?: number
     }
 
 export type SendMessageBody = {

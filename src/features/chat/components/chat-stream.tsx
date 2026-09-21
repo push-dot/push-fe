@@ -8,6 +8,7 @@ import { ApprovalCard } from '@/features/approval'
 import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
 import { downloadVersionExport } from '@/features/documents'
 import type { SendStatus } from '../stores'
+import { useMessagesStore } from '../stores'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80
@@ -95,27 +96,32 @@ const MessageView = ({ message }: { message: Message }) => {
   )
 }
 
-const StreamingBubble = ({ text, status }: { text: string; status?: string }) => (
-  <div className="chat-stream-row">
-    <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
-      {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
-      {text ? (
-        <div className="chat-md">
-          <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
-        </div>
-      ) : ' '}
-      <span className="chat-stream-cursor" />
+const StreamingBubble = ({ onGrow }: { onGrow: () => void }) => {
+  const text = useMessagesStore((s) => s.streamText)
+  const status = useMessagesStore((s) => s.streamStatus)
+  useEffect(() => {
+    onGrow()
+  }, [text, onGrow])
+  return (
+    <div className="chat-stream-row">
+      <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
+        {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
+        {text ? (
+          <div className="chat-md">
+            <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+          </div>
+        ) : ' '}
+        <span className="chat-stream-cursor" />
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 type ChatStreamProps = {
   messages: Message[]
   status: 'idle' | 'loading' | 'success' | 'error'
   error?: string | null
   sendStatus?: SendStatus
-  streamText?: string
-  streamStatus?: string
   failedText?: string | null
   hasMore?: boolean
   loadingMore?: boolean
@@ -130,8 +136,6 @@ const ChatStream = ({
   status,
   error,
   sendStatus = 'idle',
-  streamText = '',
-  streamStatus = '',
   failedText = null,
   hasMore = false,
   loadingMore = false,
@@ -147,11 +151,15 @@ const ChatStream = ({
 
   const streaming = sendStatus === 'sending' || sendStatus === 'streaming'
 
-  useEffect(() => {
+  const pinToBottom = () => {
     const el = listRef.current
     if (!el || !atBottomRef.current) return
     el.scrollTop = el.scrollHeight
-  }, [messages.length, streamText, streaming])
+  }
+
+  useEffect(() => {
+    pinToBottom()
+  }, [messages.length, streaming])
 
   const onScroll = () => {
     const el = listRef.current
@@ -195,7 +203,7 @@ const ChatStream = ({
         {messages.map((m) => (
           <MessageView key={m.id} message={m} />
         ))}
-        {streaming ? <StreamingBubble text={streamText} status={streamStatus} /> : null}
+        {streaming ? <StreamingBubble onGrow={pinToBottom} /> : null}
         {failedText !== null ? (
           <div className="chat-stream-row">
             <div className="chat-stream-failed">
