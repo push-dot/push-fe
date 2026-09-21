@@ -4,7 +4,10 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [react(), vanillaExtractPlugin()],
+  plugins: [
+    react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+    vanillaExtractPlugin(),
+  ],
   resolve: {
     preserveSymlinks: true,
     alias: {
