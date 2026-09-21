@@ -93,13 +93,19 @@ export const streamMessage = async function* (
 
 export const streamActive = async function* (
   conversationId: string,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal; after?: number } = {},
 ): AsyncGenerator<MessageStreamEvent> {
   let resp: Response
   try {
     resp = await api.get(
       `conversations/${conversationId}/messages/stream/active`,
-      { timeout: false, signal: options.signal },
+      {
+        timeout: false,
+        signal: options.signal,
+        searchParams: {
+          ...(options.after ? { after: options.after } : {}),
+        },
+      },
     )
   } catch (error) {
     throw await toApiError(error)
