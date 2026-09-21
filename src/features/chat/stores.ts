@@ -1,10 +1,12 @@
 import { create } from 'zustand'
-import type { Conversation, Message } from './api/schemas'
+import type { Conversation, Message, MessageStreamEvent } from './api/schemas'
 import { listMessages, streamActive, streamMessage } from './api/fetchers'
+import { STREAM_FLUSH_MS, STREAM_MAX_RECONNECTS, STREAM_RECONNECT_MS } from './constants'
 import type { AccessMode, AiOptions } from '@/features/inference'
 import { useInferenceSettings } from '@/features/inference'
 import { ensureApproval } from '@/features/approval'
 import { ApiError } from '@/shared/api'
+import type { Operation } from '@/shared/api'
 import { showToast } from '@/shared/components'
 import { t } from '@/shared/i18n'
 
@@ -52,6 +54,16 @@ type MessagesState = {
 
 let abortCtrl: AbortController | null = null
 
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+type StreamError = {
+  code: string
+  message: string
+  details?: Record<string, unknown>
+}
+
+type ConsumeResult = 'done' | 'ended' | 'dropped' | 'detached' | { error: StreamError }
+
 export type MessagesDeps = {
   aiOptions: () => AiOptions | null
   ensureModels: () => Promise<void>
@@ -61,271 +73,369 @@ export type MessagesDeps = {
 }
 
 export const createMessagesStore = (deps: MessagesDeps) =>
-  create<MessagesState>()((set, get) => ({
-    conversationId: null,
-    messages: [],
-    status: 'idle',
-    error: null,
-    nextCursor: null,
-    hasMore: false,
-    loadingMore: false,
-    sendStatus: 'idle',
-    streamText: '',
-    streamStatus: '',
-    failed: null,
+  create<MessagesState>()((set, get) => {
+    let lastSeq = 0
+    const buf = {
+      text: '',
+      status: '',
+      timer: null as ReturnType<typeof setTimeout> | null,
+    }
 
-    load: async (conversationId) => {
-      abortCtrl?.abort()
+    const flushStream = () => {
+      buf.timer = null
+      set({ sendStatus: 'streaming', streamText: buf.text, streamStatus: buf.status })
+    }
+
+    const scheduleFlush = () => {
+      if (!buf.timer) buf.timer = setTimeout(flushStream, STREAM_FLUSH_MS)
+    }
+
+    const clearStream = () => {
+      if (buf.timer) clearTimeout(buf.timer)
+      buf.timer = null
+      buf.text = ''
+      buf.status = ''
+    }
+
+    const idleStream = () => {
+      clearStream()
+      set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
+    }
+
+    const reconcile = async (conversationId: string) => {
+      const env = await listMessages(conversationId, { limit: PAGE_SIZE })
+      clearStream()
       set({
-        conversationId,
-        status: 'loading',
-        error: null,
-        messages: [],
-        nextCursor: null,
-        hasMore: false,
+        messages: [...env.data].reverse(),
         sendStatus: 'idle',
         streamText: '',
         streamStatus: '',
-        failed: null,
       })
-      try {
-        const env = await listMessages(conversationId, { limit: PAGE_SIZE })
-        set({
-          messages: [...env.data].reverse(),
-          status: 'success',
-          nextCursor: env.page.nextCursor,
-          hasMore: env.page.hasMore,
-        })
-        void get().attachStream(conversationId)
-      } catch (error) {
-        set({
-          status: 'error',
-          error: error instanceof Error ? error.message : 'error',
-        })
-      }
-    },
+    }
 
-    attachStream: async (conversationId) => {
-      const { sendStatus } = get()
-      if (sendStatus === 'sending' || sendStatus === 'streaming') return
-      abortCtrl?.abort()
-      const controller = new AbortController()
-      abortCtrl = controller
-      let partial = ''
-      try {
-        for await (const ev of streamActive(conversationId, {
-          signal: controller.signal,
-        })) {
-          if (get().conversationId !== conversationId) break
-          if (ev.type === 'token') {
-            partial += ev.text
-            set({ sendStatus: 'streaming', streamText: partial })
-          } else if (ev.type === 'status') {
-            set({ sendStatus: 'streaming', streamStatus: ev.text })
-          } else if (ev.type === 'error') {
-            showToast(ev.error.message, 'circle-alert')
-            set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
-            return
-          } else if (ev.type === 'done') {
-            const { operation } = ev
-            const result = operation?.result
-            if (operation?.status === 'SUCCEEDED' && isChatMessageResult(result)) {
-              const { userMessage, assistantMessage, approvalIds } = result.value
-              set((s) => ({
-                messages: [
-                  ...s.messages.filter(
-                    (m) => m.id !== userMessage.id && m.id !== assistantMessage.id,
-                  ),
-                  userMessage,
-                  assistantMessage,
-                ],
-                sendStatus: 'idle',
-                streamText: '',
-                streamStatus: '',
-              }))
-              for (const id of approvalIds) {
-                deps.ensureApproval(id)
-              }
-            } else {
-              const env = await listMessages(conversationId, { limit: PAGE_SIZE })
-              set({
-                messages: [...env.data].reverse(),
-                sendStatus: 'idle',
-                streamText: '',
-                streamStatus: '',
-              })
-            }
-            return
-          }
-        }
-      } catch {
-        // aborted or network failure; only clear transient stream state
-      } finally {
-        if (controller.signal.aborted) {
-          set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
-        }
-      }
-    },
-
-    loadMore: async () => {
-      const { conversationId, nextCursor, hasMore, loadingMore } = get()
-      if (!conversationId || !hasMore || loadingMore || !nextCursor) return
-      set({ loadingMore: true })
-      try {
-        const env = await listMessages(conversationId, {
-          limit: PAGE_SIZE,
-          cursor: nextCursor,
-        })
-        set((s) => ({
-          messages: [...[...env.data].reverse(), ...s.messages],
-          nextCursor: env.page.nextCursor,
-          hasMore: env.page.hasMore,
-          loadingMore: false,
-        }))
-      } catch {
-        set({ loadingMore: false })
-        showToast(t('chat.loadMoreFailed'), 'circle-alert')
-      }
-    },
-
-    send: async (conversationId, text, evidence = []) => {
-      let ai = deps.aiOptions()
-      if (!ai) {
-        await deps.ensureModels()
-        ai = deps.aiOptions()
-      }
-      if (!ai) {
-        showToast(t('chat.modelConfigFailed'), 'circle-alert')
-        return
-      }
-      const accessMode = deps.accessMode()
-      abortCtrl?.abort()
-      const controller = new AbortController()
-      abortCtrl = controller
-      const tempId = `local-${crypto.randomUUID()}`
-      const optimistic: Message = {
-        id: tempId,
-        conversationId,
-        role: 'USER',
-        text,
-        attachments: evidence.map((e) => ({ type: 'EVIDENCE' as const, id: e.id, title: e.title })),
-        operationId: null,
-        createdAt: new Date().toISOString(),
-      }
+    const commitDone = (operation: Operation, tempId: string | null): boolean => {
+      const result = operation?.result
+      if (operation?.status !== 'SUCCEEDED' || !isChatMessageResult(result)) return false
+      const { userMessage, assistantMessage, approvalIds } = result.value
+      clearStream()
       set((s) => ({
-        conversationId: s.conversationId ?? conversationId,
-        messages: [...s.messages, optimistic],
-        sendStatus: 'sending',
+        messages: [
+          ...s.messages.filter(
+            (m) =>
+              m.id !== tempId &&
+              m.id !== userMessage.id &&
+              m.id !== assistantMessage.id,
+          ),
+          userMessage,
+          assistantMessage,
+        ],
+        sendStatus: 'idle',
         streamText: '',
         streamStatus: '',
-        failed: null,
       }))
-      let partial = ''
+      for (const id of approvalIds) {
+        deps.ensureApproval(id)
+      }
+      return true
+    }
+
+    const consume = async (
+      conversationId: string,
+      events: AsyncIterable<MessageStreamEvent>,
+      tempId: string | null,
+      onBadDone: (operation: Operation) => void | Promise<void>,
+    ): Promise<ConsumeResult> => {
       try {
-        for await (const ev of streamMessage(
-          conversationId,
-          {
-            text,
-            context: { evidenceIds: evidence.map((e) => e.id) },
-            ai,
-            accessMode,
-          },
-          {
-            signal: controller.signal,
-            byokKey: ai.credentialMode === 'BYOK' ? deps.byokKey() : undefined,
-          },
-        )) {
+        for await (const ev of events) {
+          if (get().conversationId !== conversationId) return 'detached'
+          if (ev.seq != null) {
+            if (ev.seq <= lastSeq) continue
+            lastSeq = ev.seq
+          }
           if (ev.type === 'token') {
-            partial += ev.text
-            set({ sendStatus: 'streaming', streamText: partial })
+            buf.text += ev.text
+            scheduleFlush()
           } else if (ev.type === 'status') {
-            set({ streamStatus: ev.text })
-          } else if (ev.type === 'error') {
-            throw new ApiError(ev.error.message, ev.error.code, 0, ev.error.details)
+            buf.status = ev.text
+            scheduleFlush()
           } else if (ev.type === 'done') {
-            const { operation } = ev
-            const result = operation.result
-            if (operation.status === 'SUCCEEDED' && isChatMessageResult(result)) {
-              const { userMessage, assistantMessage, approvalIds } = result.value
-              set((s) => ({
-                messages: [
-                  ...s.messages.filter((m) => m.id !== tempId),
-                  userMessage,
-                  assistantMessage,
-                ],
-                sendStatus: 'idle',
-                streamText: '',
-                streamStatus: '',
-              }))
-              for (const id of approvalIds) {
-                deps.ensureApproval(id)
-              }
-            } else {
-              throw new ApiError(
-                operation.error?.message ?? t('chat.noResponse'),
-                operation.error?.code ?? 'OPERATION_FAILED',
-                0,
-              )
+            if (buf.timer) flushStream()
+            if (!(await commitDone(ev.operation, tempId))) {
+              await onBadDone(ev.operation)
             }
+            return 'done'
+          } else if (ev.type === 'error') {
+            return { error: ev.error }
           }
         }
+        return 'ended'
       } catch (error) {
-        if (!controller.signal.aborted) {
+        if (error instanceof ApiError) throw error
+        return 'dropped'
+      }
+    }
+
+    const pumpActive = (conversationId: string, signal: AbortSignal) =>
+      streamActive(conversationId, { signal, after: lastSeq })
+
+    const resumeActive = async (
+      conversationId: string,
+      controller: AbortController,
+      tempId: string | null,
+      onBadDone: (operation: Operation) => void | Promise<void>,
+    ): Promise<ConsumeResult> => {
+      let attempts = 0
+      for (;;) {
+        const res = await consume(
+          conversationId,
+          pumpActive(conversationId, controller.signal),
+          tempId,
+          onBadDone,
+        )
+        if (res !== 'dropped') return res
+        attempts += 1
+        if (
+          attempts >= STREAM_MAX_RECONNECTS ||
+          controller.signal.aborted ||
+          get().conversationId !== conversationId
+        ) {
+          return res
+        }
+        await sleep(STREAM_RECONNECT_MS)
+      }
+    }
+
+    return {
+      conversationId: null,
+      messages: [],
+      status: 'idle',
+      error: null,
+      nextCursor: null,
+      hasMore: false,
+      loadingMore: false,
+      sendStatus: 'idle',
+      streamText: '',
+      streamStatus: '',
+      failed: null,
+
+      load: async (conversationId) => {
+        abortCtrl?.abort()
+        clearStream()
+        lastSeq = 0
+        set({
+          conversationId,
+          status: 'loading',
+          error: null,
+          messages: [],
+          nextCursor: null,
+          hasMore: false,
+          sendStatus: 'idle',
+          streamText: '',
+          streamStatus: '',
+          failed: null,
+        })
+        try {
+          const env = await listMessages(conversationId, { limit: PAGE_SIZE })
           set({
-            sendStatus: 'failed',
-            streamText: '',
-            streamStatus: '',
-            failed: {
-              tempId,
-              text,
-              error: error instanceof Error ? error.message : t('chat.sendFailed'),
-            },
+            messages: [...env.data].reverse(),
+            status: 'success',
+            nextCursor: env.page.nextCursor,
+            hasMore: env.page.hasMore,
+          })
+          void get().attachStream(conversationId)
+        } catch (error) {
+          set({
+            status: 'error',
+            error: error instanceof Error ? error.message : 'error',
           })
         }
-      } finally {
-        if (controller.signal.aborted) {
-          set((s) => ({
-            messages: s.messages.filter((m) => m.id !== tempId),
-            sendStatus: 'idle',
-            streamText: '',
-            streamStatus: '',
-          }))
+      },
+
+      attachStream: async (conversationId) => {
+        const { sendStatus } = get()
+        if (sendStatus === 'sending' || sendStatus === 'streaming') return
+        abortCtrl?.abort()
+        const controller = new AbortController()
+        abortCtrl = controller
+        try {
+          const res = await resumeActive(conversationId, controller, null, () =>
+            reconcile(conversationId),
+          )
+          if (res === 'ended') {
+            if (buf.text || buf.status) {
+              await reconcile(conversationId)
+            } else {
+              idleStream()
+            }
+          } else if (typeof res === 'object' && res !== null) {
+            showToast(res.error.message, 'circle-alert')
+            idleStream()
+          } else if (res === 'dropped') {
+            idleStream()
+          }
+        } catch {
+          idleStream()
+        } finally {
+          if (controller.signal.aborted) idleStream()
         }
-      }
-    },
+      },
 
-    retry: async () => {
-      const { conversationId, failed } = get()
-      if (!conversationId || !failed) return
-      set((s) => ({
-        messages: s.messages.filter((m) => m.id !== failed.tempId),
-        failed: null,
-      }))
-      await get().send(conversationId, failed.text)
-    },
+      loadMore: async () => {
+        const { conversationId, nextCursor, hasMore, loadingMore } = get()
+        if (!conversationId || !hasMore || loadingMore || !nextCursor) return
+        set({ loadingMore: true })
+        try {
+          const env = await listMessages(conversationId, {
+            limit: PAGE_SIZE,
+            cursor: nextCursor,
+          })
+          set((s) => ({
+            messages: [...[...env.data].reverse(), ...s.messages],
+            nextCursor: env.page.nextCursor,
+            hasMore: env.page.hasMore,
+            loadingMore: false,
+          }))
+        } catch {
+          set({ loadingMore: false })
+          showToast(t('chat.loadMoreFailed'), 'circle-alert')
+        }
+      },
 
-    abort: () => {
-      abortCtrl?.abort()
-    },
+      send: async (conversationId, text, evidence = []) => {
+        let ai = deps.aiOptions()
+        if (!ai) {
+          await deps.ensureModels()
+          ai = deps.aiOptions()
+        }
+        if (!ai) {
+          showToast(t('chat.modelConfigFailed'), 'circle-alert')
+          return
+        }
+        const accessMode = deps.accessMode()
+        abortCtrl?.abort()
+        const controller = new AbortController()
+        abortCtrl = controller
+        const tempId = `local-${crypto.randomUUID()}`
+        const optimistic: Message = {
+          id: tempId,
+          conversationId,
+          role: 'USER',
+          text,
+          attachments: evidence.map((e) => ({ type: 'EVIDENCE' as const, id: e.id, title: e.title })),
+          operationId: null,
+          createdAt: new Date().toISOString(),
+        }
+        set((s) => ({
+          conversationId: s.conversationId ?? conversationId,
+          messages: [...s.messages, optimistic],
+          sendStatus: 'sending',
+          streamText: '',
+          streamStatus: '',
+          failed: null,
+        }))
+        const badDone = (operation: Operation) => {
+          throw new ApiError(
+            operation.error?.message ?? t('chat.noResponse'),
+            operation.error?.code ?? 'OPERATION_FAILED',
+            0,
+          )
+        }
+        try {
+          let res: ConsumeResult
+          try {
+            res = await consume(
+              conversationId,
+              streamMessage(
+                conversationId,
+                {
+                  text,
+                  context: { evidenceIds: evidence.map((e) => e.id) },
+                  ai,
+                  accessMode,
+                },
+                {
+                  signal: controller.signal,
+                  byokKey: ai.credentialMode === 'BYOK' ? deps.byokKey() : undefined,
+                },
+              ),
+              tempId,
+              badDone,
+            )
+          } catch (error) {
+            if (error instanceof ApiError) throw error
+            res = 'dropped'
+          }
+          if (res === 'dropped' || res === 'ended') {
+            res = await resumeActive(conversationId, controller, tempId, badDone)
+          }
+          if (typeof res === 'object' && res !== null) {
+            throw new ApiError(res.error.message, res.error.code, 0, res.error.details)
+          }
+          if (res === 'dropped' || res === 'ended') {
+            throw new ApiError(t('chat.sendFailed'), 'NETWORK_ERROR', 0)
+          }
+        } catch (error) {
+          if (!controller.signal.aborted) {
+            clearStream()
+            set({
+              sendStatus: 'failed',
+              streamText: '',
+              streamStatus: '',
+              failed: {
+                tempId,
+                text,
+                error: error instanceof Error ? error.message : t('chat.sendFailed'),
+              },
+            })
+          }
+        } finally {
+          if (controller.signal.aborted) {
+            clearStream()
+            set((s) => ({
+              messages: s.messages.filter((m) => m.id !== tempId),
+              sendStatus: 'idle',
+              streamText: '',
+              streamStatus: '',
+            }))
+          }
+        }
+      },
 
-    reset: () => {
-      abortCtrl?.abort()
-      abortCtrl = null
-      set({
-        conversationId: null,
-        messages: [],
-        status: 'idle',
-        error: null,
-        nextCursor: null,
-        hasMore: false,
-        loadingMore: false,
-        sendStatus: 'idle',
-        streamText: '',
-        streamStatus: '',
-        failed: null,
-      })
-    },
-  }))
+      retry: async () => {
+        const { conversationId, failed } = get()
+        if (!conversationId || !failed) return
+        set((s) => ({
+          messages: s.messages.filter((m) => m.id !== failed.tempId),
+          failed: null,
+        }))
+        await get().send(conversationId, failed.text)
+      },
+
+      abort: () => {
+        abortCtrl?.abort()
+      },
+
+      reset: () => {
+        abortCtrl?.abort()
+        abortCtrl = null
+        clearStream()
+        lastSeq = 0
+        set({
+          conversationId: null,
+          messages: [],
+          status: 'idle',
+          error: null,
+          nextCursor: null,
+          hasMore: false,
+          loadingMore: false,
+          sendStatus: 'idle',
+          streamText: '',
+          streamStatus: '',
+          failed: null,
+        })
+      },
+    }
+  })
 
 type PendingFilesState = {
   files: File[]
