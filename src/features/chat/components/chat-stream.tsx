@@ -233,7 +233,7 @@ const ChatStream = ({
     <div className="chat-stream-virtual">
       {loadingMore ? <div className="chat-stream-loading">{t('chat.loadingMore')}</div> : null}
       <div ref={listRef} className="chat-vlist" onScroll={onScroll}>
-        {virtual.topPad > 0 ? <div style={{ height: virtual.topPad }} /> : null}
+        {virtual.topPad > 0 ? <div style={{ height: virtual.topPad, flexShrink: 0 }} /> : null}
         {visible.map((m) => (
           <MessageView
             key={m.id}
@@ -241,7 +241,7 @@ const ChatStream = ({
             rowRef={virtual.active ? virtual.rowRef(m.id) : undefined}
           />
         ))}
-        {virtual.bottomPad > 0 ? <div style={{ height: virtual.bottomPad }} /> : null}
+        {virtual.bottomPad > 0 ? <div style={{ height: virtual.bottomPad, flexShrink: 0 }} /> : null}
         {streaming ? <StreamingBubble onGrow={pinToBottom} /> : null}
         {failedText !== null ? (
           <div className="chat-stream-row">
