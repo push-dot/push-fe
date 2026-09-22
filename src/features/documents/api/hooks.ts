@@ -39,8 +39,39 @@ export const useCreateDocument = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createDocument,
-    onSuccess: (created) => {
-      qc.setQueryData<PushDocument[]>(keys.list, (old) => [created, ...(old ?? [])])
+    onMutate: async (body) => {
+      await qc.cancelQueries({ queryKey: keys.list })
+      const previous = qc.getQueryData<PushDocument[]>(keys.list)
+      const now = new Date().toISOString()
+      const optimistic: PushDocument = {
+        id: `optimistic-${crypto.randomUUID()}`,
+        revision: 0,
+        applicationId: body.applicationId,
+        title: body.title,
+        kind: body.kind,
+        template: body.template,
+        language: body.language ?? null,
+        status: 'DRAFT',
+        latestVersionId: null,
+        finalizedVersionId: null,
+        createdAt: now,
+        updatedAt: now,
+      }
+      qc.setQueryData<PushDocument[]>(keys.list, (old) => [optimistic, ...(old ?? [])])
+      return { previous, optimisticId: optimistic.id }
+    },
+    onSuccess: (created, _body, ctx) => {
+      qc.setQueryData<PushDocument[]>(keys.list, (old) =>
+        (old ?? []).map((d) => (d.id === ctx?.optimisticId ? created : d)),
+      )
+    },
+    onError: (_error, _body, ctx) => {
+      qc.setQueryData<PushDocument[]>(keys.list, (old) =>
+        ctx?.previous ?? (old ?? []).filter((d) => d.id !== ctx?.optimisticId),
+      )
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: keys.list })
     },
   })
 }

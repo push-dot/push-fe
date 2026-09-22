@@ -21,8 +21,39 @@ export const useCreateApplication = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (jobId: string) => createApplication({ jobId }),
-    onSuccess: (created) => {
-      qc.setQueryData<Application[]>(keys.list, (old) => [created, ...(old ?? [])])
+    onMutate: async (jobId) => {
+      await qc.cancelQueries({ queryKey: keys.list })
+      const previous = qc.getQueryData<Application[]>(keys.list)
+      const job = qc.getQueryData<{ job: { company: string; title: string } }>(['jobs', jobId])?.job
+      const now = new Date().toISOString()
+      const optimistic: Application = {
+        id: `optimistic-${crypto.randomUUID()}`,
+        revision: 0,
+        jobId,
+        company: job?.company ?? '',
+        title: job?.title ?? '',
+        stage: 'DISCOVERED',
+        notes: '',
+        appliedAt: null,
+        nextActionAt: null,
+        createdAt: now,
+        updatedAt: now,
+      }
+      qc.setQueryData<Application[]>(keys.list, (old) => [optimistic, ...(old ?? [])])
+      return { previous, optimisticId: optimistic.id }
+    },
+    onSuccess: (created, _jobId, ctx) => {
+      qc.setQueryData<Application[]>(keys.list, (old) =>
+        (old ?? []).map((a) => (a.id === ctx?.optimisticId ? created : a)),
+      )
+    },
+    onError: (_error, _jobId, ctx) => {
+      qc.setQueryData<Application[]>(keys.list, (old) =>
+        ctx?.previous ?? (old ?? []).filter((a) => a.id !== ctx?.optimisticId),
+      )
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: keys.list })
     },
   })
 }
