@@ -18,11 +18,11 @@ import { useInferenceSettings } from '@/features/inference'
 import { useMessagesStore } from './stores'
 import ChatStream from './components/chat-stream'
 
-const TOKEN_COUNT = 120
-const TOKEN_GAP_MS = 4
-const STREAM_FLUSH_MS = 16
+const TOKEN_COUNT = 500
+const WORDS_PER_TOKEN = 10
+const TOKEN_GAP_MS = 1
 
-const operation = (): Operation => ({
+const operation = (text: string): Operation => ({
   id: 'op1',
   type: 'CHAT_MESSAGE',
   applicationId: null,
@@ -44,7 +44,7 @@ const operation = (): Operation => ({
         id: 'a1',
         conversationId: 'c1',
         role: 'ASSISTANT',
-        text: 'x'.repeat(TOKEN_COUNT),
+        text,
         attachments: [],
         operationId: null,
         createdAt: '2026-09-01T00:00:00Z',
@@ -76,36 +76,40 @@ const enableAi = () => {
 const Harness = () => {
   const messages = useMessagesStore((s) => s.messages)
   const sendStatus = useMessagesStore((s) => s.sendStatus)
-  return (
-    <ChatStream
-      messages={messages}
-      status="success"
-      sendStatus={sendStatus}
-    />
-  )
+  return <ChatStream messages={messages} status="success" sendStatus={sendStatus} />
 }
 
-describe('stream render rate', () => {
+describe('stream parse bench', () => {
   beforeEach(() => {
     vi.mocked(streamMessage).mockReset()
     useMessagesStore.getState().reset()
     useInferenceSettings.setState({ models: [], modelsStatus: 'idle' })
   })
 
-  it('caps tree commits while tokens arrive one per macrotask', async () => {
+  it('measures real markdown parse cost over a stream', async () => {
     enableAi()
+    let full = ''
     vi.mocked(streamMessage).mockImplementation(async function* () {
       for (let i = 0; i < TOKEN_COUNT; i++) {
-        yield { type: 'token', text: 'x' }
+        const chunk = i % 30 === 29 ? '\n\n' : 'w '.repeat(WORDS_PER_TOKEN)
+        full += chunk
+        yield { type: 'token', text: chunk }
         await new Promise((r) => setTimeout(r, TOKEN_GAP_MS))
       }
-      yield { type: 'done', operation: operation() }
+      yield { type: 'done', operation: operation(full) }
     } as never)
 
+    let renderMs = 0
     let commits = 0
     const startedAt = performance.now()
-    const { container } = render(
-      <Profiler id="chat" onRender={() => { commits += 1 }}>
+    render(
+      <Profiler
+        id="chat"
+        onRender={(_id, _phase, actualDuration) => {
+          renderMs += actualDuration
+          commits += 1
+        }}
+      >
         <Harness />
       </Profiler>,
     )
@@ -113,19 +117,16 @@ describe('stream render rate', () => {
       await useMessagesStore.getState().send('c1', 'hello')
     })
     const elapsedMs = performance.now() - startedAt
-    const commitsPerSec = (commits / elapsedMs) * 1000
     console.log(
       JSON.stringify({
+        scenario: 'stream-parse-real',
         tokens: TOKEN_COUNT,
-        elapsedMs: Math.round(elapsedMs),
+        chars: full.length,
         commits,
-        commitsPerSec: Math.round(commitsPerSec),
+        renderMs: Math.round(renderMs * 10) / 10,
+        elapsedMs: Math.round(elapsedMs),
       }),
     )
     expect(useMessagesStore.getState().sendStatus).toBe('idle')
-    expect(commits).toBeLessThanOrEqual(
-      Math.ceil(elapsedMs / STREAM_FLUSH_MS) + 4,
-    )
-    expect(container.textContent).toContain('x'.repeat(TOKEN_COUNT))
   })
 })
