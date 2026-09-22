@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { sprinkles } from '@push/design-system'
 import type { FormEvent } from 'react'
 import type { JobPosting } from '../api/schemas'
-import { createJob } from '../api/fetchers'
+import { useCreateJob } from '../api/hooks'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
 import { isHttpUrl } from '@/shared/lib/url'
 
@@ -17,15 +17,14 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
   const [company, setCompany] = useState('')
   const [title, setTitle] = useState('')
   const [source, setSource] = useState(initialSource)
-  const [busy, setBusy] = useState(false)
+  const create = useCreateJob()
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!company.trim() || !title.trim() || !source.trim()) return
-    setBusy(true)
     try {
       const url = isHttpUrl(source)
-      const job = await createJob({
+      const job = await create.mutateAsync({
         company: company.trim(),
         title: title.trim(),
         sourceKind: url ? 'URL' : 'TEXT',
@@ -39,8 +38,6 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
       onClose()
     } catch (error) {
       showToast(error instanceof Error ? error.message : '추가하지 못했어요', 'circle-alert')
-    } finally {
-      setBusy(false)
     }
   }
 
@@ -54,7 +51,12 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
           <Button variant="secondary" size="sm" onClick={onClose}>
             취소
           </Button>
-          <Button variant="primary" size="sm" loading={busy} onClick={(e) => void submit(e)}>
+          <Button
+            variant="primary"
+            size="sm"
+            loading={create.isPending}
+            onClick={(e) => void submit(e)}
+          >
             추가
           </Button>
         </>

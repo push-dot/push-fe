@@ -12,6 +12,7 @@ vi.mock('./api/fetchers', async (importOriginal) => {
 })
 
 import { listMessages, streamMessage } from './api/fetchers'
+import { queryClient } from '@/shared/api'
 
 import { useInferenceSettings } from '@/features/inference'
 import { useMessagesStore } from './stores'
@@ -71,6 +72,7 @@ describe('messages store', () => {
   beforeEach(() => {
     vi.mocked(listMessages).mockReset()
     vi.mocked(streamMessage).mockReset()
+    queryClient.clear()
     useMessagesStore.getState().reset()
     useInferenceSettings.setState({ models: [], modelsStatus: 'idle' })
   })

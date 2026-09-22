@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchList } from '@/shared/api'
 import { fetchGoogleStatus, listCalendarEvents, syncGoogle } from './fetchers'
 
 const keys = {
@@ -12,11 +13,14 @@ const monthRange = (base: Date): { from: string; to: string } => {
   return { from: from.toISOString(), to: to.toISOString() }
 }
 
-export const useCalendarEvents = () =>
-  useQuery({
-    queryKey: keys.list,
-    queryFn: () => listCalendarEvents(monthRange(new Date())).then((env) => env.data),
-  })
+const calendarEventsQuery = {
+  queryKey: keys.list,
+  queryFn: () => listCalendarEvents(monthRange(new Date())).then((env) => env.data),
+}
+
+export const useCalendarEvents = () => useQuery(calendarEventsQuery)
+
+export const prefetchCalendarEvents = () => prefetchList(calendarEventsQuery)
 
 export const useGoogleStatus = () =>
   useQuery({ queryKey: keys.googleStatus, queryFn: fetchGoogleStatus })

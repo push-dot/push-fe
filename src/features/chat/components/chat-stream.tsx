@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ReactNode } from 'react'
@@ -9,9 +9,13 @@ import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@
 import { downloadVersionExport } from '@/features/documents'
 import type { SendStatus } from '../stores'
 import { useMessagesStore } from '../stores'
+import { splitStableMarkdown } from '../markdown-split'
+import { useVirtualRows } from '../virtual-rows'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80
+
+const REMARK_PLUGINS = [remarkGfm]
 
 const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; user?: boolean }) => {
   const t = useT()
@@ -49,56 +53,67 @@ const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; u
   )
 }
 
-const MessageView = ({ message }: { message: Message }) => {
-  const t = useT()
-  const copy = () => {
-    void navigator.clipboard.writeText(message.text).then(() => {
-      showToast(t('chat.copied'), 'check')
-    })
-  }
-  return (
-    <div className="chat-stream-row">
-      <div
-        className={[
-          'chat-stream-msg',
-          message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
-        ].join(' ')}
-      >
-        {message.role === 'USER' ? (
-          message.text
-        ) : (
-          <div className="chat-md">
-            <Markdown remarkPlugins={[remarkGfm]}>{message.text}</Markdown>
-          </div>
-        )}
-      </div>
-      {message.attachments.map((a, i) => (
-        <AttachmentView
-          key={`${message.id}-${i}`}
-          attachment={a}
-          user={message.role === 'USER'}
-        />
-      ))}
-      {message.role === 'ASSISTANT' && message.text ? (
-        <div className="chat-msg-actions">
-          <button
-            type="button"
-            className="chat-msg-action"
-            aria-label={t('chat.copy')}
-            onClick={copy}
-          >
-            <Icon name="copy" size={16} />
-            <span>{t('chat.copy')}</span>
-          </button>
+const MessageView = memo(
+  ({
+    message,
+    rowRef,
+  }: {
+    message: Message
+    rowRef?: (el: HTMLDivElement | null) => void
+  }) => {
+    const t = useT()
+    const copy = () => {
+      void navigator.clipboard.writeText(message.text).then(() => {
+        showToast(t('chat.copied'), 'check')
+      })
+    }
+    return (
+      <div ref={rowRef} className="chat-stream-row">
+        <div
+          className={[
+            'chat-stream-msg',
+            message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
+          ].join(' ')}
+        >
+          {message.role === 'USER' ? (
+            message.text
+          ) : (
+            <div className="chat-md">
+              <Markdown remarkPlugins={REMARK_PLUGINS}>{message.text}</Markdown>
+            </div>
+          )}
         </div>
-      ) : null}
-    </div>
-  )
-}
+        {message.attachments.map((a, i) => (
+          <AttachmentView
+            key={`${message.id}-${i}`}
+            attachment={a}
+            user={message.role === 'USER'}
+          />
+        ))}
+        {message.role === 'ASSISTANT' && message.text ? (
+          <div className="chat-msg-actions">
+            <button
+              type="button"
+              className="chat-msg-action"
+              aria-label={t('chat.copy')}
+              onClick={copy}
+            >
+              <Icon name="copy" size={16} />
+              <span>{t('chat.copy')}</span>
+            </button>
+          </div>
+        ) : null}
+      </div>
+    )
+  },
+)
+
+const StableMarkdown = memo(Markdown)
 
 const StreamingBubble = ({ onGrow }: { onGrow: () => void }) => {
   const text = useMessagesStore((s) => s.streamText)
   const status = useMessagesStore((s) => s.streamStatus)
+  const { stable, tail } = useMemo(() => splitStableMarkdown(text), [text])
   useEffect(() => {
     onGrow()
   }, [text, onGrow])
@@ -108,7 +123,12 @@ const StreamingBubble = ({ onGrow }: { onGrow: () => void }) => {
         {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
         {text ? (
           <div className="chat-md">
-            <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+            {stable ? (
+              <StableMarkdown remarkPlugins={REMARK_PLUGINS}>{stable}</StableMarkdown>
+            ) : null}
+            {tail ? (
+              <Markdown remarkPlugins={REMARK_PLUGINS}>{tail}</Markdown>
+            ) : null}
           </div>
         ) : ' '}
         <span className="chat-stream-cursor" />
@@ -151,6 +171,17 @@ const ChatStream = ({
 
   const streaming = sendStatus === 'sending' || sendStatus === 'streaming'
 
+  const keyAt = useCallback((i: number) => messages[i].id, [messages])
+  const virtual = useVirtualRows({
+    count: messages.length,
+    keyAt,
+    listRef,
+    pinnedRef: atBottomRef,
+  })
+  const visible = virtual.active
+    ? messages.slice(virtual.start, virtual.end)
+    : messages
+
   const pinToBottom = () => {
     const el = listRef.current
     if (!el || !atBottomRef.current) return
@@ -168,6 +199,7 @@ const ChatStream = ({
       el.scrollHeight - el.scrollTop - el.clientHeight < BOTTOM_THRESHOLD
     atBottomRef.current = atBottom
     setShowJump(!atBottom)
+    virtual.syncFromScroll()
     if (el.scrollTop < TOP_LOAD_THRESHOLD && hasMore && !loadingMore) {
       onTopReached?.()
     }
@@ -176,6 +208,7 @@ const ChatStream = ({
   const jumpToBottom = () => {
     atBottomRef.current = true
     setShowJump(false)
+    virtual.syncFromScroll()
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }
 
@@ -200,9 +233,15 @@ const ChatStream = ({
     <div className="chat-stream-virtual">
       {loadingMore ? <div className="chat-stream-loading">{t('chat.loadingMore')}</div> : null}
       <div ref={listRef} className="chat-vlist" onScroll={onScroll}>
-        {messages.map((m) => (
-          <MessageView key={m.id} message={m} />
+        {virtual.topPad > 0 ? <div style={{ height: virtual.topPad, flexShrink: 0 }} /> : null}
+        {visible.map((m) => (
+          <MessageView
+            key={m.id}
+            message={m}
+            rowRef={virtual.active ? virtual.rowRef(m.id) : undefined}
+          />
         ))}
+        {virtual.bottomPad > 0 ? <div style={{ height: virtual.bottomPad, flexShrink: 0 }} /> : null}
         {streaming ? <StreamingBubble onGrow={pinToBottom} /> : null}
         {failedText !== null ? (
           <div className="chat-stream-row">

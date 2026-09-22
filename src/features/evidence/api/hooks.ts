@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchList } from '@/shared/api'
 import { archiveCareerEvidence, createCareerEvidence, listCareerEvidence } from './fetchers'
 import type { CareerEvidence } from './schemas'
 
@@ -6,11 +7,14 @@ const keys = {
   list: ['career-evidence'] as const,
 }
 
-export const useCareerEvidence = () =>
-  useQuery({
-    queryKey: keys.list,
-    queryFn: () => listCareerEvidence({ limit: 50 }).then((env) => env.data),
-  })
+const careerEvidenceQuery = {
+  queryKey: keys.list,
+  queryFn: () => listCareerEvidence({ limit: 50 }).then((env) => env.data),
+}
+
+export const useCareerEvidence = () => useQuery(careerEvidenceQuery)
+
+export const prefetchCareerEvidence = () => prefetchList(careerEvidenceQuery)
 
 export const useArchiveEvidence = () => {
   const qc = useQueryClient()
