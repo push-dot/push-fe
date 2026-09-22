@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from '@/shared/i18n'
 import { Icon, IconButton, showToast } from '@/shared/components'
-import { importEvidence, uploadSource } from '@/features/evidence'
 import type { CareerEvidence } from '@/features/evidence'
 import { usePendingFiles } from '../stores'
+import { uploadPendingFiles } from '../upload-pending'
 import { InferenceSettings } from '@/features/inference'
 
 type ComposerProps = {
@@ -39,22 +39,16 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     const value = text.trim()
     if ((!value && pending.length === 0) || sending) return
     void (async () => {
-      const evidence: Pick<CareerEvidence, 'id' | 'title'>[] = []
-      for (const file of pending) {
-        try {
-          const source = await uploadSource(file, 'RESUME')
-          const ev = await importEvidence(file, source.id)
-          evidence.push({ id: ev.id, title: ev.title })
-          showToast(t('composer.uploaded'))
-        } catch (error) {
-          showToast(
-            error instanceof Error ? error.message : t('composer.uploadFailed'),
-            'circle-alert',
-          )
-          return
-        }
-      }
+      const { evidence, failed } = await uploadPendingFiles(pending)
+      evidence.forEach(() => showToast(t('composer.uploaded')))
+      failed.forEach(({ error }) =>
+        showToast(
+          error instanceof Error ? error.message : t('composer.uploadFailed'),
+          'circle-alert',
+        ),
+      )
       clearFiles()
+      if (failed.length) addFiles(failed.map((f) => f.file))
       if (value || evidence.length) {
         onSend(value || pending.map((f) => f.name).join(', '), evidence)
         setText('')
