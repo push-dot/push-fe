@@ -1,7 +1,14 @@
 import { create } from 'zustand'
 import type { Conversation, Message, MessageStreamEvent } from './api/schemas'
 import { listMessages, streamActive, streamMessage } from './api/fetchers'
-import { STREAM_FLUSH_MS, STREAM_MAX_RECONNECTS, STREAM_RECONNECT_MS } from './constants'
+import { chatKeys } from './api/hooks'
+import {
+  MESSAGES_PAGE_SIZE,
+  STREAM_FLUSH_MS,
+  STREAM_MAX_RECONNECTS,
+  STREAM_RECONNECT_MS,
+} from './constants'
+import { queryClient } from '@/shared/api'
 import type { AccessMode, AiOptions } from '@/features/inference'
 import { useInferenceSettings } from '@/features/inference'
 import { ensureApproval } from '@/features/approval'
@@ -13,8 +20,6 @@ import { t } from '@/shared/i18n'
 type LoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
 export type SendStatus = 'idle' | 'sending' | 'streaming' | 'failed'
-
-const PAGE_SIZE = 50
 
 type ChatMessageResult = {
   userMessage: Message
@@ -103,7 +108,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
     }
 
     const reconcile = async (conversationId: string) => {
-      const env = await listMessages(conversationId, { limit: PAGE_SIZE })
+      const env = await listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE })
       clearStream()
       set({
         messages: [...env.data].reverse(),
@@ -235,7 +240,10 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           failed: null,
         })
         try {
-          const env = await listMessages(conversationId, { limit: PAGE_SIZE })
+          const env = await queryClient.fetchQuery({
+            queryKey: chatKeys.messages(conversationId),
+            queryFn: () => listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE }),
+          })
           set({
             messages: [...env.data].reverse(),
             status: 'success',
@@ -286,7 +294,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         set({ loadingMore: true })
         try {
           const env = await listMessages(conversationId, {
-            limit: PAGE_SIZE,
+            limit: MESSAGES_PAGE_SIZE,
             cursor: nextCursor,
           })
           set((s) => ({
@@ -312,6 +320,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           return
         }
         const accessMode = deps.accessMode()
+        void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
         abortCtrl?.abort()
         const controller = new AbortController()
         abortCtrl = controller

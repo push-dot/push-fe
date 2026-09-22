@@ -1,5 +1,38 @@
 import { expect, test } from '@playwright/test'
-import { authedPage } from './fixtures'
+import { authedPage, loginAsDev } from './fixtures'
+
+test('nav hover prefetches the list so entry shows no skeleton', async ({ page }) => {
+  let listRequests = 0
+  page.on('request', (r) => {
+    if (r.url().includes('/api/v1/documents') && r.method() === 'GET') listRequests += 1
+  })
+
+  await loginAsDev(page)
+  const coldStart = Date.now()
+  await page.goto('/documents')
+  await expect(page.locator('.canvas-body')).not.toBeEmpty()
+  const coldMs = Date.now() - coldStart
+
+  await page.goto('/')
+  await page.waitForSelector('.sidebar', { timeout: 15_000 })
+  const nav = page.getByRole('button', { name: '내 서류' })
+  const warmed = page.waitForResponse(
+    (r) => r.url().includes('/api/v1/documents') && r.request().method() === 'GET',
+  )
+  await nav.hover()
+  await warmed
+
+  const warmStart = Date.now()
+  await nav.click()
+  await page.waitForURL('/documents')
+  const skeletonCount = await page.locator('[class*="skeleton"]').count()
+  await expect(page.locator('.canvas-body')).not.toBeEmpty()
+  const warmMs = Date.now() - warmStart
+
+  expect(skeletonCount).toBe(0)
+  expect(listRequests).toBe(1)
+  console.log(`[e2e] documents entry cold=${coldMs}ms warm=${warmMs}ms requests=${listRequests}`)
+})
 
 test('chat item context menu renames, pins, and deletes', async ({ page }) => {
   const title = `e2e ${Date.now()}`

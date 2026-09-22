@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchList } from '@/shared/api'
 import { createInterview, listInterviews } from './fetchers'
 import type { InterviewSession } from './schemas'
 
@@ -6,11 +7,14 @@ const keys = {
   list: ['interviews'] as const,
 }
 
-export const useInterviews = () =>
-  useQuery({
-    queryKey: keys.list,
-    queryFn: () => listInterviews({ limit: 50 }).then((env) => env.data),
-  })
+const interviewsQuery = {
+  queryKey: keys.list,
+  queryFn: () => listInterviews({ limit: 50 }).then((env) => env.data),
+}
+
+export const useInterviews = () => useQuery(interviewsQuery)
+
+export const prefetchInterviews = () => prefetchList(interviewsQuery)
 
 export const useCreateInterview = () => {
   const qc = useQueryClient()

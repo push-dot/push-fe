@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchList } from '@/shared/api'
 import { createApplication, listApplications, patchApplication } from './fetchers'
 import type { Application, ApplicationStage } from './schemas'
 import { canTransition } from '../application-stage'
@@ -7,9 +8,14 @@ const keys = {
   list: ['applications'] as const,
 }
 
-const list = () => listApplications({ limit: 50 }).then((env) => env.data)
+const applicationsQuery = {
+  queryKey: keys.list,
+  queryFn: () => listApplications({ limit: 50 }).then((env) => env.data),
+}
 
-export const useApplications = () => useQuery({ queryKey: keys.list, queryFn: list })
+export const useApplications = () => useQuery(applicationsQuery)
+
+export const prefetchApplications = () => prefetchList(applicationsQuery)
 
 export const useCreateApplication = () => {
   const qc = useQueryClient()

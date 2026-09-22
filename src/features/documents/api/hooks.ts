@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { prefetchList } from '@/shared/api'
 import { createDocument, getDocument, getDocumentVersion, listDocuments } from './fetchers'
 import type { DocumentVersion, PushDocument } from './schemas'
 
@@ -7,16 +8,19 @@ const keys = {
   detail: (id: string) => ['documents', id] as const,
 }
 
+const documentsQuery = {
+  queryKey: keys.list,
+  queryFn: () => listDocuments({ limit: 50 }).then((env) => env.data),
+}
+
 export type DocumentDetail = {
   document: PushDocument
   version: DocumentVersion | null
 }
 
-export const useDocuments = () =>
-  useQuery({
-    queryKey: keys.list,
-    queryFn: () => listDocuments({ limit: 50 }).then((env) => env.data),
-  })
+export const useDocuments = () => useQuery(documentsQuery)
+
+export const prefetchDocuments = () => prefetchList(documentsQuery)
 
 export const useDocument = (id: string | undefined) =>
   useQuery({
