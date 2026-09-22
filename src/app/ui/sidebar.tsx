@@ -10,6 +10,7 @@ import { Icon, IconButton, showToast } from '@/shared/components'
 import type { IconName } from '@/shared/components'
 import {
   isProjectConversation,
+  prefetchMessages,
   useArchiveConversation,
   useConversations,
   useCreateConversation,
@@ -18,13 +19,23 @@ import {
 import { listMessages } from '@/features/chat'
 import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
+import { prefetchDocuments } from '@/features/documents'
+import { prefetchApplications } from '@/features/applications'
+import { prefetchCareerEvidence } from '@/features/evidence'
+import { prefetchInterviews } from '@/features/interviews'
+import { prefetchCalendarEvents } from '@/features/calendar'
 
-const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey }[] = [
-  { to: ROUTES.documents, icon: 'file-text', labelKey: 'nav.documents' },
-  { to: ROUTES.applications, icon: 'briefcase', labelKey: 'nav.applications' },
-  { to: ROUTES.vault, icon: 'archive', labelKey: 'nav.vault' },
-  { to: ROUTES.interview, icon: 'mic', labelKey: 'nav.interview' },
-  { to: ROUTES.calendar, icon: 'calendar', labelKey: 'nav.calendar' },
+const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey; prefetch: () => void }[] = [
+  { to: ROUTES.documents, icon: 'file-text', labelKey: 'nav.documents', prefetch: prefetchDocuments },
+  {
+    to: ROUTES.applications,
+    icon: 'briefcase',
+    labelKey: 'nav.applications',
+    prefetch: prefetchApplications,
+  },
+  { to: ROUTES.vault, icon: 'archive', labelKey: 'nav.vault', prefetch: prefetchCareerEvidence },
+  { to: ROUTES.interview, icon: 'mic', labelKey: 'nav.interview', prefetch: prefetchInterviews },
+  { to: ROUTES.calendar, icon: 'calendar', labelKey: 'nav.calendar', prefetch: prefetchCalendarEvents },
 ]
 
 const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
@@ -228,6 +239,7 @@ const Sidebar = () => {
                 key={c.id}
                 className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
                 onClick={() => navigate(ROUTES.chat(c.id))}
+                onMouseEnter={() => prefetchMessages(c.id)}
                 onContextMenu={(e) => openMenu(e, c)}
                 role="button"
               >
@@ -269,6 +281,8 @@ const Sidebar = () => {
                   location.pathname.startsWith(item.to) ? 'sidebar-item is-active' : 'sidebar-item'
                 }
                 onClick={() => navigate(item.to)}
+                onMouseEnter={item.prefetch}
+                onFocus={item.prefetch}
               >
                 <Icon name={item.icon} size={20} />
                 <span className="sidebar-item-label">{t(item.labelKey)}</span>
