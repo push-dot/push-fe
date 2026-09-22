@@ -15,7 +15,7 @@ vi.mock('./fetchers', async (importOriginal) => {
 })
 
 import { createApplication, listApplications, patchApplication } from './fetchers'
-import { useApplications, useMoveStage } from './hooks'
+import { useApplications, useCreateApplication, useMoveStage } from './hooks'
 
 const app = (over: Partial<Application> = {}): Application => ({
   id: 'a1',
@@ -67,6 +67,47 @@ describe('applications api hooks', () => {
       stage: 'PREPARING',
     })
     expect(client.getQueryData<Application[]>(['applications'])?.[0].stage).toBe('PREPARING')
+  })
+
+  it('inserts an optimistic application and replaces it with the server response', async () => {
+    client.setQueryData(['applications'], [app()])
+    vi.mocked(listApplications).mockResolvedValue({
+      data: [app({ id: 'a9' }), app()],
+      page: { nextCursor: null, hasMore: false },
+    })
+    let resolve!: (a: Application) => void
+    vi.mocked(createApplication).mockImplementation(
+      () =>
+        new Promise((r) => {
+          resolve = r
+        }),
+    )
+    const { result } = renderHook(() => useCreateApplication(), { wrapper })
+    const pending = result.current.mutateAsync('j2')
+    await waitFor(() => {
+      expect(client.getQueryData<Application[]>(['applications'])?.[0].id).toMatch(/^optimistic-/)
+    })
+    resolve(app({ id: 'a9', jobId: 'j2' }))
+    await pending
+    await waitFor(() => {
+      const list = client.getQueryData<Application[]>(['applications']) ?? []
+      expect(list.some((a) => a.id.startsWith('optimistic-'))).toBe(false)
+      expect(list.map((a) => a.id)).toContain('a9')
+    })
+  })
+
+  it('rolls back the optimistic application on error', async () => {
+    client.setQueryData(['applications'], [app()])
+    vi.mocked(listApplications).mockResolvedValue({
+      data: [app()],
+      page: { nextCursor: null, hasMore: false },
+    })
+    vi.mocked(createApplication).mockRejectedValue(new Error('boom'))
+    const { result } = renderHook(() => useCreateApplication(), { wrapper })
+    await expect(result.current.mutateAsync('j2')).rejects.toThrow('boom')
+    await waitFor(() => {
+      expect(client.getQueryData<Application[]>(['applications'])?.map((a) => a.id)).toEqual(['a1'])
+    })
   })
 
   it('does not call the API on an illegal transition', async () => {
