@@ -22,4 +22,10 @@ export const COMPOSER_PLACEHOLDER = '메시지 입력'
 export const EXPERIMENT_EVENTS = {
   exposure: 'exposure',
   conversion: 'conversion',
+  aborted: 'aborted',
+} as const
+
+export const EXPERIMENT_KEYS = {
+  streamRender: 'stream-render',
+  approvalSurface: 'approval-surface',
 } as const
