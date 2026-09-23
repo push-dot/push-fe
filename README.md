@@ -20,6 +20,8 @@
 
 - **채팅 워크플로** — 공고 URL·이력서 첨부 → SSE 토큰 스트리밍 → Phase 게이트에 번호/자유 입력으로 응답
 - **스트림 자동 재연결** — 다른 화면을 갔다 와도 진행 중 응답을 서버에서 다시 붙여 이어서 렌더링
+- **관측성** — Sentry ErrorBoundary가 앱 루트를 감싸고 모든 API 요청에 `X-Request-Id`를 붙여 백엔드 `http_request` 로그와 같은 키로 조인
+- **A/B 실험 연동** — 배정(`useExperiment`/`useVariant`)과 렌더링을 분리해 스트림 표시 방식·승인 UI를 variant로 분기하고 노출/전환/중단/거절 이벤트를 기록
 - **멀티라인 컴포저** — textarea 자동 확장, Shift+Enter 줄바꿈, IME 조합 중 전송 방지, 파일 드래그·붙여넣기
 - **문서 에디터** — TipTap 기반, 버전 관리, PDF/DOCX 다운로드
 - **추론 설정** — 접근 모드(관리형/BYOK), 역할별(generate/research) 모델 선택, effort 조정
