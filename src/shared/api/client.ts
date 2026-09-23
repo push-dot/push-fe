@@ -30,6 +30,7 @@ export const api = ky.create({
   hooks: {
     beforeRequest: [
       (req) => {
+        req.headers.set('X-Request-Id', crypto.randomUUID())
         const token = getAccessToken()
         if (token) req.headers.set('Authorization', `Bearer ${token}`)
       },
