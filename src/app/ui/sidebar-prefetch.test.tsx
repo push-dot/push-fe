@@ -177,7 +177,6 @@ describe('route prefetch', () => {
           revision: 1,
           title: '첫 대화',
           pinned: false,
-          projectId: null,
           applicationId: null,
           createdAt: '2026-09-01T00:00:00Z',
           updatedAt: '2026-09-01T00:00:00Z',
