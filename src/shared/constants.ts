@@ -23,6 +23,7 @@ export const EXPERIMENT_EVENTS = {
   exposure: 'exposure',
   conversion: 'conversion',
   aborted: 'aborted',
+  reject: 'reject',
 } as const
 
 export const EXPERIMENT_KEYS = {

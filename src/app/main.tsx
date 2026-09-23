@@ -6,8 +6,12 @@ import '@push/design-system/styles'
 import '@/theme/components.css'
 import './app.css'
 import { IconSprite } from '@/shared/components'
+import { ErrorState } from '@/shared/components'
 import { queryClient } from '@/shared/api'
+import { initObservability, Sentry } from '@/shared/lib/observability'
 import { ROUTE_CONFIG } from './routes'
+
+initObservability()
 
 const router = createBrowserRouter(ROUTE_CONFIG)
 
@@ -29,10 +33,12 @@ if ('__TAURI_INTERNALS__' in window) {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <IconSprite />
-    <RouterProvider router={router} />
-  </QueryClientProvider>
+  <Sentry.ErrorBoundary fallback={<ErrorState />}>
+    <QueryClientProvider client={queryClient}>
+      <IconSprite />
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  </Sentry.ErrorBoundary>
 )
 
 createRoot(document.getElementById('root')!).render(

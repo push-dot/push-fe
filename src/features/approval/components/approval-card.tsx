@@ -2,7 +2,8 @@ import { useState } from 'react'
 import type { Approval, ApprovalKind } from '../api/schemas'
 import { useApproval, useDecideApproval } from '../api/hooks'
 import { Button, Icon, StatusChip, showToast } from '@/shared/components'
-import { EXPERIMENT_KEYS } from '@/shared/constants'
+import { trackExperimentEvent } from '@/shared/api'
+import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import { useExperimentConversion } from '@/shared/lib/experiment'
 
 const KIND_TITLES: Record<ApprovalKind, string> = {
@@ -39,6 +40,11 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
     try {
       await decide.mutateAsync(decision)
       trackConversion()
+      if (decision === 'DENIED') {
+        void trackExperimentEvent('approval-surface', EXPERIMENT_EVENTS.reject).catch(
+          () => undefined,
+        )
+      }
       showToast(decision === 'APPROVED' ? '승인했어요' : '거부했어요')
     } catch (error) {
       showToast(error instanceof Error ? error.message : '처리하지 못했어요', 'circle-alert')
