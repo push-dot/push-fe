@@ -5,10 +5,13 @@ import { chatKeys } from './api/hooks'
 import {
   MESSAGES_PAGE_SIZE,
   STREAM_FLUSH_MS,
+  STREAM_FOLLOW_UP_MS,
   STREAM_MAX_RECONNECTS,
   STREAM_RECONNECT_MS,
 } from './constants'
-import { queryClient } from '@/shared/api'
+import { queryClient, trackExperimentEvent } from '@/shared/api'
+import { experimentVariant, trackExperiment } from '@/shared/lib/experiment'
+import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import type { AccessMode, AiOptions } from '@/features/inference'
 import { useInferenceSettings } from '@/features/inference'
 import { ensureApproval } from '@/features/approval'
@@ -75,11 +78,14 @@ export type MessagesDeps = {
   accessMode: () => AccessMode
   byokKey: () => string
   ensureApproval: (id: string) => void
+  streamRenderVariant: () => Promise<string>
 }
 
 export const createMessagesStore = (deps: MessagesDeps) =>
   create<MessagesState>()((set, get) => {
     let lastSeq = 0
+    let streamVariant = 'A'
+    let lastDoneAt = 0
     const buf = {
       text: '',
       status: '',
@@ -88,7 +94,14 @@ export const createMessagesStore = (deps: MessagesDeps) =>
 
     const flushStream = () => {
       buf.timer = null
-      set({ sendStatus: 'streaming', streamText: buf.text, streamStatus: buf.status })
+      if (buf.text) {
+        trackExperiment(EXPERIMENT_KEYS.streamRender, EXPERIMENT_EVENTS.exposure)
+      }
+      set({
+        sendStatus: 'streaming',
+        streamText: streamVariant === 'B' ? '' : buf.text,
+        streamStatus: buf.status,
+      })
     }
 
     const scheduleFlush = () => {
@@ -122,6 +135,8 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       const result = operation?.result
       if (operation?.status !== 'SUCCEEDED' || !isChatMessageResult(result)) return false
       const { userMessage, assistantMessage, approvalIds } = result.value
+      lastDoneAt = Date.now()
+      trackExperiment(EXPERIMENT_KEYS.streamRender, EXPERIMENT_EVENTS.exposure)
       clearStream()
       set((s) => ({
         messages: [
@@ -262,6 +277,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       attachStream: async (conversationId) => {
         const { sendStatus } = get()
         if (sendStatus === 'sending' || sendStatus === 'streaming') return
+        streamVariant = await deps.streamRenderVariant()
         abortCtrl?.abort()
         const controller = new AbortController()
         abortCtrl = controller
@@ -320,6 +336,14 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           return
         }
         const accessMode = deps.accessMode()
+        streamVariant = await deps.streamRenderVariant()
+        if (Date.now() - lastDoneAt <= STREAM_FOLLOW_UP_MS) {
+          trackExperiment(
+            EXPERIMENT_KEYS.streamRender,
+            EXPERIMENT_EVENTS.conversion,
+            String(lastDoneAt),
+          )
+        }
         void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
         abortCtrl?.abort()
         const controller = new AbortController()
@@ -421,6 +445,13 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       },
 
       abort: () => {
+        const { sendStatus } = get()
+        if (sendStatus === 'sending' || sendStatus === 'streaming') {
+          void trackExperimentEvent(
+            EXPERIMENT_KEYS.streamRender,
+            EXPERIMENT_EVENTS.aborted,
+          ).catch(() => {})
+        }
         abortCtrl?.abort()
       },
 
@@ -466,6 +497,7 @@ export const useMessagesStore = createMessagesStore({
   accessMode: () => useInferenceSettings.getState().accessMode,
   byokKey: () => useInferenceSettings.getState().byokKey,
   ensureApproval: (id) => void ensureApproval(id),
+  streamRenderVariant: () => experimentVariant(EXPERIMENT_KEYS.streamRender),
 })
 
 export const isProjectConversation = (conversation: Conversation): boolean =>

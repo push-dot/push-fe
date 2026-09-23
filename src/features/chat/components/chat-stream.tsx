@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm'
 import type { ReactNode } from 'react'
 import type { Message, MessageAttachment } from '../api/schemas'
 import { useT } from '@/shared/i18n'
-import { ApprovalCard } from '@/features/approval'
+import { ApprovalSurface } from '@/features/approval'
 import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
 import { downloadVersionExport } from '@/features/documents'
 import type { SendStatus } from '../stores'
@@ -20,7 +20,7 @@ const REMARK_PLUGINS = [remarkGfm]
 const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; user?: boolean }) => {
   const t = useT()
   if (attachment.type === 'APPROVAL') {
-    return <ApprovalCard approvalId={attachment.id} />
+    return <ApprovalSurface approvalId={attachment.id} />
   }
   const label =
     attachment.type === 'EVIDENCE'
