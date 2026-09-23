@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { Approval, ApprovalKind } from '../api/schemas'
 import { useApproval, useDecideApproval } from '../api/hooks'
 import { Button, Icon, StatusChip, showToast } from '@/shared/components'
+import { EXPERIMENT_KEYS } from '@/shared/constants'
+import { useExperimentConversion } from '@/shared/lib/experiment'
 
 const KIND_TITLES: Record<ApprovalKind, string> = {
   CLI_EXECUTE: 'CLI 실행 승인',
@@ -27,6 +29,7 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
   const approval = data?.approval ?? null
   const summary = data?.targetSummary ?? null
   const decide = useDecideApproval(approvalId)
+  const trackConversion = useExperimentConversion(EXPERIMENT_KEYS.approvalSurface)
   const [busy, setBusy] = useState(false)
 
   if (!approval) return null
@@ -35,6 +38,7 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
     setBusy(true)
     try {
       await decide.mutateAsync(decision)
+      trackConversion()
       showToast(decision === 'APPROVED' ? '승인했어요' : '거부했어요')
     } catch (error) {
       showToast(error instanceof Error ? error.message : '처리하지 못했어요', 'circle-alert')

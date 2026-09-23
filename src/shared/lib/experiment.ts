@@ -1,24 +1,44 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { getAssignment, trackExperimentEvent } from '@/shared/api'
+import { getAssignment, queryClient, trackExperimentEvent } from '@/shared/api'
 import { EXPERIMENT_EVENTS } from '@/shared/constants'
 
-const exposed = new Set<string>()
+const tracked = new Set<string>()
+
+const assignmentQuery = (key: string) => ({
+  queryKey: ['experiment', 'assignment', key],
+  queryFn: () => getAssignment(key),
+  staleTime: Infinity,
+  retry: false,
+})
+
+export const trackExperiment = (key: string, event: string, scope = '') => {
+  const id = `${key}:${scope}:${event}`
+  if (tracked.has(id)) return
+  tracked.add(id)
+  void trackExperimentEvent(key, event).catch(() => tracked.delete(id))
+}
+
+export const experimentVariant = async (key: string, fallback = 'A'): Promise<string> => {
+  try {
+    const data = await queryClient.fetchQuery(assignmentQuery(key))
+    return data.variant ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+export const useExperimentVariant = (key: string, fallback = 'A'): string => {
+  const { data } = useQuery(assignmentQuery(key))
+  return data?.variant ?? fallback
+}
 
 export const useExperiment = (key: string, fallback = 'A'): string => {
-  const { data } = useQuery({
-    queryKey: ['experiment', 'assignment', key],
-    queryFn: () => getAssignment(key),
-    staleTime: Infinity,
-    retry: false,
-  })
+  const { data } = useQuery(assignmentQuery(key))
 
   useEffect(() => {
-    if (!data?.enrolled || exposed.has(key)) return
-    exposed.add(key)
-    void trackExperimentEvent(key, EXPERIMENT_EVENTS.exposure).catch(() =>
-      exposed.delete(key),
-    )
+    if (!data?.enrolled) return
+    trackExperiment(key, EXPERIMENT_EVENTS.exposure)
   }, [key, data])
 
   return data?.variant ?? fallback
@@ -32,5 +52,5 @@ export const useExperimentConversion = (key: string) => {
 }
 
 export const resetExperiments = () => {
-  exposed.clear()
+  tracked.clear()
 }

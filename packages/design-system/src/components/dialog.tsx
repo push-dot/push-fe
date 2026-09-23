@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../styles.css'
 
@@ -10,6 +11,14 @@ export type DialogProps = {
 }
 
 const Dialog = ({ open, onClose, title, children, actions }: DialogProps) => {
+  const restoreRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    restoreRef.current = document.activeElement as HTMLElement | null
+    return () => restoreRef.current?.focus()
+  }, [open])
+
   if (!open) return null
   return (
     <div className={dialogBackdrop} onClick={onClose}>
