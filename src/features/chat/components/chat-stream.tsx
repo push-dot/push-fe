@@ -1,141 +1,16 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Message, MessageAttachment } from '../api/schemas'
+import type { Message } from '../api/schemas'
 import { useT } from '@/shared/i18n'
-import { ApprovalSurface } from '@/features/approval'
-import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
-import { downloadVersionExport } from '@/features/documents'
+import { Button, ErrorState, Icon, IconButton, SkeletonRows } from '@/shared/components'
 import type { SendStatus } from '../stores'
-import { useMessagesStore } from '../stores'
-import { splitStableMarkdown } from '../markdown-split'
-import { useVirtualRows } from '../virtual-rows'
+import { useVirtualRows } from '../lib/virtual-rows'
+import type { VersionExportHandler } from '../types'
+import MessageView from './message-view'
+import StreamingBubble from './streaming-bubble'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80
-
-const REMARK_PLUGINS = [remarkGfm]
-
-const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; user?: boolean }) => {
-  const t = useT()
-  if (attachment.type === 'APPROVAL') {
-    return <ApprovalSurface approvalId={attachment.id} />
-  }
-  const label =
-    attachment.type === 'EVIDENCE'
-      ? t('chat.evidenceLinked')
-      : t('chat.docVersion')
-  const exportAs = (format: 'PDF' | 'DOCX') => {
-    if (attachment.type !== 'DOCUMENT_VERSION') return
-    void downloadVersionExport(
-      attachment.documentId, attachment.id, format, attachment.title,
-    ).catch((error: unknown) => {
-      showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
-    })
-  }
-  return (
-    <div className={user ? 'chat-attach-chip chat-attach-chip-user' : 'chat-attach-chip'}>
-      <Icon name="link-2" size={16} />
-      <span className="chat-attach-chip-title">{attachment.title}</span>
-      <span className="chat-attach-chip-meta">{label}</span>
-      {attachment.type === 'DOCUMENT_VERSION' ? (
-        <span className="chat-attach-chip-actions">
-          <Button size="sm" variant="secondary" onClick={() => exportAs('PDF')}>
-            {t('chat.exportPdf')}
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => exportAs('DOCX')}>
-            {t('chat.exportDocx')}
-          </Button>
-        </span>
-      ) : null}
-    </div>
-  )
-}
-
-const MessageView = memo(
-  ({
-    message,
-    rowRef,
-  }: {
-    message: Message
-    rowRef?: (el: HTMLDivElement | null) => void
-  }) => {
-    const t = useT()
-    const copy = () => {
-      void navigator.clipboard.writeText(message.text).then(() => {
-        showToast(t('chat.copied'), 'check')
-      })
-    }
-    return (
-      <div ref={rowRef} className="chat-stream-row">
-        <div
-          className={[
-            'chat-stream-msg',
-            message.role === 'USER' ? 'chat-stream-msg-user' : 'chat-stream-msg-ai',
-          ].join(' ')}
-        >
-          {message.role === 'USER' ? (
-            message.text
-          ) : (
-            <div className="chat-md">
-              <Markdown remarkPlugins={REMARK_PLUGINS}>{message.text}</Markdown>
-            </div>
-          )}
-        </div>
-        {message.attachments.map((a, i) => (
-          <AttachmentView
-            key={`${message.id}-${i}`}
-            attachment={a}
-            user={message.role === 'USER'}
-          />
-        ))}
-        {message.role === 'ASSISTANT' && message.text ? (
-          <div className="chat-msg-actions">
-            <button
-              type="button"
-              className="chat-msg-action"
-              aria-label={t('chat.copy')}
-              onClick={copy}
-            >
-              <Icon name="copy" size={16} />
-              <span>{t('chat.copy')}</span>
-            </button>
-          </div>
-        ) : null}
-      </div>
-    )
-  },
-)
-
-const StableMarkdown = memo(Markdown)
-
-const StreamingBubble = ({ onGrow }: { onGrow: () => void }) => {
-  const text = useMessagesStore((s) => s.streamText)
-  const status = useMessagesStore((s) => s.streamStatus)
-  const { stable, tail } = useMemo(() => splitStableMarkdown(text), [text])
-  useEffect(() => {
-    onGrow()
-  }, [text, onGrow])
-  return (
-    <div className="chat-stream-row">
-      <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
-        {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
-        {text ? (
-          <div className="chat-md">
-            {stable ? (
-              <StableMarkdown remarkPlugins={REMARK_PLUGINS}>{stable}</StableMarkdown>
-            ) : null}
-            {tail ? (
-              <Markdown remarkPlugins={REMARK_PLUGINS}>{tail}</Markdown>
-            ) : null}
-          </div>
-        ) : ' '}
-        <span className="chat-stream-cursor" />
-      </div>
-    </div>
-  )
-}
 
 type ChatStreamProps = {
   messages: Message[]
@@ -148,6 +23,7 @@ type ChatStreamProps = {
   onTopReached?: () => void
   onRetry?: () => void
   onRetrySend?: () => void
+  onExportVersion?: VersionExportHandler
   trailing?: ReactNode
 }
 
@@ -162,6 +38,7 @@ const ChatStream = ({
   onTopReached,
   onRetry,
   onRetrySend,
+  onExportVersion,
   trailing,
 }: ChatStreamProps) => {
   const t = useT()
@@ -239,6 +116,7 @@ const ChatStream = ({
             key={m.id}
             message={m}
             rowRef={virtual.active ? virtual.rowRef(m.id) : undefined}
+            onExportVersion={onExportVersion}
           />
         ))}
         {virtual.bottomPad > 0 ? <div style={{ height: virtual.bottomPad, flexShrink: 0 }} /> : null}

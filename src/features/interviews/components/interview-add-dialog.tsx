@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { sprinkles } from '@push/design-system'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
-import { useApplications } from '@/features/applications'
+import type { Application } from '@/features/applications'
 import { useCreateInterview } from '../api/hooks'
 
 type InterviewAddDialogProps = {
   open: boolean
   onClose: () => void
+  applications: Pick<Application, 'id' | 'company' | 'title'>[]
 }
 
-const InterviewAddDialog = ({ open, onClose }: InterviewAddDialogProps) => {
-  const { data: applications = [] } = useApplications()
+const InterviewAddDialog = ({ open, onClose, applications }: InterviewAddDialogProps) => {
   const create = useCreateInterview()
   const [applicationId, setApplicationId] = useState('')
   const [title, setTitle] = useState('')
