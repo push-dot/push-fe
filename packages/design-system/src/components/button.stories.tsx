@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { Meta, StoryObj } from '@storybook/react'
 import Button from './button'
 
 const meta = {
@@ -42,6 +42,25 @@ export const States: Story = {
       <Button variant="primary" loading>Loading</Button>
       <Button variant="primary" disabled>Disabled</Button>
       <Button variant="secondary" selected>Selected</Button>
+    </div>
+  ),
+}
+
+export const WithIcon: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <Button variant="primary" icon={<span aria-hidden>＋</span>}>새 문서</Button>
+      <Button variant="ghost" icon={<span aria-hidden>✕</span>} size="sm">닫기</Button>
+    </div>
+  ),
+}
+
+export const LongText: Story = {
+  render: () => (
+    <div style={{ width: 240 }}>
+      <Button variant="primary">
+        아주 긴 버튼 라벨 텍스트가 이 안에 들어가서 줄바꿈되는 경우
+      </Button>
     </div>
   ),
 }
