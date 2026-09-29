@@ -1,67 +1,12 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useT } from '@/shared/i18n'
-import { Card, DropOverlay, Icon, StatusChip, showToast } from '@/shared/components'
-import { cardMeta } from '@push/design-system'
+import { DropOverlay, showToast } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
-import type { StatusChipTone } from '@/shared/components'
-import { type CliRunState } from '@/features/chat'
 import { isProjectConversation, useConversations } from '@/features/chat'
-import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
-import { useProjectPanels } from '@/features/chat'
+import { ChatStream, Composer, ProjectPanels, useMessagesStore } from '@/features/chat'
 import { downloadVersionExport } from '@/features/documents'
 import { uploadPendingFiles } from '@/features/evidence'
 import { InferenceSettings } from '@/features/inference'
-
-const RUN_TONES: Record<CliRunState, StatusChipTone> = {
-  DRAFT: 'pending',
-  APPROVAL_REQUIRED: 'pending',
-  RUNNING: 'running',
-  VERIFYING: 'running',
-  VERIFIED: 'verified',
-  FAILED: 'error',
-}
-
-const ProjectPanels = ({ projectId }: { projectId: string }) => {
-  const t = useT()
-  const { data } = useProjectPanels(projectId)
-  const runs = data?.runs ?? []
-  const evidence = data?.evidence ?? []
-
-  return (
-    <>
-      {runs.map((run) => (
-        <Card key={run.id} title={t('chat.running')}>
-          <StatusChip
-            tone={RUN_TONES[run.state]}
-            label={run.state}
-            icon={run.state === 'RUNNING' ? <Icon name="loader-circle" size={16} /> : undefined}
-          />
-          <div className={cardMeta}>
-            {run.executable}
-            {run.arguments.length ? ` ${run.arguments.join(' ')}` : ''}
-          </div>
-        </Card>
-      ))}
-      {evidence.map((item) => (
-        <Card key={item.id} title={t('chat.verified')}>
-          <StatusChip
-            tone={
-              item.status === 'VERIFIED'
-                ? 'verified'
-                : item.status === 'REJECTED'
-                  ? 'error'
-                  : 'pending'
-            }
-            label={item.status}
-            icon={item.status === 'VERIFIED' ? 'badge-check' : undefined}
-          />
-          {item.summary ? <div className={cardMeta}>{item.summary}</div> : null}
-        </Card>
-      ))}
-    </>
-  )
-}
 
 const ChatPage = () => {
   const dragging = useFileDrop()
