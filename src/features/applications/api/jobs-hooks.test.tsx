@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { JobPosting } from './schemas'
+import type { JobPosting } from './jobs-schemas'
 
-vi.mock('./fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./fetchers')>()
+vi.mock('./jobs-fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('./jobs-fetchers')>()
   return {
     ...mod,
     listJobs: vi.fn(),
@@ -13,8 +13,8 @@ vi.mock('./fetchers', async (importOriginal) => {
   }
 })
 
-import { createJob, listJobs } from './fetchers'
-import { useCreateJob } from './hooks'
+import { createJob, listJobs } from './jobs-fetchers'
+import { useCreateJob } from './jobs-hooks'
 
 const job = (over: Partial<JobPosting> = {}): JobPosting => ({
   id: 'j1',
