@@ -7,8 +7,8 @@ import { getRenderCount, resetRenderCounts } from '@/test-utils'
 
 const h = vi.hoisted(() => ({ rowPrefix: 'row-' }))
 
-vi.mock('../api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('../api/fetchers')>()
+vi.mock('../../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -30,11 +30,11 @@ vi.mock('react-markdown', async () => {
   return { default: Markdown }
 })
 
-import { streamMessage } from '../api/fetchers'
-import type { Message } from '../api/schemas'
+import { streamMessage } from '../../api/fetchers'
+import type { Message } from '../../api/schemas'
 import { useInferenceSettings } from '@/features/inference'
-import { useMessagesStore } from '../stores'
-import ChatStream from '../components/chat-stream'
+import { useMessagesStore } from '../../stores'
+import ChatStream from '../chat-stream'
 
 const ROW_COUNT = 8
 const TOKEN_COUNT = 120

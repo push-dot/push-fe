@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Application, JobPosting } from '../api/schemas'
+import type { Application, JobPosting } from '../schemas'
 
-vi.mock('../api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('../api/fetchers')>()
+vi.mock('../fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../fetchers')>()
   return {
     ...mod,
     listApplications: vi.fn(),
@@ -16,8 +16,8 @@ vi.mock('../api/fetchers', async (importOriginal) => {
   }
 })
 
-import { createApplication, createJob, listApplications, listJobs, patchApplication } from '../api/fetchers'
-import { useApplications, useCreateApplication, useCreateJob, useMoveStage } from '../api/hooks'
+import { createApplication, createJob, listApplications, listJobs, patchApplication } from '../fetchers'
+import { useApplications, useCreateApplication, useCreateJob, useMoveStage } from '../hooks'
 
 const app = (over: Partial<Application> = {}): Application => ({
   id: 'a1',

@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { InterviewSession } from '../api/schemas'
+import type { InterviewSession } from '../schemas'
 
-vi.mock('../api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('../api/fetchers')>()
+vi.mock('../fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../fetchers')>()
   return {
     ...mod,
     listInterviews: vi.fn(),
@@ -13,8 +13,8 @@ vi.mock('../api/fetchers', async (importOriginal) => {
   }
 })
 
-import { createInterview, listInterviews } from '../api/fetchers'
-import { useCreateInterview } from '../api/hooks'
+import { createInterview, listInterviews } from '../fetchers'
+import { useCreateInterview } from '../hooks'
 
 const session = (over: Partial<InterviewSession> = {}): InterviewSession => ({
   id: 'i1',

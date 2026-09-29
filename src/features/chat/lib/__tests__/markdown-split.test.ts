@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { splitStableMarkdown } from './markdown-split'
+import { splitStableMarkdown } from '../markdown-split'
 
 describe('splitStableMarkdown', () => {
   it('returns the whole text as tail when no block boundary exists', () => {

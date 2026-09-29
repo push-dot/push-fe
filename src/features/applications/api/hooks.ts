@@ -9,7 +9,7 @@ import {
   patchApplication,
 } from './fetchers'
 import type { Application, ApplicationStage, GapAnalysis, JobPosting } from './schemas'
-import { canTransition } from '../application-stage'
+import { canTransition } from '../lib/application-stage'
 
 const keys = {
   list: ['applications'] as const,

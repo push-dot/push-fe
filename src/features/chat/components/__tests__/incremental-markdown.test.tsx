@@ -7,8 +7,8 @@ const h = vi.hoisted(() => ({
   calls: [] as string[],
 }))
 
-vi.mock('../api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('../api/fetchers')>()
+vi.mock('../../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -25,10 +25,10 @@ vi.mock('react-markdown', async () => {
   return { default: Markdown }
 })
 
-import { streamMessage } from '../api/fetchers'
+import { streamMessage } from '../../api/fetchers'
 import { useInferenceSettings } from '@/features/inference'
-import { useMessagesStore } from '../stores'
-import ChatStream from '../components/chat-stream'
+import { useMessagesStore } from '../../stores'
+import ChatStream from '../chat-stream'
 
 const TOKEN_GAP_MS = 4
 const BLOCK_COUNT = 6
