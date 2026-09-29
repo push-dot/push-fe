@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { CareerEvidence, SourceFile } from '@/features/evidence'
+import type { CareerEvidence, SourceFile } from './api/schemas'
 import { uploadPendingFiles } from './upload-pending'
 
 const deferred = <T>() => {

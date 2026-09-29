@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { openUrl } from '@tauri-apps/plugin-opener'
+import { openExternal } from '@/shared/lib/open-external'
 import { createBillingPortal, createCheckout } from '@/features/billing'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
@@ -52,7 +52,7 @@ const PlanPage = () => {
     try {
       const url = await fn()
       if (isTauri()) {
-        await openUrl(url)
+        await openExternal(url)
       } else {
         window.location.assign(url)
       }

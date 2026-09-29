@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import type { DocumentKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
-import { useApplications } from '@/features/applications'
+import type { Application } from '@/features/applications'
 import { useCreateDocument } from '../api/hooks'
 
 const KIND_OPTIONS: { value: DocumentKind; label: string }[] = [
@@ -16,11 +16,11 @@ const KIND_OPTIONS: { value: DocumentKind; label: string }[] = [
 type NewDocumentDialogProps = {
   open: boolean
   onClose: () => void
+  applications: Pick<Application, 'id' | 'company' | 'title'>[]
 }
 
-const NewDocumentDialog = ({ open, onClose }: NewDocumentDialogProps) => {
+const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogProps) => {
   const navigate = useNavigate()
-  const { data: applications = [] } = useApplications()
   const create = useCreateDocument()
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<DocumentKind>('RESUME')

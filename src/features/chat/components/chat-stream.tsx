@@ -6,7 +6,6 @@ import type { Message, MessageAttachment } from '../api/schemas'
 import { useT } from '@/shared/i18n'
 import ApprovalSurface from './approval-surface'
 import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
-import { downloadVersionExport } from '@/features/documents'
 import type { SendStatus } from '../stores'
 import { useMessagesStore } from '../stores'
 import { splitStableMarkdown } from '../markdown-split'
@@ -17,7 +16,22 @@ const BOTTOM_THRESHOLD = 80
 
 const REMARK_PLUGINS = [remarkGfm]
 
-const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; user?: boolean }) => {
+export type VersionExportHandler = (
+  documentId: string,
+  versionId: string,
+  format: 'PDF' | 'DOCX',
+  title: string,
+) => Promise<unknown>
+
+const AttachmentView = ({
+  attachment,
+  user,
+  onExportVersion,
+}: {
+  attachment: MessageAttachment
+  user?: boolean
+  onExportVersion?: VersionExportHandler
+}) => {
   const t = useT()
   if (attachment.type === 'APPROVAL') {
     return <ApprovalSurface approvalId={attachment.id} />
@@ -26,25 +40,29 @@ const AttachmentView = ({ attachment, user }: { attachment: MessageAttachment; u
     attachment.type === 'EVIDENCE'
       ? t('chat.evidenceLinked')
       : t('chat.docVersion')
-  const exportAs = (format: 'PDF' | 'DOCX') => {
-    if (attachment.type !== 'DOCUMENT_VERSION') return
-    void downloadVersionExport(
-      attachment.documentId, attachment.id, format, attachment.title,
-    ).catch((error: unknown) => {
-      showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
-    })
-  }
   return (
     <div className={user ? 'chat-attach-chip chat-attach-chip-user' : 'chat-attach-chip'}>
       <Icon name="link-2" size={16} />
       <span className="chat-attach-chip-title">{attachment.title}</span>
       <span className="chat-attach-chip-meta">{label}</span>
-      {attachment.type === 'DOCUMENT_VERSION' ? (
+      {attachment.type === 'DOCUMENT_VERSION' && onExportVersion ? (
         <span className="chat-attach-chip-actions">
-          <Button size="sm" variant="secondary" onClick={() => exportAs('PDF')}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              void onExportVersion(attachment.documentId, attachment.id, 'PDF', attachment.title)
+            }
+          >
             {t('chat.exportPdf')}
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => exportAs('DOCX')}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              void onExportVersion(attachment.documentId, attachment.id, 'DOCX', attachment.title)
+            }
+          >
             {t('chat.exportDocx')}
           </Button>
         </span>
@@ -57,9 +75,11 @@ const MessageView = memo(
   ({
     message,
     rowRef,
+    onExportVersion,
   }: {
     message: Message
     rowRef?: (el: HTMLDivElement | null) => void
+    onExportVersion?: VersionExportHandler
   }) => {
     const t = useT()
     const copy = () => {
@@ -88,6 +108,7 @@ const MessageView = memo(
             key={`${message.id}-${i}`}
             attachment={a}
             user={message.role === 'USER'}
+            onExportVersion={onExportVersion}
           />
         ))}
         {message.role === 'ASSISTANT' && message.text ? (
@@ -148,6 +169,7 @@ type ChatStreamProps = {
   onTopReached?: () => void
   onRetry?: () => void
   onRetrySend?: () => void
+  onExportVersion?: VersionExportHandler
   trailing?: ReactNode
 }
 
@@ -162,6 +184,7 @@ const ChatStream = ({
   onTopReached,
   onRetry,
   onRetrySend,
+  onExportVersion,
   trailing,
 }: ChatStreamProps) => {
   const t = useT()
@@ -239,6 +262,7 @@ const ChatStream = ({
             key={m.id}
             message={m}
             rowRef={virtual.active ? virtual.rowRef(m.id) : undefined}
+            onExportVersion={onExportVersion}
           />
         ))}
         {virtual.bottomPad > 0 ? <div style={{ height: virtual.bottomPad, flexShrink: 0 }} /> : null}

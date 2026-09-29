@@ -8,6 +8,8 @@ import { useExperiment, useExperimentConversion } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/features/chat'
 import { useCreateConversation } from '@/features/chat'
 import { Composer } from '@/features/chat'
+import { uploadPendingFiles } from '@/features/evidence'
+import { InferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/applications'
 
 const HomePage = () => {
@@ -55,7 +57,12 @@ const HomePage = () => {
           </h1>
         </div>
       </div>
-      <Composer sending={busy} onSend={(text, evidence) => void submit(text, evidence)} />
+      <Composer
+        sending={busy}
+        onSend={(text, evidence) => void submit(text, evidence)}
+        onUploadPending={uploadPendingFiles}
+        settingsPanel={<InferenceSettings />}
+      />
       <JobAddDialog
         open={jobDialog.open}
         initialSource={jobDialog.source}

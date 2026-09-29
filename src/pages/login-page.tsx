@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { openUrl } from '@tauri-apps/plugin-opener'
+import { openExternal } from '@/shared/lib/open-external'
 import { startOAuth } from '@/features/auth'
 import { type AuthProvider } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
@@ -21,7 +21,7 @@ const LoginPage = () => {
     try {
       const { authorizationUrl } = await startOAuth(provider)
       if ('__TAURI_INTERNALS__' in window) {
-        await openUrl(authorizationUrl)
+        await openExternal(authorizationUrl)
       } else {
         window.location.assign(authorizationUrl)
       }

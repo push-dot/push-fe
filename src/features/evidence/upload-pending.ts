@@ -1,5 +1,5 @@
-import { importEvidence, uploadSource } from '@/features/evidence'
-import type { CareerEvidence } from '@/features/evidence'
+import { importEvidence, uploadSource } from './api/fetchers'
+import type { CareerEvidence } from './api/schemas'
 
 type UploadDeps = {
   uploadSource: typeof uploadSource

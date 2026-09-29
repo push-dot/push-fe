@@ -15,6 +15,7 @@ import {
 } from '@/shared/components'
 import { useDocuments } from '@/features/documents'
 import { NewDocumentDialog } from '@/features/documents'
+import { useApplications } from '@/features/applications'
 
 const KIND_LABELS: Record<DocumentKind, string> = {
   RESUME: '이력서',
@@ -25,6 +26,7 @@ const KIND_LABELS: Record<DocumentKind, string> = {
 const DocumentsPage = () => {
   const navigate = useNavigate()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useDocuments()
+  const { data: applications = [] } = useApplications()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -60,7 +62,7 @@ const DocumentsPage = () => {
           </CardGrid>
         ) : null}
       </div>
-      <NewDocumentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <NewDocumentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} applications={applications} />
     </>
   )
 }

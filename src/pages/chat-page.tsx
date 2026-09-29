@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useT } from '@/shared/i18n'
-import { Card, DropOverlay, Icon, StatusChip } from '@/shared/components'
+import { Card, DropOverlay, Icon, StatusChip, showToast } from '@/shared/components'
 import { cardMeta } from '@push/design-system'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
@@ -9,6 +9,9 @@ import { type CliRunState } from '@/features/chat'
 import { isProjectConversation, useConversations } from '@/features/chat'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
 import { useProjectPanels } from '@/features/chat'
+import { downloadVersionExport } from '@/features/documents'
+import { uploadPendingFiles } from '@/features/evidence'
+import { InferenceSettings } from '@/features/inference'
 
 const RUN_TONES: Record<CliRunState, StatusChipTone> = {
   DRAFT: 'pending',
@@ -112,12 +115,19 @@ const ChatPage = () => {
         onTopReached={() => void loadMore()}
         onRetry={() => void load(id)}
         onRetrySend={() => void retry()}
+        onExportVersion={(docId, versionId, format, title) =>
+          downloadVersionExport(docId, versionId, format, title).catch((error: unknown) => {
+            showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
+          })
+        }
         trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />
       <Composer
         sending={sendStatus === 'sending' || sendStatus === 'streaming'}
         onSend={(text, evidence) => void send(id, text, evidence)}
+        onUploadPending={uploadPendingFiles}
         onAbort={abort}
+        settingsPanel={<InferenceSettings />}
       />
     </>
   )

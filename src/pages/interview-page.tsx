@@ -13,9 +13,11 @@ import {
 } from '@/shared/components'
 import { useInterviews } from '@/features/interviews'
 import { InterviewAddDialog } from '@/features/interviews'
+import { useApplications } from '@/features/applications'
 
 const InterviewPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useInterviews()
+  const { data: applications = [] } = useApplications()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const reflected = items.filter((s) => s.reflection)
@@ -63,7 +65,7 @@ const InterviewPage = () => {
           </>
         ) : null}
       </div>
-      <InterviewAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <InterviewAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} applications={applications} />
     </>
   )
 }

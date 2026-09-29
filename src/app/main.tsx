@@ -9,9 +9,18 @@ import { IconSprite } from '@/shared/components'
 import { ErrorState } from '@/shared/components'
 import { queryClient } from '@/shared/api'
 import { initObservability, Sentry } from '@/shared/lib/observability'
+import { configureChatInference } from '@/features/chat'
+import { useInferenceSettings } from '@/features/inference'
 import { ROUTE_CONFIG } from './routes'
 
 initObservability()
+
+configureChatInference({
+  aiOptions: () => useInferenceSettings.getState().aiOptions(),
+  ensureModels: () => useInferenceSettings.getState().loadModels(),
+  accessMode: () => useInferenceSettings.getState().accessMode,
+  byokKey: () => useInferenceSettings.getState().byokKey,
+})
 
 const router = createBrowserRouter(ROUTE_CONFIG)
 
