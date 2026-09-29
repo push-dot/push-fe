@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useT } from '@/shared/i18n'
-import { Icon, IconButton, showToast } from '@/shared/components'
-import type { CareerEvidence } from '@/features/evidence'
+import { IconButton, showToast } from '@/shared/components'
+import type { PendingUploadResult } from '@/features/evidence'
 import { usePendingFiles } from '../stores'
-import { uploadPendingFiles } from '../upload-pending'
-import { InferenceSettings } from '@/features/inference'
+import FileChip from './file-chip'
 
 type ComposerProps = {
-  onSend: (text: string, evidence?: Pick<CareerEvidence, 'id' | 'title'>[]) => void
+  onSend: (text: string, evidence?: PendingUploadResult['evidence']) => void
+  onUploadPending: (files: File[]) => Promise<PendingUploadResult>
   onAbort?: () => void
   sending?: boolean
+  settingsPanel?: ReactNode
 }
 
-const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
+const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsPanel }: ComposerProps) => {
   const t = useT()
   const [text, setText] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -39,7 +41,7 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
     const value = text.trim()
     if ((!value && pending.length === 0) || sending) return
     void (async () => {
-      const { evidence, failed } = await uploadPendingFiles(pending)
+      const { evidence, failed } = await onUploadPending(pending)
       evidence.forEach(() => showToast(t('composer.uploaded')))
       failed.forEach(({ error }) =>
         showToast(
@@ -62,22 +64,15 @@ const Composer = ({ onSend, onAbort, sending = false }: ComposerProps) => {
 
   return (
     <div className="composer-wrap" ref={wrapRef}>
-      {settingsOpen ? <InferenceSettings /> : null}
+      {settingsOpen ? settingsPanel : null}
       {pending.length ? (
         <div className="composer-files">
           {pending.map((file, i) => (
-            <span key={`${file.name}-${i}`} className="file-chip">
-              <Icon name="file-text" size={16} />
-              <span className="file-chip-name">{file.name}</span>
-              <button
-                type="button"
-                className="file-chip-remove"
-                aria-label={t('composer.removeFile')}
-                onClick={() => removeFile(i)}
-              >
-                <Icon name="x" size={16} />
-              </button>
-            </span>
+            <FileChip
+              key={`${file.name}-${i}`}
+              name={file.name}
+              onRemove={() => removeFile(i)}
+            />
           ))}
         </div>
       ) : null}

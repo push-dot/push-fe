@@ -1,13 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { prefetchList } from '@/shared/api'
+import { prefetchList, queryClient } from '@/shared/api'
 import {
   archiveConversation,
   createConversation,
+  decideApproval,
+  getApproval,
   listConversations,
   listMessages,
+  listProjectEvidence,
+  listProjectRuns,
   patchConversation,
 } from './fetchers'
-import type { Conversation } from './schemas'
+import type { ApprovalSummary, CliRun, Conversation, ProjectEvidence } from './schemas'
 import { MESSAGES_PAGE_SIZE } from '../constants'
 
 export const chatKeys = {
@@ -28,6 +32,11 @@ export const prefetchMessages = (conversationId: string) =>
   prefetchList({
     queryKey: chatKeys.messages(conversationId),
     queryFn: () => listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE }),
+  })
+
+export const useConversationPeek = () =>
+  useMutation({
+    mutationFn: (conversationId: string) => listMessages(conversationId, { limit: 1 }),
   })
 
 export const useCreateConversation = () => {
@@ -73,3 +82,54 @@ export const usePatchConversation = () => {
     },
   })
 }
+
+const approvalKeys = {
+  detail: (id: string) => ['approval', id] as const,
+}
+
+export const ensureApproval = (id: string) =>
+  queryClient
+    .fetchQuery({ queryKey: approvalKeys.detail(id), queryFn: () => getApproval(id) })
+    .then((s) => s.approval)
+    .catch(() => null)
+
+export const useApproval = (id: string) =>
+  useQuery({ queryKey: approvalKeys.detail(id), queryFn: () => getApproval(id) })
+
+export const useDecideApproval = (id: string) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (decision: 'APPROVED' | 'DENIED') => {
+      const cached = qc.getQueryData<ApprovalSummary>(approvalKeys.detail(id))
+      if (!cached) throw new Error('approval not loaded')
+      return decideApproval(id, { expectedRevision: cached.approval.revision, decision })
+    },
+    onSuccess: (updated) => {
+      qc.setQueryData<ApprovalSummary>(approvalKeys.detail(id), (old) =>
+        old ? { ...old, approval: updated } : old,
+      )
+    },
+  })
+}
+
+const projectKeys = {
+  panels: (projectId: string) => ['project-panels', projectId] as const,
+}
+
+export type ProjectPanels = {
+  runs: CliRun[]
+  evidence: ProjectEvidence[]
+}
+
+export const useProjectPanels = (projectId: string | undefined) =>
+  useQuery({
+    queryKey: projectKeys.panels(projectId ?? ''),
+    enabled: Boolean(projectId),
+    queryFn: async (): Promise<ProjectPanels> => {
+      const [runs, evidence] = await Promise.all([
+        listProjectRuns(projectId!, { limit: 20 }),
+        listProjectEvidence(projectId!, { limit: 20 }),
+      ])
+      return { runs: runs.data, evidence: evidence.data }
+    },
+  })

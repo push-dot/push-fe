@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import type { AccessMode, AiModel, AiOptions } from './api/schemas'
 import { listAiModels } from './api/fetchers'
-import { fetchBilling } from '@/features/billing'
 import {
   BYOK_KEY_STORAGE,
   BYOK_MODEL_STORAGE,
@@ -35,6 +34,7 @@ type InferenceSettingsState = {
   setByokModel: (model: string) => void
   setByokProvider: (provider: ByokProvider) => void
   setModel: (model: string) => void
+  setPlan: (plan: string | null) => void
   loadModels: () => Promise<void>
   aiOptions: () => AiOptions | null
 }
@@ -76,13 +76,9 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
     set({ byokProvider })
   },
   setModel: (selectedModel) => set({ selectedModel }),
+  setPlan: (plan) => set((s) => ({ plan, ultraResume: s.ultraResume && plan === 'ULTRA' })),
   loadModels: async () => {
     set({ modelsStatus: 'loading' })
-    void fetchBilling()
-      .then((b) => {
-        set((s) => ({ plan: b.plan, ultraResume: s.ultraResume && b.plan === 'ULTRA' }))
-      })
-      .catch(() => set({ plan: null }))
     try {
       const env = await listAiModels({
         provider: 'OPENAI',
