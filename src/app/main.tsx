@@ -9,8 +9,8 @@ import { IconSprite } from '@/shared/components'
 import { ErrorState } from '@/shared/components'
 import { queryClient } from '@/shared/api'
 import { initObservability, Sentry } from '@/shared/lib/observability'
-import { configureChatInference } from '@/features/chat'
-import { useInferenceSettings } from '@/features/inference'
+import { configureChatInference } from '@/features/chat/lib/inference-bridge'
+import { useInferenceSettings } from '@/features/inference/stores'
 import { ROUTE_CONFIG } from './routes'
 
 initObservability()
