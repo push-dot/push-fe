@@ -31,8 +31,18 @@ const ConversationItem = ({
       className={active ? 'sidebar-item is-active' : 'sidebar-item'}
       onClick={onOpen}
       onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
       onContextMenu={onMenu}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpen()
+        }
+      }}
       role="button"
+      tabIndex={0}
+      aria-current={active ? 'page' : undefined}
     >
       {busy ? <span className="sidebar-dot is-busy" /> : null}
       {editing ? (
