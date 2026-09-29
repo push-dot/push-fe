@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useT } from '@/shared/i18n'
-import { Icon, IconButton, showToast } from '@/shared/components'
+import { IconButton, showToast } from '@/shared/components'
 import type { PendingUploadResult } from '@/features/evidence'
 import { usePendingFiles } from '../stores'
+import FileChip from './file-chip'
 
 type ComposerProps = {
   onSend: (text: string, evidence?: PendingUploadResult['evidence']) => void
@@ -67,18 +68,11 @@ const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsP
       {pending.length ? (
         <div className="composer-files">
           {pending.map((file, i) => (
-            <span key={`${file.name}-${i}`} className="file-chip">
-              <Icon name="file-text" size={16} />
-              <span className="file-chip-name">{file.name}</span>
-              <button
-                type="button"
-                className="file-chip-remove"
-                aria-label={t('composer.removeFile')}
-                onClick={() => removeFile(i)}
-              >
-                <Icon name="x" size={16} />
-              </button>
-            </span>
+            <FileChip
+              key={`${file.name}-${i}`}
+              name={file.name}
+              onRemove={() => removeFile(i)}
+            />
           ))}
         </div>
       ) : null}

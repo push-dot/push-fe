@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { assignInlineVars } from '@vanilla-extract/dynamic'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
-import { menuX, menuY } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import { Icon, showToast } from '@/shared/components'
 import {
-  isProjectConversation,
   prefetchMessages,
   useArchiveConversation,
   useConversations,
@@ -17,6 +14,8 @@ import {
 import { listMessages } from '@/features/chat'
 import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
+import ConversationItem from './conversation-item'
+import ConversationMenu from './conversation-menu'
 
 const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
 
@@ -64,7 +63,7 @@ export const useNewChat = () => {
 const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
   const t = useT()
   const [menu, setMenu] = useState<MenuState | null>(null)
-  const [editing, setEditing] = useState<{ id: string; value: string } | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { data: conversations = [] } = useConversations()
@@ -114,14 +113,12 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
     }
   }
 
-  const commitRename = async () => {
-    if (!editing) return
-    const title = editing.value.trim()
-    const conv = conversations.find((c) => c.id === editing.id)
-    setEditing(null)
-    if (!conv || !title || title === conv.title) return
+  const commitRename = async (conv: Conversation, title: string | null) => {
+    setEditingId(null)
+    const next = title?.trim()
+    if (!next || next === conv.title) return
     try {
-      await patchConversation.mutateAsync({ id: conv.id, patch: { title } })
+      await patchConversation.mutateAsync({ id: conv.id, patch: { title: next } })
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'error', 'circle-alert')
     }
@@ -131,8 +128,6 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
     e.preventDefault()
     setMenu({ conv, x: e.clientX, y: e.clientY })
   }
-
-  const isBusy = (id: string) => sendingTo === id
 
   return (
     <>
@@ -148,76 +143,31 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
           <span className="sidebar-item-label">{t('nav.newChat')}</span>
         </button>
         {conversations.map((c) => (
-          <div
+          <ConversationItem
             key={c.id}
-            className={c.id === activeChatId ? 'sidebar-item is-active' : 'sidebar-item'}
-            onClick={() => navigate(ROUTES.chat(c.id))}
-            onMouseEnter={() => prefetchMessages(c.id)}
-            onContextMenu={(e) => openMenu(e, c)}
-            role="button"
-          >
-            {isBusy(c.id) ? <span className="sidebar-dot is-busy" /> : null}
-            {editing?.id === c.id ? (
-              <input
-                className="sidebar-item-input"
-                value={editing.value}
-                autoFocus
-                onChange={(e) => setEditing({ id: c.id, value: e.target.value })}
-                onBlur={() => void commitRename()}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') void commitRename()
-                  if (e.key === 'Escape') setEditing(null)
-                }}
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <span className="sidebar-item-label">{c.title}</span>
-            )}
-            {c.pinned ? (
-              <span className="sidebar-item-pin">
-                <Icon name="pin" size={16} />
-              </span>
-            ) : null}
-            {isProjectConversation(c) ? (
-              <span className="sidebar-tag">{t('nav.projectTag')}</span>
-            ) : null}
-          </div>
+            conv={c}
+            active={c.id === activeChatId}
+            busy={sendingTo === c.id}
+            editing={editingId === c.id}
+            onOpen={() => navigate(ROUTES.chat(c.id))}
+            onPrefetch={() => prefetchMessages(c.id)}
+            onMenu={(e) => openMenu(e, c)}
+            onEditEnd={(title) => void commitRename(c, title)}
+          />
         ))}
       </div>
       {menu ? (
-        <div
-          className="context-menu"
-          style={assignInlineVars({
-            [menuX]: `${Math.min(menu.x, window.innerWidth - 170)}px`,
-            [menuY]: `${Math.min(menu.y, window.innerHeight - 140)}px`,
-          })}
-          role="menu"
-        >
-          <button
-            type="button"
-            className="context-menu-item"
-            onClick={() => setEditing({ id: menu.conv.id, value: menu.conv.title })}
-          >
-            <Icon name="pencil" size={16} />
-            {t('menu.rename')}
-          </button>
-          <button
-            type="button"
-            className="context-menu-item"
-            onClick={() => void togglePin(menu.conv)}
-          >
-            <Icon name={menu.conv.pinned ? 'pin-off' : 'pin'} size={16} />
-            {menu.conv.pinned ? t('menu.unpin') : t('menu.pin')}
-          </button>
-          <button
-            type="button"
-            className="context-menu-item is-danger"
-            onClick={() => void removeChat(menu.conv.id)}
-          >
-            <Icon name="trash-2" size={16} />
-            {t('menu.delete')}
-          </button>
-        </div>
+        <ConversationMenu
+          conv={menu.conv}
+          x={menu.x}
+          y={menu.y}
+          onRename={() => {
+            setEditingId(menu.conv.id)
+            setMenu(null)
+          }}
+          onTogglePin={() => void togglePin(menu.conv)}
+          onDelete={() => void removeChat(menu.conv.id)}
+        />
       ) : null}
     </>
   )

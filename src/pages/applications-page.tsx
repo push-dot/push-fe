@@ -4,32 +4,17 @@ import { ROUTES } from '@/shared/constants'
 import {
   Button,
   CanvasHeader,
-  Card,
   CardGrid,
   EmptyState,
   ErrorState,
   Icon,
   SkeletonCardGrid,
-  StatusChip,
   showToast,
 } from '@/shared/components'
-import { stageChipTone, useApplications, useCreateApplication } from '@/features/applications'
+import { ApplicationCard, useApplications, useCreateApplication } from '@/features/applications'
 import { resumeRun } from '@/features/applications'
 import { useInferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/applications'
-
-const STAGE_META: Record<string, string> = {
-  DISCOVERED: '공고 분석 중',
-  PREPARING: '서류 준비 중',
-  READY: '제출 준비 완료',
-  APPLIED: '지원 완료',
-  SCREENING: '서류 심사 중',
-  INTERVIEW: '면접 진행 중',
-  OFFER: '오퍼',
-  ACCEPTED: '합격',
-  REJECTED: '불합격',
-  WITHDRAWN: '지원 철회',
-}
 
 const ApplicationsPage = () => {
   const navigate = useNavigate()
@@ -81,25 +66,13 @@ const ApplicationsPage = () => {
         {isSuccess && items.length > 0 ? (
           <CardGrid>
             {items.map((a) => (
-              <Card
+              <ApplicationCard
                 key={a.id}
-                title={`${a.company} ${a.title}`}
-                meta={STAGE_META[a.stage]}
-                onClick={() => navigate(ROUTES.job(a.jobId))}
-              >
-                <StatusChip tone={stageChipTone(a.stage)} label={a.stage} />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={runningId === a.id}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void runResume(a.id)
-                  }}
-                >
-                  {runningId === a.id ? '생성 중…' : '맞춤 이력서 생성'}
-                </Button>
-              </Card>
+                application={a}
+                running={runningId === a.id}
+                onOpen={() => navigate(ROUTES.job(a.jobId))}
+                onRun={() => void runResume(a.id)}
+              />
             ))}
           </CardGrid>
         ) : null}

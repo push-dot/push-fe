@@ -4,39 +4,10 @@ import { openExternal } from '@/shared/lib/open-external'
 import { createBillingPortal, createCheckout } from '@/features/billing'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
-import type { MsgKey } from '@/shared/i18n'
-import { Button, CanvasHeader, Icon, showToast } from '@/shared/components'
-import { useBilling } from '@/features/billing'
+import { Button, CanvasHeader, showToast } from '@/shared/components'
+import { useBilling, PlanCard, PLAN_CARDS, PLAN_RANK } from '@/features/billing'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
-
-type PlanCard = {
-  id: 'FREE' | 'PRO' | 'ULTRA'
-  nameKey: MsgKey
-  priceKey: MsgKey | null
-  featureKeys: MsgKey[]
-}
-
-const PLAN_CARDS: PlanCard[] = [
-  {
-    id: 'FREE',
-    nameKey: 'plan.current',
-    priceKey: null,
-    featureKeys: ['plan.freeFeat1', 'plan.freeFeat2'],
-  },
-  {
-    id: 'PRO',
-    nameKey: 'plan.proName',
-    priceKey: 'plan.proPrice',
-    featureKeys: ['plan.proFeat1', 'plan.proFeat2', 'plan.proFeat3'],
-  },
-  {
-    id: 'ULTRA',
-    nameKey: 'plan.ultraName',
-    priceKey: 'plan.ultraPrice',
-    featureKeys: ['plan.ultraFeat1', 'plan.ultraFeat2', 'plan.ultraFeat3'],
-  },
-]
 
 const PlanPage = () => {
   const t = useT()
@@ -45,7 +16,6 @@ const PlanPage = () => {
   const [pending, setPending] = useState<string | null>(null)
 
   const plan = billing?.plan ?? 'FREE'
-  const rank = { FREE: 0, PRO: 1, ULTRA: 2 } as const
 
   const openBillingUrl = async (fn: () => Promise<string>, key: string) => {
     setPending(key)
@@ -76,70 +46,20 @@ const PlanPage = () => {
       <div className="canvas-body">
         <p className="plan-subtitle">{t('plan.subtitle')}</p>
         <div className="plan-grid">
-          {PLAN_CARDS.map((card) => {
-            const isCurrent = plan === card.id
-            return (
-              <div
-                key={card.id}
-                className={card.id === 'ULTRA' ? 'plan-card is-featured' : 'plan-card'}
-              >
-                <div className="plan-card-head">
-                  <span className="plan-card-name">
-                    {card.id === 'FREE' ? 'Free' : t(card.nameKey)}
-                  </span>
-                  {isCurrent ? <span className="plan-card-badge">{t('plan.current')}</span> : null}
-                </div>
-                <div className="plan-card-price">
-                  {card.priceKey ? (
-                    <>
-                      <span className="plan-card-amount">{t(card.priceKey)}</span>
-                      <span className="plan-card-cycle">{t('plan.perMonth')}</span>
-                    </>
-                  ) : (
-                    <span className="plan-card-amount">$0</span>
-                  )}
-                </div>
-                <ul className="plan-card-features">
-                  {card.featureKeys.map((k) => (
-                    <li key={k}>
-                      <Icon name="check" size={16} />
-                      {t(k)}
-                    </li>
-                  ))}
-                </ul>
-                {card.id === 'FREE' ? null : isCurrent ? (
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={pending === 'portal'}
-                    onClick={() => void openBillingUrl(createBillingPortal, 'portal')}
-                  >
-                    {t('settings.manageBilling')}
-                  </Button>
-                ) : rank[card.id] < rank[plan as keyof typeof rank] ? (
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={pending === card.id}
-                    onClick={() => void openBillingUrl(createBillingPortal, card.id)}
-                  >
-                    {t('plan.downgrade')}
-                  </Button>
-                ) : (
-                  <Button
-                    variant={card.id === 'ULTRA' ? 'primary' : 'secondary'}
-                    size="md"
-                    loading={pending === card.id}
-                    onClick={() =>
-                      void openBillingUrl(() => createCheckout(card.id as 'PRO' | 'ULTRA'), card.id)
-                    }
-                  >
-                    {t('settings.upgrade')}
-                  </Button>
-                )}
-              </div>
-            )
-          })}
+          {PLAN_CARDS.map((card) => (
+            <PlanCard
+              key={card.id}
+              card={card}
+              current={plan === card.id}
+              lower={PLAN_RANK[card.id] < PLAN_RANK[plan as keyof typeof PLAN_RANK]}
+              pending={pending === card.id}
+              portalPending={pending === 'portal'}
+              onPortal={() => void openBillingUrl(createBillingPortal, card.id)}
+              onCheckout={() =>
+                void openBillingUrl(() => createCheckout(card.id as 'PRO' | 'ULTRA'), card.id)
+              }
+            />
+          ))}
         </div>
       </div>
     </>

@@ -1,31 +1,23 @@
 import { useState } from 'react'
-import { dDayLabel, formatDate, monthLabel } from '@/shared/lib/format'
+import { formatDate, monthLabel } from '@/shared/lib/format'
 import {
   Button,
   CanvasHeader,
   Card,
   DataList,
-  DataListRow,
   EmptyState,
   ErrorState,
   Icon,
   Skeleton,
-  StatusChip,
   showToast,
 } from '@/shared/components'
 import {
+  CalendarEventRow,
   connectGoogle,
   useCalendarEvents,
   useGoogleStatus,
   useSyncGoogle,
 } from '@/features/calendar'
-
-const TYPE_LABELS: Record<string, string> = {
-  INTERVIEW: '면접',
-  DEADLINE: '마감',
-  FOLLOW_UP: '후속',
-  CUSTOM: '일정',
-}
 
 const CalendarPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCalendarEvents()
@@ -97,19 +89,9 @@ const CalendarPage = () => {
               <p className="t-body-sm">{monthSummary}</p>
             </Card>
             <DataList>
-              {upcoming.map((event) => {
-                const dday = dDayLabel(event.startsAt)
-                return (
-                  <DataListRow
-                    key={event.id}
-                    title={event.title}
-                    meta={`${formatDate(event.startsAt)} · ${TYPE_LABELS[event.type]}`}
-                    trailing={
-                      <StatusChip tone={dday === 'D-DAY' ? 'error' : 'ready'} label={dday} />
-                    }
-                  />
-                )
-              })}
+              {upcoming.map((event) => (
+                <CalendarEventRow key={event.id} event={event} />
+              ))}
             </DataList>
           </>
         ) : null}

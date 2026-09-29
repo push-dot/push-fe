@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { formSelect } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
-import { Input, Select } from '@/shared/components'
+import { Input, Select, Switch } from '@/shared/components'
 import type { AiModel } from '../api/schemas'
 import { useInferenceSettings } from '../stores'
 
@@ -112,16 +112,11 @@ const InferenceSettings = () => {
         </div>
         <div className="form-row">
           <span className="form-row-label">{t('infer.webSearch')}</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={webSearch}
+          <Switch
+            checked={webSearch}
             aria-label={t('infer.webSearch')}
-            className={['switch', webSearch ? 'is-on' : ''].filter(Boolean).join(' ')}
-            onClick={() => setWebSearch(!webSearch)}
-          >
-            <span className="switch-thumb" />
-          </button>
+            onChange={setWebSearch}
+          />
         </div>
       </div>
     </div>

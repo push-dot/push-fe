@@ -1,18 +1,15 @@
 import { useState } from 'react'
-import { formatDateTime } from '@/shared/lib/format'
 import {
   Button,
   CanvasHeader,
-  Card,
   DataList,
-  DataListRow,
   EmptyState,
   ErrorState,
   Icon,
   SkeletonRows,
 } from '@/shared/components'
 import { useInterviews } from '@/features/interviews'
-import { InterviewAddDialog } from '@/features/interviews'
+import { InterviewAddDialog, InterviewRow, ReflectionCard } from '@/features/interviews'
 import { useApplications } from '@/features/applications'
 
 const InterviewPage = () => {
@@ -50,17 +47,11 @@ const InterviewPage = () => {
           <>
             <DataList>
               {items.map((session) => (
-                <DataListRow
-                  key={session.id}
-                  title={session.title}
-                  meta={`${formatDateTime(session.scheduledAt)}${session.durationMinutes ? ` · ${session.durationMinutes}분` : ''}`}
-                />
+                <InterviewRow key={session.id} session={session} />
               ))}
             </DataList>
             {reflected.map((session) => (
-              <Card key={session.id} title={`회고 — ${session.title}`}>
-                <p className="t-body-sm">{session.reflection}</p>
-              </Card>
+              <ReflectionCard key={session.id} session={session} />
             ))}
           </>
         ) : null}
