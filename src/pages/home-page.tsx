@@ -8,7 +8,7 @@ import { useExperiment, useExperimentConversion } from '@/shared/lib/experiment'
 import { useFileDrop } from '@/features/chat'
 import { useCreateConversation } from '@/features/chat'
 import { Composer } from '@/features/chat'
-import { JobAddDialog } from '@/features/jobs'
+import { JobAddDialog } from '@/features/applications'
 
 const HomePage = () => {
   const t = useT()

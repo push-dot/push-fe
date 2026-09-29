@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createJob, getJob, listJobAnalyses } from './fetchers'
-import type { GapAnalysis, JobPosting } from './schemas'
+import { createJob, getJob, listJobAnalyses } from './jobs-fetchers'
+import type { GapAnalysis, JobPosting } from './jobs-schemas'
 
 const keys = {
   list: ['jobs'] as const,

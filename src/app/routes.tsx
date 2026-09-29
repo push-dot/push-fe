@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import type { ReactNode } from 'react'
 import type { RouteObject } from 'react-router-dom'
-import { LoginPage } from '@/pages/login'
-import { HomePage } from '@/pages/home'
+import { LoginPage } from '@/pages'
+import { HomePage } from '@/pages'
 import { SkeletonRows } from '@/shared/components'
 import AppShell from './ui/app-shell'
 import {

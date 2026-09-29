@@ -5,10 +5,10 @@ import { Card, DropOverlay, Icon, StatusChip } from '@/shared/components'
 import { cardMeta } from '@push/design-system'
 import { useFileDrop } from '@/features/chat'
 import type { StatusChipTone } from '@/shared/components'
-import { type CliRunState } from '@/features/projects'
+import { type CliRunState } from '@/features/chat'
 import { isProjectConversation, useConversations } from '@/features/chat'
 import { ChatStream, Composer, useMessagesStore } from '@/features/chat'
-import { useProjectPanels } from '@/features/projects'
+import { useProjectPanels } from '@/features/chat'
 
 const RUN_TONES: Record<CliRunState, StatusChipTone> = {
   DRAFT: 'pending',
