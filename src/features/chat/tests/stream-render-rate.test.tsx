@@ -3,8 +3,8 @@ import { act, render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Operation } from '@/shared/api'
 
-vi.mock('./api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api/fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -13,10 +13,10 @@ vi.mock('./api/fetchers', async (importOriginal) => {
   }
 })
 
-import { streamMessage } from './api/fetchers'
+import { streamMessage } from '../api/fetchers'
 import { useInferenceSettings } from '@/features/inference'
-import { useMessagesStore } from './stores'
-import ChatStream from './components/chat-stream'
+import { useMessagesStore } from '../stores'
+import ChatStream from '../components/chat-stream'
 
 const TOKEN_COUNT = 120
 const TOKEN_GAP_MS = 4

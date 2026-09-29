@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Message } from './api/schemas'
+import type { Message } from '../api/schemas'
 import type { Operation } from '@/shared/api'
 
-vi.mock('./api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api/fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -12,9 +12,9 @@ vi.mock('./api/fetchers', async (importOriginal) => {
   }
 })
 
-import { listMessages, streamActive, streamMessage } from './api/fetchers'
+import { listMessages, streamActive, streamMessage } from '../api/fetchers'
 import { useInferenceSettings } from '@/features/inference'
-import { useMessagesStore } from './stores'
+import { useMessagesStore } from '../stores'
 
 const message = (over: Partial<Message> = {}): Message => ({
   id: 'm1',

@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Approval, ApprovalSummary } from './api/schemas'
+import type { Approval, ApprovalSummary } from '../api/schemas'
 
-vi.mock('./api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api/fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     getApproval: vi.fn(),
@@ -23,13 +23,13 @@ vi.mock('@/shared/lib/experiment', async (importOriginal) => {
   }
 })
 
-import { decideApproval, getApproval } from './api/fetchers'
+import { decideApproval, getApproval } from '../api/fetchers'
 import {
   trackExperiment,
   useExperimentConversion,
   useExperimentVariant,
 } from '@/shared/lib/experiment'
-import ApprovalSurface from './components/approval-surface'
+import ApprovalSurface from '../components/approval-surface'
 
 const approval = (over: Partial<Approval> = {}): Approval => ({
   id: 'ap1',

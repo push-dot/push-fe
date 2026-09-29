@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Message } from './api/schemas'
+import type { Message } from '../api/schemas'
 import type { AiOptions } from '@/features/inference'
 import type { Operation } from '@/shared/api'
 
-vi.mock('./api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api/fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -21,11 +21,11 @@ vi.mock('@/shared/api', async (importOriginal) => {
   }
 })
 
-import { streamMessage } from './api/fetchers'
+import { streamMessage } from '../api/fetchers'
 import { queryClient, trackExperimentEvent } from '@/shared/api'
 import { resetExperiments } from '@/shared/lib/experiment'
-import { createMessagesStore } from './stores'
-import type { MessagesDeps } from './stores'
+import { createMessagesStore } from '../stores'
+import type { MessagesDeps } from '../stores'
 
 const ai: AiOptions = {
   provider: 'OPENAI',

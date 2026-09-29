@@ -1,8 +1,8 @@
 import { act, fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('./api/fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./api/fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     listMessages: vi.fn(),
@@ -11,8 +11,8 @@ vi.mock('./api/fetchers', async (importOriginal) => {
   }
 })
 
-import type { Message } from './api/schemas'
-import ChatStream from './components/chat-stream'
+import type { Message } from '../api/schemas'
+import ChatStream from '../components/chat-stream'
 
 const ROW_HEIGHT = 120
 const VIEW_HEIGHT = 500
