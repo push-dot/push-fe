@@ -5,7 +5,7 @@ import {
   isBlockSupported,
   linkedEvidenceCount,
   unsupportedBlocks,
-} from './evidence-gate'
+} from '../evidence-gate'
 
 const block = (
   id: string,

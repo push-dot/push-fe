@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { CareerEvidence, SourceFile } from './api/schemas'
-import { uploadPendingFiles } from './upload-pending'
+import type { CareerEvidence, SourceFile } from '../api/schemas'
+import { uploadPendingFiles } from '../upload-pending'
 
 const deferred = <T>() => {
   let resolve!: (value: T) => void

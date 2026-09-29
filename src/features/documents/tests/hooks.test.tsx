@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PushDocument } from './schemas'
+import type { PushDocument } from '../api/schemas'
 
-vi.mock('./fetchers', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./fetchers')>()
+vi.mock('../api/fetchers', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../api/fetchers')>()
   return {
     ...mod,
     listDocuments: vi.fn(),
@@ -13,8 +13,8 @@ vi.mock('./fetchers', async (importOriginal) => {
   }
 })
 
-import { createDocument, listDocuments } from './fetchers'
-import { useCreateDocument } from './hooks'
+import { createDocument, listDocuments } from '../api/fetchers'
+import { useCreateDocument } from '../api/hooks'
 
 const doc = (over: Partial<PushDocument> = {}): PushDocument => ({
   id: 'd1',
