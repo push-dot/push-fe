@@ -1,20 +1,20 @@
 import { create } from 'zustand'
-import { chatInference } from '../inference-bridge'
-import type { Message, MessageStreamEvent } from '../api/schemas'
-import { listMessages, streamActive, streamMessage } from '../api/fetchers'
-import { chatKeys } from '../api/hooks'
+import { chatInference } from './inference-bridge'
+import type { Conversation, Message, MessageStreamEvent } from './api/schemas'
+import { listMessages, streamActive, streamMessage } from './api/fetchers'
+import { chatKeys } from './api/hooks'
 import {
   MESSAGES_PAGE_SIZE,
   STREAM_FLUSH_MS,
   STREAM_FOLLOW_UP_MS,
   STREAM_MAX_RECONNECTS,
   STREAM_RECONNECT_MS,
-} from '../constants'
+} from './constants'
 import { queryClient, trackExperimentEvent } from '@/shared/api'
 import { experimentVariant, trackExperiment } from '@/shared/lib/experiment'
 import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import type { AccessMode, AiOptions } from '@/features/inference'
-import { ensureApproval } from '../api/approval-fetchers'
+import { ensureApproval } from './api/approval-fetchers'
 import { ApiError } from '@/shared/api'
 import type { Operation } from '@/shared/api'
 import { showToast } from '@/shared/components'
@@ -485,3 +485,20 @@ export const useMessagesStore = createMessagesStore({
   ensureApproval: (id) => void ensureApproval(id),
   streamRenderVariant: () => experimentVariant(EXPERIMENT_KEYS.streamRender),
 })
+
+type PendingFilesState = {
+  files: File[]
+  add: (files: File[]) => void
+  remove: (index: number) => void
+  clear: () => void
+}
+
+export const usePendingFiles = create<PendingFilesState>()((set) => ({
+  files: [],
+  add: (files) => set((s) => ({ files: [...s.files, ...files] })),
+  remove: (index) => set((s) => ({ files: s.files.filter((_, i) => i !== index) })),
+  clear: () => set({ files: [] }),
+}))
+
+export const isProjectConversation = (conversation: Conversation): boolean =>
+  conversation.projectId != null
