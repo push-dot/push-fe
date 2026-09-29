@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { Approval, ApprovalKind } from '../api/approval-schemas'
-import { useApproval, useDecideApproval } from '../api/approval-hooks'
+import type { Approval, ApprovalKind } from '../api/schemas'
+import { useApproval, useDecideApproval } from '../api/hooks'
 import { Button, Icon, StatusChip, showToast } from '@/shared/components'
 import { trackExperimentEvent } from '@/shared/api'
 import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'

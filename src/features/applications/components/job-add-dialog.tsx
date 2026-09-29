@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { sprinkles } from '@push/design-system'
 import type { FormEvent } from 'react'
-import type { JobPosting } from '../api/jobs-schemas'
-import { useCreateJob } from '../api/jobs-hooks'
+import type { JobPosting } from '../api/schemas'
+import { useCreateJob } from '../api/hooks'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
 import { isHttpUrl } from '@/shared/lib/url'
 

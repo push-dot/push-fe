@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Dialog } from '@/shared/components'
 import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import { trackExperiment, useExperimentVariant } from '@/shared/lib/experiment'
-import { useApproval } from '../api/approval-hooks'
+import { useApproval } from '../api/hooks'
 import ApprovalCard from './approval-card'
 
 const DIALOG_TITLE = '승인 요청'
