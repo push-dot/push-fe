@@ -11,8 +11,7 @@ import {
   SkeletonCardGrid,
   showToast,
 } from '@/shared/components'
-import { ApplicationCard, useApplications, useCreateApplication } from '@/features/applications'
-import { resumeRun } from '@/features/applications'
+import { ApplicationCard, useApplications, useCreateApplication, useResumeRun } from '@/features/applications'
 import { useInferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/applications'
 
@@ -21,6 +20,7 @@ const ApplicationsPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useApplications()
   const createMutation = useCreateApplication()
   const aiOptions = useInferenceSettings((s) => s.aiOptions)
+  const resumeMutation = useResumeRun()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [runningId, setRunningId] = useState<string | null>(null)
 
@@ -28,11 +28,11 @@ const ApplicationsPage = () => {
     setRunningId(appId)
     try {
       const st = useInferenceSettings.getState()
-      const op = await resumeRun(
-        appId,
-        aiOptions(),
-        st.credentialMode === 'BYOK' ? st.byokKey : undefined,
-      )
+      const op = await resumeMutation.mutateAsync({
+        id: appId,
+        ai: aiOptions(),
+        byokKey: st.credentialMode === 'BYOK' ? st.byokKey : undefined,
+      })
       const docId = (op.result as { document?: { id?: string } })?.document?.id
       showToast('맞춤 이력서를 만들었어요', 'check')
       if (docId) navigate(ROUTES.document(docId))

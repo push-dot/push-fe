@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { downloadVersionExport } from '@/features/documents'
+import { useExportVersion } from '@/features/documents'
 import {
   Button,
   CanvasHeader,
@@ -19,6 +19,7 @@ const DocEditorPage = () => {
   const current = data?.document ?? null
   const currentVersion = data?.version ?? null
   const [exporting, setExporting] = useState<'PDF' | 'DOCX' | null>(null)
+  const exportVersion = useExportVersion()
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -35,8 +36,12 @@ const DocEditorPage = () => {
     if (!current || !currentVersion) return
     setExporting(format)
     try {
-      await downloadVersionExport(
-        current.id, currentVersion.id, format, current.title)
+      await exportVersion.mutateAsync({
+        documentId: current.id,
+        versionId: currentVersion.id,
+        format,
+        title: current.title,
+      })
       showToast(`${format} 파일을 저장했어요`, 'file-down')
     } catch (error) {
       showToast(error instanceof Error ? error.message : '출력하지 못했어요', 'circle-alert')

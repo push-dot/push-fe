@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { openExternal } from '@/shared/lib/open-external'
-import { startOAuth } from '@/features/auth'
+import { useStartOAuth } from '@/features/auth'
 import { type AuthProvider } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
 import { useT } from '@/shared/i18n'
@@ -12,6 +12,7 @@ const LoginPage = () => {
   const session = useSessionStore((s) => s.session)
   const [pending, setPending] = useState<AuthProvider | null>(null)
   const [failed, setFailed] = useState(false)
+  const startOAuth = useStartOAuth()
 
   if (session) return <Navigate to="/" replace />
 
@@ -19,7 +20,7 @@ const LoginPage = () => {
     setPending(provider)
     setFailed(false)
     try {
-      const { authorizationUrl } = await startOAuth(provider)
+      const { authorizationUrl } = await startOAuth.mutateAsync(provider)
       if ('__TAURI_INTERNALS__' in window) {
         await openExternal(authorizationUrl)
       } else {

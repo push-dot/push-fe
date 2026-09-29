@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
-import { fetchGoogleStatus, listCalendarEvents, syncGoogle } from './fetchers'
+import { completeGoogle, connectGoogle, fetchGoogleStatus, listCalendarEvents, syncGoogle } from './fetchers'
 
 const keys = {
   list: ['calendar-events'] as const,
@@ -29,6 +29,20 @@ export const useSyncGoogle = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () => syncGoogle(),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.list })
+      void qc.invalidateQueries({ queryKey: keys.googleStatus })
+    },
+  })
+}
+
+export const useConnectGoogle = () =>
+  useMutation({ mutationFn: () => connectGoogle() })
+
+export const useCompleteGoogle = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => completeGoogle(code),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.list })
       void qc.invalidateQueries({ queryKey: keys.googleStatus })

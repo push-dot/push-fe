@@ -7,11 +7,11 @@ import { Icon, showToast } from '@/shared/components'
 import {
   prefetchMessages,
   useArchiveConversation,
+  useConversationPeek,
   useConversations,
   useCreateConversation,
   usePatchConversation,
 } from '@/features/chat'
-import { listMessages } from '@/features/chat'
 import type { Conversation } from '@/features/chat'
 import { useMessagesStore } from '@/features/chat'
 import ConversationItem from './conversation-item'
@@ -28,13 +28,14 @@ export const useNewChat = () => {
   const navigate = useNavigate()
   const { data: conversations = [] } = useConversations()
   const createConversation = useCreateConversation()
+  const peek = useConversationPeek()
 
   const newChat = useCallback(async () => {
     if (createConversation.isPending) return
     const candidate = conversations.find((c) => NEW_CHAT_TITLES.has(c.title))
     if (candidate) {
       try {
-        const env = await listMessages(candidate.id, { limit: 1 })
+        const env = await peek.mutateAsync(candidate.id)
         if (env.data.length === 0) {
           navigate(ROUTES.chat(candidate.id))
           return
@@ -55,7 +56,7 @@ export const useNewChat = () => {
         'circle-alert',
       )
     }
-  }, [conversations, createConversation, navigate, t])
+  }, [conversations, createConversation, peek.mutateAsync, navigate, t])
 
   return { newChat, creating: createConversation.isPending }
 }

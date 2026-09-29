@@ -34,6 +34,11 @@ export const prefetchMessages = (conversationId: string) =>
     queryFn: () => listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE }),
   })
 
+export const useConversationPeek = () =>
+  useMutation({
+    mutationFn: (conversationId: string) => listMessages(conversationId, { limit: 1 }),
+  })
+
 export const useCreateConversation = () => {
   const qc = useQueryClient()
   return useMutation({

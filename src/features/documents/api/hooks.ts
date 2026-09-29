@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
-import { createDocument, getDocument, getDocumentVersion, listDocuments } from './fetchers'
+import { createDocument, downloadVersionExport, getDocument, getDocumentVersion, listDocuments } from './fetchers'
 import type { DocumentVersion, PushDocument } from './schemas'
 
 const keys = {
@@ -21,6 +21,21 @@ export type DocumentDetail = {
 export const useDocuments = () => useQuery(documentsQuery)
 
 export const prefetchDocuments = () => prefetchList(documentsQuery)
+
+export const useExportVersion = () =>
+  useMutation({
+    mutationFn: ({
+      documentId,
+      versionId,
+      format,
+      title,
+    }: {
+      documentId: string
+      versionId: string
+      format: 'PDF' | 'DOCX'
+      title: string
+    }) => downloadVersionExport(documentId, versionId, format, title),
+  })
 
 export const useDocument = (id: string | undefined) =>
   useQuery({

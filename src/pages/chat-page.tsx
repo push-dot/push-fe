@@ -4,7 +4,7 @@ import { DropOverlay, showToast } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
 import { isProjectConversation, useConversations } from '@/features/chat'
 import { ChatStream, Composer, ProjectPanels, useMessagesStore } from '@/features/chat'
-import { downloadVersionExport } from '@/features/documents'
+import { useExportVersion } from '@/features/documents'
 import { uploadPendingFiles } from '@/features/evidence'
 import { InferenceSettings } from '@/features/inference'
 
@@ -27,6 +27,7 @@ const ChatPage = () => {
   const send = useMessagesStore((s) => s.send)
   const retry = useMessagesStore((s) => s.retry)
   const abort = useMessagesStore((s) => s.abort)
+  const exportVersion = useExportVersion()
 
   useEffect(() => {
     void load(id)
@@ -61,9 +62,11 @@ const ChatPage = () => {
         onRetry={() => void load(id)}
         onRetrySend={() => void retry()}
         onExportVersion={(docId, versionId, format, title) =>
-          downloadVersionExport(docId, versionId, format, title).catch((error: unknown) => {
-            showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
-          })
+          exportVersion
+            .mutateAsync({ documentId: docId, versionId, format, title })
+            .catch((error: unknown) => {
+              showToast(error instanceof Error ? error.message : 'export failed', 'circle-alert')
+            })
         }
         trailing={isProject && projectId ? <ProjectPanels projectId={projectId} /> : null}
       />

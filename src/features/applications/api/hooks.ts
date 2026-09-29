@@ -7,8 +7,10 @@ import {
   listApplications,
   listJobAnalyses,
   patchApplication,
+  resumeRun,
 } from './fetchers'
 import type { Application, ApplicationStage, GapAnalysis, JobPosting } from './schemas'
+import type { AiOptions } from '@/features/inference'
 import { canTransition } from '../lib/application-stage'
 
 const keys = {
@@ -23,6 +25,19 @@ const applicationsQuery = {
 export const useApplications = () => useQuery(applicationsQuery)
 
 export const prefetchApplications = () => prefetchList(applicationsQuery)
+
+export const useResumeRun = () =>
+  useMutation({
+    mutationFn: ({
+      id,
+      ai,
+      byokKey,
+    }: {
+      id: string
+      ai?: AiOptions | null
+      byokKey?: string
+    }) => resumeRun(id, ai, byokKey),
+  })
 
 export const useCreateApplication = () => {
   const qc = useQueryClient()

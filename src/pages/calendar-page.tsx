@@ -13,8 +13,8 @@ import {
 } from '@/shared/components'
 import {
   CalendarEventRow,
-  connectGoogle,
   useCalendarEvents,
+  useConnectGoogle,
   useGoogleStatus,
   useSyncGoogle,
 } from '@/features/calendar'
@@ -23,6 +23,7 @@ const CalendarPage = () => {
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCalendarEvents()
   const google = useGoogleStatus()
   const syncMutation = useSyncGoogle()
+  const connectMutation = useConnectGoogle()
 
   const onSync = async () => {
     try {
@@ -35,7 +36,7 @@ const CalendarPage = () => {
 
   const onConnect = async () => {
     try {
-      window.location.href = await connectGoogle()
+      window.location.href = await connectMutation.mutateAsync()
     } catch (e) {
       showToast(e instanceof Error ? e.message : '연결하지 못했어요', 'circle-alert')
     }
