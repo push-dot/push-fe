@@ -4,7 +4,7 @@ import {
   CHAT_ROW_HEIGHT_ESTIMATE,
   CHAT_VIRTUAL_MIN_ROWS,
   CHAT_VIRTUAL_OVERSCAN_PX,
-} from './constants'
+} from '../constants'
 
 type Anchor = { id: string; delta: number }
 

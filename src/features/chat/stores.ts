@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { chatInference } from './inference-bridge'
+import { chatInference } from './lib/inference-bridge'
 import type { Conversation, Message, MessageStreamEvent } from './api/schemas'
 import { listMessages, streamActive, streamMessage } from './api/fetchers'
 import { chatKeys } from './api/hooks'

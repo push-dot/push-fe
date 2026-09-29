@@ -8,8 +8,8 @@ import ApprovalSurface from './approval-surface'
 import { Button, ErrorState, Icon, IconButton, SkeletonRows, showToast } from '@/shared/components'
 import type { SendStatus } from '../stores'
 import { useMessagesStore } from '../stores'
-import { splitStableMarkdown } from '../markdown-split'
-import { useVirtualRows } from '../virtual-rows'
+import { splitStableMarkdown } from '../lib/markdown-split'
+import { useVirtualRows } from '../lib/virtual-rows'
 
 const TOP_LOAD_THRESHOLD = 120
 const BOTTOM_THRESHOLD = 80

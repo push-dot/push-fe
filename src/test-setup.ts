@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { configureChatInference } from '@/features/chat/inference-bridge'
+import { configureChatInference } from '@/features/chat/lib/inference-bridge'
 import { useInferenceSettings } from '@/features/inference'
 
 configureChatInference({
