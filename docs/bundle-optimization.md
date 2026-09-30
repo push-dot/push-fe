@@ -62,10 +62,10 @@
 - **react-router, ky, zustand, @sentry는 별도 분리 안 함**: entry 청크에 두고 향후 규모가
   커지면 재검토.
 - **Tauri 영향 없음**: `vite.config.ts`는 tauri build가 공유하지만 manualChunks는 웹 에셋
-  청킹만 바꾼다. `npx tauri build` 검증은 별도.
+  청킹만 바꾼다. `pnpm tauri build` 검증은 별도.
 
 ## 재측정 방법
 
 ```bash
-npm run build   # dist/assets/*.js 크기 + gzip 표 출력
+pnpm run build   # dist/assets/*.js 크기 + gzip 표 출력
 ```
