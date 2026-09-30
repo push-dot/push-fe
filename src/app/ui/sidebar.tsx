@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
-import { Icon, IconButton } from '@/shared/components'
+import { Icon, IconButton, Tooltip } from '@/shared/components'
 import type { IconName } from '@/shared/components'
 import { prefetchDocuments } from '@/features/documents'
 import { prefetchApplications } from '@/features/applications'
@@ -123,15 +123,19 @@ const Sidebar = () => {
       >
         <div className="sidebar-head">
           <span className="t-label">Push</span>
-          <IconButton
-            icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
-            aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
-            title={`${collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')} (${MOD}B)`}
-            onClick={() => {
-              setCollapsed((v) => !v)
-              setPeek(false)
-            }}
-          />
+          <Tooltip
+            label={`${collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')} (${MOD}B)`}
+            position="right"
+          >
+            <IconButton
+              icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
+              aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
+              onClick={() => {
+                setCollapsed((v) => !v)
+                setPeek(false)
+              }}
+            />
+          </Tooltip>
         </div>
         <div className="sidebar-scroll">
           <ConversationList onNewChat={() => void newChat()} />
@@ -156,18 +160,19 @@ const Sidebar = () => {
           </div>
         </div>
         <div className="sidebar-foot">
-          <button
-            type="button"
-            className={
-              location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
-            }
-            title={`${t('nav.settings')} (${MOD},)`}
-            aria-current={location.pathname === ROUTES.settings ? 'page' : undefined}
-            onClick={() => navigate(ROUTES.settings)}
-          >
-            <Icon name="settings" size={20} />
-            <span className="sidebar-item-label">{t('nav.settings')}</span>
-          </button>
+          <Tooltip label={`${t('nav.settings')} (${MOD},)`} position="right">
+            <button
+              type="button"
+              className={
+                location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
+              }
+              aria-current={location.pathname === ROUTES.settings ? 'page' : undefined}
+              onClick={() => navigate(ROUTES.settings)}
+            >
+              <Icon name="settings" size={20} />
+              <span className="sidebar-item-label">{t('nav.settings')}</span>
+            </button>
+          </Tooltip>
         </div>
         {!collapsed ? (
           <div className="sidebar-resizer" onMouseDown={startResize} aria-hidden="true" />

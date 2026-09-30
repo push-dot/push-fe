@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
-import { Icon, showToast } from '@/shared/components'
+import { Icon, showToast, Tooltip } from '@/shared/components'
 import {
   prefetchMessages,
   useArchiveConversation,
@@ -74,22 +74,6 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
     s.sendStatus === 'sending' || s.sendStatus === 'streaming' ? s.conversationId : null,
   )
 
-  useEffect(() => {
-    if (!menu) return
-    const close = () => setMenu(null)
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenu(null)
-    }
-    window.addEventListener('click', close)
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('blur', close)
-    return () => {
-      window.removeEventListener('click', close)
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('blur', close)
-    }
-  }, [menu])
-
   const activeChatId = location.pathname.startsWith('/chat/')
     ? location.pathname.split('/')[2]
     : null
@@ -134,15 +118,12 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
     <>
       <div className="sidebar-section">
         <div className="sidebar-label">{t('nav.chat')}</div>
-        <button
-          type="button"
-          className="sidebar-item"
-          title={`${t('nav.newChat')} (${MOD}⇧O)`}
-          onClick={onNewChat}
-        >
-          <Icon name="square-pen" size={20} />
-          <span className="sidebar-item-label">{t('nav.newChat')}</span>
-        </button>
+        <Tooltip label={`${t('nav.newChat')} (${MOD}⇧O)`} position="right">
+          <button type="button" className="sidebar-item" onClick={onNewChat}>
+            <Icon name="square-pen" size={20} />
+            <span className="sidebar-item-label">{t('nav.newChat')}</span>
+          </button>
+        </Tooltip>
         {conversations.map((c) => (
           <ConversationItem
             key={c.id}
@@ -162,6 +143,7 @@ const ConversationList = ({ onNewChat }: { onNewChat: () => void }) => {
           conv={menu.conv}
           x={menu.x}
           y={menu.y}
+          onClose={() => setMenu(null)}
           onRename={() => {
             setEditingId(menu.conv.id)
             setMenu(null)

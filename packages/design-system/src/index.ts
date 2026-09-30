@@ -6,11 +6,12 @@ export {
   statusChip,
   skeleton,
   skeletonHeight,
-  menuX,
-  menuY,
 } from './recipes.css'
 export { sprinkles } from './sprinkles.css'
 export type { Sprinkles } from './sprinkles.css'
+export { pushMantineTheme } from './mantine-theme'
+export { DesignSystemProvider } from './design-system-provider'
+export type { DesignSystemProviderProps } from './design-system-provider'
 export { default as Button } from './components/button'
 export type { ButtonProps } from './components/button'
 export { default as StatusChip } from './components/status-chip'
@@ -24,6 +25,10 @@ export { default as DocCard } from './components/doc-card'
 export type { DocCardProps } from './components/doc-card'
 export { default as Dialog } from './components/dialog'
 export type { DialogProps } from './components/dialog'
+export { ContextMenu, ContextMenuItem } from './components/context-menu'
+export type { ContextMenuProps, ContextMenuItemProps } from './components/context-menu'
+export { default as Tooltip } from './components/tooltip'
+export type { TooltipProps } from './components/tooltip'
 export { DataList, DataListRow } from './components/data-list'
 export type { DataListRowProps } from './components/data-list'
 export { Form, FormRow, FormSection } from './components/form'
