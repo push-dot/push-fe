@@ -16,6 +16,7 @@ vi.mock('../../api/fetchers', async (importOriginal) => {
 import { streamMessage } from '../../api/fetchers'
 import { useInferenceSettings } from '@/features/inference'
 import { useMessagesStore } from '../../stores'
+import { TestProviders } from '@/test-utils/providers'
 import ChatStream from '../chat-stream'
 
 const TOKEN_COUNT = 500
@@ -112,6 +113,7 @@ describe('stream parse bench', () => {
       >
         <Harness />
       </Profiler>,
+      { wrapper: TestProviders },
     )
     await act(async () => {
       await useMessagesStore.getState().send('c1', 'hello')

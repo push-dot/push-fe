@@ -1,0 +1,127 @@
+{
+  "app": {
+    "tagline": "채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱"
+  },
+  "login": {
+    "google": "Google로 계속",
+    "github": "GitHub로 계속"
+  },
+  "nav": {
+    "chat": "채팅",
+    "newChat": "새 채팅",
+    "deleteChat": "채팅 삭제",
+    "features": "기능",
+    "documents": "내 서류",
+    "applications": "지원 관리",
+    "vault": "커리어 볼트",
+    "interview": "면접",
+    "calendar": "캘린더",
+    "settings": "설정",
+    "projectTag": "프로젝트",
+    "pinSidebar": "사이드바 고정",
+    "collapseSidebar": "사이드바 접기"
+  },
+  "toast": {
+    "createChatFailed": "채팅을 만들지 못했어요",
+    "deleteChatFailed": "채팅을 삭제하지 못했어요",
+    "runFailed": "실행하지 못했어요"
+  },
+  "home": {
+    "title": "무엇을 도와드릴까요?",
+    "titleAlt": "오늘은 뭘 밀어볼까요?"
+  },
+  "composer": {
+    "placeholder": "메시지 입력",
+    "attach": "파일 첨부",
+    "inference": "추론 설정",
+    "stop": "응답 중단",
+    "send": "보내기",
+    "uploaded": "파일을 올렸어요",
+    "uploadFailed": "업로드하지 못했어요",
+    "drop": "파일을 놓으면 업로드돼요",
+    "removeFile": "파일 제거"
+  },
+  "infer": {
+    "model": "모델",
+    "noModels": "사용 가능한 모델 없음",
+    "effort": "추론 강도",
+    "low": "낮음",
+    "medium": "보통",
+    "high": "높음",
+    "webSearch": "웹 검색",
+    "credential": "자격 증명",
+    "managed": "Push 제공",
+    "byok": "내 API 키",
+    "apiKey": "API 키",
+    "byokHint": "키는 이 기기에만 저장돼요"
+  },
+  "chat": {
+    "running": "실행 상태",
+    "verified": "검증 결과",
+    "evidenceLinked": "근거 연결됨",
+    "docVersion": "문서 버전",
+    "copy": "복사",
+    "copied": "복사했어요",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "이전 메시지 불러오는 중…",
+    "jumpLatest": "최신 메시지로 이동",
+    "messages": "메시지 목록",
+    "loadMoreFailed": "이전 메시지를 불러오지 못했어요",
+    "modelConfigFailed": "AI 모델 설정을 불러오지 못했어요",
+    "noResponse": "응답을 받지 못했어요",
+    "sendFailed": "전송하지 못했어요"
+  },
+  "common": {
+    "retry": "다시 시도",
+    "loadFailed": "불러오지 못했어요",
+    "networkError": "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
+    "save": "저장",
+    "saved": "저장했어요",
+    "back": "뒤로"
+  },
+  "settings": {
+    "account": "계정",
+    "name": "이름",
+    "locale": "로캘",
+    "language": "언어",
+    "ai": "AI",
+    "model": "모델",
+    "plan": "요금제",
+    "currentPlan": "현재 플랜",
+    "upgrade": "업그레이드",
+    "manageBilling": "결제 관리",
+    "appearance": "외관",
+    "theme": "테마",
+    "themeLight": "라이트",
+    "themeDark": "다크",
+    "credentials": "자격 증명",
+    "byokModel": "BYOK 모델",
+    "byokProvider": "BYOK 프로바이더"
+  },
+  "menu": {
+    "rename": "이름 바꾸기",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "delete": "삭제"
+  },
+  "plan": {
+    "title": "플랜 업그레이드",
+    "subtitle": "필요한 플랜을 선택하세요",
+    "current": "현재 플랜",
+    "downgrade": "다운그레이드",
+    "perMonth": "/월",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "모든 관리형 모델",
+    "proFeat2": "웹 검색",
+    "proFeat3": "무제한 채팅",
+    "ultraFeat1": "Pro의 모든 기능",
+    "ultraFeat2": "맞춤 이력서 생성",
+    "ultraFeat3": "우선 지원",
+    "freeFeat1": "기본 채팅",
+    "freeFeat2": "관리형 모델 일부"
+  }
+}

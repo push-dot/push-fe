@@ -132,5 +132,3 @@ export const skeleton = style({
   height: fallbackVar(skeletonHeight, '16px'),
 })
 
-export const menuX = createVar()
-export const menuY = createVar()

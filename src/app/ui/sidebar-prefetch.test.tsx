@@ -49,6 +49,7 @@ import { prefetchInterviews, useInterviews } from '@/features/interviews/api/hoo
 import { prefetchCalendarEvents, useCalendarEvents } from '@/features/calendar/api/hooks'
 import { prefetchMessages } from '@/features/chat/api/hooks'
 import { useMessagesStore } from '@/features/chat/stores'
+import { TestProviders } from '@/test-utils/providers'
 import Sidebar from './sidebar'
 
 const emptyPage = { nextCursor: null, hasMore: false }
@@ -162,6 +163,7 @@ describe('route prefetch', () => {
           <Sidebar />
         </MemoryRouter>
       </QueryClientProvider>,
+      { wrapper: TestProviders },
     )
     await userEvent.hover(screen.getByRole('button', { name: '내 서류' }))
     await waitFor(() => expect(listDocuments).toHaveBeenCalledTimes(1))
@@ -191,6 +193,7 @@ describe('route prefetch', () => {
           <Sidebar />
         </MemoryRouter>
       </QueryClientProvider>,
+      { wrapper: TestProviders },
     )
     await userEvent.hover(await screen.findByText('첫 대화'))
     await waitFor(() => expect(listMessages).toHaveBeenCalledTimes(1))

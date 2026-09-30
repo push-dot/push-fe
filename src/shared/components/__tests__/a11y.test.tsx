@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { axe } from '@/test-utils'
+import { TestProviders } from '@/test-utils/providers'
 import {
   Button,
   Card,
@@ -27,7 +28,11 @@ import ToastItemView from '../toast-item'
 // Components render inside a <main> landmark so page-level rules (region,
 // landmark-one-main) evaluate them as they appear in the real app shell.
 const expectNoViolations = async (ui: ReactElement) => {
-  const { container } = render(<main>{ui}</main>)
+  const { container } = render(
+    <TestProviders>
+      <main>{ui}</main>
+    </TestProviders>,
+  )
   expect(await axe(container)).toHaveNoViolations()
 }
 

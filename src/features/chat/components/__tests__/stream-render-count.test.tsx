@@ -34,6 +34,7 @@ import { streamMessage } from '../../api/fetchers'
 import type { Message } from '../../api/schemas'
 import { useInferenceSettings } from '@/features/inference'
 import { useMessagesStore } from '../../stores'
+import { TestProviders } from '@/test-utils/providers'
 import ChatStream from '../chat-stream'
 
 const ROW_COUNT = 8
@@ -144,6 +145,7 @@ describe('render count', () => {
       <Profiler id="chat" onRender={() => { commits += 1 }}>
         <Harness />
       </Profiler>,
+      { wrapper: TestProviders },
     )
     await act(async () => {
       await useMessagesStore.getState().send('c1', 'hello')
@@ -170,6 +172,7 @@ describe('render count', () => {
       <Profiler id="chat" onRender={() => { commits += 1 }}>
         <Harness />
       </Profiler>,
+      { wrapper: TestProviders },
     )
     const list = container.querySelector<HTMLDivElement>('.chat-vlist')
     if (!list) throw new Error('chat-vlist missing')

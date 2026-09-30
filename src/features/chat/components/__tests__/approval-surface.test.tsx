@@ -31,6 +31,7 @@ import {
   useExperimentVariant,
 } from '@/shared/lib/experiment'
 import ApprovalSurface from '../approval-surface'
+import { TestProviders } from '@/test-utils/providers'
 
 const approval = (over: Partial<Approval> = {}): Approval => ({
   id: 'ap1',
@@ -59,9 +60,11 @@ let conversionSpy: ReturnType<typeof vi.fn>
 
 const renderSurface = () =>
   render(
-    <QueryClientProvider client={client}>
-      <ApprovalSurface approvalId="ap1" />
-    </QueryClientProvider>,
+    <TestProviders>
+      <QueryClientProvider client={client}>
+        <ApprovalSurface approvalId="ap1" />
+      </QueryClientProvider>
+    </TestProviders>,
   )
 
 describe('approval-surface', () => {
@@ -101,8 +104,8 @@ describe('approval-surface', () => {
   it('variant B modal dismisses but keeps the inline card', async () => {
     vi.mocked(useExperimentVariant).mockReturnValue('B')
     renderSurface()
-    const dialog = await screen.findByRole('dialog')
-    await userEvent.click(dialog.parentElement as Element)
+    await screen.findByRole('dialog')
+    await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(screen.getAllByText(/CLI 실행 승인/).length).toBeGreaterThan(0)
   })
@@ -114,12 +117,14 @@ describe('approval-surface', () => {
     deny.focus()
     vi.mocked(useExperimentVariant).mockReturnValue('B')
     view.rerender(
-      <QueryClientProvider client={client}>
-        <ApprovalSurface approvalId="ap1" />
-      </QueryClientProvider>,
+      <TestProviders>
+        <QueryClientProvider client={client}>
+          <ApprovalSurface approvalId="ap1" />
+        </QueryClientProvider>
+      </TestProviders>,
     )
-    const dialog = await screen.findByRole('dialog')
-    await userEvent.click(dialog.parentElement as Element)
+    await screen.findByRole('dialog')
+    await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(document.activeElement).toBe(deny)
   })
@@ -128,9 +133,11 @@ describe('approval-surface', () => {
     vi.mocked(useExperimentVariant).mockReturnValue('A')
     vi.mocked(decideApproval).mockResolvedValue(approval({ status: 'APPROVED' }))
     render(
-      <QueryClientProvider client={client}>
-        <ApprovalSurface approvalId="ap1" />
-      </QueryClientProvider>,
+      <TestProviders>
+        <QueryClientProvider client={client}>
+          <ApprovalSurface approvalId="ap1" />
+        </QueryClientProvider>
+      </TestProviders>,
     )
     const decide = await screen.findByRole('button', { name: /승인/ })
     await userEvent.click(decide)
