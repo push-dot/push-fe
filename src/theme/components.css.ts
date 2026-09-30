@@ -31,6 +31,10 @@ globalStyle('.sidebar-edge', {
   height: '100vh',
   zIndex: 50,
 })
+globalStyle('.sidebar-edge:focus-visible', {
+  outline: `2px solid ${vars.color.accent}`,
+  outlineOffset: '-2px',
+})
 globalStyle('.sidebar.is-hidden', {
   display: 'none',
 })
@@ -87,6 +91,10 @@ globalStyle('.sidebar-item', {
 })
 globalStyle('.sidebar-item:hover', {
   background: vars.color.surface2,
+})
+globalStyle('.sidebar-item:focus-visible', {
+  outline: `2px solid ${vars.color.accent}`,
+  outlineOffset: '-2px',
 })
 globalStyle('.sidebar-item.is-active', {
   background: vars.color.accentSoft,
@@ -162,6 +170,10 @@ globalStyle('.context-menu-item', {
 })
 globalStyle('.context-menu-item:hover', {
   background: vars.color.surface2,
+})
+globalStyle('.context-menu-item:focus-visible', {
+  outline: `2px solid ${vars.color.accent}`,
+  outlineOffset: '-2px',
 })
 globalStyle('.context-menu-item.is-danger', {
   color: vars.color.danger,
@@ -416,6 +428,14 @@ globalStyle('.chat-msg-action', {
 globalStyle('.chat-msg-action:hover', {
   background: vars.color.surface1,
   color: vars.color.text,
+})
+globalStyle('.chat-msg-action:focus-visible', {
+  outline: `2px solid ${vars.color.accent}`,
+  outlineOffset: '2px',
+})
+globalStyle('.chat-vlist:focus-visible', {
+  outline: `2px solid ${vars.color.accent}`,
+  outlineOffset: '-2px',
 })
 globalStyle('.chat-stream-status', {
   fontSize: vars.fs.caption,

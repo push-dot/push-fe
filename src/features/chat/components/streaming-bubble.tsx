@@ -15,8 +15,15 @@ const StreamingBubble = ({ onGrow }: { onGrow: () => void }) => {
   }, [text, onGrow])
   return (
     <div className="chat-stream-row">
-      <div className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live">
-        {status && !text ? <div className="chat-stream-status">{status}…</div> : null}
+      <div
+        className="chat-stream-msg chat-stream-msg-ai chat-stream-msg-live"
+        aria-live="polite"
+      >
+        {status && !text ? (
+          <div className="chat-stream-status" role="status">
+            {status}…
+          </div>
+        ) : null}
         {text ? (
           <div className="chat-md">
             {stable ? (
