@@ -17,6 +17,10 @@ export const button = recipe({
     transition: `background ${vars.motion.base}`,
     selectors: {
       '&:active': { filter: 'brightness(0.96)' },
+      '&:focus-visible': {
+        outline: `2px solid ${vars.color.accent}`,
+        outlineOffset: '2px',
+      },
       '&:disabled': { opacity: 0.45, cursor: 'not-allowed' },
     },
   },
@@ -87,6 +91,10 @@ export const iconButton = recipe({
       '&:hover:not(:disabled)': {
         background: vars.color.surface1,
         color: vars.color.text,
+      },
+      '&:focus-visible': {
+        outline: `2px solid ${vars.color.accent}`,
+        outlineOffset: '2px',
       },
       '&:disabled': { opacity: 0.45, cursor: 'not-allowed' },
     },

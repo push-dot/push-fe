@@ -8,6 +8,19 @@ export default defineConfig({
     react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
     vanillaExtractPlugin(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (!id.includes('node_modules')) return
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react'
+          if (id.includes('node_modules/@tanstack/react-query')) return 'vendor-query'
+          if (id.includes('node_modules/@tiptap') || id.includes('node_modules/prosemirror'))
+            return 'vendor-tiptap'
+        },
+      },
+    },
+  },
   resolve: {
     preserveSymlinks: true,
     alias: {

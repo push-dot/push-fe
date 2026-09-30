@@ -2,7 +2,19 @@ import { api, ApiError, toApiError } from '@/shared/api'
 import { request } from '@/shared/api'
 import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
-import type { Conversation, Message, MessageStreamEvent, SendMessageBody } from './schemas'
+import type {
+  Approval,
+  ApprovalStatus,
+  ApprovalSummary,
+  CliProvider,
+  CliRun,
+  Conversation,
+  Message,
+  MessageStreamEvent,
+  ProjectBlueprint,
+  ProjectEvidence,
+  SendMessageBody,
+} from './schemas'
 
 export const listConversations = async (
   params: ListParams & { applicationId?: string } = {},

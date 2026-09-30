@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
@@ -42,6 +42,7 @@ const Sidebar = () => {
   const t = useT()
   const [collapsed, setCollapsed] = useState(false)
   const [peek, setPeek] = useState(false)
+  const edgeRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(storedWidth)
   const location = useLocation()
   const navigate = useNavigate()
@@ -89,12 +90,35 @@ const Sidebar = () => {
 
   return (
     <>
-      {collapsed ? <div className="sidebar-edge" onMouseEnter={() => setPeek(true)} /> : null}
+      {collapsed ? (
+        <div
+          ref={edgeRef}
+          className="sidebar-edge"
+          onMouseEnter={() => setPeek(true)}
+          onFocus={() => setPeek(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setCollapsed(false)
+              setPeek(false)
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={t('nav.pinSidebar')}
+        />
+      ) : null}
       <aside
         className={collapsed ? `sidebar is-hidden${peek ? ' is-peek' : ''}` : 'sidebar'}
         style={collapsed ? undefined : { width }}
         onMouseLeave={() => {
           if (collapsed) setPeek(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && collapsed && peek) {
+            setPeek(false)
+            edgeRef.current?.focus()
+          }
         }}
       >
         <div className="sidebar-head">
@@ -123,6 +147,7 @@ const Sidebar = () => {
                 onClick={() => navigate(item.to)}
                 onMouseEnter={item.prefetch}
                 onFocus={item.prefetch}
+                aria-current={location.pathname.startsWith(item.to) ? 'page' : undefined}
               >
                 <Icon name={item.icon} size={20} />
                 <span className="sidebar-item-label">{t(item.labelKey)}</span>
@@ -137,6 +162,7 @@ const Sidebar = () => {
               location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
             }
             title={`${t('nav.settings')} (${MOD},)`}
+            aria-current={location.pathname === ROUTES.settings ? 'page' : undefined}
             onClick={() => navigate(ROUTES.settings)}
           >
             <Icon name="settings" size={20} />

@@ -2,7 +2,7 @@ import { assignInlineVars } from '@vanilla-extract/dynamic'
 import { menuX, menuY } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import { Icon } from '@/shared/components'
-import type { Conversation } from '@/features/chat'
+import type { Conversation } from '@/features/chat/api/schemas'
 
 type ConversationMenuProps = {
   conv: Conversation
@@ -31,7 +31,7 @@ const ConversationMenu = ({
       })}
       role="menu"
     >
-      <button type="button" className="context-menu-item" onClick={onRename}>
+      <button type="button" className="context-menu-item" autoFocus onClick={onRename}>
         <Icon name="pencil" size={16} />
         {t('menu.rename')}
       </button>

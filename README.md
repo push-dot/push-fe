@@ -40,4 +40,45 @@
 - **Vitest + Testing Library** — 테스트
 - **ESLint + Prettier** — 린트/포맷
 
+## 구조
+
+```
+src/
+  app/            앱 셸 — main.tsx 진입점, routes, lazy-pages, ui(사이드바 등)
+  pages/          라우트 페이지 (lazy-pages.ts로 지연 로드)
+  features/<name>/  도메인 피처 — api(fetchers/hooks/schemas), components, stores, types
+  shared/         api 클라이언트, components, lib, constants, i18n
+  theme/          컴포넌트 스타일
+packages/
+  design-system/  @push/design-system — vanilla-extract 토큰/컴포넌트/Storybook
+src-tauri/        Tauri v2 셸 (Rust)
+e2e/              Playwright e2e (웹)
+e2e-tauri/        WebdriverIO tauri e2e
+```
+
+엔트리 경계(`app/`, `main.tsx`)는 피처/페이지 배럴(`index.ts`) 대신 모듈을 직접 import한다. 배럴을 경유하면 lazy 페이지 의존성이 엔트리 청크로 올라간다 — `docs/bundle-optimization.md` 참조.
+
+## 실행
+
+```bash
+npm ci             # 의존성 설치
+npm run dev        # Vite dev 서버 (웹)
+npm run build      # tsc -b && vite build → dist/
+npm run preview    # 빌드 결과 프리뷰
+npx tauri dev      # Tauri 데스크톱 앱 dev
+npx tauri build    # 데스크톱 번들 (release.yml에서 dmg/nsis)
+```
+
+## 테스트·검증
+
+```bash
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint
+npm test           # vitest run (유닛·컴포넌트)
+npm run test:e2e        # Playwright (dev 서버 자동 기동)
+npm run test:e2e:tauri  # WebdriverIO tauri-driver e2e
+```
+
+CI(`.github/workflows/ci.yml`): PR→develop에서 `npm ci` → typecheck → lint → vitest. Playwright e2e job은 `continue-on-error`로 실패 허용.
+
 
