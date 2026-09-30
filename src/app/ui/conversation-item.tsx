@@ -1,8 +1,8 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useT } from '@/shared/i18n'
 import { Icon } from '@/shared/components'
-import { isProjectConversation } from '@/features/chat'
-import type { Conversation } from '@/features/chat'
+import { isProjectConversation } from '@/features/chat/stores'
+import type { Conversation } from '@/features/chat/api/schemas'
 
 type ConversationItemProps = {
   conv: Conversation
@@ -31,8 +31,18 @@ const ConversationItem = ({
       className={active ? 'sidebar-item is-active' : 'sidebar-item'}
       onClick={onOpen}
       onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
       onContextMenu={onMenu}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onOpen()
+        }
+      }}
       role="button"
+      tabIndex={0}
+      aria-current={active ? 'page' : undefined}
     >
       {busy ? <span className="sidebar-dot is-busy" /> : null}
       {editing ? (

@@ -109,7 +109,14 @@ const ChatStream = ({
   return (
     <div className="chat-stream-virtual">
       {loadingMore ? <div className="chat-stream-loading">{t('chat.loadingMore')}</div> : null}
-      <div ref={listRef} className="chat-vlist" onScroll={onScroll}>
+      <div
+        ref={listRef}
+        className="chat-vlist"
+        onScroll={onScroll}
+        tabIndex={0}
+        role="log"
+        aria-label={t('chat.messages')}
+      >
         {virtual.topPad > 0 ? <div style={{ height: virtual.topPad, flexShrink: 0 }} /> : null}
         {visible.map((m) => (
           <MessageView
