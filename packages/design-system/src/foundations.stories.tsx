@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { Meta, StoryObj } from '@storybook/react'
 import { palette } from './palette'
 import { vars } from './vars.css'
 
@@ -53,6 +53,77 @@ export const Typography: Story = {
       <div className="t-body-sm">Body small · 14</div>
       <div className="t-label">Label · 13</div>
       <div className="t-caption">Caption · 12</div>
+    </div>
+  ),
+}
+
+export const Spacing: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {Object.entries(vars.space).map(([k, v]) => (
+        <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <code style={{ fontSize: 12, width: 120 }}>{k}</code>
+          <div style={{ height: 12, width: v, background: '#2563eb', borderRadius: 2 }} />
+        </div>
+      ))}
+    </div>
+  ),
+}
+
+export const RadiusAndShadow: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {Object.entries(vars.radius).map(([k, v]) => (
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <code style={{ fontSize: 12, width: 48 }}>{k}</code>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                background: '#eff6ff',
+                border: '1px solid #2563eb',
+                borderRadius: v,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {Object.entries(vars.shadow).map(([k, v]) => (
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <code style={{ fontSize: 12, width: 48 }}>{k}</code>
+            <div
+              style={{
+                width: 80,
+                height: 40,
+                background: '#ffffff',
+                borderRadius: 8,
+                boxShadow: v,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+}
+
+export const SizesAndZ: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxWidth: 480 }}>
+      {Object.entries(vars.size).map(([k, v]) => (
+        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          <code style={{ fontSize: 12 }}>size.{k}</code>
+          <code style={{ fontSize: 12, color: '#6b7280' }}>{v}</code>
+        </div>
+      ))}
+      {Object.entries(vars.z).map(([k, v]) => (
+        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          <code style={{ fontSize: 12 }}>z.{k}</code>
+          <code style={{ fontSize: 12, color: '#6b7280' }}>{v}</code>
+        </div>
+      ))}
     </div>
   ),
 }
