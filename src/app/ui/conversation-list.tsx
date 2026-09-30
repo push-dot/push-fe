@@ -17,7 +17,7 @@ import { useMessagesStore } from '@/features/chat/stores'
 import ConversationItem from './conversation-item'
 import ConversationMenu from './conversation-menu'
 
-const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat'])
+const NEW_CHAT_TITLES = new Set(['새 채팅', 'New chat', '新しいチャット', 'Cuộc trò chuyện mới'])
 
 const MOD = /mac/i.test(navigator.platform) ? '⌘' : 'Ctrl+'
 

@@ -23,6 +23,8 @@ const AppearanceSection = () => {
         >
           <option value="ko">한국어</option>
           <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="vi">Tiếng Việt</option>
         </Select>
       </FormRow>
       <FormRow label={t('settings.theme')}>

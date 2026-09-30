@@ -1,0 +1,127 @@
+{
+  "app": {
+    "tagline": "チャットで応募・書類・プロジェクトを管理するデスクトップアプリ"
+  },
+  "login": {
+    "google": "Googleで続行",
+    "github": "GitHubで続行"
+  },
+  "nav": {
+    "chat": "チャット",
+    "newChat": "新しいチャット",
+    "deleteChat": "チャットを削除",
+    "features": "機能",
+    "documents": "書類",
+    "applications": "応募管理",
+    "vault": "キャリアボルト",
+    "interview": "面接",
+    "calendar": "カレンダー",
+    "settings": "設定",
+    "projectTag": "プロジェクト",
+    "pinSidebar": "サイドバーを固定",
+    "collapseSidebar": "サイドバーを折りたたむ"
+  },
+  "toast": {
+    "createChatFailed": "チャットを作成できませんでした",
+    "deleteChatFailed": "チャットを削除できませんでした",
+    "runFailed": "実行できませんでした"
+  },
+  "home": {
+    "title": "何をお手伝いしましょうか？",
+    "titleAlt": "今日は何をプッシュしましょうか？"
+  },
+  "composer": {
+    "placeholder": "メッセージを入力",
+    "attach": "ファイルを添付",
+    "inference": "推論設定",
+    "stop": "応答を停止",
+    "send": "送信",
+    "uploaded": "ファイルをアップロードしました",
+    "uploadFailed": "アップロードできませんでした",
+    "drop": "ファイルをドロップしてアップロード",
+    "removeFile": "ファイルを削除"
+  },
+  "infer": {
+    "model": "モデル",
+    "noModels": "利用可能なモデルがありません",
+    "effort": "推論の強度",
+    "low": "低",
+    "medium": "標準",
+    "high": "高",
+    "webSearch": "ウェブ検索",
+    "credential": "認証情報",
+    "managed": "Push提供",
+    "byok": "自分のAPIキー",
+    "apiKey": "APIキー",
+    "byokHint": "キーはこのデバイスにのみ保存されます"
+  },
+  "chat": {
+    "running": "実行状態",
+    "verified": "検証結果",
+    "evidenceLinked": "根拠がリンク済み",
+    "docVersion": "ドキュメントバージョン",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "以前のメッセージを読み込み中…",
+    "jumpLatest": "最新のメッセージへ移動",
+    "messages": "メッセージ一覧",
+    "loadMoreFailed": "以前のメッセージを読み込めませんでした",
+    "modelConfigFailed": "AIモデル設定を読み込めませんでした",
+    "noResponse": "応答を受信できませんでした",
+    "sendFailed": "送信できませんでした"
+  },
+  "common": {
+    "retry": "再試行",
+    "loadFailed": "読み込めませんでした",
+    "networkError": "ネットワーク状態を確認してからもう一度お試しください。",
+    "save": "保存",
+    "saved": "保存しました",
+    "back": "戻る"
+  },
+  "settings": {
+    "account": "アカウント",
+    "name": "名前",
+    "locale": "ロケール",
+    "language": "言語",
+    "ai": "AI",
+    "model": "モデル",
+    "plan": "プラン",
+    "currentPlan": "現在のプラン",
+    "upgrade": "アップグレード",
+    "manageBilling": "支払い管理",
+    "appearance": "外観",
+    "theme": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "credentials": "認証情報",
+    "byokModel": "BYOKモデル",
+    "byokProvider": "BYOKプロバイダー"
+  },
+  "menu": {
+    "rename": "名前を変更",
+    "pin": "固定",
+    "unpin": "固定解除",
+    "delete": "削除"
+  },
+  "plan": {
+    "title": "プランをアップグレード",
+    "subtitle": "必要なプランを選択してください",
+    "current": "現在のプラン",
+    "downgrade": "ダウングレード",
+    "perMonth": "/月",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "すべての管理型モデル",
+    "proFeat2": "ウェブ検索",
+    "proFeat3": "無制限チャット",
+    "ultraFeat1": "Proのすべての機能",
+    "ultraFeat2": "カスタム履歴書生成",
+    "ultraFeat3": "優先サポート",
+    "freeFeat1": "基本チャット",
+    "freeFeat2": "一部の管理型モデル"
+  }
+}
