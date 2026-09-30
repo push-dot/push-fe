@@ -22,7 +22,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    preserveSymlinks: true,
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
