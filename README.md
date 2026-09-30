@@ -60,25 +60,33 @@ e2e-tauri/        WebdriverIO tauri e2e
 
 ## 실행
 
+패키지 매니저는 **pnpm** (workspaces + Turborepo). `packageManager` 필드로 버전이 고정되어 있다.
+
 ```bash
-npm ci             # 의존성 설치
-npm run dev        # Vite dev 서버 (웹)
-npm run build      # tsc -b && vite build → dist/
-npm run preview    # 빌드 결과 프리뷰
-npx tauri dev      # Tauri 데스크톱 앱 dev
-npx tauri build    # 데스크톱 번들 (release.yml에서 dmg/nsis)
+pnpm install       # 의존성 설치
+pnpm dev           # Vite dev 서버 (웹)
+pnpm build         # tsc -b && vite build → dist/
+pnpm preview       # 빌드 결과 프리뷰
+pnpm tauri dev     # Tauri 데스크톱 앱 dev
+pnpm tauri build   # 데스크톱 번들 (release.yml에서 dmg/nsis)
 ```
 
 ## 테스트·검증
 
 ```bash
-npm run typecheck  # tsc --noEmit
-npm run lint       # eslint
-npm test           # vitest run (유닛·컴포넌트)
-npm run test:e2e        # Playwright (dev 서버 자동 기동)
-npm run test:e2e:tauri  # WebdriverIO tauri-driver e2e
+pnpm run typecheck  # tsc --noEmit
+pnpm run lint       # eslint
+pnpm test           # vitest run (유닛·컴포넌트)
+pnpm run check      # turbo run typecheck lint test build — 앱 + 패키지 전체
+pnpm run test:e2e        # Playwright (dev 서버 자동 기동)
+pnpm run test:e2e:tauri  # WebdriverIO tauri-driver e2e
 ```
 
-CI(`.github/workflows/ci.yml`): PR→develop에서 `npm ci` → typecheck → lint → vitest. Playwright e2e job은 `continue-on-error`로 실패 허용.
+Turborepo(`turbo.json`)가 루트 앱과 `packages/*`의 태스크를 파이프라인으로 묶는다. 루트 앱은 `//#task` 루트 태스크로 참여하고, 디자인 시스템은 `@push/design-system` 워크스페이스 패키지다.
 
+```bash
+pnpm run storybook         # @push/design-system Storybook dev
+pnpm run build-storybook   # Storybook 정적 빌드 → storybook-static/
+```
 
+CI(`.github/workflows/ci.yml`): PR→develop에서 `pnpm install --frozen-lockfile` → `turbo run typecheck lint test`. Playwright e2e job은 `continue-on-error`로 실패 허용.
