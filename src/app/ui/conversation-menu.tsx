@@ -2,7 +2,7 @@ import { assignInlineVars } from '@vanilla-extract/dynamic'
 import { menuX, menuY } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import { Icon } from '@/shared/components'
-import type { Conversation } from '@/features/chat'
+import type { Conversation } from '@/features/chat/api/schemas'
 
 type ConversationMenuProps = {
   conv: Conversation

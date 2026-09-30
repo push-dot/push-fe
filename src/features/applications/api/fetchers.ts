@@ -4,7 +4,7 @@ import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
 import type { AiOptions } from '@/features/inference'
 import type { Operation } from '@/shared/api'
-import type { ApplicationStage, Application } from './schemas'
+import type { ApplicationStage, Application, GapAnalysis, JobPosting } from './schemas'
 
 export const listApplications = async (
   params: ListParams & { stage?: ApplicationStage; query?: string } = {},

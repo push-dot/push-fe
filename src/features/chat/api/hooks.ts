@@ -116,7 +116,7 @@ const projectKeys = {
   panels: (projectId: string) => ['project-panels', projectId] as const,
 }
 
-export type ProjectPanels = {
+export type ProjectPanelsData = {
   runs: CliRun[]
   evidence: ProjectEvidence[]
 }
@@ -125,7 +125,7 @@ export const useProjectPanels = (projectId: string | undefined) =>
   useQuery({
     queryKey: projectKeys.panels(projectId ?? ''),
     enabled: Boolean(projectId),
-    queryFn: async (): Promise<ProjectPanels> => {
+    queryFn: async (): Promise<ProjectPanelsData> => {
       const [runs, evidence] = await Promise.all([
         listProjectRuns(projectId!, { limit: 20 }),
         listProjectEvidence(projectId!, { limit: 20 }),

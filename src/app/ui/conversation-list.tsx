@@ -11,9 +11,9 @@ import {
   useConversations,
   useCreateConversation,
   usePatchConversation,
-} from '@/features/chat'
-import type { Conversation } from '@/features/chat'
-import { useMessagesStore } from '@/features/chat'
+} from '@/features/chat/api/hooks'
+import type { Conversation } from '@/features/chat/api/schemas'
+import { useMessagesStore } from '@/features/chat/stores'
 import ConversationItem from './conversation-item'
 import ConversationMenu from './conversation-menu'
 

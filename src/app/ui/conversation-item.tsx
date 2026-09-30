@@ -1,8 +1,8 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useT } from '@/shared/i18n'
 import { Icon } from '@/shared/components'
-import { isProjectConversation } from '@/features/chat'
-import type { Conversation } from '@/features/chat'
+import { isProjectConversation } from '@/features/chat/stores'
+import type { Conversation } from '@/features/chat/api/schemas'
 
 type ConversationItemProps = {
   conv: Conversation
