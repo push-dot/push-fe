@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "audit:lighthouse": "node scripts/lighthouse.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -62,18 +63,23 @@
     "@wdio/mocha-framework": "^9.31.9",
     "@wdio/spec-reporter": "^9.31.2",
     "@wdio/tauri-service": "^1.4.0",
+    "axe-core": "^4.13.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "chrome-launcher": "^1.2.2",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.12.0",
     "jsdom": "^26.1.0",
+    "lighthouse": "^13.5.0",
     "prettier": "^3.9.7",
     "turbo": "2.11.3",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^6.3.5",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "vitest-axe": "^0.1.0"
   }
 }

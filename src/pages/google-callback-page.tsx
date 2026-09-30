@@ -34,11 +34,11 @@ const GoogleCallbackPage = () => {
   if (done) return <Navigate to="/calendar" replace />
   if (failed) return <ErrorState onRetry={() => setFailed(false)} />
   return (
-    <div className="canvas">
+    <main className="canvas">
       <div className="center">
         <Skeleton />
       </div>
-    </div>
+    </main>
   )
 }
 

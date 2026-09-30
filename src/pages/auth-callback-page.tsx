@@ -36,11 +36,11 @@ const AuthCallbackPage = () => {
   if (session) return <Navigate to="/" replace />
   if (failed) return <ErrorState onRetry={() => setFailed(false)} />
   return (
-    <div className="canvas">
+    <main className="canvas">
       <div className="center">
         <Skeleton />
       </div>
-    </div>
+    </main>
   )
 }
 

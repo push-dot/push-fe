@@ -16,7 +16,7 @@ const EvidenceMenu = ({
   const t = useT()
   return (
     <ContextMenu x={x} y={y} onClose={onClose}>
-      <ContextMenuItem autoFocus danger icon={<Icon name="trash-2" size={16} />} onClick={onDelete}>
+      <ContextMenuItem danger icon={<Icon name="trash-2" size={16} />} onClick={onDelete}>
         {t('menu.delete')}
       </ContextMenuItem>
     </ContextMenu>

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { axe } from '@/test-utils'
 import type { Approval, ApprovalSummary } from '../../api/schemas'
 
 vi.mock('../../api/fetchers', async (importOriginal) => {
@@ -91,6 +92,13 @@ describe('approval-surface', () => {
     renderSurface()
     await screen.findByRole('dialog')
     expect(trackExperiment).toHaveBeenCalledWith('approval-surface', 'exposure', 'ap1')
+  })
+
+  it('variant B modal has no axe violations', async () => {
+    vi.mocked(useExperimentVariant).mockReturnValue('B')
+    const { container } = renderSurface()
+    await screen.findByRole('dialog')
+    expect(await axe(container)).toHaveNoViolations()
   })
 
   it('variant B modal dismisses but keeps the inline card', async () => {

@@ -25,7 +25,7 @@ const ConversationMenu = ({
   const t = useT()
   return (
     <ContextMenu x={x} y={y} onClose={onClose}>
-      <ContextMenuItem autoFocus icon={<Icon name="pencil" size={16} />} onClick={onRename}>
+      <ContextMenuItem icon={<Icon name="pencil" size={16} />} onClick={onRename}>
         {t('menu.rename')}
       </ContextMenuItem>
       <ContextMenuItem

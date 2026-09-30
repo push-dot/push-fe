@@ -14,7 +14,12 @@ import { prefetchCalendarEvents } from '@/features/calendar'
 import ConversationList, { useNewChat } from './conversation-list'
 
 const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey; prefetch: () => void }[] = [
-  { to: ROUTES.documents, icon: 'file-text', labelKey: 'nav.documents', prefetch: prefetchDocuments },
+  {
+    to: ROUTES.documents,
+    icon: 'file-text',
+    labelKey: 'nav.documents',
+    prefetch: prefetchDocuments,
+  },
   {
     to: ROUTES.applications,
     icon: 'briefcase',
@@ -23,7 +28,12 @@ const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey; prefetch: () =>
   },
   { to: ROUTES.vault, icon: 'archive', labelKey: 'nav.vault', prefetch: prefetchCareerEvidence },
   { to: ROUTES.interview, icon: 'mic', labelKey: 'nav.interview', prefetch: prefetchInterviews },
-  { to: ROUTES.calendar, icon: 'calendar', labelKey: 'nav.calendar', prefetch: prefetchCalendarEvents },
+  {
+    to: ROUTES.calendar,
+    icon: 'calendar',
+    labelKey: 'nav.calendar',
+    prefetch: prefetchCalendarEvents,
+  },
 ]
 
 const IS_MAC = /mac/i.test(navigator.platform)
@@ -70,6 +80,11 @@ const Sidebar = () => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && collapsed && peek) {
+        setPeek(false)
+        edgeRef.current?.focus()
+        return
+      }
       if (!(e.metaKey || e.ctrlKey) || e.altKey) return
       const k = e.key.toLowerCase()
       if (k === 'b' && !e.shiftKey) {
@@ -86,7 +101,7 @@ const Sidebar = () => {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [newChat, navigate])
+  }, [newChat, navigate, collapsed, peek])
 
   return (
     <>
@@ -113,12 +128,6 @@ const Sidebar = () => {
         style={collapsed ? undefined : { width }}
         onMouseLeave={() => {
           if (collapsed) setPeek(false)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && collapsed && peek) {
-            setPeek(false)
-            edgeRef.current?.focus()
-          }
         }}
       >
         <div className="sidebar-head">
