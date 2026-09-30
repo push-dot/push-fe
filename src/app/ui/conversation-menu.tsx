@@ -31,6 +31,7 @@ const ConversationMenu = ({
       })}
       role="menu"
     >
+      {/* eslint-disable-next-line jsx-a11y/no-autofocus -- moving focus into the menu on open is the intended keyboard behavior */}
       <button type="button" className="context-menu-item" autoFocus onClick={onRename}>
         <Icon name="pencil" size={16} />
         {t('menu.rename')}

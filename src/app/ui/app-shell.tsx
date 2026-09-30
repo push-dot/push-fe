@@ -27,9 +27,9 @@ const AppShell = () => {
   return (
     <div className="app-shell">
       <Sidebar />
-      <div className="canvas">
+      <main className="canvas">
         <Outlet />
-      </div>
+      </main>
       <ToastHost />
     </div>
   )

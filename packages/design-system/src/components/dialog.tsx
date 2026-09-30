@@ -33,7 +33,15 @@ const Dialog = ({ open, onClose, title, children, actions }: DialogProps) => {
 
   if (!open) return null
   return (
-    <div className={dialogBackdrop} onClick={onClose}>
+    // Backdrop dismiss is pointer-only; the Escape keydown handler above is the
+    // keyboard equivalent, so no key listener is attached here.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+    <div
+      className={dialogBackdrop}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.()
+      }}
+    >
       <div
         ref={dialogRef}
         className={dialog}
@@ -41,7 +49,6 @@ const Dialog = ({ open, onClose, title, children, actions }: DialogProps) => {
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={dialogTitle}>{title}</div>
         {children}

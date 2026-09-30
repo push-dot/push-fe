@@ -34,7 +34,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="canvas">
+    <main className="canvas">
       <div className="center">
         <Card title="Push">
           <p className="t-body-sm">{t('app.tagline')}</p>
@@ -62,7 +62,7 @@ const LoginPage = () => {
           </>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 
