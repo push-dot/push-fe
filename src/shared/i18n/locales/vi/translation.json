@@ -1,0 +1,127 @@
+{
+  "app": {
+    "tagline": "Ứng dụng desktop quản lý hồ sơ ứng tuyển, tài liệu và dự án qua chat"
+  },
+  "login": {
+    "google": "Tiếp tục với Google",
+    "github": "Tiếp tục với GitHub"
+  },
+  "nav": {
+    "chat": "Trò chuyện",
+    "newChat": "Cuộc trò chuyện mới",
+    "deleteChat": "Xóa cuộc trò chuyện",
+    "features": "Tính năng",
+    "documents": "Tài liệu",
+    "applications": "Quản lý ứng tuyển",
+    "vault": "Kho sự nghiệp",
+    "interview": "Phỏng vấn",
+    "calendar": "Lịch",
+    "settings": "Cài đặt",
+    "projectTag": "Dự án",
+    "pinSidebar": "Ghim thanh bên",
+    "collapseSidebar": "Thu gọn thanh bên"
+  },
+  "toast": {
+    "createChatFailed": "Không tạo được cuộc trò chuyện",
+    "deleteChatFailed": "Không xóa được cuộc trò chuyện",
+    "runFailed": "Không chạy được"
+  },
+  "home": {
+    "title": "Tôi có thể giúp gì cho bạn?",
+    "titleAlt": "Hôm nay ta đẩy gì đây?"
+  },
+  "composer": {
+    "placeholder": "Nhập tin nhắn",
+    "attach": "Đính kèm tệp",
+    "inference": "Cài đặt suy luận",
+    "stop": "Dừng",
+    "send": "Gửi",
+    "uploaded": "Đã tải tệp lên",
+    "uploadFailed": "Tải lên thất bại",
+    "drop": "Thả tệp vào để tải lên",
+    "removeFile": "Xóa tệp"
+  },
+  "infer": {
+    "model": "Mô hình",
+    "noModels": "Không có mô hình khả dụng",
+    "effort": "Mức độ suy luận",
+    "low": "Thấp",
+    "medium": "Trung bình",
+    "high": "Cao",
+    "webSearch": "Tìm kiếm web",
+    "credential": "Thông tin xác thực",
+    "managed": "Do Push cung cấp",
+    "byok": "Khóa API của tôi",
+    "apiKey": "Khóa API",
+    "byokHint": "Khóa chỉ lưu trên thiết bị này"
+  },
+  "chat": {
+    "running": "Trạng thái chạy",
+    "verified": "Kết quả xác minh",
+    "evidenceLinked": "Đã liên kết bằng chứng",
+    "docVersion": "Phiên bản tài liệu",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "Đang tải tin nhắn cũ hơn…",
+    "jumpLatest": "Đến tin nhắn mới nhất",
+    "messages": "Danh sách tin nhắn",
+    "loadMoreFailed": "Không tải được tin nhắn cũ hơn",
+    "modelConfigFailed": "Không tải được cài đặt mô hình AI",
+    "noResponse": "Không nhận được phản hồi",
+    "sendFailed": "Không gửi được"
+  },
+  "common": {
+    "retry": "Thử lại",
+    "loadFailed": "Không tải được",
+    "networkError": "Kiểm tra kết nối mạng rồi thử lại.",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "back": "Quay lại"
+  },
+  "settings": {
+    "account": "Tài khoản",
+    "name": "Tên",
+    "locale": "Ngôn ngữ khu vực",
+    "language": "Ngôn ngữ",
+    "ai": "AI",
+    "model": "Mô hình",
+    "plan": "Gói",
+    "currentPlan": "Gói hiện tại",
+    "upgrade": "Nâng cấp",
+    "manageBilling": "Quản lý thanh toán",
+    "appearance": "Giao diện",
+    "theme": "Chủ đề",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "credentials": "Thông tin xác thực",
+    "byokModel": "Mô hình BYOK",
+    "byokProvider": "Nhà cung cấp BYOK"
+  },
+  "menu": {
+    "rename": "Đổi tên",
+    "pin": "Ghim",
+    "unpin": "Bỏ ghim",
+    "delete": "Xóa"
+  },
+  "plan": {
+    "title": "Nâng cấp gói",
+    "subtitle": "Chọn gói phù hợp với bạn",
+    "current": "Gói hiện tại",
+    "downgrade": "Hạ cấp",
+    "perMonth": "/tháng",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "Tất cả mô hình quản lý",
+    "proFeat2": "Tìm kiếm web",
+    "proFeat3": "Trò chuyện không giới hạn",
+    "ultraFeat1": "Mọi tính năng của Pro",
+    "ultraFeat2": "Tạo CV tùy chỉnh",
+    "ultraFeat3": "Hỗ trợ ưu tiên",
+    "freeFeat1": "Trò chuyện cơ bản",
+    "freeFeat2": "Một số mô hình quản lý"
+  }
+}
