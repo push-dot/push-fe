@@ -1,3 +1,4 @@
+import { Button as MantineButton } from '@mantine/core'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { button } from '../recipes.css'
 
@@ -24,10 +25,16 @@ const Button = ({
     .filter(Boolean)
     .join(' ')
   return (
-    <button className={classes} disabled={disabled || loading} {...rest}>
+    <MantineButton
+      variant="default"
+      className={classes}
+      loading={loading}
+      disabled={disabled || loading}
+      rightSection={icon}
+      {...rest}
+    >
       {children}
-      {icon}
-    </button>
+    </MantineButton>
   )
 }
 

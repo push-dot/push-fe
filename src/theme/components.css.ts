@@ -1,6 +1,5 @@
-import { fallbackVar, globalStyle, keyframes } from '@vanilla-extract/css'
+import { globalStyle, keyframes } from '@vanilla-extract/css'
 import { vars } from '@push/design-system'
-import { menuX, menuY } from '@push/design-system'
 
 globalStyle('.screen', {
   width: vars.frame.w,
@@ -140,43 +139,6 @@ globalStyle('.sidebar-resizer:hover', {
 globalStyle('body.is-resizing', {
   cursor: 'col-resize',
   userSelect: 'none',
-})
-globalStyle('.context-menu', {
-  position: 'fixed',
-  left: fallbackVar(menuX, '0px'),
-  top: fallbackVar(menuY, '0px'),
-  zIndex: 100,
-  minWidth: '150px',
-  display: 'flex',
-  flexDirection: 'column',
-  padding: vars.space.s4,
-  background: vars.color.surface1,
-  border: `1px solid ${vars.color.border}`,
-  borderRadius: vars.radius.md,
-  boxShadow: vars.shadow.md,
-})
-globalStyle('.context-menu-item', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.s8,
-  padding: vars.space.s8,
-  border: 0,
-  borderRadius: vars.radius.sm,
-  background: 'transparent',
-  color: vars.color.text,
-  fontSize: vars.fs.bodySm,
-  textAlign: 'left',
-  cursor: 'pointer',
-})
-globalStyle('.context-menu-item:hover', {
-  background: vars.color.surface2,
-})
-globalStyle('.context-menu-item:focus-visible', {
-  outline: `2px solid ${vars.color.accent}`,
-  outlineOffset: '-2px',
-})
-globalStyle('.context-menu-item.is-danger', {
-  color: vars.color.danger,
 })
 globalStyle('.sidebar-dot', {
   width: vars.size.dot,

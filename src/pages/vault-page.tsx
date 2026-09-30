@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import {
   Button,
@@ -20,22 +20,6 @@ const VaultPage = () => {
   const archiveEvidence = useArchiveEvidence()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [menu, setMenu] = useState<MenuState | null>(null)
-
-  useEffect(() => {
-    if (!menu) return
-    const close = () => setMenu(null)
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenu(null)
-    }
-    window.addEventListener('click', close)
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('blur', close)
-    return () => {
-      window.removeEventListener('click', close)
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('blur', close)
-    }
-  }, [menu])
 
   const openMenu = (e: ReactMouseEvent, item: CareerEvidence) => {
     e.preventDefault()
@@ -79,7 +63,12 @@ const VaultPage = () => {
       </div>
       <EvidenceAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
       {menu ? (
-        <EvidenceMenu x={menu.x} y={menu.y} onDelete={() => removeItem(menu.item)} />
+        <EvidenceMenu
+          x={menu.x}
+          y={menu.y}
+          onClose={() => setMenu(null)}
+          onDelete={() => removeItem(menu.item)}
+        />
       ) : null}
     </>
   )
