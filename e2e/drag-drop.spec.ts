@@ -19,8 +19,11 @@ test('drag a pdf onto chat page shows overlay, chip, then uploads on send', asyn
     return dt
   }, b64)
 
-  await page.dispatchEvent('body', 'dragenter', { dataTransfer })
-  await expect(page.locator('.drop-overlay')).toBeVisible()
+  // the drop effect subscribes after mount — retry dragenter until it sticks
+  await expect(async () => {
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await expect(page.locator('.drop-overlay')).toBeVisible({ timeout: 1_000 })
+  }).toPass()
 
   await page.dispatchEvent('body', 'drop', { dataTransfer })
   await expect(page.locator('.drop-overlay')).toBeHidden()

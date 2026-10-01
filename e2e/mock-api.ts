@@ -290,6 +290,9 @@ export const installApiMocks = async (
     if (method === 'GET' && path === 'calendar/events') {
       return route.fulfill(list())
     }
+    if (method === 'GET' && path === 'career-evidence') {
+      return route.fulfill(list())
+    }
 
     // --- uploads ---
     if (method === 'POST' && path === 'sources') {
