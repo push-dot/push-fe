@@ -94,6 +94,10 @@ export const createMessagesStore = (deps: MessagesDeps) =>
 
     const flushStream = () => {
       buf.timer = null
+      // A queued flush can fire after done/abort cleared the buffer —
+      // setTimeout can't un-queue an already-fired callback. Without this
+      // guard it would overwrite 'idle'/'failed' with stale 'streaming'.
+      if (!buf.text && !buf.status) return
       if (buf.text) {
         trackExperiment(EXPERIMENT_KEYS.streamRender, EXPERIMENT_EVENTS.exposure)
       }
