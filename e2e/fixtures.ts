@@ -1,4 +1,6 @@
 import type { Page } from '@playwright/test'
+import { installApiMocks } from './mock-api'
+import type { MockApiOptions } from './mock-api'
 
 export const DEV_SESSION = {
   state: {
@@ -16,15 +18,20 @@ export const DEV_SESSION = {
   version: 0,
 }
 
-export const loginAsDev = async (page: Page): Promise<void> => {
+export const loginAsDev = async (page: Page, mock: MockApiOptions = {}): Promise<void> => {
+  await installApiMocks(page, mock)
   await page.addInitScript((session) => {
     localStorage.setItem('push-session', JSON.stringify(session))
-    localStorage.setItem('push-locale', '"ko"')
+    localStorage.setItem('push-locale', 'ko')
   }, DEV_SESSION)
 }
 
-export const authedPage = async (page: Page, path = '/'): Promise<void> => {
-  await loginAsDev(page)
+export const authedPage = async (
+  page: Page,
+  path = '/',
+  mock: MockApiOptions = {},
+): Promise<void> => {
+  await loginAsDev(page, mock)
   await page.goto(path)
   await page.waitForSelector('.sidebar', { timeout: 15_000 })
 }
