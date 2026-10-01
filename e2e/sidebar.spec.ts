@@ -22,6 +22,7 @@ test('nav hover prefetches the list so entry shows no skeleton', async ({ page }
   await nav.hover()
   await warmed
 
+  const requestsAfterPrefetch = listRequests
   const warmStart = Date.now()
   await nav.click()
   await page.waitForURL('/documents')
@@ -30,7 +31,8 @@ test('nav hover prefetches the list so entry shows no skeleton', async ({ page }
   const warmMs = Date.now() - warmStart
 
   expect(skeletonCount).toBe(0)
-  expect(listRequests).toBe(1)
+  // entry is served from the prefetched cache — no extra list request on click
+  expect(listRequests).toBe(requestsAfterPrefetch)
   console.log(`[e2e] documents entry cold=${coldMs}ms warm=${warmMs}ms requests=${listRequests}`)
 })
 

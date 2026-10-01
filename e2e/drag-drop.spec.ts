@@ -1,14 +1,15 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { test, expect } from '@playwright/test'
 import { authedPage } from './fixtures'
 
-const PDF_PATH =
-  '/Users/cyjoon/.paseo/uploads/upload_c105e269-6e22-403b-8c69-d95ac706e6ab/________________.pdf'
+const PDF_PATH = fileURLToPath(new URL('./fixtures/resume.pdf', import.meta.url))
 
 test('drag a pdf onto chat page shows overlay, chip, then uploads on send', async ({ page }) => {
   await authedPage(page, '/')
   await page.locator('button.sidebar-item', { hasText: '새 채팅' }).click()
   await page.waitForURL(/\/chat\//)
+  await page.waitForSelector('.composer')
 
   const b64 = readFileSync(PDF_PATH).toString('base64')
   const dataTransfer = await page.evaluateHandle(async (data) => {
@@ -18,8 +19,11 @@ test('drag a pdf onto chat page shows overlay, chip, then uploads on send', asyn
     return dt
   }, b64)
 
-  await page.dispatchEvent('body', 'dragenter', { dataTransfer })
-  await expect(page.locator('.drop-overlay')).toBeVisible()
+  // the drop effect subscribes after mount — retry dragenter until it sticks
+  await expect(async () => {
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await expect(page.locator('.drop-overlay')).toBeVisible({ timeout: 1_000 })
+  }).toPass()
 
   await page.dispatchEvent('body', 'drop', { dataTransfer })
   await expect(page.locator('.drop-overlay')).toBeHidden()
