@@ -18,8 +18,14 @@ vi.mock('../../api/fetchers', async (importOriginal) => {
 })
 
 vi.mock('react-markdown', async () => {
+  const { useEffect } = await import('react')
   const Markdown = ({ children }: { children?: ReactNode }) => {
-    if (typeof children === 'string') h.calls.push(children)
+    // Record on commit, not render: concurrent rendering may invoke the
+    // component twice for one commit, which would count duplicates that
+    // never reached the DOM.
+    useEffect(() => {
+      if (typeof children === 'string') h.calls.push(children)
+    }, [children])
     return <div className="chat-md">{children}</div>
   }
   return { default: Markdown }
