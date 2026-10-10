@@ -16,14 +16,17 @@ import {
 import { useDocuments } from '@/features/documents'
 import { NewDocumentDialog } from '@/features/documents'
 import { useApplications } from '@/features/applications'
+import { useT } from '@/shared/i18n'
+import type { MsgKey } from '@/shared/i18n'
 
-const KIND_LABELS: Record<DocumentKind, string> = {
-  RESUME: '이력서',
-  COVER_LETTER: '자기소개서',
-  PORTFOLIO: '포트폴리오',
+const KIND_LABEL_KEYS: Record<DocumentKind, MsgKey> = {
+  RESUME: 'docDialog.kindResume',
+  COVER_LETTER: 'docDialog.kindCoverLetter',
+  PORTFOLIO: 'docDialog.kindPortfolio',
 }
 
 const DocumentsPage = () => {
+  const t = useT()
   const navigate = useNavigate()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useDocuments()
   const { data: applications = [] } = useApplications()
@@ -32,10 +35,10 @@ const DocumentsPage = () => {
   return (
     <>
       <CanvasHeader
-        title="내 서류"
+        title={t('nav.documents')}
         actions={
           <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
-            <Icon name="plus" size={20} /> 새 문서
+            <Icon name="plus" size={20} /> {t('docDialog.new')}
           </Button>
         }
       />
@@ -44,8 +47,8 @@ const DocumentsPage = () => {
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
-            message="아직 문서가 없어요"
-            actionLabel="새 문서"
+            message={t('documents.empty')}
+            actionLabel={t('docDialog.new')}
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
@@ -55,14 +58,18 @@ const DocumentsPage = () => {
               <DocCard
                 key={doc.id}
                 title={doc.title}
-                meta={`${KIND_LABELS[doc.kind]} · ${formatRelativeTime(doc.updatedAt)}`}
+                meta={`${t(KIND_LABEL_KEYS[doc.kind])} · ${formatRelativeTime(doc.updatedAt)}`}
                 onOpen={() => navigate(ROUTES.document(doc.id))}
               />
             ))}
           </CardGrid>
         ) : null}
       </div>
-      <NewDocumentDialog open={dialogOpen} onClose={() => setDialogOpen(false)} applications={applications} />
+      <NewDocumentDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        applications={applications}
+      />
     </>
   )
 }

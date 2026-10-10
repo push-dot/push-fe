@@ -9,6 +9,7 @@ import {
   Icon,
   SkeletonRows,
 } from '@/shared/components'
+import { useT } from '@/shared/i18n'
 import { type CareerEvidence, useArchiveEvidence } from '@/features/evidence'
 import { useCareerEvidence } from '@/features/evidence'
 import { EvidenceAddDialog, EvidenceMenu, EvidenceRow } from '@/features/evidence'
@@ -16,6 +17,7 @@ import { EvidenceAddDialog, EvidenceMenu, EvidenceRow } from '@/features/evidenc
 type MenuState = { x: number; y: number; item: CareerEvidence }
 
 const VaultPage = () => {
+  const t = useT()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCareerEvidence()
   const archiveEvidence = useArchiveEvidence()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -32,10 +34,10 @@ const VaultPage = () => {
   return (
     <>
       <CanvasHeader
-        title="커리어 볼트"
+        title={t('nav.vault')}
         actions={
           <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
-            <Icon name="plus" size={20} /> 근거 추가
+            <Icon name="plus" size={20} /> {t('vault.add')}
           </Button>
         }
       />
@@ -48,8 +50,8 @@ const VaultPage = () => {
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
-            message="아직 근거가 없어요"
-            actionLabel="근거 추가"
+            message={t('vault.empty')}
+            actionLabel={t('vault.add')}
             onAction={() => setDialogOpen(true)}
           />
         ) : null}

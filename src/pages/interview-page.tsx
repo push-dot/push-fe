@@ -11,8 +11,10 @@ import {
 import { useInterviews } from '@/features/interviews'
 import { InterviewAddDialog, InterviewRow, ReflectionCard } from '@/features/interviews'
 import { useApplications } from '@/features/applications'
+import { useT } from '@/shared/i18n'
 
 const InterviewPage = () => {
+  const t = useT()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useInterviews()
   const { data: applications = [] } = useApplications()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -22,10 +24,10 @@ const InterviewPage = () => {
   return (
     <>
       <CanvasHeader
-        title="면접"
+        title={t('nav.interview')}
         actions={
           <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
-            <Icon name="plus" size={20} /> 면접 준비
+            <Icon name="plus" size={20} /> {t('interviews.add')}
           </Button>
         }
       />
@@ -38,8 +40,8 @@ const InterviewPage = () => {
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
-            message="아직 면접 준비가 없어요"
-            actionLabel="면접 준비"
+            message={t('interviews.empty')}
+            actionLabel={t('interviews.add')}
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
@@ -56,7 +58,11 @@ const InterviewPage = () => {
           </>
         ) : null}
       </div>
-      <InterviewAddDialog open={dialogOpen} onClose={() => setDialogOpen(false)} applications={applications} />
+      <InterviewAddDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        applications={applications}
+      />
     </>
   )
 }

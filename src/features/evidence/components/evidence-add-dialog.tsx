@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { sprinkles } from '@push/design-system'
 import type { EvidenceKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
+import { useT } from '@/shared/i18n'
+import type { MsgKey } from '@/shared/i18n'
 import { useCreateEvidence } from '../api/hooks'
 
-const KIND_OPTIONS: { value: EvidenceKind; label: string }[] = [
-  { value: 'CAREER', label: '경력' },
-  { value: 'PROJECT', label: '프로젝트' },
-  { value: 'RESUME', label: '이력서' },
-  { value: 'GITHUB', label: 'GitHub' },
-  { value: 'EDUCATION', label: '학력' },
-  { value: 'SKILL', label: '기술' },
+const KIND_OPTIONS: { value: EvidenceKind; labelKey: MsgKey }[] = [
+  { value: 'CAREER', labelKey: 'evidence.kinds.CAREER' },
+  { value: 'PROJECT', labelKey: 'evidence.kinds.PROJECT' },
+  { value: 'RESUME', labelKey: 'evidence.kinds.RESUME' },
+  { value: 'GITHUB', labelKey: 'evidence.kinds.GITHUB' },
+  { value: 'EDUCATION', labelKey: 'evidence.kinds.EDUCATION' },
+  { value: 'SKILL', labelKey: 'evidence.kinds.SKILL' },
 ]
 
 type EvidenceAddDialogProps = {
@@ -19,6 +21,7 @@ type EvidenceAddDialogProps = {
 }
 
 const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
+  const t = useT()
   const create = useCreateEvidence()
   const [kind, setKind] = useState<EvidenceKind>('CAREER')
   const [title, setTitle] = useState('')
@@ -36,10 +39,10 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
         sourceText: sourceText.trim(),
         ...(sourceUrl.trim() ? { sourceUrl: sourceUrl.trim() } : {}),
       })
-      showToast('근거를 추가했어요', 'check')
+      showToast(t('evidence.added'), 'check')
       onClose()
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '추가하지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('evidence.addFailed'), 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -48,12 +51,12 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
   return (
     <Dialog
       open={open}
-      title="근거 추가"
+      title={t('evidence.title')}
       onClose={onClose}
       actions={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            취소
+            {t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -62,32 +65,36 @@ const EvidenceAddDialog = ({ open, onClose }: EvidenceAddDialogProps) => {
             disabled={!title.trim() || !sourceText.trim()}
             onClick={() => void submit()}
           >
-            추가
+            {t('common.add')}
           </Button>
         </>
       }
     >
       <div className={['form', sprinkles({ gap: 's12' })].join(' ')}>
         <Select
-          aria-label="근거 종류"
+          aria-label={t('evidence.kind')}
           value={kind}
           onChange={(e) => setKind(e.target.value as EvidenceKind)}
         >
           {KIND_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {t(o.labelKey)}
             </option>
           ))}
         </Select>
-        <Input placeholder="제목" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input
+          placeholder={t('evidence.placeholderTitle')}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
         <Textarea
-          placeholder="원문을 붙여넣으세요 (수치·경험은 원문 그대로)"
+          placeholder={t('evidence.placeholderText')}
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
           rows={5}
         />
         <Input
-          placeholder="출처 URL (선택)"
+          placeholder={t('evidence.placeholderUrl')}
           value={sourceUrl}
           onChange={(e) => setSourceUrl(e.target.value)}
         />

@@ -78,7 +78,9 @@
     "networkError": "Check your network and try again.",
     "save": "Save",
     "saved": "Saved",
-    "back": "Back"
+    "back": "Back",
+    "cancel": "Cancel",
+    "add": "Add"
   },
   "settings": {
     "account": "Account",
@@ -169,5 +171,96 @@
     "ultraFeat3": "Priority support",
     "freeFeat1": "Basic chat",
     "freeFeat2": "Some managed models"
+  },
+  "evidence": {
+    "title": "Add evidence",
+    "kind": "Evidence kind",
+    "placeholderTitle": "Title",
+    "placeholderText": "Paste the source text (keep figures and experience verbatim)",
+    "placeholderUrl": "Source URL (optional)",
+    "added": "Evidence added",
+    "addFailed": "Could not add",
+    "kinds": {
+      "RESUME": "Resume",
+      "GITHUB": "GitHub",
+      "CAREER": "Career",
+      "EDUCATION": "Education",
+      "SKILL": "Skill",
+      "PROJECT": "Project"
+    }
+  },
+  "applications": {
+    "empty": "No applications yet",
+    "generating": "Generating…",
+    "generateResume": "Generate tailored resume",
+    "resumeCreated": "Tailored resume created",
+    "resumeFailed": "Failed to generate resume",
+    "stages": {
+      "DISCOVERED": "Analyzing posting",
+      "PREPARING": "Preparing docs",
+      "READY": "Ready to submit",
+      "APPLIED": "Applied",
+      "SCREENING": "Screening",
+      "INTERVIEW": "Interviewing",
+      "OFFER": "Offer",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "WITHDRAWN": "Withdrawn"
+    }
+  },
+  "jobs": {
+    "detail": "Job details",
+    "analysis": "Requirements analysis",
+    "fitSummary": "Fit {{score}} · {{matched}} matched · {{missing}} missing ({{method}})",
+    "fitUnscored": "N/A",
+    "methodAi": "AI assisted",
+    "methodRule": "Rule based",
+    "core": "Core: {{items}}",
+    "risks": "Risks: {{items}}",
+    "vaultDiff": "Career vault gap",
+    "evidenceLinkable": "{{count}} evidence linkable · {{missing}} missing requirements",
+    "noAnalysis": "No analysis yet. It will run when you start preparing.",
+    "startPrep": "Start preparing",
+    "started": "Application started",
+    "startFailed": "Could not start application",
+    "addTitle": "Add job posting",
+    "company": "Company",
+    "jobTitle": "Job title",
+    "sourcePlaceholder": "Paste the job URL or the job description",
+    "sourceKind": "Source kind",
+    "added": "Job posting added",
+    "addFailed": "Could not add",
+    "applicationAdded": "Application added",
+    "applicationFailed": "Could not create application"
+  },
+  "interviews": {
+    "add": "Prepare interview",
+    "empty": "No interview prep yet",
+    "reflection": "Reflection",
+    "minutes": "{{count}} min"
+  },
+  "calendar": {
+    "connect": "Connect Google",
+    "sync": "Sync",
+    "syncStarted": "Sync started",
+    "syncFailed": "Could not sync",
+    "connectFailed": "Could not connect",
+    "empty": "No upcoming events",
+    "types": {
+      "INTERVIEW": "Interview",
+      "DEADLINE": "Deadline",
+      "FOLLOW_UP": "Follow-up",
+      "CUSTOM": "Event"
+    }
+  },
+  "documents": {
+    "empty": "No documents yet",
+    "exportSaved": "{{format}} file saved",
+    "exportFailed": "Could not export",
+    "untitled": "Document"
+  },
+  "vault": {
+    "add": "Add evidence",
+    "empty": "No evidence yet"
   }
 }

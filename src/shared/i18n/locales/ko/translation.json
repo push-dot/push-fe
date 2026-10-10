@@ -78,7 +78,9 @@
     "networkError": "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
     "save": "저장",
     "saved": "저장했어요",
-    "back": "뒤로"
+    "back": "뒤로",
+    "cancel": "취소",
+    "add": "추가"
   },
   "settings": {
     "account": "계정",
@@ -169,5 +171,96 @@
     "ultraFeat3": "우선 지원",
     "freeFeat1": "기본 채팅",
     "freeFeat2": "관리형 모델 일부"
+  },
+  "evidence": {
+    "title": "근거 추가",
+    "kind": "근거 종류",
+    "placeholderTitle": "제목",
+    "placeholderText": "원문을 붙여넣으세요 (수치·경험은 원문 그대로)",
+    "placeholderUrl": "출처 URL (선택)",
+    "added": "근거를 추가했어요",
+    "addFailed": "추가하지 못했어요",
+    "kinds": {
+      "RESUME": "이력서",
+      "GITHUB": "GitHub",
+      "CAREER": "경력",
+      "EDUCATION": "학력",
+      "SKILL": "기술",
+      "PROJECT": "프로젝트"
+    }
+  },
+  "applications": {
+    "empty": "아직 지원 내역이 없어요",
+    "generating": "생성 중…",
+    "generateResume": "맞춤 이력서 생성",
+    "resumeCreated": "맞춤 이력서를 만들었어요",
+    "resumeFailed": "이력서 생성에 실패했어요",
+    "stages": {
+      "DISCOVERED": "공고 분석 중",
+      "PREPARING": "서류 준비 중",
+      "READY": "제출 준비 완료",
+      "APPLIED": "지원 완료",
+      "SCREENING": "서류 심사 중",
+      "INTERVIEW": "면접 진행 중",
+      "OFFER": "오퍼",
+      "ACCEPTED": "합격",
+      "REJECTED": "불합격",
+      "WITHDRAWN": "지원 철회"
+    }
+  },
+  "jobs": {
+    "detail": "공고 상세",
+    "analysis": "요구사항 분석",
+    "fitSummary": "적합도 {{score}} · 매칭 {{matched}}건 · 부족 {{missing}}건 ({{method}})",
+    "fitUnscored": "평가 불가",
+    "methodAi": "AI 보조",
+    "methodRule": "규칙 기반",
+    "core": "핵심: {{items}}",
+    "risks": "위험: {{items}}",
+    "vaultDiff": "커리어 볼트 차이",
+    "evidenceLinkable": "근거 {{count}}개 연결 가능 · 부족 요구사항 {{missing}}건",
+    "noAnalysis": "아직 분석 결과가 없어요. 지원 준비를 시작하면 분석됩니다.",
+    "startPrep": "지원 준비 시작",
+    "started": "지원을 시작했어요",
+    "startFailed": "지원을 시작하지 못했어요",
+    "addTitle": "공고 추가",
+    "company": "회사명",
+    "jobTitle": "직무",
+    "sourcePlaceholder": "공고 URL 또는 공고 원문을 붙여넣으세요",
+    "sourceKind": "수집 방식",
+    "added": "공고를 추가했어요",
+    "addFailed": "추가하지 못했어요",
+    "applicationAdded": "지원을 추가했어요",
+    "applicationFailed": "지원을 만들지 못했어요"
+  },
+  "interviews": {
+    "add": "면접 준비",
+    "empty": "아직 면접 준비가 없어요",
+    "reflection": "회고",
+    "minutes": "{{count}}분"
+  },
+  "calendar": {
+    "connect": "Google 연결",
+    "sync": "동기화",
+    "syncStarted": "동기화를 시작했어요",
+    "syncFailed": "동기화하지 못했어요",
+    "connectFailed": "연결하지 못했어요",
+    "empty": "다가오는 일정이 없어요",
+    "types": {
+      "INTERVIEW": "면접",
+      "DEADLINE": "마감",
+      "FOLLOW_UP": "후속",
+      "CUSTOM": "일정"
+    }
+  },
+  "documents": {
+    "empty": "아직 문서가 없어요",
+    "exportSaved": "{{format}} 파일을 저장했어요",
+    "exportFailed": "출력하지 못했어요",
+    "untitled": "문서"
+  },
+  "vault": {
+    "add": "근거 추가",
+    "empty": "아직 근거가 없어요"
   }
 }

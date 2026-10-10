@@ -78,7 +78,9 @@
     "networkError": "Kiểm tra kết nối mạng rồi thử lại.",
     "save": "Lưu",
     "saved": "Đã lưu",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "cancel": "Hủy",
+    "add": "Thêm"
   },
   "settings": {
     "account": "Tài khoản",
@@ -169,5 +171,96 @@
     "ultraFeat3": "Hỗ trợ ưu tiên",
     "freeFeat1": "Trò chuyện cơ bản",
     "freeFeat2": "Một số mô hình quản lý"
+  },
+  "evidence": {
+    "title": "Thêm bằng chứng",
+    "kind": "Loại bằng chứng",
+    "placeholderTitle": "Tiêu đề",
+    "placeholderText": "Dán nội dung gốc (giữ nguyên số liệu và kinh nghiệm)",
+    "placeholderUrl": "URL nguồn (tùy chọn)",
+    "added": "Đã thêm bằng chứng",
+    "addFailed": "Không thể thêm",
+    "kinds": {
+      "RESUME": "Sơ yếu lý lịch",
+      "GITHUB": "GitHub",
+      "CAREER": "Kinh nghiệm",
+      "EDUCATION": "Học vấn",
+      "SKILL": "Kỹ năng",
+      "PROJECT": "Dự án"
+    }
+  },
+  "applications": {
+    "empty": "Chưa có đơn ứng tuyển",
+    "generating": "Đang tạo…",
+    "generateResume": "Tạo sơ yếu lý lịch phù hợp",
+    "resumeCreated": "Đã tạo sơ yếu lý lịch phù hợp",
+    "resumeFailed": "Không tạo được sơ yếu lý lịch",
+    "stages": {
+      "DISCOVERED": "Đang phân tích",
+      "PREPARING": "Đang chuẩn bị hồ sơ",
+      "READY": "Sẵn sàng nộp",
+      "APPLIED": "Đã ứng tuyển",
+      "SCREENING": "Đang sàng lọc",
+      "INTERVIEW": "Đang phỏng vấn",
+      "OFFER": "Offer",
+      "ACCEPTED": "Đỗ",
+      "REJECTED": "Trượt",
+      "WITHDRAWN": "Đã rút đơn"
+    }
+  },
+  "jobs": {
+    "detail": "Chi tiết tin tuyển dụng",
+    "analysis": "Phân tích yêu cầu",
+    "fitSummary": "Độ phù hợp {{score}} · {{matched}} khớp · thiếu {{missing}} ({{method}})",
+    "fitUnscored": "Không đánh giá",
+    "methodAi": "AI hỗ trợ",
+    "methodRule": "Dựa trên quy tắc",
+    "core": "Cốt lõi: {{items}}",
+    "risks": "Rủi ro: {{items}}",
+    "vaultDiff": "Chênh lệch vault",
+    "evidenceLinkable": "{{count}} bằng chứng có thể liên kết · {{missing}} yêu cầu thiếu",
+    "noAnalysis": "Chưa có kết quả phân tích. Sẽ phân tích khi bắt đầu chuẩn bị.",
+    "startPrep": "Bắt đầu chuẩn bị ứng tuyển",
+    "started": "Đã bắt đầu ứng tuyển",
+    "startFailed": "Không thể bắt đầu ứng tuyển",
+    "addTitle": "Thêm tin tuyển dụng",
+    "company": "Tên công ty",
+    "jobTitle": "Vị trí",
+    "sourcePlaceholder": "Dán URL tin tuyển dụng hoặc nội dung gốc",
+    "sourceKind": "Cách thu thập",
+    "added": "Đã thêm tin tuyển dụng",
+    "addFailed": "Không thể thêm",
+    "applicationAdded": "Đã thêm ứng tuyển",
+    "applicationFailed": "Không tạo được ứng tuyển"
+  },
+  "interviews": {
+    "add": "Chuẩn bị phỏng vấn",
+    "empty": "Chưa có chuẩn bị phỏng vấn",
+    "reflection": "Tự đánh giá",
+    "minutes": "{{count}} phút"
+  },
+  "calendar": {
+    "connect": "Kết nối Google",
+    "sync": "Đồng bộ",
+    "syncStarted": "Đã bắt đầu đồng bộ",
+    "syncFailed": "Không đồng bộ được",
+    "connectFailed": "Không kết nối được",
+    "empty": "Không có sự kiện sắp tới",
+    "types": {
+      "INTERVIEW": "Phỏng vấn",
+      "DEADLINE": "Hạn chót",
+      "FOLLOW_UP": "Theo dõi",
+      "CUSTOM": "Sự kiện"
+    }
+  },
+  "documents": {
+    "empty": "Chưa có tài liệu",
+    "exportSaved": "Đã lưu tệp {{format}}",
+    "exportFailed": "Không xuất được",
+    "untitled": "Tài liệu"
+  },
+  "vault": {
+    "add": "Thêm bằng chứng",
+    "empty": "Chưa có bằng chứng"
   }
 }

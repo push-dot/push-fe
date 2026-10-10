@@ -78,7 +78,9 @@
     "networkError": "ネットワーク状態を確認してからもう一度お試しください。",
     "save": "保存",
     "saved": "保存しました",
-    "back": "戻る"
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "add": "追加"
   },
   "settings": {
     "account": "アカウント",
@@ -169,5 +171,96 @@
     "ultraFeat3": "優先サポート",
     "freeFeat1": "基本チャット",
     "freeFeat2": "一部の管理型モデル"
+  },
+  "evidence": {
+    "title": "根拠を追加",
+    "kind": "根拠の種類",
+    "placeholderTitle": "タイトル",
+    "placeholderText": "原文を貼り付けてください（数値・経験は原文のまま）",
+    "placeholderUrl": "出典URL（任意）",
+    "added": "根拠を追加しました",
+    "addFailed": "追加できませんでした",
+    "kinds": {
+      "RESUME": "履歴書",
+      "GITHUB": "GitHub",
+      "CAREER": "経歴",
+      "EDUCATION": "学歴",
+      "SKILL": "スキル",
+      "PROJECT": "プロジェクト"
+    }
+  },
+  "applications": {
+    "empty": "まだ応募履歴がありません",
+    "generating": "生成中…",
+    "generateResume": "最適化履歴書を生成",
+    "resumeCreated": "最適化履歴書を作成しました",
+    "resumeFailed": "履歴書の生成に失敗しました",
+    "stages": {
+      "DISCOVERED": "求人分析中",
+      "PREPARING": "書類準備中",
+      "READY": "提出準備完了",
+      "APPLIED": "応募完了",
+      "SCREENING": "書類審査中",
+      "INTERVIEW": "面接進行中",
+      "OFFER": "オファー",
+      "ACCEPTED": "合格",
+      "REJECTED": "不合格",
+      "WITHDRAWN": "応募取り下げ"
+    }
+  },
+  "jobs": {
+    "detail": "求人詳細",
+    "analysis": "要件分析",
+    "fitSummary": "適合度 {{score}} · マッチ {{matched}}件 · 不足 {{missing}}件（{{method}}）",
+    "fitUnscored": "評価不可",
+    "methodAi": "AI補助",
+    "methodRule": "ルールベース",
+    "core": "核心: {{items}}",
+    "risks": "リスク: {{items}}",
+    "vaultDiff": "キャリアボルト差分",
+    "evidenceLinkable": "根拠 {{count}}件接続可能 · 不足要件 {{missing}}件",
+    "noAnalysis": "まだ分析結果がありません。応募準備を始めると分析されます。",
+    "startPrep": "応募準備を開始",
+    "started": "応募を開始しました",
+    "startFailed": "応募を開始できませんでした",
+    "addTitle": "求人を追加",
+    "company": "会社名",
+    "jobTitle": "職務",
+    "sourcePlaceholder": "求人URLまたは求人原文を貼り付けてください",
+    "sourceKind": "収集方式",
+    "added": "求人を追加しました",
+    "addFailed": "追加できませんでした",
+    "applicationAdded": "応募を追加しました",
+    "applicationFailed": "応募を作成できませんでした"
+  },
+  "interviews": {
+    "add": "面接準備",
+    "empty": "まだ面接準備がありません",
+    "reflection": "振り返り",
+    "minutes": "{{count}}分"
+  },
+  "calendar": {
+    "connect": "Google連携",
+    "sync": "同期",
+    "syncStarted": "同期を開始しました",
+    "syncFailed": "同期できませんでした",
+    "connectFailed": "連携できませんでした",
+    "empty": "今後の予定がありません",
+    "types": {
+      "INTERVIEW": "面接",
+      "DEADLINE": "締切",
+      "FOLLOW_UP": "フォローアップ",
+      "CUSTOM": "予定"
+    }
+  },
+  "documents": {
+    "empty": "まだ書類がありません",
+    "exportSaved": "{{format}}ファイルを保存しました",
+    "exportFailed": "出力できませんでした",
+    "untitled": "書類"
+  },
+  "vault": {
+    "add": "根拠を追加",
+    "empty": "まだ根拠がありません"
   }
 }

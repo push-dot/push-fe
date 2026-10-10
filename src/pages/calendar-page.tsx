@@ -19,8 +19,10 @@ import {
   useGoogleStatus,
   useSyncGoogle,
 } from '@/features/calendar'
+import { useT } from '@/shared/i18n'
 
 const CalendarPage = () => {
+  const t = useT()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useCalendarEvents()
   const google = useGoogleStatus()
   const syncMutation = useSyncGoogle()
@@ -29,9 +31,9 @@ const CalendarPage = () => {
   const onSync = async () => {
     try {
       await syncMutation.mutateAsync()
-      showToast('동기화를 시작했어요', 'check')
+      showToast(t('calendar.syncStarted'), 'check')
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '동기화하지 못했어요', 'circle-alert')
+      showToast(e instanceof Error ? e.message : t('calendar.syncFailed'), 'circle-alert')
     }
   }
 
@@ -44,7 +46,7 @@ const CalendarPage = () => {
         window.location.href = url
       }
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '연결하지 못했어요', 'circle-alert')
+      showToast(e instanceof Error ? e.message : t('calendar.connectFailed'), 'circle-alert')
     }
   }
 
@@ -62,11 +64,11 @@ const CalendarPage = () => {
   return (
     <>
       <CanvasHeader
-        title="캘린더"
+        title={t('nav.calendar')}
         actions={
           google.data && !google.data.connected ? (
             <Button variant="primary" size="sm" onClick={() => void onConnect()}>
-              <Icon name="calendar" size={20} /> Google 연결
+              <Icon name="calendar" size={20} /> {t('calendar.connect')}
             </Button>
           ) : (
             <Button
@@ -75,7 +77,7 @@ const CalendarPage = () => {
               loading={syncMutation.isPending}
               onClick={() => void onSync()}
             >
-              <Icon name="calendar" size={20} /> 동기화
+              <Icon name="calendar" size={20} /> {t('calendar.sync')}
             </Button>
           )
         }
@@ -89,7 +91,7 @@ const CalendarPage = () => {
           </>
         ) : null}
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
-        {isSuccess && items.length === 0 ? <EmptyState message="다가오는 일정이 없어요" /> : null}
+        {isSuccess && items.length === 0 ? <EmptyState message={t('calendar.empty')} /> : null}
         {isSuccess && items.length > 0 ? (
           <>
             <Card title={monthLabel(new Date())}>

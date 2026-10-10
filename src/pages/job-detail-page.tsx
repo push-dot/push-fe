@@ -5,8 +5,10 @@ import { sprinkles } from '@push/design-system'
 import { Button, CanvasHeader, Card, ErrorState, Skeleton, showToast } from '@/shared/components'
 import { useCreateApplication } from '@/features/applications'
 import { useJob } from '@/features/applications'
+import { useT } from '@/shared/i18n'
 
 const JobDetailPage = () => {
+  const t = useT()
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const { data, isPending, isError, isSuccess, error, refetch } = useJob(id)
@@ -22,10 +24,10 @@ const JobDetailPage = () => {
     setBusy(true)
     try {
       await createApplication.mutateAsync(id)
-      showToast('지원을 시작했어요', 'check')
+      showToast(t('jobs.started'), 'check')
       navigate(ROUTES.applications)
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '지원을 시작하지 못했어요', 'circle-alert')
+      showToast(e instanceof Error ? e.message : t('jobs.startFailed'), 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -33,7 +35,7 @@ const JobDetailPage = () => {
 
   return (
     <>
-      <CanvasHeader title={current ? `${current.company} — ${current.title}` : '공고 상세'} />
+      <CanvasHeader title={current ? `${current.company} — ${current.title}` : t('jobs.detail')} />
       <div className="canvas-body">
         {isPending ? (
           <>
@@ -45,30 +47,41 @@ const JobDetailPage = () => {
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && current ? (
           <>
-            <Card title="요구사항 분석">
+            <Card title={t('jobs.analysis')}>
               {latest ? (
                 <p className="t-body-sm">
-                  {`적합도 ${latest.fitScore ?? '평가 불가'} · 매칭 ${latest.matched.length}건 · 부족 ${latest.missing.length}건 (${latest.method === 'AI_ASSISTED' ? 'AI 보조' : '규칙 기반'})`}
+                  {t('jobs.fitSummary', {
+                    score: latest.fitScore ?? t('jobs.fitUnscored'),
+                    matched: latest.matched.length,
+                    missing: latest.missing.length,
+                    method:
+                      latest.method === 'AI_ASSISTED' ? t('jobs.methodAi') : t('jobs.methodRule'),
+                  })}
                 </p>
               ) : null}
               {current.requirements.length > 0 ? (
-                <p className="t-body-sm">핵심: {current.requirements.slice(0, 3).join(', ')}</p>
+                <p className="t-body-sm">
+                  {t('jobs.core', { items: current.requirements.slice(0, 3).join(', ') })}
+                </p>
               ) : null}
               {current.risks.length > 0 ? (
                 <p className={['t-body-sm', sprinkles({ color: 'warn' })].join(' ')}>
-                  위험: {current.risks.join(', ')}
+                  {t('jobs.risks', { items: current.risks.join(', ') })}
                 </p>
               ) : null}
             </Card>
-            <Card title="커리어 볼트 차이">
+            <Card title={t('jobs.vaultDiff')}>
               <p className="t-body-sm">
                 {latest
-                  ? `근거 ${evidenceIds.size}개 연결 가능 · 부족 요구사항 ${latest.missing.length}건`
-                  : '아직 분석 결과가 없어요. 지원 준비를 시작하면 분석됩니다.'}
+                  ? t('jobs.evidenceLinkable', {
+                      count: evidenceIds.size,
+                      missing: latest.missing.length,
+                    })
+                  : t('jobs.noAnalysis')}
               </p>
             </Card>
             <Button variant="primary" size="lg" loading={busy} onClick={() => void start()}>
-              지원 준비 시작
+              {t('jobs.startPrep')}
             </Button>
           </>
         ) : null}
