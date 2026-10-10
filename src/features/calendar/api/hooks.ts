@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import { completeGoogle, connectGoogle, fetchGoogleStatus, listCalendarEvents, syncGoogle } from './fetchers'
 
 const keys = {
@@ -13,17 +14,18 @@ const monthRange = (base: Date): { from: string; to: string } => {
   return { from: from.toISOString(), to: to.toISOString() }
 }
 
-const calendarEventsQuery = {
-  queryKey: keys.list,
-  queryFn: () => listCalendarEvents(monthRange(new Date())).then((env) => env.data),
-}
+const calendarEventsQuery = (base: Date) => ({
+  queryKey: [...keys.list, `${base.getFullYear()}-${base.getMonth()}`] as const,
+  queryFn: () => listCalendarEvents(monthRange(base)).then((env) => env.data),
+})
 
-export const useCalendarEvents = () => useQuery(calendarEventsQuery)
+export const useCalendarEvents = () =>
+  useQuery({ ...calendarEventsQuery(new Date()), enabled: useHasSession() })
 
-export const prefetchCalendarEvents = () => prefetchList(calendarEventsQuery)
+export const prefetchCalendarEvents = () => prefetchList(calendarEventsQuery(new Date()))
 
 export const useGoogleStatus = () =>
-  useQuery({ queryKey: keys.googleStatus, queryFn: fetchGoogleStatus })
+  useQuery({ queryKey: keys.googleStatus, queryFn: fetchGoogleStatus, enabled: useHasSession() })
 
 export const useSyncGoogle = () => {
   const qc = useQueryClient()

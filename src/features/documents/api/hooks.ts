@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import { createDocument, downloadVersionExport, getDocument, getDocumentVersion, listDocuments } from './fetchers'
 import type { DocumentVersion, PushDocument } from './schemas'
 
@@ -18,7 +19,8 @@ export type DocumentDetail = {
   version: DocumentVersion | null
 }
 
-export const useDocuments = () => useQuery(documentsQuery)
+export const useDocuments = () =>
+  useQuery({ ...documentsQuery, enabled: useHasSession() })
 
 export const prefetchDocuments = () => prefetchList(documentsQuery)
 

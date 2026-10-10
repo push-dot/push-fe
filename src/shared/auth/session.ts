@@ -33,3 +33,5 @@ export const useSessionStore = create<SessionState>()(
 
 export const getAccessToken = (): string | null =>
   useSessionStore.getState().session?.accessToken ?? null
+
+export const useHasSession = (): boolean => useSessionStore((s) => Boolean(s.session))

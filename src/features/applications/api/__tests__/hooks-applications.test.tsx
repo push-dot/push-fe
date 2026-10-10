@@ -15,6 +15,7 @@ vi.mock('../fetchers', async (importOriginal) => {
 
 import { createApplication, listApplications } from '../fetchers'
 import { useApplications, useCreateApplication } from '../hooks'
+import { useSessionStore } from '@/shared/auth/session'
 
 const app = (over: Partial<Application> = {}): Application => ({
   id: 'a1',
@@ -42,6 +43,14 @@ describe('applications api hooks', () => {
     vi.mocked(listApplications).mockReset()
     vi.mocked(createApplication).mockReset()
     client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    useSessionStore.setState({
+      session: {
+        accessToken: 't',
+        refreshToken: 'r',
+        expiresIn: 3600,
+        user: { id: 'u1', displayName: 'Dev', locale: 'ko' },
+      },
+    })
   })
 
   it('fetches the application list', async () => {

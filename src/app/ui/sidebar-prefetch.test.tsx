@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryClient } from '@/shared/api'
+import { useSessionStore } from '@/shared/auth/session'
 
 vi.mock('@/features/documents/api/fetchers', async (importOriginal) => {
   const mod = await importOriginal<typeof import('@/features/documents/api/fetchers')>()
@@ -100,6 +101,14 @@ describe('route prefetch', () => {
   beforeEach(() => {
     queryClient.clear()
     useMessagesStore.getState().reset()
+    useSessionStore.setState({
+      session: {
+        accessToken: 't',
+        refreshToken: 'r',
+        expiresIn: 3600,
+        user: { id: 'u1', displayName: 'Dev', locale: 'ko' },
+      },
+    })
     vi.mocked(listDocuments).mockReset().mockResolvedValue({ data: [], page: emptyPage })
     vi.mocked(listApplications).mockReset().mockResolvedValue({ data: [], page: emptyPage })
     vi.mocked(listCareerEvidence).mockReset().mockResolvedValue({ data: [], page: emptyPage })
@@ -115,7 +124,9 @@ describe('route prefetch', () => {
     async ({ prefetch, useList, fetcher, key }) => {
       fetcher().mockResolvedValue({ data: [{ id: 'x1' }], page: emptyPage } as never)
       prefetch()
-      await waitFor(() => expect(queryClient.getQueryData(key)).toHaveLength(1))
+      await waitFor(() =>
+        expect(queryClient.getQueriesData({ queryKey: key })[0]?.[1]).toHaveLength(1),
+      )
       const { result, unmount } = renderHook(() => useList(), { wrapper })
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
       unmount()

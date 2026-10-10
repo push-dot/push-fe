@@ -2,6 +2,16 @@
 
 실전 순서는 Sentry 이슈 → request-id → 백엔드 로그 → 재현 → 핫픽스 → 검증. 프로세스 전반은 `docs/incidents/README.md` 참조.
 
+## 0. 빌드 환경 변수
+
+- `VITE_API_BASE_URL` — API 오리진. 미설정 시 `http://localhost:8080/api/v1`(로컬 dev 기본값, `src/shared/constants.ts`). 릴리스 빌드는 반드시 실제 오리진으로 설정하고, `src-tauri/tauri.conf.json`의 CSP `connect-src`에도 같은 오리진을 추가한다.
+- `VITE_SENTRY_DSN` — 미설정 시 `Sentry.init` 스킵(1절 주의 참조).
+- `VITE_LOCIZE_PROJECT_ID` / `VITE_LOCIZE_API_KEY` — locize i18n 백엔드 연동(`src/shared/i18n/index.ts`).
+
+### BYOK 키 저장소
+
+웹은 BYOK API 키를 `sessionStorage`(`push-byok-key`)에만 보관하고 `localStorage` 잔여분은 로드 시 제거한다. Tauri 네이티브의 Stronghold 플러그인 연동은 보류(deferred) — 데스크톱 빌드에서 키 영속성이 필요하면 `tauri-plugin-stronghold` 도입 후 `src/features/inference/stores.ts`의 `BYOK_KEY_STORAGE` 경로를 대체한다.
+
 ## 1. Sentry 이슈에서 시작
 
 - `Sentry.ErrorBoundary`가 앱 루트(`src/app/main.tsx`)를 감싸고 있어 렌더 크래시는 스택과 함께 자동 수집된다. 초기화는 `src/shared/lib/observability.ts` — `environment`는 `import.meta.env.MODE`(development/production), `tracesSampleRate: 0.2`.

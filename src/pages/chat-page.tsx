@@ -41,6 +41,10 @@ const ChatPage = () => {
   const sentRef = useRef(false)
 
   useEffect(() => {
+    sentRef.current = false
+  }, [id])
+
+  useEffect(() => {
     if (!initialState?.initialMessage || status !== 'success' || sentRef.current) return
     sentRef.current = true
     void send(id, initialState.initialMessage, initialState.initialEvidence)

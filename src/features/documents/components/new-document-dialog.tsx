@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { sprinkles } from '@push/design-system'
+import { form, formRowHint, sprinkles } from '@push/design-system'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import type { DocumentKind } from '../api/schemas'
 import { Button, Dialog, Input, Select, showToast } from '@/shared/components'
+import { useT } from '@/shared/i18n'
+import type { MsgKey } from '@/shared/i18n'
 import type { Application } from '@/features/applications'
 import { useCreateDocument } from '../api/hooks'
 
-const KIND_OPTIONS: { value: DocumentKind; label: string }[] = [
-  { value: 'RESUME', label: '이력서' },
-  { value: 'COVER_LETTER', label: '자기소개서' },
-  { value: 'PORTFOLIO', label: '포트폴리오' },
+const KIND_OPTIONS: { value: DocumentKind; labelKey: MsgKey }[] = [
+  { value: 'RESUME', labelKey: 'docDialog.kindResume' },
+  { value: 'COVER_LETTER', labelKey: 'docDialog.kindCoverLetter' },
+  { value: 'PORTFOLIO', labelKey: 'docDialog.kindPortfolio' },
 ]
 
 type NewDocumentDialogProps = {
@@ -20,6 +22,7 @@ type NewDocumentDialogProps = {
 }
 
 const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogProps) => {
+  const t = useT()
   const navigate = useNavigate()
   const create = useCreateDocument()
   const [title, setTitle] = useState('')
@@ -40,7 +43,7 @@ const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogPro
       onClose()
       navigate(ROUTES.document(doc.id))
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '문서를 만들지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('docDialog.createFailed'), 'circle-alert')
     } finally {
       setBusy(false)
     }
@@ -49,12 +52,12 @@ const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogPro
   return (
     <Dialog
       open={open}
-      title="새 문서"
+      title={t('docDialog.new')}
       onClose={onClose}
       actions={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            취소
+            {t('docDialog.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -63,30 +66,34 @@ const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogPro
             disabled={!title.trim() || !applicationId}
             onClick={() => void submit()}
           >
-            만들기
+            {t('docDialog.create')}
           </Button>
         </>
       }
     >
-      <div className={['form', sprinkles({ gap: 's12' })].join(' ')}>
-        <Input placeholder="문서 제목" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <div className={[form, sprinkles({ gap: 's12' })].join(' ')}>
+        <Input
+          placeholder={t('docDialog.title')}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
         <Select
-          aria-label="문서 종류"
+          aria-label={t('docDialog.kind')}
           value={kind}
           onChange={(e) => setKind(e.target.value as DocumentKind)}
         >
           {KIND_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {t(o.labelKey)}
             </option>
           ))}
         </Select>
         <Select
-          aria-label="연결할 지원"
+          aria-label={t('docDialog.application')}
           value={applicationId}
           onChange={(e) => setApplicationId(e.target.value)}
         >
-          <option value="">지원 선택</option>
+          <option value="">{t('docDialog.pickApplication')}</option>
           {applications.map((a) => (
             <option key={a.id} value={a.id}>
               {a.company} {a.title}
@@ -94,7 +101,7 @@ const NewDocumentDialog = ({ open, onClose, applications }: NewDocumentDialogPro
           ))}
         </Select>
         {applications.length === 0 ? (
-          <span className="form-row-hint">먼저 지원 관리에서 공고를 추가해 주세요.</span>
+          <span className={formRowHint}>{t('docDialog.needApplication')}</span>
         ) : null}
       </div>
     </Dialog>

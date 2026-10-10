@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import {
   createApplication,
   createJob,
@@ -20,7 +21,8 @@ const applicationsQuery = {
   queryFn: () => listApplications({ limit: 50 }).then((env) => env.data),
 }
 
-export const useApplications = () => useQuery(applicationsQuery)
+export const useApplications = () =>
+  useQuery({ ...applicationsQuery, enabled: useHasSession() })
 
 export const prefetchApplications = () => prefetchList(applicationsQuery)
 
@@ -94,9 +96,7 @@ export const useJob = (id: string | undefined) =>
     enabled: Boolean(id),
     queryFn: async (): Promise<JobDetail> => {
       const job = await getJob(id!)
-      const analyses = await listJobAnalyses(id!, { limit: 10 })
-        .then((env) => env.data)
-        .catch(() => [])
+      const analyses = await listJobAnalyses(id!, { limit: 10 }).then((env) => env.data)
       return { job, analyses }
     },
   })

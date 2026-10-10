@@ -1,5 +1,14 @@
+const DROPPED_FILE_MAX_BYTES: u64 = 20 * 1024 * 1024;
+
 #[tauri::command]
-fn read_dropped_file(path: String) -> Result<Vec<u8>, String> {
+fn read_dropped_file(path: String, allowlist: Vec<String>) -> Result<Vec<u8>, String> {
+    if !allowlist.iter().any(|p| p == &path) {
+        return Err("path not in dropped files".to_string());
+    }
+    let size = std::fs::metadata(&path).map_err(|e| e.to_string())?.len();
+    if size > DROPPED_FILE_MAX_BYTES {
+        return Err("file too large".to_string());
+    }
     std::fs::read(&path).map_err(|e| e.to_string())
 }
 

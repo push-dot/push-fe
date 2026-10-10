@@ -11,6 +11,8 @@ import { DesignSystemProvider } from '@push/design-system'
 import { IconSprite } from '@/shared/components'
 import { ErrorState } from '@/shared/components'
 import { queryClient } from '@/shared/api'
+import { useSessionStore } from '@/shared/auth/session'
+import { useMessagesStore, usePendingFiles } from '@/features/chat'
 import { initObservability, Sentry } from '@/shared/lib/observability'
 import { configureChatInference } from '@/features/chat/lib/inference-bridge'
 import { useInferenceSettings } from '@/features/inference/stores'
@@ -28,6 +30,14 @@ configureChatInference({
 
 const router = createBrowserRouter(ROUTE_CONFIG)
 
+useSessionStore.subscribe((state, prev) => {
+  if (prev.session && !state.session) {
+    queryClient.clear()
+    useMessagesStore.getState().reset()
+    usePendingFiles.getState().clear()
+  }
+})
+
 const handleDeepLink = (urls: string[]) => {
   for (const raw of urls) {
     try {
@@ -35,6 +45,8 @@ const handleDeepLink = (urls: string[]) => {
       const url = new URL(raw.replace('push://', 'app://'))
       if (url.host === 'auth' && url.pathname === '/callback') {
         void router.navigate(`/auth/callback${url.search}`)
+      } else if (url.host === 'integrations') {
+        void router.navigate(`/integrations${url.pathname}${url.search}`)
       }
     } catch {
       continue

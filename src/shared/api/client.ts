@@ -5,6 +5,7 @@ import type { DataEnvelope } from './envelope'
 import type { Session } from '../auth/session'
 
 let refreshing: Promise<Session> | null = null
+const AUTH_RETRIED_HEADER = 'X-Auth-Retried'
 
 const refreshSession = (): Promise<Session> => {
   refreshing ??= ky
@@ -38,10 +39,14 @@ export const api = ky.create({
     afterResponse: [
       async (req, options, res) => {
         if (res.status !== 401 || req.url.includes('/auth/')) return
-        if (!useSessionStore.getState().session?.refreshToken) {
+        if (
+          req.headers.has(AUTH_RETRIED_HEADER) ||
+          !useSessionStore.getState().session?.refreshToken
+        ) {
           useSessionStore.getState().clearSession()
           return
         }
+        req.headers.set(AUTH_RETRIED_HEADER, '1')
         try {
           const session = await refreshSession()
           useSessionStore.getState().setSession(session)

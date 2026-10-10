@@ -34,4 +34,14 @@ export type { DataListRowProps } from './components/data-list'
 export { Form, FormRow, FormSection } from './components/form'
 export { default as CanvasHeader } from './components/canvas-header'
 export type { CanvasHeaderProps } from './components/canvas-header'
-export { input, formSelect, formRowHint, cardMeta, cardTitle } from './styles.css'
+export {
+  input,
+  form,
+  formSelect,
+  formSection,
+  formRow,
+  formRowLabel,
+  formRowHint,
+  cardMeta,
+  cardTitle,
+} from './styles.css'

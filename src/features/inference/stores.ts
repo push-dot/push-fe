@@ -45,7 +45,14 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
   webSearch: false,
   accessMode: 'SUGGEST',
   credentialMode: localStorage.getItem(CREDENTIAL_MODE_STORAGE) === 'BYOK' ? 'BYOK' : 'MANAGED',
-  byokKey: localStorage.getItem(BYOK_KEY_STORAGE) ?? '',
+  byokKey: ((): string => {
+    const legacy = localStorage.getItem(BYOK_KEY_STORAGE)
+    if (legacy !== null) {
+      localStorage.removeItem(BYOK_KEY_STORAGE)
+      sessionStorage.setItem(BYOK_KEY_STORAGE, legacy)
+    }
+    return sessionStorage.getItem(BYOK_KEY_STORAGE) ?? ''
+  })(),
   byokModel: localStorage.getItem(BYOK_MODEL_STORAGE) ?? 'gpt-4o-mini',
   byokProvider: ((): ByokProvider => {
     const v = localStorage.getItem(BYOK_PROVIDER_STORAGE)
@@ -64,7 +71,8 @@ export const useInferenceSettings = create<InferenceSettingsState>()((set, get) 
     set({ credentialMode })
   },
   setByokKey: (byokKey) => {
-    localStorage.setItem(BYOK_KEY_STORAGE, byokKey)
+    sessionStorage.setItem(BYOK_KEY_STORAGE, byokKey)
+    localStorage.removeItem(BYOK_KEY_STORAGE)
     set({ byokKey })
   },
   setByokModel: (byokModel) => {
