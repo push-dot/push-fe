@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import '@mantine/core/styles.css'
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import '@push/design-system/styles'
 import '@/theme/components.css'
 import './app.css'
@@ -29,10 +30,14 @@ const router = createBrowserRouter(ROUTE_CONFIG)
 
 const handleDeepLink = (urls: string[]) => {
   for (const raw of urls) {
-    if (!raw.startsWith('push://')) continue
-    const url = new URL(raw.replace('push://', 'app://'))
-    if (url.host === 'auth' && url.pathname === '/callback') {
-      void router.navigate(`/auth/callback${url.search}`)
+    try {
+      if (!raw.startsWith('push://')) continue
+      const url = new URL(raw.replace('push://', 'app://'))
+      if (url.host === 'auth' && url.pathname === '/callback') {
+        void router.navigate(`/auth/callback${url.search}`)
+      }
+    } catch {
+      continue
     }
   }
 }

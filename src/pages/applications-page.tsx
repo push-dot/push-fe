@@ -77,18 +77,23 @@ const ApplicationsPage = () => {
           </CardGrid>
         ) : null}
       </div>
-      <JobAddDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreated={(job) => {
-          void createMutation
-            .mutateAsync(job.id)
-            .then(() => showToast('지원을 추가했어요', 'check'))
-            .catch((e: unknown) =>
-              showToast(e instanceof Error ? e.message : '지원을 만들지 못했어요', 'circle-alert'),
-            )
-        }}
-      />
+      {dialogOpen ? (
+        <JobAddDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onCreated={(job) => {
+            void createMutation
+              .mutateAsync(job.id)
+              .then(() => showToast('지원을 추가했어요', 'check'))
+              .catch((e: unknown) =>
+                showToast(
+                  e instanceof Error ? e.message : '지원을 만들지 못했어요',
+                  'circle-alert',
+                ),
+              )
+          }}
+        />
+      ) : null}
     </>
   )
 }

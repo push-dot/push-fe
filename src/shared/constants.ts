@@ -15,10 +15,6 @@ export const ROUTES = {
   plan: '/settings/plan',
 } as const
 
-export const PROJECT_TAG_LABEL = '프로젝트'
-
-export const COMPOSER_PLACEHOLDER = '메시지 입력'
-
 export const EXPERIMENT_EVENTS = {
   exposure: 'exposure',
   conversion: 'conversion',

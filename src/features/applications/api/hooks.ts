@@ -6,12 +6,10 @@ import {
   getJob,
   listApplications,
   listJobAnalyses,
-  patchApplication,
   resumeRun,
 } from './fetchers'
-import type { Application, ApplicationStage, GapAnalysis, JobPosting } from './schemas'
+import type { Application, GapAnalysis, JobPosting } from './schemas'
 import type { AiOptions } from '@/features/inference'
-import { canTransition } from '../lib/application-stage'
 
 const keys = {
   list: ['applications'] as const,
@@ -76,23 +74,6 @@ export const useCreateApplication = () => {
     },
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: keys.list })
-    },
-  })
-}
-
-export const useMoveStage = () => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async ({ id, to }: { id: string; to: ApplicationStage }) => {
-      const target = qc.getQueryData<Application[]>(keys.list)?.find((a) => a.id === id)
-      if (!target || !canTransition(target.stage, to)) return null
-      return patchApplication(id, { expectedRevision: target.revision, stage: to })
-    },
-    onSuccess: (updated) => {
-      if (!updated) return
-      qc.setQueryData<Application[]>(keys.list, (old) =>
-        (old ?? []).map((a) => (a.id === updated.id ? updated : a)),
-      )
     },
   })
 }

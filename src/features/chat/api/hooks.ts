@@ -26,8 +26,6 @@ const conversationsQuery = {
 
 export const useConversations = () => useQuery(conversationsQuery)
 
-export const prefetchConversations = () => prefetchList(conversationsQuery)
-
 export const prefetchMessages = (conversationId: string) =>
   prefetchList({
     queryKey: chatKeys.messages(conversationId),

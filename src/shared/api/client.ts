@@ -36,7 +36,7 @@ export const api = ky.create({
       },
     ],
     afterResponse: [
-      async (req, _options, res) => {
+      async (req, options, res) => {
         if (res.status !== 401 || req.url.includes('/auth/')) return
         if (!useSessionStore.getState().session?.refreshToken) {
           useSessionStore.getState().clearSession()
@@ -46,7 +46,7 @@ export const api = ky.create({
           const session = await refreshSession()
           useSessionStore.getState().setSession(session)
           req.headers.set('Authorization', `Bearer ${session.accessToken}`)
-          return ky(req)
+          return api(req, options)
         } catch {
           useSessionStore.getState().clearSession()
         }

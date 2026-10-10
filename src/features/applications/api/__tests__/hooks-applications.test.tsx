@@ -10,12 +10,11 @@ vi.mock('../fetchers', async (importOriginal) => {
     ...mod,
     listApplications: vi.fn(),
     createApplication: vi.fn(),
-    patchApplication: vi.fn(),
   }
 })
 
-import { createApplication, listApplications, patchApplication } from '../fetchers'
-import { useApplications, useCreateApplication, useMoveStage } from '../hooks'
+import { createApplication, listApplications } from '../fetchers'
+import { useApplications, useCreateApplication } from '../hooks'
 
 const app = (over: Partial<Application> = {}): Application => ({
   id: 'a1',
@@ -42,7 +41,6 @@ describe('applications api hooks', () => {
   beforeEach(() => {
     vi.mocked(listApplications).mockReset()
     vi.mocked(createApplication).mockReset()
-    vi.mocked(patchApplication).mockReset()
     client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   })
 
@@ -55,18 +53,6 @@ describe('applications api hooks', () => {
     expect(result.current.isPending).toBe(true)
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data).toHaveLength(1)
-  })
-
-  it('moves stage with expectedRevision when transition is legal', async () => {
-    client.setQueryData(['applications'], [app({ stage: 'DISCOVERED', revision: 3 })])
-    vi.mocked(patchApplication).mockResolvedValue(app({ stage: 'PREPARING', revision: 4 }))
-    const { result } = renderHook(() => useMoveStage(), { wrapper })
-    await result.current.mutateAsync({ id: 'a1', to: 'PREPARING' })
-    expect(patchApplication).toHaveBeenCalledWith('a1', {
-      expectedRevision: 3,
-      stage: 'PREPARING',
-    })
-    expect(client.getQueryData<Application[]>(['applications'])?.[0].stage).toBe('PREPARING')
   })
 
   it('inserts an optimistic application and replaces it with the server response', async () => {
@@ -110,11 +96,4 @@ describe('applications api hooks', () => {
     })
   })
 
-  it('does not call the API on an illegal transition', async () => {
-    client.setQueryData(['applications'], [app({ stage: 'ACCEPTED' })])
-    const { result } = renderHook(() => useMoveStage(), { wrapper })
-    const r = await result.current.mutateAsync({ id: 'a1', to: 'DISCOVERED' })
-    expect(r).toBeNull()
-    expect(patchApplication).not.toHaveBeenCalled()
-  })
 })

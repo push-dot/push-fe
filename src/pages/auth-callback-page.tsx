@@ -23,18 +23,29 @@ const AuthCallbackPage = () => {
   const session = useSessionStore((s) => s.session)
   const setSession = useSessionStore((s) => s.setSession)
   const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const exchange = useExchangeCode()
+  const code = params.get('code')
 
   useEffect(() => {
-    const code = params.get('code')
     if (!code || session) return
     exchangeOnce(code, exchange.mutateAsync)
       .then(setSession)
       .catch(() => setFailed(true))
-  }, [params, session, setSession, exchange.mutateAsync])
+  }, [code, session, setSession, exchange.mutateAsync, attempt])
 
   if (session) return <Navigate to="/" replace />
-  if (failed) return <ErrorState onRetry={() => setFailed(false)} />
+  if (!code) return <ErrorState />
+  if (failed) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          setFailed(false)
+          setAttempt((a) => a + 1)
+        }}
+      />
+    )
+  }
   return (
     <main className="canvas">
       <div className="center">

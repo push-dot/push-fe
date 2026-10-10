@@ -11,7 +11,7 @@ const AppShell = () => {
   const session = useSessionStore((s) => s.session)
   const loadModels = useInferenceSettings((s) => s.loadModels)
   const setPlan = useInferenceSettings((s) => s.setPlan)
-  const { data: billing } = useBilling()
+  const { data: billing } = useBilling({ enabled: Boolean(session) })
 
   useEffect(() => {
     applyTheme(useSettingsStore.getState().theme)

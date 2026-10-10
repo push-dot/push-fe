@@ -23,6 +23,7 @@ const DocEditorPage = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
+    editable: false,
     editorProps: { attributes: { class: 'editor-body' } },
   })
 

@@ -7,7 +7,6 @@ import type {
   DocumentTemplate,
   PushDocument,
   DocumentVersion,
-  DocumentExport,
 } from './schemas'
 
 export const listDocuments = async (
@@ -78,28 +77,18 @@ export const downloadVersionExport = async (
     `documents/${documentId}/versions/${versionId}/export`,
     { searchParams: { format } },
   )
+  const name = `${title}.${format.toLowerCase()}`
+  if ('__TAURI_INTERNALS__' in window) {
+    const { invoke } = await import('@tauri-apps/api/core')
+    const bytes = Array.from(new Uint8Array(await resp.arrayBuffer()))
+    await invoke('save_download', { bytes, name })
+    return
+  }
   const blob = await resp.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${title}.${format.toLowerCase()}`
+  a.download = name
   a.click()
   URL.revokeObjectURL(url)
-}
-
-export const createDocumentExport = async (
-  documentId: string,
-  body: {
-    versionId: string
-    format: 'PDF' | 'DOCX'
-    rendererVersion: string
-  },
-): Promise<DocumentExport> => {
-  const env = await request<DataEnvelope<DocumentExport>>(() =>
-    api.post(`documents/${documentId}/exports`, {
-      json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
-    }),
-  )
-  return env.data
 }

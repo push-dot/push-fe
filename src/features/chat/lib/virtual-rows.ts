@@ -13,6 +13,7 @@ type VirtualRowsArgs = {
   keyAt: (index: number) => string
   listRef: RefObject<HTMLDivElement | null>
   pinnedRef: RefObject<boolean>
+  resetKey?: string
 }
 
 export type VirtualRows = {
@@ -30,6 +31,7 @@ export const useVirtualRows = ({
   keyAt,
   listRef,
   pinnedRef,
+  resetKey,
 }: VirtualRowsArgs): VirtualRows => {
   const active = count > CHAT_VIRTUAL_MIN_ROWS
   const elsRef = useRef(new Map<string, HTMLDivElement>())
@@ -106,6 +108,24 @@ export const useVirtualRows = ({
     return { offsets, total: acc, indexById }
   }, [count, keyAt, heights])
 
+  const lastResetKeyRef = useRef(resetKey)
+
+  useLayoutEffect(() => {
+    if (lastResetKeyRef.current === resetKey) return
+    lastResetKeyRef.current = resetKey
+    refCacheRef.current.clear()
+    anchorRef.current = null
+    const next = new Map<string, number>()
+    for (const [id, el] of elsRef.current) {
+      if (el.offsetHeight > 0) next.set(id, el.offsetHeight)
+    }
+    setHeights(next)
+    setScroll({
+      top: listRef.current?.scrollTop ?? 0,
+      height: listRef.current?.clientHeight ?? 0,
+    })
+  }, [resetKey, listRef])
+
   const firstVisibleAt = useCallback(
     (top: number) => {
       let lo = 0
@@ -136,17 +156,31 @@ export const useVirtualRows = ({
     anchorRef.current = { id: keyAt(idx), delta: el.scrollTop - offsets[idx] }
   }, [listRef, active, count, pinnedRef, firstVisibleAt, keyAt, offsets])
 
+  const prevTotalRef = useRef(0)
+
   useLayoutEffect(() => {
     const el = listRef.current
-    if (!el || !active || count === 0 || pinnedRef.current) return
+    if (!el || !active || count === 0) return
+    if (pinnedRef.current) {
+      el.scrollTop = el.scrollHeight
+      prevTotalRef.current = total
+      return
+    }
     const anchor = anchorRef.current
     if (!anchor) {
       captureAnchor()
+      prevTotalRef.current = total
       return
     }
     const idx = indexById.get(anchor.id)
     if (idx === undefined) {
+      const grew = total - prevTotalRef.current
+      if (grew > 0) {
+        el.scrollTop += grew
+        setScroll({ top: el.scrollTop, height: el.clientHeight })
+      }
       captureAnchor()
+      prevTotalRef.current = total
       return
     }
     const next = offsets[idx] + anchor.delta
@@ -155,7 +189,8 @@ export const useVirtualRows = ({
       setScroll({ top: next, height: el.clientHeight })
     }
     captureAnchor()
-  }, [listRef, active, count, pinnedRef, indexById, offsets, captureAnchor])
+    prevTotalRef.current = total
+  }, [listRef, active, count, pinnedRef, indexById, offsets, total, captureAnchor])
 
   const syncFromScroll = useCallback(() => {
     const el = listRef.current

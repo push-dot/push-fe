@@ -21,18 +21,29 @@ const GoogleCallbackPage = () => {
   const [params] = useSearchParams()
   const [done, setDone] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const complete = useCompleteGoogle()
+  const code = params.get('code')
 
   useEffect(() => {
-    const code = params.get('code')
     if (!code) return
     completeOnce(code, complete.mutateAsync)
       .then(() => setDone(true))
       .catch(() => setFailed(true))
-  }, [params, complete.mutateAsync])
+  }, [code, complete.mutateAsync, attempt])
 
   if (done) return <Navigate to="/calendar" replace />
-  if (failed) return <ErrorState onRetry={() => setFailed(false)} />
+  if (!code) return <ErrorState />
+  if (failed) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          setFailed(false)
+          setAttempt((a) => a + 1)
+        }}
+      />
+    )
+  }
   return (
     <main className="canvas">
       <div className="center">

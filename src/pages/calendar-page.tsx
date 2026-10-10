@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { formatDate, monthLabel } from '@/shared/lib/format'
+import { openExternal } from '@/shared/lib/open-external'
 import {
   Button,
   CanvasHeader,
@@ -36,7 +37,12 @@ const CalendarPage = () => {
 
   const onConnect = async () => {
     try {
-      window.location.href = await connectMutation.mutateAsync()
+      const url = await connectMutation.mutateAsync()
+      if ('__TAURI_INTERNALS__' in window) {
+        await openExternal(url)
+      } else {
+        window.location.href = url
+      }
     } catch (e) {
       showToast(e instanceof Error ? e.message : '연결하지 못했어요', 'circle-alert')
     }
