@@ -1,0 +1,266 @@
+{
+  "app": {
+    "tagline": "채팅으로 지원·문서·프로젝트를 관리하는 데스크톱 앱"
+  },
+  "login": {
+    "google": "Google로 계속",
+    "github": "GitHub로 계속"
+  },
+  "nav": {
+    "chat": "채팅",
+    "newChat": "새 채팅",
+    "deleteChat": "채팅 삭제",
+    "features": "기능",
+    "documents": "내 서류",
+    "applications": "지원 관리",
+    "vault": "커리어 볼트",
+    "interview": "면접",
+    "calendar": "캘린더",
+    "settings": "설정",
+    "projectTag": "프로젝트",
+    "pinSidebar": "사이드바 고정",
+    "collapseSidebar": "사이드바 접기"
+  },
+  "toast": {
+    "createChatFailed": "채팅을 만들지 못했어요",
+    "deleteChatFailed": "채팅을 삭제하지 못했어요",
+    "runFailed": "실행하지 못했어요"
+  },
+  "home": {
+    "title": "무엇을 도와드릴까요?",
+    "titleAlt": "오늘은 뭘 밀어볼까요?"
+  },
+  "composer": {
+    "placeholder": "메시지 입력",
+    "attach": "파일 첨부",
+    "inference": "추론 설정",
+    "stop": "응답 중단",
+    "send": "보내기",
+    "uploaded": "파일을 올렸어요",
+    "uploadFailed": "업로드하지 못했어요",
+    "drop": "파일을 놓으면 업로드돼요",
+    "removeFile": "파일 제거"
+  },
+  "infer": {
+    "model": "모델",
+    "noModels": "사용 가능한 모델 없음",
+    "effort": "추론 강도",
+    "low": "낮음",
+    "medium": "보통",
+    "high": "높음",
+    "webSearch": "웹 검색",
+    "credential": "자격 증명",
+    "managed": "Push 제공",
+    "byok": "내 API 키",
+    "apiKey": "API 키",
+    "byokHint": "키는 이 기기에만 저장돼요"
+  },
+  "chat": {
+    "running": "실행 상태",
+    "verified": "검증 결과",
+    "evidenceLinked": "근거 연결됨",
+    "docVersion": "문서 버전",
+    "copy": "복사",
+    "copied": "복사했어요",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "이전 메시지 불러오는 중…",
+    "jumpLatest": "최신 메시지로 이동",
+    "messages": "메시지 목록",
+    "loadMoreFailed": "이전 메시지를 불러오지 못했어요",
+    "modelConfigFailed": "AI 모델 설정을 불러오지 못했어요",
+    "noResponse": "응답을 받지 못했어요",
+    "sendFailed": "전송하지 못했어요"
+  },
+  "common": {
+    "retry": "다시 시도",
+    "loadFailed": "불러오지 못했어요",
+    "networkError": "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
+    "save": "저장",
+    "saved": "저장했어요",
+    "back": "뒤로",
+    "cancel": "취소",
+    "add": "추가"
+  },
+  "settings": {
+    "account": "계정",
+    "name": "이름",
+    "locale": "로캘",
+    "language": "언어",
+    "ai": "AI",
+    "model": "모델",
+    "plan": "요금제",
+    "currentPlan": "현재 플랜",
+    "upgrade": "업그레이드",
+    "manageBilling": "결제 관리",
+    "appearance": "외관",
+    "theme": "테마",
+    "themeLight": "라이트",
+    "themeDark": "다크",
+    "credentials": "자격 증명",
+    "byokModel": "BYOK 모델",
+    "byokProvider": "BYOK 프로바이더"
+  },
+  "menu": {
+    "rename": "이름 바꾸기",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "delete": "삭제"
+  },
+  "approval": {
+    "title": "승인 요청",
+    "kindCli": "CLI 실행 승인",
+    "kindDoc": "문서 확정",
+    "kindApp": "지원 제출 승인",
+    "kindEvidence": "근거 사용 승인",
+    "statusPending": "대기 중",
+    "statusApproved": "승인됨",
+    "statusDenied": "거부됨",
+    "statusExpired": "만료됨",
+    "statusConsumed": "처리됨",
+    "body": "내용을 확인한 뒤 승인하거나 거부할 수 있어요.",
+    "approve": "승인",
+    "deny": "거부",
+    "approved": "승인했어요",
+    "denied": "거부했어요",
+    "failed": "처리하지 못했어요",
+    "dir": "디렉터리",
+    "prompt": "프롬프트"
+  },
+  "docDialog": {
+    "new": "새 문서",
+    "cancel": "취소",
+    "create": "만들기",
+    "title": "문서 제목",
+    "kind": "문서 종류",
+    "application": "연결할 지원",
+    "pickApplication": "지원 선택",
+    "needApplication": "먼저 지원 관리에서 공고를 추가해 주세요.",
+    "createFailed": "문서를 만들지 못했어요",
+    "kindResume": "이력서",
+    "kindCoverLetter": "자기소개서",
+    "kindPortfolio": "포트폴리오"
+  },
+  "interviewDialog": {
+    "title": "면접 준비",
+    "cancel": "취소",
+    "add": "추가",
+    "application": "연결할 지원",
+    "pickApplication": "지원 선택",
+    "name": "면접 이름",
+    "at": "면접 일시",
+    "needApplication": "먼저 지원 관리에서 공고를 추가해 주세요.",
+    "created": "면접 준비를 만들었어요",
+    "failed": "만들지 못했어요"
+  },
+  "plan": {
+    "title": "플랜 업그레이드",
+    "subtitle": "필요한 플랜을 선택하세요",
+    "current": "현재 플랜",
+    "downgrade": "다운그레이드",
+    "perMonth": "/월",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "모든 관리형 모델",
+    "proFeat2": "웹 검색",
+    "proFeat3": "무제한 채팅",
+    "ultraFeat1": "Pro의 모든 기능",
+    "ultraFeat2": "맞춤 이력서 생성",
+    "ultraFeat3": "우선 지원",
+    "freeFeat1": "기본 채팅",
+    "freeFeat2": "관리형 모델 일부"
+  },
+  "evidence": {
+    "title": "근거 추가",
+    "kind": "근거 종류",
+    "placeholderTitle": "제목",
+    "placeholderText": "원문을 붙여넣으세요 (수치·경험은 원문 그대로)",
+    "placeholderUrl": "출처 URL (선택)",
+    "added": "근거를 추가했어요",
+    "addFailed": "추가하지 못했어요",
+    "kinds": {
+      "RESUME": "이력서",
+      "GITHUB": "GitHub",
+      "CAREER": "경력",
+      "EDUCATION": "학력",
+      "SKILL": "기술",
+      "PROJECT": "프로젝트"
+    }
+  },
+  "applications": {
+    "empty": "아직 지원 내역이 없어요",
+    "generating": "생성 중…",
+    "generateResume": "맞춤 이력서 생성",
+    "resumeCreated": "맞춤 이력서를 만들었어요",
+    "resumeFailed": "이력서 생성에 실패했어요",
+    "stages": {
+      "DISCOVERED": "공고 분석 중",
+      "PREPARING": "서류 준비 중",
+      "READY": "제출 준비 완료",
+      "APPLIED": "지원 완료",
+      "SCREENING": "서류 심사 중",
+      "INTERVIEW": "면접 진행 중",
+      "OFFER": "오퍼",
+      "ACCEPTED": "합격",
+      "REJECTED": "불합격",
+      "WITHDRAWN": "지원 철회"
+    }
+  },
+  "jobs": {
+    "detail": "공고 상세",
+    "analysis": "요구사항 분석",
+    "fitSummary": "적합도 {{score}} · 매칭 {{matched}}건 · 부족 {{missing}}건 ({{method}})",
+    "fitUnscored": "평가 불가",
+    "methodAi": "AI 보조",
+    "methodRule": "규칙 기반",
+    "core": "핵심: {{items}}",
+    "risks": "위험: {{items}}",
+    "vaultDiff": "커리어 볼트 차이",
+    "evidenceLinkable": "근거 {{count}}개 연결 가능 · 부족 요구사항 {{missing}}건",
+    "noAnalysis": "아직 분석 결과가 없어요. 지원 준비를 시작하면 분석됩니다.",
+    "startPrep": "지원 준비 시작",
+    "started": "지원을 시작했어요",
+    "startFailed": "지원을 시작하지 못했어요",
+    "addTitle": "공고 추가",
+    "company": "회사명",
+    "jobTitle": "직무",
+    "sourcePlaceholder": "공고 URL 또는 공고 원문을 붙여넣으세요",
+    "sourceKind": "수집 방식",
+    "added": "공고를 추가했어요",
+    "addFailed": "추가하지 못했어요",
+    "applicationAdded": "지원을 추가했어요",
+    "applicationFailed": "지원을 만들지 못했어요"
+  },
+  "interviews": {
+    "add": "면접 준비",
+    "empty": "아직 면접 준비가 없어요",
+    "reflection": "회고",
+    "minutes": "{{count}}분"
+  },
+  "calendar": {
+    "connect": "Google 연결",
+    "sync": "동기화",
+    "syncStarted": "동기화를 시작했어요",
+    "syncFailed": "동기화하지 못했어요",
+    "connectFailed": "연결하지 못했어요",
+    "empty": "다가오는 일정이 없어요",
+    "types": {
+      "INTERVIEW": "면접",
+      "DEADLINE": "마감",
+      "FOLLOW_UP": "후속",
+      "CUSTOM": "일정"
+    }
+  },
+  "documents": {
+    "empty": "아직 문서가 없어요",
+    "exportSaved": "{{format}} 파일을 저장했어요",
+    "exportFailed": "출력하지 못했어요",
+    "untitled": "문서"
+  },
+  "vault": {
+    "add": "근거 추가",
+    "empty": "아직 근거가 없어요"
+  }
+}

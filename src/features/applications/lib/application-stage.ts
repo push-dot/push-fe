@@ -26,15 +26,3 @@ export const nextStage = (from: ApplicationStage): ApplicationStage | null => {
   if (index < 0 || index === APPLICATION_PIPELINE.length - 1) return null
   return APPLICATION_PIPELINE[index + 1]
 }
-
-export const canTransition = (from: ApplicationStage, to: ApplicationStage): boolean => {
-  if (from === to) return false
-  if (isTerminalStage(from)) return false
-  if (to === nextStage(from)) return true
-  return EXIT_STAGES.includes(to)
-}
-
-export const transitionStage = (
-  from: ApplicationStage,
-  to: ApplicationStage,
-): ApplicationStage | null => (canTransition(from, to) ? to : null)

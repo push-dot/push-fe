@@ -29,7 +29,10 @@ const subscribeTauriDrop = async (
       void (async () => {
         const files = await Promise.all(
           p.paths.map(async (path) =>
-            fileFromBytes(await invoke<number[]>('read_dropped_file', { path }), path),
+            fileFromBytes(
+              await invoke<number[]>('read_dropped_file', { path, allowlist: p.paths }),
+              path,
+            ),
           ),
         )
         onFiles(files)
@@ -90,13 +93,16 @@ export const useFileDrop = (onFiles: (files: File[]) => void) => {
   useEffect(() => {
     const emit = (files: File[]) => onFilesRef.current(files)
     const offDom = subscribeDomDrop(setDragging, emit)
+    let cancelled = false
     let offTauri: (() => void) | undefined
     if ('__TAURI_INTERNALS__' in window) {
       void subscribeTauriDrop(setDragging, emit).then((unlisten) => {
-        offTauri = unlisten
+        if (cancelled) unlisten()
+        else offTauri = unlisten
       })
     }
     return () => {
+      cancelled = true
       offDom()
       offTauri?.()
     }

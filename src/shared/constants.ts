@@ -1,4 +1,6 @@
-export const API_BASE_URL = 'http://localhost:8080/api/v1'
+export const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+  'http://localhost:8080/api/v1'
 
 export const ROUTES = {
   login: '/login',
@@ -14,10 +16,6 @@ export const ROUTES = {
   settings: '/settings',
   plan: '/settings/plan',
 } as const
-
-export const PROJECT_TAG_LABEL = '프로젝트'
-
-export const COMPOSER_PLACEHOLDER = '메시지 입력'
 
 export const EXPERIMENT_EVENTS = {
   exposure: 'exposure',

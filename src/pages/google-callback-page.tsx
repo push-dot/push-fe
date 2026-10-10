@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import { useCompleteGoogle } from '@/features/calendar'
+import { googleStateMatches, useCompleteGoogle } from '@/features/calendar'
 import type { GoogleStatus } from '@/features/calendar'
 import { ErrorState, Skeleton } from '@/shared/components'
 
@@ -21,24 +21,36 @@ const GoogleCallbackPage = () => {
   const [params] = useSearchParams()
   const [done, setDone] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const complete = useCompleteGoogle()
+  const code = params.get('code')
+  const stateOk = googleStateMatches(params.get('state'))
 
   useEffect(() => {
-    const code = params.get('code')
-    if (!code) return
+    if (!code || !stateOk) return
     completeOnce(code, complete.mutateAsync)
       .then(() => setDone(true))
       .catch(() => setFailed(true))
-  }, [params, complete.mutateAsync])
+  }, [code, stateOk, complete.mutateAsync, attempt])
 
   if (done) return <Navigate to="/calendar" replace />
-  if (failed) return <ErrorState onRetry={() => setFailed(false)} />
+  if (!code || !stateOk) return <ErrorState />
+  if (failed) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          setFailed(false)
+          setAttempt((a) => a + 1)
+        }}
+      />
+    )
+  }
   return (
-    <div className="canvas">
+    <main className="canvas">
       <div className="center">
         <Skeleton />
       </div>
-    </div>
+    </main>
   )
 }
 

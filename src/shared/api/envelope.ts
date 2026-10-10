@@ -69,7 +69,8 @@ export const request = async <T>(call: () => ResponsePromise): Promise<T> => {
   try {
     const response = await call()
     if (response.status === 204) return undefined as T
-    return (await response.json()) as T
+    const text = await response.text()
+    return (text ? JSON.parse(text) : undefined) as T
   } catch (error) {
     throw await toApiError(error)
   }

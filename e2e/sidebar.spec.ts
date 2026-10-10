@@ -22,6 +22,7 @@ test('nav hover prefetches the list so entry shows no skeleton', async ({ page }
   await nav.hover()
   await warmed
 
+  const requestsAfterPrefetch = listRequests
   const warmStart = Date.now()
   await nav.click()
   await page.waitForURL('/documents')
@@ -30,7 +31,8 @@ test('nav hover prefetches the list so entry shows no skeleton', async ({ page }
   const warmMs = Date.now() - warmStart
 
   expect(skeletonCount).toBe(0)
-  expect(listRequests).toBe(1)
+  // entry is served from the prefetched cache — no extra list request on click
+  expect(listRequests).toBe(requestsAfterPrefetch)
   console.log(`[e2e] documents entry cold=${coldMs}ms warm=${warmMs}ms requests=${listRequests}`)
 })
 
@@ -41,15 +43,15 @@ test('chat item context menu renames, pins, and deletes', async ({ page }) => {
   await page.waitForURL(/\/chat\//)
   const item = page.locator('.sidebar-scroll .sidebar-item').nth(1)
   await item.click({ button: 'right' })
-  await page.getByRole('button', { name: '이름 바꾸기' }).click()
+  await page.getByRole('menuitem', { name: '이름 바꾸기' }).click()
   await page.fill('.sidebar-item-input', title)
   await page.keyboard.press('Enter')
   await expect(item).toContainText(title)
   await item.click({ button: 'right' })
-  await page.getByRole('button', { name: '고정' }).click()
+  await page.getByRole('menuitem', { name: '고정' }).click()
   await expect(item.locator('.sidebar-item-pin')).toBeVisible()
   await item.click({ button: 'right' })
-  await page.getByRole('button', { name: '삭제' }).click()
+  await page.getByRole('menuitem', { name: '삭제' }).click()
   await expect(page.locator('.sidebar-item').getByText(title)).toHaveCount(0)
 })
 

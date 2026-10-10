@@ -11,11 +11,18 @@ import {
   SkeletonCardGrid,
   showToast,
 } from '@/shared/components'
-import { ApplicationCard, useApplications, useCreateApplication, useResumeRun } from '@/features/applications'
+import {
+  ApplicationCard,
+  useApplications,
+  useCreateApplication,
+  useResumeRun,
+} from '@/features/applications'
 import { useInferenceSettings } from '@/features/inference'
 import { JobAddDialog } from '@/features/applications'
+import { useT } from '@/shared/i18n'
 
 const ApplicationsPage = () => {
+  const t = useT()
   const navigate = useNavigate()
   const { data: items = [], isPending, isError, isSuccess, error, refetch } = useApplications()
   const createMutation = useCreateApplication()
@@ -34,10 +41,10 @@ const ApplicationsPage = () => {
         byokKey: st.credentialMode === 'BYOK' ? st.byokKey : undefined,
       })
       const docId = (op.result as { document?: { id?: string } })?.document?.id
-      showToast('맞춤 이력서를 만들었어요', 'check')
+      showToast(t('applications.resumeCreated'), 'check')
       if (docId) navigate(ROUTES.document(docId))
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '이력서 생성에 실패했어요', 'circle-alert')
+      showToast(e instanceof Error ? e.message : t('applications.resumeFailed'), 'circle-alert')
     } finally {
       setRunningId(null)
     }
@@ -46,10 +53,10 @@ const ApplicationsPage = () => {
   return (
     <>
       <CanvasHeader
-        title="지원 관리"
+        title={t('nav.applications')}
         actions={
           <Button variant="primary" size="sm" onClick={() => setDialogOpen(true)}>
-            <Icon name="plus" size={20} /> 공고 추가
+            <Icon name="plus" size={20} /> {t('jobs.addTitle')}
           </Button>
         }
       />
@@ -58,8 +65,8 @@ const ApplicationsPage = () => {
         {isError ? <ErrorState message={error?.message} onRetry={() => void refetch()} /> : null}
         {isSuccess && items.length === 0 ? (
           <EmptyState
-            message="아직 지원 내역이 없어요"
-            actionLabel="공고 추가"
+            message={t('applications.empty')}
+            actionLabel={t('jobs.addTitle')}
             onAction={() => setDialogOpen(true)}
           />
         ) : null}
@@ -77,18 +84,23 @@ const ApplicationsPage = () => {
           </CardGrid>
         ) : null}
       </div>
-      <JobAddDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreated={(job) => {
-          void createMutation
-            .mutateAsync(job.id)
-            .then(() => showToast('지원을 추가했어요', 'check'))
-            .catch((e: unknown) =>
-              showToast(e instanceof Error ? e.message : '지원을 만들지 못했어요', 'circle-alert'),
-            )
-        }}
-      />
+      {dialogOpen ? (
+        <JobAddDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onCreated={(job) => {
+            void createMutation
+              .mutateAsync(job.id)
+              .then(() => showToast(t('jobs.applicationAdded'), 'check'))
+              .catch((e: unknown) =>
+                showToast(
+                  e instanceof Error ? e.message : t('jobs.applicationFailed'),
+                  'circle-alert',
+                ),
+              )
+          }}
+        />
+      ) : null}
     </>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import { useExchangeCode } from '@/features/auth'
+import { oauthStateMatches, useExchangeCode } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
 import type { Session } from '@/shared/auth/session'
 import { ErrorState, Skeleton } from '@/shared/components'
@@ -23,24 +23,36 @@ const AuthCallbackPage = () => {
   const session = useSessionStore((s) => s.session)
   const setSession = useSessionStore((s) => s.setSession)
   const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const exchange = useExchangeCode()
+  const code = params.get('code')
+  const stateOk = oauthStateMatches(params.get('state'))
 
   useEffect(() => {
-    const code = params.get('code')
-    if (!code || session) return
+    if (!code || !stateOk || session) return
     exchangeOnce(code, exchange.mutateAsync)
       .then(setSession)
       .catch(() => setFailed(true))
-  }, [params, session, setSession, exchange.mutateAsync])
+  }, [code, stateOk, session, setSession, exchange.mutateAsync, attempt])
 
   if (session) return <Navigate to="/" replace />
-  if (failed) return <ErrorState onRetry={() => setFailed(false)} />
+  if (!code || !stateOk) return <ErrorState />
+  if (failed) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          setFailed(false)
+          setAttempt((a) => a + 1)
+        }}
+      />
+    )
+  }
   return (
-    <div className="canvas">
+    <main className="canvas">
       <div className="center">
         <Skeleton />
       </div>
-    </div>
+    </main>
   )
 }
 

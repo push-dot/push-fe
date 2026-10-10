@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { formSelect } from '@push/design-system'
+import { formRow, formRowHint, formRowLabel, formSection, formSelect } from '@push/design-system'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
 import { Input, Select, Switch } from '@/shared/components'
@@ -56,9 +56,9 @@ const InferenceSettings = () => {
 
   return (
     <div className="inference-popover" role="dialog" aria-label={t('composer.inference')}>
-      <div className="form-section">
-        <div className="form-row">
-          <span className="form-row-label">{t('infer.model')}</span>
+      <div className={formSection}>
+        <div className={formRow}>
+          <span className={formRowLabel}>{t('infer.model')}</span>
           {credentialMode === 'BYOK' ? (
             <Input
               value={byokModel}
@@ -66,7 +66,7 @@ const InferenceSettings = () => {
               onChange={(e) => setByokModel(e.target.value)}
             />
           ) : modelsStatus === 'success' && availableModels.length === 0 ? (
-            <span className="form-row-hint">{t('infer.noModels')}</span>
+            <span className={formRowHint}>{t('infer.noModels')}</span>
           ) : (
             <Select
               className={formSelect}
@@ -85,8 +85,8 @@ const InferenceSettings = () => {
             </Select>
           )}
         </div>
-        <div className="form-row">
-          <span className="form-row-label">{t('infer.effort')}</span>
+        <div className={formRow}>
+          <span className={formRowLabel}>{t('infer.effort')}</span>
           <Select
             className={formSelect}
             value={ultraResume ? 'ULTRA' : effort}
@@ -110,8 +110,8 @@ const InferenceSettings = () => {
             ))}
           </Select>
         </div>
-        <div className="form-row">
-          <span className="form-row-label">{t('infer.webSearch')}</span>
+        <div className={formRow}>
+          <span className={formRowLabel}>{t('infer.webSearch')}</span>
           <Switch
             checked={webSearch}
             aria-label={t('infer.webSearch')}

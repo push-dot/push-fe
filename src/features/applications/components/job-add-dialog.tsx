@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import type { JobPosting } from '../api/schemas'
 import { useCreateJob } from '../api/hooks'
 import { Button, Dialog, Input, Select, Textarea, showToast } from '@/shared/components'
+import { useT } from '@/shared/i18n'
 import { isHttpUrl } from '@/shared/lib/url'
 
 type JobAddDialogProps = {
@@ -14,6 +15,7 @@ type JobAddDialogProps = {
 }
 
 const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDialogProps) => {
+  const t = useT()
   const [company, setCompany] = useState('')
   const [title, setTitle] = useState('')
   const [source, setSource] = useState(initialSource)
@@ -33,23 +35,23 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
         requirements: [],
         preferred: [],
       })
-      showToast('공고를 추가했어요')
+      showToast(t('jobs.added'))
       onCreated?.(job)
       onClose()
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '추가하지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('jobs.addFailed'), 'circle-alert')
     }
   }
 
   return (
     <Dialog
       open={open}
-      title="공고 추가"
+      title={t('jobs.addTitle')}
       onClose={onClose}
       actions={
         <>
           <Button variant="secondary" size="sm" onClick={onClose}>
-            취소
+            {t('common.cancel')}
           </Button>
           <Button
             variant="primary"
@@ -57,20 +59,23 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
             loading={create.isPending}
             onClick={(e) => void submit(e)}
           >
-            추가
+            {t('common.add')}
           </Button>
         </>
       }
     >
-      <form className={['form', sprinkles({ gap: 's12' })].join(' ')} onSubmit={(e) => void submit(e)}>
+      <form
+        className={['form', sprinkles({ gap: 's12' })].join(' ')}
+        onSubmit={(e) => void submit(e)}
+      >
         <Input
-          placeholder="회사명"
+          placeholder={t('jobs.company')}
           value={company}
           onChange={(e) => setCompany(e.target.value)}
           required
         />
         <Input
-          placeholder="직무"
+          placeholder={t('jobs.jobTitle')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -78,11 +83,11 @@ const JobAddDialog = ({ open, onClose, onCreated, initialSource = '' }: JobAddDi
         <Select
           value={isHttpUrl(source) ? 'URL' : 'TEXT'}
           onChange={() => undefined}
-          aria-label="수집 방식"
+          aria-label={t('jobs.sourceKind')}
           className={sprinkles({ display: 'none' })}
         />
         <Textarea
-          placeholder="공고 URL 또는 공고 원문을 붙여넣으세요"
+          placeholder={t('jobs.sourcePlaceholder')}
           value={source}
           onChange={(e) => setSource(e.target.value)}
           rows={4}

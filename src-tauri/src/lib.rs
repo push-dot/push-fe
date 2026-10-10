@@ -1,6 +1,27 @@
+const DROPPED_FILE_MAX_BYTES: u64 = 20 * 1024 * 1024;
+
 #[tauri::command]
-fn read_dropped_file(path: String) -> Result<Vec<u8>, String> {
+fn read_dropped_file(path: String, allowlist: Vec<String>) -> Result<Vec<u8>, String> {
+    if !allowlist.iter().any(|p| p == &path) {
+        return Err("path not in dropped files".to_string());
+    }
+    let size = std::fs::metadata(&path).map_err(|e| e.to_string())?.len();
+    if size > DROPPED_FILE_MAX_BYTES {
+        return Err("file too large".to_string());
+    }
     std::fs::read(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_download(app: tauri::AppHandle, bytes: Vec<u8>, name: String) -> Result<String, String> {
+    use tauri::Manager;
+    let file_name = std::path::Path::new(&name)
+        .file_name()
+        .ok_or_else(|| "invalid file name".to_string())?;
+    let dir = app.path().download_dir().map_err(|e| e.to_string())?;
+    let path = dir.join(file_name);
+    std::fs::write(&path, &bytes).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -13,7 +34,7 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
 
     builder
-        .invoke_handler(tauri::generate_handler![read_dropped_file])
+        .invoke_handler(tauri::generate_handler![read_dropped_file, save_download])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

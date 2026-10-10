@@ -13,6 +13,7 @@ import { ROUTE_CONFIG } from './routes'
 import { queryClient } from '@/shared/api'
 import { useSessionStore } from '@/shared/auth/session'
 import { DocCard } from '@/shared/components'
+import { TestProviders } from '@/test-utils/providers'
 
 const seedSession = () =>
   useSessionStore.setState({
@@ -34,6 +35,7 @@ describe('routes', () => {
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>,
+      { wrapper: TestProviders },
     )
     expect(await screen.findByText('문서', {}, { timeout: 5000 })).toBeInTheDocument()
   })
@@ -47,6 +49,7 @@ describe('routes', () => {
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>,
+      { wrapper: TestProviders },
     )
     expect(await screen.findByText('Push')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/login')

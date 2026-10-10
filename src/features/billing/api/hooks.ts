@@ -5,7 +5,8 @@ const keys = {
   summary: ['billing'] as const,
 }
 
-export const useBilling = () => useQuery({ queryKey: keys.summary, queryFn: fetchBilling })
+export const useBilling = (options: { enabled?: boolean } = {}) =>
+  useQuery({ queryKey: keys.summary, queryFn: fetchBilling, enabled: options.enabled })
 
 export const useCheckout = () =>
   useMutation({ mutationFn: (planId: 'PRO' | 'ULTRA') => createCheckout(planId) })

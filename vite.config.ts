@@ -15,6 +15,8 @@ export default defineConfig({
           if (!id.includes('node_modules')) return
           if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react'
           if (id.includes('node_modules/@tanstack/react-query')) return 'vendor-query'
+          if (id.includes('node_modules/@mantine') || id.includes('node_modules/@floating-ui'))
+            return 'vendor-mantine'
           if (id.includes('node_modules/@tiptap') || id.includes('node_modules/prosemirror'))
             return 'vendor-tiptap'
         },
@@ -22,7 +24,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    preserveSymlinks: true,
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },

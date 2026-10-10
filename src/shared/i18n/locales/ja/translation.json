@@ -1,0 +1,266 @@
+{
+  "app": {
+    "tagline": "チャットで応募・書類・プロジェクトを管理するデスクトップアプリ"
+  },
+  "login": {
+    "google": "Googleで続行",
+    "github": "GitHubで続行"
+  },
+  "nav": {
+    "chat": "チャット",
+    "newChat": "新しいチャット",
+    "deleteChat": "チャットを削除",
+    "features": "機能",
+    "documents": "書類",
+    "applications": "応募管理",
+    "vault": "キャリアボルト",
+    "interview": "面接",
+    "calendar": "カレンダー",
+    "settings": "設定",
+    "projectTag": "プロジェクト",
+    "pinSidebar": "サイドバーを固定",
+    "collapseSidebar": "サイドバーを折りたたむ"
+  },
+  "toast": {
+    "createChatFailed": "チャットを作成できませんでした",
+    "deleteChatFailed": "チャットを削除できませんでした",
+    "runFailed": "実行できませんでした"
+  },
+  "home": {
+    "title": "何をお手伝いしましょうか？",
+    "titleAlt": "今日は何をプッシュしましょうか？"
+  },
+  "composer": {
+    "placeholder": "メッセージを入力",
+    "attach": "ファイルを添付",
+    "inference": "推論設定",
+    "stop": "応答を停止",
+    "send": "送信",
+    "uploaded": "ファイルをアップロードしました",
+    "uploadFailed": "アップロードできませんでした",
+    "drop": "ファイルをドロップしてアップロード",
+    "removeFile": "ファイルを削除"
+  },
+  "infer": {
+    "model": "モデル",
+    "noModels": "利用可能なモデルがありません",
+    "effort": "推論の強度",
+    "low": "低",
+    "medium": "標準",
+    "high": "高",
+    "webSearch": "ウェブ検索",
+    "credential": "認証情報",
+    "managed": "Push提供",
+    "byok": "自分のAPIキー",
+    "apiKey": "APIキー",
+    "byokHint": "キーはこのデバイスにのみ保存されます"
+  },
+  "chat": {
+    "running": "実行状態",
+    "verified": "検証結果",
+    "evidenceLinked": "根拠がリンク済み",
+    "docVersion": "ドキュメントバージョン",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "以前のメッセージを読み込み中…",
+    "jumpLatest": "最新のメッセージへ移動",
+    "messages": "メッセージ一覧",
+    "loadMoreFailed": "以前のメッセージを読み込めませんでした",
+    "modelConfigFailed": "AIモデル設定を読み込めませんでした",
+    "noResponse": "応答を受信できませんでした",
+    "sendFailed": "送信できませんでした"
+  },
+  "common": {
+    "retry": "再試行",
+    "loadFailed": "読み込めませんでした",
+    "networkError": "ネットワーク状態を確認してからもう一度お試しください。",
+    "save": "保存",
+    "saved": "保存しました",
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "add": "追加"
+  },
+  "settings": {
+    "account": "アカウント",
+    "name": "名前",
+    "locale": "ロケール",
+    "language": "言語",
+    "ai": "AI",
+    "model": "モデル",
+    "plan": "プラン",
+    "currentPlan": "現在のプラン",
+    "upgrade": "アップグレード",
+    "manageBilling": "支払い管理",
+    "appearance": "外観",
+    "theme": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "credentials": "認証情報",
+    "byokModel": "BYOKモデル",
+    "byokProvider": "BYOKプロバイダー"
+  },
+  "menu": {
+    "rename": "名前を変更",
+    "pin": "固定",
+    "unpin": "固定解除",
+    "delete": "削除"
+  },
+  "approval": {
+    "title": "承認リクエスト",
+    "kindCli": "CLI実行の承認",
+    "kindDoc": "ドキュメント確定",
+    "kindApp": "応募提出の承認",
+    "kindEvidence": "根拠使用の承認",
+    "statusPending": "保留中",
+    "statusApproved": "承認済み",
+    "statusDenied": "却下済み",
+    "statusExpired": "期限切れ",
+    "statusConsumed": "処理済み",
+    "body": "内容を確認して承認または却下できます。",
+    "approve": "承認",
+    "deny": "却下",
+    "approved": "承認しました",
+    "denied": "却下しました",
+    "failed": "処理できませんでした",
+    "dir": "ディレクトリ",
+    "prompt": "プロンプト"
+  },
+  "docDialog": {
+    "new": "新規ドキュメント",
+    "cancel": "キャンセル",
+    "create": "作成",
+    "title": "ドキュメントタイトル",
+    "kind": "ドキュメント種類",
+    "application": "リンクする応募",
+    "pickApplication": "応募を選択",
+    "needApplication": "先に応募管理で求人を追加してください。",
+    "createFailed": "ドキュメントを作成できませんでした",
+    "kindResume": "履歴書",
+    "kindCoverLetter": "カバーレター",
+    "kindPortfolio": "ポートフォリオ"
+  },
+  "interviewDialog": {
+    "title": "面接準備",
+    "cancel": "キャンセル",
+    "add": "追加",
+    "application": "リンクする応募",
+    "pickApplication": "応募を選択",
+    "name": "面接名",
+    "at": "面接日時",
+    "needApplication": "先に応募管理で求人を追加してください。",
+    "created": "面接準備を作成しました",
+    "failed": "作成できませんでした"
+  },
+  "plan": {
+    "title": "プランをアップグレード",
+    "subtitle": "必要なプランを選択してください",
+    "current": "現在のプラン",
+    "downgrade": "ダウングレード",
+    "perMonth": "/月",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "すべての管理型モデル",
+    "proFeat2": "ウェブ検索",
+    "proFeat3": "無制限チャット",
+    "ultraFeat1": "Proのすべての機能",
+    "ultraFeat2": "カスタム履歴書生成",
+    "ultraFeat3": "優先サポート",
+    "freeFeat1": "基本チャット",
+    "freeFeat2": "一部の管理型モデル"
+  },
+  "evidence": {
+    "title": "根拠を追加",
+    "kind": "根拠の種類",
+    "placeholderTitle": "タイトル",
+    "placeholderText": "原文を貼り付けてください（数値・経験は原文のまま）",
+    "placeholderUrl": "出典URL（任意）",
+    "added": "根拠を追加しました",
+    "addFailed": "追加できませんでした",
+    "kinds": {
+      "RESUME": "履歴書",
+      "GITHUB": "GitHub",
+      "CAREER": "経歴",
+      "EDUCATION": "学歴",
+      "SKILL": "スキル",
+      "PROJECT": "プロジェクト"
+    }
+  },
+  "applications": {
+    "empty": "まだ応募履歴がありません",
+    "generating": "生成中…",
+    "generateResume": "最適化履歴書を生成",
+    "resumeCreated": "最適化履歴書を作成しました",
+    "resumeFailed": "履歴書の生成に失敗しました",
+    "stages": {
+      "DISCOVERED": "求人分析中",
+      "PREPARING": "書類準備中",
+      "READY": "提出準備完了",
+      "APPLIED": "応募完了",
+      "SCREENING": "書類審査中",
+      "INTERVIEW": "面接進行中",
+      "OFFER": "オファー",
+      "ACCEPTED": "合格",
+      "REJECTED": "不合格",
+      "WITHDRAWN": "応募取り下げ"
+    }
+  },
+  "jobs": {
+    "detail": "求人詳細",
+    "analysis": "要件分析",
+    "fitSummary": "適合度 {{score}} · マッチ {{matched}}件 · 不足 {{missing}}件（{{method}}）",
+    "fitUnscored": "評価不可",
+    "methodAi": "AI補助",
+    "methodRule": "ルールベース",
+    "core": "核心: {{items}}",
+    "risks": "リスク: {{items}}",
+    "vaultDiff": "キャリアボルト差分",
+    "evidenceLinkable": "根拠 {{count}}件接続可能 · 不足要件 {{missing}}件",
+    "noAnalysis": "まだ分析結果がありません。応募準備を始めると分析されます。",
+    "startPrep": "応募準備を開始",
+    "started": "応募を開始しました",
+    "startFailed": "応募を開始できませんでした",
+    "addTitle": "求人を追加",
+    "company": "会社名",
+    "jobTitle": "職務",
+    "sourcePlaceholder": "求人URLまたは求人原文を貼り付けてください",
+    "sourceKind": "収集方式",
+    "added": "求人を追加しました",
+    "addFailed": "追加できませんでした",
+    "applicationAdded": "応募を追加しました",
+    "applicationFailed": "応募を作成できませんでした"
+  },
+  "interviews": {
+    "add": "面接準備",
+    "empty": "まだ面接準備がありません",
+    "reflection": "振り返り",
+    "minutes": "{{count}}分"
+  },
+  "calendar": {
+    "connect": "Google連携",
+    "sync": "同期",
+    "syncStarted": "同期を開始しました",
+    "syncFailed": "同期できませんでした",
+    "connectFailed": "連携できませんでした",
+    "empty": "今後の予定がありません",
+    "types": {
+      "INTERVIEW": "面接",
+      "DEADLINE": "締切",
+      "FOLLOW_UP": "フォローアップ",
+      "CUSTOM": "予定"
+    }
+  },
+  "documents": {
+    "empty": "まだ書類がありません",
+    "exportSaved": "{{format}}ファイルを保存しました",
+    "exportFailed": "出力できませんでした",
+    "untitled": "書類"
+  },
+  "vault": {
+    "add": "根拠を追加",
+    "empty": "まだ根拠がありません"
+  }
+}

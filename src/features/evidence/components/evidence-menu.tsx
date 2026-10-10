@@ -1,32 +1,25 @@
-import { assignInlineVars } from '@vanilla-extract/dynamic'
-import { menuX, menuY } from '@push/design-system'
+import { ContextMenu, ContextMenuItem } from '@/shared/components'
 import { useT } from '@/shared/i18n'
 import { Icon } from '@/shared/components'
 
 const EvidenceMenu = ({
   x,
   y,
+  onClose,
   onDelete,
 }: {
   x: number
   y: number
+  onClose: () => void
   onDelete: () => void
 }) => {
   const t = useT()
   return (
-    <div
-      className="context-menu"
-      style={assignInlineVars({
-        [menuX]: `${Math.min(x, window.innerWidth - 170)}px`,
-        [menuY]: `${Math.min(y, window.innerHeight - 140)}px`,
-      })}
-      role="menu"
-    >
-      <button type="button" className="context-menu-item is-danger" onClick={onDelete}>
-        <Icon name="trash-2" size={16} />
+    <ContextMenu x={x} y={y} onClose={onClose}>
+      <ContextMenuItem danger icon={<Icon name="trash-2" size={16} />} onClick={onDelete}>
         {t('menu.delete')}
-      </button>
-    </div>
+      </ContextMenuItem>
+    </ContextMenu>
   )
 }
 

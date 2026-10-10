@@ -4,9 +4,7 @@ import type { DataEnvelope, ListEnvelope, ListParams } from '@/shared/api'
 import { newIdempotencyKey } from '@/shared/lib/id'
 import type {
   Approval,
-  ApprovalStatus,
   ApprovalSummary,
-  CliProvider,
   CliRun,
   Conversation,
   Message,
@@ -126,56 +124,52 @@ export const streamActive = async function* (
   yield* readEvents(resp, options.signal)
 }
 
+const FRAME_SEPARATOR = /\r?\n\r?\n/
+
 const readEvents = async function* (
   resp: Response,
   signal?: AbortSignal,
 ): AsyncGenerator<MessageStreamEvent> {
   if (!resp.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
   const reader = resp.body.getReader()
-  signal?.addEventListener('abort', () => void reader.cancel())
-  const decoder = new TextDecoder()
-  let buf = ''
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buf += decoder.decode(value, { stream: true })
-    let idx = buf.indexOf('\n\n')
-    while (idx >= 0) {
-      yield* parseFrame(buf.slice(0, idx))
-      buf = buf.slice(idx + 2)
-      idx = buf.indexOf('\n\n')
+  const onAbort = () => void reader.cancel()
+  signal?.addEventListener('abort', onAbort)
+  try {
+    const decoder = new TextDecoder()
+    let buf = ''
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += decoder.decode(value, { stream: true })
+      let match = buf.match(FRAME_SEPARATOR)
+      while (match?.index !== undefined) {
+        yield* parseFrame(buf.slice(0, match.index))
+        buf = buf.slice(match.index + match[0].length)
+        match = buf.match(FRAME_SEPARATOR)
+      }
     }
+    if (buf.trim()) yield* parseFrame(buf)
+  } finally {
+    signal?.removeEventListener('abort', onAbort)
+    void reader.cancel()
   }
-  if (buf.trim()) yield* parseFrame(buf)
 }
 
 const parseFrame = function* (frame: string): Generator<MessageStreamEvent> {
-  for (const line of frame.split('\n')) {
-    if (!line.startsWith('data: ')) continue
+  for (const line of frame.split(/\r?\n/)) {
+    if (!line.startsWith('data:')) continue
     try {
-      yield JSON.parse(line.slice(6)) as MessageStreamEvent
+      yield JSON.parse(line.slice(5).trimStart()) as MessageStreamEvent
     } catch {
       yield { type: 'error', error: { code: 'STREAM_PARSE', message: 'malformed stream frame' } }
     }
   }
 }
 
-export const getApproval = async (id: string): Promise<ApprovalSummary> =>
-  request(() => api.get(`approvals/${id}`))
-
-export const listApprovals = async (
-  params: ListParams & { applicationId?: string; status?: ApprovalStatus } = {},
-): Promise<ListEnvelope<Approval>> =>
-  request(() =>
-    api.get('approvals', {
-      searchParams: {
-        ...(params.limit ? { limit: params.limit } : {}),
-        ...(params.cursor ? { cursor: params.cursor } : {}),
-        ...(params.applicationId ? { applicationId: params.applicationId } : {}),
-        ...(params.status ? { status: params.status } : {}),
-      },
-    }),
-  )
+export const getApproval = async (id: string): Promise<ApprovalSummary> => {
+  const env = await request<DataEnvelope<ApprovalSummary>>(() => api.get(`approvals/${id}`))
+  return env.data
+}
 
 export const decideApproval = async (
   id: string,
@@ -212,23 +206,6 @@ export const listProjectRuns = async (
       },
     }),
   )
-
-export const createProjectRun = async (
-  projectId: string,
-  body: {
-    provider: CliProvider
-    workingDirectory: string
-    prompt: string
-  },
-): Promise<CliRun> => {
-  const env = await request<DataEnvelope<CliRun>>(() =>
-    api.post(`projects/${projectId}/runs`, {
-      json: body,
-      headers: { 'Idempotency-Key': newIdempotencyKey() },
-    }),
-  )
-  return env.data
-}
 
 export const listProjectEvidence = async (
   projectId: string,

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/shared/constants'
 import { useT } from '@/shared/i18n'
 import type { MsgKey } from '@/shared/i18n'
-import { Icon, IconButton } from '@/shared/components'
+import { Icon, IconButton, Tooltip } from '@/shared/components'
 import type { IconName } from '@/shared/components'
 import { prefetchDocuments } from '@/features/documents'
 import { prefetchApplications } from '@/features/applications'
@@ -14,7 +14,12 @@ import { prefetchCalendarEvents } from '@/features/calendar'
 import ConversationList, { useNewChat } from './conversation-list'
 
 const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey; prefetch: () => void }[] = [
-  { to: ROUTES.documents, icon: 'file-text', labelKey: 'nav.documents', prefetch: prefetchDocuments },
+  {
+    to: ROUTES.documents,
+    icon: 'file-text',
+    labelKey: 'nav.documents',
+    prefetch: prefetchDocuments,
+  },
   {
     to: ROUTES.applications,
     icon: 'briefcase',
@@ -23,7 +28,12 @@ const NAV_ITEMS: { to: string; icon: IconName; labelKey: MsgKey; prefetch: () =>
   },
   { to: ROUTES.vault, icon: 'archive', labelKey: 'nav.vault', prefetch: prefetchCareerEvidence },
   { to: ROUTES.interview, icon: 'mic', labelKey: 'nav.interview', prefetch: prefetchInterviews },
-  { to: ROUTES.calendar, icon: 'calendar', labelKey: 'nav.calendar', prefetch: prefetchCalendarEvents },
+  {
+    to: ROUTES.calendar,
+    icon: 'calendar',
+    labelKey: 'nav.calendar',
+    prefetch: prefetchCalendarEvents,
+  },
 ]
 
 const IS_MAC = /mac/i.test(navigator.platform)
@@ -70,6 +80,11 @@ const Sidebar = () => {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && collapsed && peek) {
+        setPeek(false)
+        edgeRef.current?.focus()
+        return
+      }
       if (!(e.metaKey || e.ctrlKey) || e.altKey) return
       const k = e.key.toLowerCase()
       if (k === 'b' && !e.shiftKey) {
@@ -86,7 +101,7 @@ const Sidebar = () => {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [newChat, navigate])
+  }, [newChat, navigate, collapsed, peek])
 
   return (
     <>
@@ -114,24 +129,22 @@ const Sidebar = () => {
         onMouseLeave={() => {
           if (collapsed) setPeek(false)
         }}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && collapsed && peek) {
-            setPeek(false)
-            edgeRef.current?.focus()
-          }
-        }}
       >
         <div className="sidebar-head">
           <span className="t-label">Push</span>
-          <IconButton
-            icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
-            aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
-            title={`${collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')} (${MOD}B)`}
-            onClick={() => {
-              setCollapsed((v) => !v)
-              setPeek(false)
-            }}
-          />
+          <Tooltip
+            label={`${collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')} (${MOD}B)`}
+            position="right"
+          >
+            <IconButton
+              icon={collapsed ? 'panel-left-open' : 'panel-left-close'}
+              aria-label={collapsed ? t('nav.pinSidebar') : t('nav.collapseSidebar')}
+              onClick={() => {
+                setCollapsed((v) => !v)
+                setPeek(false)
+              }}
+            />
+          </Tooltip>
         </div>
         <div className="sidebar-scroll">
           <ConversationList onNewChat={() => void newChat()} />
@@ -156,18 +169,19 @@ const Sidebar = () => {
           </div>
         </div>
         <div className="sidebar-foot">
-          <button
-            type="button"
-            className={
-              location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
-            }
-            title={`${t('nav.settings')} (${MOD},)`}
-            aria-current={location.pathname === ROUTES.settings ? 'page' : undefined}
-            onClick={() => navigate(ROUTES.settings)}
-          >
-            <Icon name="settings" size={20} />
-            <span className="sidebar-item-label">{t('nav.settings')}</span>
-          </button>
+          <Tooltip label={`${t('nav.settings')} (${MOD},)`} position="right">
+            <button
+              type="button"
+              className={
+                location.pathname === ROUTES.settings ? 'sidebar-item is-active' : 'sidebar-item'
+              }
+              aria-current={location.pathname === ROUTES.settings ? 'page' : undefined}
+              onClick={() => navigate(ROUTES.settings)}
+            >
+              <Icon name="settings" size={20} />
+              <span className="sidebar-item-label">{t('nav.settings')}</span>
+            </button>
+          </Tooltip>
         </div>
         {!collapsed ? (
           <div className="sidebar-resizer" onMouseDown={startResize} aria-hidden="true" />

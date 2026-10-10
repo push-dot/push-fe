@@ -63,12 +63,14 @@ const HomePage = () => {
         onUploadPending={uploadPendingFiles}
         settingsPanel={<InferenceSettings />}
       />
-      <JobAddDialog
-        open={jobDialog.open}
-        initialSource={jobDialog.source}
-        onClose={() => setJobDialog({ open: false, source: '' })}
-        onCreated={() => {}}
-      />
+      {jobDialog.open ? (
+        <JobAddDialog
+          open={jobDialog.open}
+          initialSource={jobDialog.source}
+          onClose={() => setJobDialog({ open: false, source: '' })}
+          onCreated={() => {}}
+        />
+      ) : null}
     </>
   )
 }

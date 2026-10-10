@@ -4,7 +4,7 @@ import { authedPage } from './fixtures'
 test.setTimeout(120_000)
 
 test('stop button aborts an in-flight stream', async ({ page }) => {
-  await authedPage(page, '/')
+  await authedPage(page, '/', { holdStream: true })
   await page.locator('button.sidebar-item', { hasText: '새 채팅' }).click()
   await page.waitForURL(/\/chat\//)
 

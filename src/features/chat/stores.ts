@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { chatInference } from './lib/inference-bridge'
 import type { Conversation, Message, MessageStreamEvent } from './api/schemas'
 import { listMessages, streamActive, streamMessage } from './api/fetchers'
-import { chatKeys } from './api/hooks'
+import { chatKeys, ensureApproval } from './api/hooks'
 import {
   MESSAGES_PAGE_SIZE,
   STREAM_FLUSH_MS,
@@ -14,7 +14,7 @@ import { queryClient, trackExperimentEvent } from '@/shared/api'
 import { experimentVariant, trackExperiment } from '@/shared/lib/experiment'
 import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import type { AccessMode, AiOptions } from '@/features/inference'
-import { ensureApproval } from './api/hooks'
+
 import { ApiError } from '@/shared/api'
 import type { Operation } from '@/shared/api'
 import { showToast } from '@/shared/components'
@@ -32,12 +32,25 @@ type ChatMessageResult = {
 
 const isChatMessageResult = (
   result: unknown,
-): result is { kind: 'CHAT_MESSAGE'; value: ChatMessageResult } =>
-  typeof result === 'object' &&
-  result !== null &&
-  (result as { kind?: string }).kind === 'CHAT_MESSAGE'
+): result is { kind: 'CHAT_MESSAGE'; value: ChatMessageResult } => {
+  if (typeof result !== 'object' || result === null) return false
+  const { kind, value } = result as { kind?: string; value?: Partial<ChatMessageResult> | null }
+  if (kind !== 'CHAT_MESSAGE' || typeof value !== 'object' || value === null) return false
+  return (
+    typeof value.userMessage === 'object' &&
+    value.userMessage !== null &&
+    typeof value.assistantMessage === 'object' &&
+    value.assistantMessage !== null &&
+    Array.isArray(value.approvalIds)
+  )
+}
 
-type FailedSend = { tempId: string; text: string; error: string }
+type FailedSend = {
+  tempId: string
+  text: string
+  error: string
+  evidence: { id: string; title: string }[]
+}
 
 type MessagesState = {
   conversationId: string | null
@@ -60,8 +73,6 @@ type MessagesState = {
   reset: () => void
 }
 
-let abortCtrl: AbortController | null = null
-
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 
 type StreamError = {
@@ -83,7 +94,9 @@ export type MessagesDeps = {
 
 export const createMessagesStore = (deps: MessagesDeps) =>
   create<MessagesState>()((set, get) => {
+    let abortCtrl: AbortController | null = null
     let lastSeq = 0
+    let epoch = 0
     let streamVariant = 'A'
     let lastDoneAt = 0
     const buf = {
@@ -94,6 +107,10 @@ export const createMessagesStore = (deps: MessagesDeps) =>
 
     const flushStream = () => {
       buf.timer = null
+      // A queued flush can fire after done/abort cleared the buffer —
+      // setTimeout can't un-queue an already-fired callback. Without this
+      // guard it would overwrite 'idle'/'failed' with stale 'streaming'.
+      if (!buf.text && !buf.status) return
       if (buf.text) {
         trackExperiment(EXPERIMENT_KEYS.streamRender, EXPERIMENT_EVENTS.exposure)
       }
@@ -120,23 +137,36 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
     }
 
+    const mergePage = (existing: Message[], page: Message[]): Message[] => {
+      const pageIds = new Set(page.map((m) => m.id))
+      return [...existing.filter((m) => !pageIds.has(m.id)), ...page].sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+      )
+    }
+
     const reconcile = async (conversationId: string) => {
       const env = await listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE })
+      void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
       clearStream()
-      set({
-        messages: [...env.data].reverse(),
+      set((s) => ({
+        messages: mergePage(s.messages, [...env.data].reverse()),
         sendStatus: 'idle',
         streamText: '',
         streamStatus: '',
-      })
+      }))
     }
 
-    const commitDone = (operation: Operation, tempId: string | null): boolean => {
+    const commitDone = (
+      conversationId: string,
+      operation: Operation,
+      tempId: string | null,
+    ): boolean => {
       const result = operation?.result
       if (operation?.status !== 'SUCCEEDED' || !isChatMessageResult(result)) return false
       const { userMessage, assistantMessage, approvalIds } = result.value
       lastDoneAt = Date.now()
       trackExperiment(EXPERIMENT_KEYS.streamRender, EXPERIMENT_EVENTS.exposure)
+      void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
       clearStream()
       set((s) => ({
         messages: [
@@ -164,10 +194,13 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       events: AsyncIterable<MessageStreamEvent>,
       tempId: string | null,
       onBadDone: (operation: Operation) => void | Promise<void>,
+      controller: AbortController,
     ): Promise<ConsumeResult> => {
       try {
         for await (const ev of events) {
-          if (get().conversationId !== conversationId) return 'detached'
+          if (abortCtrl !== controller || get().conversationId !== conversationId) {
+            return 'detached'
+          }
           if (ev.seq != null) {
             if (ev.seq <= lastSeq) continue
             lastSeq = ev.seq
@@ -180,7 +213,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             scheduleFlush()
           } else if (ev.type === 'done') {
             if (buf.timer) flushStream()
-            if (!(await commitDone(ev.operation, tempId))) {
+            if (!(await commitDone(conversationId, ev.operation, tempId))) {
               await onBadDone(ev.operation)
             }
             return 'done'
@@ -211,6 +244,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           pumpActive(conversationId, controller.signal),
           tempId,
           onBadDone,
+          controller,
         )
         if (res !== 'dropped') return res
         attempts += 1
@@ -259,6 +293,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             queryKey: chatKeys.messages(conversationId),
             queryFn: () => listMessages(conversationId, { limit: MESSAGES_PAGE_SIZE }),
           })
+          if (get().conversationId !== conversationId) return
           set({
             messages: [...env.data].reverse(),
             status: 'success',
@@ -267,6 +302,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           })
           void get().attachStream(conversationId)
         } catch (error) {
+          if (get().conversationId !== conversationId) return
           set({
             status: 'error',
             error: error instanceof Error ? error.message : 'error',
@@ -285,6 +321,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           const res = await resumeActive(conversationId, controller, null, () =>
             reconcile(conversationId),
           )
+          if (abortCtrl !== controller) return
           if (res === 'ended') {
             if (buf.text || buf.status) {
               await reconcile(conversationId)
@@ -298,9 +335,9 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             idleStream()
           }
         } catch {
-          idleStream()
+          if (abortCtrl === controller) idleStream()
         } finally {
-          if (controller.signal.aborted) idleStream()
+          if (controller.signal.aborted && abortCtrl === controller) idleStream()
         }
       },
 
@@ -313,12 +350,20 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             limit: MESSAGES_PAGE_SIZE,
             cursor: nextCursor,
           })
-          set((s) => ({
-            messages: [...[...env.data].reverse(), ...s.messages],
-            nextCursor: env.page.nextCursor,
-            hasMore: env.page.hasMore,
-            loadingMore: false,
-          }))
+          if (get().conversationId !== conversationId) {
+            set({ loadingMore: false })
+            return
+          }
+          set((s) => {
+            const seen = new Set(s.messages.map((m) => m.id))
+            const older = [...env.data].reverse().filter((m) => !seen.has(m.id))
+            return {
+              messages: [...older, ...s.messages],
+              nextCursor: env.page.nextCursor,
+              hasMore: env.page.hasMore,
+              loadingMore: false,
+            }
+          })
         } catch {
           set({ loadingMore: false })
           showToast(t('chat.loadMoreFailed'), 'circle-alert')
@@ -326,17 +371,24 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       },
 
       send: async (conversationId, text, evidence = []) => {
+        const myEpoch = ++epoch
+        const live = () =>
+          myEpoch === epoch &&
+          (get().conversationId === null || get().conversationId === conversationId)
         let ai = deps.aiOptions()
         if (!ai) {
           await deps.ensureModels()
           ai = deps.aiOptions()
         }
+        if (!live()) return
         if (!ai) {
           showToast(t('chat.modelConfigFailed'), 'circle-alert')
           return
         }
         const accessMode = deps.accessMode()
         streamVariant = await deps.streamRenderVariant()
+        if (!live()) return
+        lastSeq = 0
         if (Date.now() - lastDoneAt <= STREAM_FOLLOW_UP_MS) {
           trackExperiment(
             EXPERIMENT_KEYS.streamRender,
@@ -344,11 +396,11 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             String(lastDoneAt),
           )
         }
-        void queryClient.invalidateQueries({ queryKey: chatKeys.messages(conversationId) })
         abortCtrl?.abort()
         const controller = new AbortController()
         abortCtrl = controller
         const tempId = `local-${crypto.randomUUID()}`
+        const preSendIds = new Set(get().messages.map((m) => m.id))
         const optimistic: Message = {
           id: tempId,
           conversationId,
@@ -393,6 +445,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
               ),
               tempId,
               badDone,
+              controller,
             )
           } catch (error) {
             if (error instanceof ApiError) throw error
@@ -405,10 +458,22 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             throw new ApiError(res.error.message, res.error.code, 0, res.error.details)
           }
           if (res === 'dropped' || res === 'ended') {
-            throw new ApiError(t('chat.sendFailed'), 'NETWORK_ERROR', 0)
+            if (controller.signal.aborted || abortCtrl !== controller) {
+              throw new ApiError(t('chat.sendFailed'), 'NETWORK_ERROR', 0)
+            }
+            await reconcile(conversationId)
+            const committed = get().messages.some(
+              (m) =>
+                !preSendIds.has(m.id) && m.role === 'USER' && m.operationId !== null,
+            )
+            if (committed) {
+              set((s) => ({ messages: s.messages.filter((m) => m.id !== tempId) }))
+            } else {
+              throw new ApiError(t('chat.sendFailed'), 'NETWORK_ERROR', 0)
+            }
           }
         } catch (error) {
-          if (!controller.signal.aborted) {
+          if (!controller.signal.aborted && abortCtrl === controller) {
             clearStream()
             set({
               sendStatus: 'failed',
@@ -417,19 +482,18 @@ export const createMessagesStore = (deps: MessagesDeps) =>
               failed: {
                 tempId,
                 text,
+                evidence,
                 error: error instanceof Error ? error.message : t('chat.sendFailed'),
               },
             })
           }
         } finally {
           if (controller.signal.aborted) {
-            clearStream()
-            set((s) => ({
-              messages: s.messages.filter((m) => m.id !== tempId),
-              sendStatus: 'idle',
-              streamText: '',
-              streamStatus: '',
-            }))
+            set((s) => ({ messages: s.messages.filter((m) => m.id !== tempId) }))
+            if (abortCtrl === controller) {
+              clearStream()
+              set({ sendStatus: 'idle', streamText: '', streamStatus: '' })
+            }
           }
         }
       },
@@ -441,7 +505,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
           messages: s.messages.filter((m) => m.id !== failed.tempId),
           failed: null,
         }))
-        await get().send(conversationId, failed.text)
+        await get().send(conversationId, failed.text, failed.evidence)
       },
 
       abort: () => {
@@ -460,6 +524,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         abortCtrl = null
         clearStream()
         lastSeq = 0
+        epoch += 1
         set({
           conversationId: null,
           messages: [],

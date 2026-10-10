@@ -1,17 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import {
   createApplication,
   createJob,
   getJob,
   listApplications,
   listJobAnalyses,
-  patchApplication,
   resumeRun,
 } from './fetchers'
-import type { Application, ApplicationStage, GapAnalysis, JobPosting } from './schemas'
+import type { Application, GapAnalysis, JobPosting } from './schemas'
 import type { AiOptions } from '@/features/inference'
-import { canTransition } from '../lib/application-stage'
 
 const keys = {
   list: ['applications'] as const,
@@ -22,7 +21,8 @@ const applicationsQuery = {
   queryFn: () => listApplications({ limit: 50 }).then((env) => env.data),
 }
 
-export const useApplications = () => useQuery(applicationsQuery)
+export const useApplications = () =>
+  useQuery({ ...applicationsQuery, enabled: useHasSession() })
 
 export const prefetchApplications = () => prefetchList(applicationsQuery)
 
@@ -80,23 +80,6 @@ export const useCreateApplication = () => {
   })
 }
 
-export const useMoveStage = () => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async ({ id, to }: { id: string; to: ApplicationStage }) => {
-      const target = qc.getQueryData<Application[]>(keys.list)?.find((a) => a.id === id)
-      if (!target || !canTransition(target.stage, to)) return null
-      return patchApplication(id, { expectedRevision: target.revision, stage: to })
-    },
-    onSuccess: (updated) => {
-      if (!updated) return
-      qc.setQueryData<Application[]>(keys.list, (old) =>
-        (old ?? []).map((a) => (a.id === updated.id ? updated : a)),
-      )
-    },
-  })
-}
-
 const jobKeys = {
   list: ['jobs'] as const,
   detail: (id: string) => ['jobs', id] as const,
@@ -113,9 +96,7 @@ export const useJob = (id: string | undefined) =>
     enabled: Boolean(id),
     queryFn: async (): Promise<JobDetail> => {
       const job = await getJob(id!)
-      const analyses = await listJobAnalyses(id!, { limit: 10 })
-        .then((env) => env.data)
-        .catch(() => [])
+      const analyses = await listJobAnalyses(id!, { limit: 10 }).then((env) => env.data)
       return { job, analyses }
     },
   })

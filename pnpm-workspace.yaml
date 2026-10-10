@@ -1,0 +1,9 @@
+packages:
+  - 'packages/*'
+allowBuilds:
+  esbuild: true
+  edgedriver: false
+  geckodriver: false
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-jsx-a11y@6>eslint: '10'

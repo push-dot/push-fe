@@ -9,14 +9,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
       - name: Build app bundle
-        run: npx tauri build --bundles dmg
+        run: pnpm exec tauri build --bundles dmg
       - name: Publish release with stable asset name
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,14 +30,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
       - name: Build app bundle
-        run: npx tauri build --bundles nsis
+        run: pnpm exec tauri build --bundles nsis
       - name: Smoke test installed app
         run: |
           $exe = Get-ChildItem src-tauri/target/release/bundle/nsis/Push_*_x64-setup.exe | Select-Object -First 1

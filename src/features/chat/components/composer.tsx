@@ -17,8 +17,10 @@ type ComposerProps = {
 const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsPanel }: ComposerProps) => {
   const t = useT()
   const [text, setText] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const fieldRef = useRef<HTMLTextAreaElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -39,21 +41,27 @@ const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsP
 
   const submit = () => {
     const value = text.trim()
-    if ((!value && pending.length === 0) || sending) return
+    if ((!value && pending.length === 0) || sending || submitting) return
+    setSubmitting(true)
     void (async () => {
-      const { evidence, failed } = await onUploadPending(pending)
-      evidence.forEach(() => showToast(t('composer.uploaded')))
-      failed.forEach(({ error }) =>
-        showToast(
-          error instanceof Error ? error.message : t('composer.uploadFailed'),
-          'circle-alert',
-        ),
-      )
-      clearFiles()
-      if (failed.length) addFiles(failed.map((f) => f.file))
-      if (value || evidence.length) {
-        onSend(value || pending.map((f) => f.name).join(', '), evidence)
-        setText('')
+      try {
+        const { evidence, failed } = await onUploadPending(pending)
+        evidence.forEach(() => showToast(t('composer.uploaded')))
+        failed.forEach(({ error }) =>
+          showToast(
+            error instanceof Error ? error.message : t('composer.uploadFailed'),
+            'circle-alert',
+          ),
+        )
+        clearFiles()
+        if (failed.length) addFiles(failed.map((f) => f.file))
+        if (value || evidence.length) {
+          onSend(value || evidence.map((e) => e.title).join(', '), evidence)
+          setText('')
+          if (fieldRef.current) fieldRef.current.style.height = 'auto'
+        }
+      } finally {
+        setSubmitting(false)
       }
     })()
   }
@@ -97,6 +105,7 @@ const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsP
           onClick={() => setSettingsOpen((v) => !v)}
         />
         <textarea
+          ref={fieldRef}
           className="composer-field"
           rows={1}
           placeholder={t('composer.placeholder')}
@@ -131,7 +140,7 @@ const Composer = ({ onSend, onUploadPending, onAbort, sending = false, settingsP
             iconSize={16}
             aria-label={t('composer.send')}
             onClick={submit}
-            disabled={!text.trim() && pending.length === 0}
+            disabled={(!text.trim() && pending.length === 0) || submitting}
           />
         )}
       </div>

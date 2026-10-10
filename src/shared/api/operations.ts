@@ -31,6 +31,8 @@ const TERMINAL: Operation['status'][] = ['SUCCEEDED', 'FAILED', 'CANCELLED', 'NE
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
+const MAX_POLL_FAILURES = 3
+
 export const waitForOperation = async (
   id: string,
   options: { intervalMs?: number; timeoutMs?: number } = {},
@@ -38,8 +40,18 @@ export const waitForOperation = async (
   const intervalMs = options.intervalMs ?? 1_000
   const timeoutMs = options.timeoutMs ?? 60_000
   const deadline = Date.now() + timeoutMs
+  let failures = 0
   for (;;) {
-    const operation = await getOperation(id)
+    let operation: Operation
+    try {
+      operation = await getOperation(id)
+      failures = 0
+    } catch (error) {
+      failures += 1
+      if (failures >= MAX_POLL_FAILURES || Date.now() >= deadline) throw error
+      await sleep(intervalMs)
+      continue
+    }
     if (TERMINAL.includes(operation.status)) return operation
     if (Date.now() >= deadline) return operation
     await sleep(intervalMs)

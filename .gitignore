@@ -1,8 +1,13 @@
 node_modules
 dist
 dist-ssr
+.turbo
 *.local
+.env
+.env.*
+!.env.example
 .DS_Store
 src-tauri/target
 test-results
 playwright-report
+lighthouse

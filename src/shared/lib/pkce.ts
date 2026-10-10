@@ -7,9 +7,19 @@ const base64UrlEncode = (bytes: Uint8Array): string =>
     .replace(/\//g, '_')
     .replace(/=+$/, '')
 
+const PKCE_BYTE_LIMIT = 256 - (256 % PKCE_CHARSET.length)
+
 export const createPkceVerifier = (): string => {
-  const random = crypto.getRandomValues(new Uint8Array(PKCE_VERIFIER_LENGTH))
-  return Array.from(random, (b) => PKCE_CHARSET[b % PKCE_CHARSET.length]).join('')
+  const out: string[] = []
+  while (out.length < PKCE_VERIFIER_LENGTH) {
+    const random = crypto.getRandomValues(new Uint8Array(PKCE_VERIFIER_LENGTH))
+    for (const b of random) {
+      if (b >= PKCE_BYTE_LIMIT) continue
+      out.push(PKCE_CHARSET[b % PKCE_CHARSET.length])
+      if (out.length === PKCE_VERIFIER_LENGTH) break
+    }
+  }
+  return out.join('')
 }
 
 export const createPkceChallenge = async (verifier: string): Promise<string> => {

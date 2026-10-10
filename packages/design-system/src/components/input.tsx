@@ -1,19 +1,22 @@
+import { Input as MantineInput, Textarea as MantineTextarea } from '@mantine/core'
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { input } from '../styles.css'
 
-export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> & {
   error?: boolean
 }
 
 const Input = ({ error, className, ...rest }: InputProps) => (
-  <input
+  <MantineInput
     className={[input({ error }), className ?? ''].filter(Boolean).join(' ')}
+    error={error}
+    aria-invalid={error || undefined}
     {...rest}
   />
 )
 
 const Textarea = ({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-  <textarea
+  <MantineTextarea
     className={[input({ textarea: true }), className ?? ''].filter(Boolean).join(' ')}
     {...rest}
   />

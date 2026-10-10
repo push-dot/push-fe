@@ -12,6 +12,7 @@ const GOOGLE_REDIRECT_URI =
     : `${window.location.origin}/integrations/google/callback`
 
 const GOOGLE_PKCE_KEY = 'push:google-pkce-verifier'
+const GOOGLE_STATE_KEY = 'push:google-oauth-state'
 
 export const listCalendarEvents = async (
   params: ListParams & { from: string; to: string; applicationId?: string },
@@ -35,7 +36,7 @@ export const fetchGoogleStatus = async (): Promise<GoogleStatus> =>
 
 export const connectGoogle = async (): Promise<string> => {
   const { verifier, challenge } = await createPkcePair()
-  const env = await request<{ data: { authorizationUrl: string } }>(() =>
+  const env = await request<{ data: { authorizationUrl: string; state?: string } }>(() =>
     api.post('integrations/google/connect', {
       json: {
         codeChallenge: challenge,
@@ -46,7 +47,15 @@ export const connectGoogle = async (): Promise<string> => {
     }),
   )
   sessionStorage.setItem(GOOGLE_PKCE_KEY, verifier)
+  const state =
+    env.data.state ?? new URL(env.data.authorizationUrl).searchParams.get('state')
+  if (state) sessionStorage.setItem(GOOGLE_STATE_KEY, state)
   return env.data.authorizationUrl
+}
+
+export const googleStateMatches = (state: string | null): boolean => {
+  const expected = sessionStorage.getItem(GOOGLE_STATE_KEY)
+  return !expected || (Boolean(state) && state === expected)
 }
 
 export const completeGoogle = async (code: string): Promise<GoogleStatus> => {
@@ -58,6 +67,7 @@ export const completeGoogle = async (code: string): Promise<GoogleStatus> => {
     }),
   )
   sessionStorage.removeItem(GOOGLE_PKCE_KEY)
+  sessionStorage.removeItem(GOOGLE_STATE_KEY)
   return env.data
 }
 

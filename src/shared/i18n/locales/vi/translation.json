@@ -1,0 +1,266 @@
+{
+  "app": {
+    "tagline": "Ứng dụng desktop quản lý hồ sơ ứng tuyển, tài liệu và dự án qua chat"
+  },
+  "login": {
+    "google": "Tiếp tục với Google",
+    "github": "Tiếp tục với GitHub"
+  },
+  "nav": {
+    "chat": "Trò chuyện",
+    "newChat": "Cuộc trò chuyện mới",
+    "deleteChat": "Xóa cuộc trò chuyện",
+    "features": "Tính năng",
+    "documents": "Tài liệu",
+    "applications": "Quản lý ứng tuyển",
+    "vault": "Kho sự nghiệp",
+    "interview": "Phỏng vấn",
+    "calendar": "Lịch",
+    "settings": "Cài đặt",
+    "projectTag": "Dự án",
+    "pinSidebar": "Ghim thanh bên",
+    "collapseSidebar": "Thu gọn thanh bên"
+  },
+  "toast": {
+    "createChatFailed": "Không tạo được cuộc trò chuyện",
+    "deleteChatFailed": "Không xóa được cuộc trò chuyện",
+    "runFailed": "Không chạy được"
+  },
+  "home": {
+    "title": "Tôi có thể giúp gì cho bạn?",
+    "titleAlt": "Hôm nay ta đẩy gì đây?"
+  },
+  "composer": {
+    "placeholder": "Nhập tin nhắn",
+    "attach": "Đính kèm tệp",
+    "inference": "Cài đặt suy luận",
+    "stop": "Dừng",
+    "send": "Gửi",
+    "uploaded": "Đã tải tệp lên",
+    "uploadFailed": "Tải lên thất bại",
+    "drop": "Thả tệp vào để tải lên",
+    "removeFile": "Xóa tệp"
+  },
+  "infer": {
+    "model": "Mô hình",
+    "noModels": "Không có mô hình khả dụng",
+    "effort": "Mức độ suy luận",
+    "low": "Thấp",
+    "medium": "Trung bình",
+    "high": "Cao",
+    "webSearch": "Tìm kiếm web",
+    "credential": "Thông tin xác thực",
+    "managed": "Do Push cung cấp",
+    "byok": "Khóa API của tôi",
+    "apiKey": "Khóa API",
+    "byokHint": "Khóa chỉ lưu trên thiết bị này"
+  },
+  "chat": {
+    "running": "Trạng thái chạy",
+    "verified": "Kết quả xác minh",
+    "evidenceLinked": "Đã liên kết bằng chứng",
+    "docVersion": "Phiên bản tài liệu",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "Đang tải tin nhắn cũ hơn…",
+    "jumpLatest": "Đến tin nhắn mới nhất",
+    "messages": "Danh sách tin nhắn",
+    "loadMoreFailed": "Không tải được tin nhắn cũ hơn",
+    "modelConfigFailed": "Không tải được cài đặt mô hình AI",
+    "noResponse": "Không nhận được phản hồi",
+    "sendFailed": "Không gửi được"
+  },
+  "common": {
+    "retry": "Thử lại",
+    "loadFailed": "Không tải được",
+    "networkError": "Kiểm tra kết nối mạng rồi thử lại.",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "back": "Quay lại",
+    "cancel": "Hủy",
+    "add": "Thêm"
+  },
+  "settings": {
+    "account": "Tài khoản",
+    "name": "Tên",
+    "locale": "Ngôn ngữ khu vực",
+    "language": "Ngôn ngữ",
+    "ai": "AI",
+    "model": "Mô hình",
+    "plan": "Gói",
+    "currentPlan": "Gói hiện tại",
+    "upgrade": "Nâng cấp",
+    "manageBilling": "Quản lý thanh toán",
+    "appearance": "Giao diện",
+    "theme": "Chủ đề",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "credentials": "Thông tin xác thực",
+    "byokModel": "Mô hình BYOK",
+    "byokProvider": "Nhà cung cấp BYOK"
+  },
+  "menu": {
+    "rename": "Đổi tên",
+    "pin": "Ghim",
+    "unpin": "Bỏ ghim",
+    "delete": "Xóa"
+  },
+  "approval": {
+    "title": "Yêu cầu phê duyệt",
+    "kindCli": "Phê duyệt chạy CLI",
+    "kindDoc": "Chốt tài liệu",
+    "kindApp": "Phê duyệt nộp đơn",
+    "kindEvidence": "Phê duyệt dùng bằng chứng",
+    "statusPending": "Đang chờ",
+    "statusApproved": "Đã duyệt",
+    "statusDenied": "Đã từ chối",
+    "statusExpired": "Hết hạn",
+    "statusConsumed": "Đã xử lý",
+    "body": "Kiểm tra nội dung rồi phê duyệt hoặc từ chối.",
+    "approve": "Phê duyệt",
+    "deny": "Từ chối",
+    "approved": "Đã phê duyệt",
+    "denied": "Đã từ chối",
+    "failed": "Không xử lý được",
+    "dir": "Thư mục",
+    "prompt": "Prompt"
+  },
+  "docDialog": {
+    "new": "Tài liệu mới",
+    "cancel": "Hủy",
+    "create": "Tạo",
+    "title": "Tiêu đề tài liệu",
+    "kind": "Loại tài liệu",
+    "application": "Đơn ứng tuyển liên kết",
+    "pickApplication": "Chọn đơn ứng tuyển",
+    "needApplication": "Hãy thêm tin tuyển dụng trong Quản lý ứng tuyển trước.",
+    "createFailed": "Không tạo được tài liệu",
+    "kindResume": "Sơ yếu lý lịch",
+    "kindCoverLetter": "Thư xin việc",
+    "kindPortfolio": "Hồ sơ năng lực"
+  },
+  "interviewDialog": {
+    "title": "Chuẩn bị phỏng vấn",
+    "cancel": "Hủy",
+    "add": "Thêm",
+    "application": "Đơn ứng tuyển liên kết",
+    "pickApplication": "Chọn đơn ứng tuyển",
+    "name": "Tên buổi phỏng vấn",
+    "at": "Thời gian phỏng vấn",
+    "needApplication": "Hãy thêm tin tuyển dụng trong Quản lý ứng tuyển trước.",
+    "created": "Đã tạo chuẩn bị phỏng vấn",
+    "failed": "Không tạo được"
+  },
+  "plan": {
+    "title": "Nâng cấp gói",
+    "subtitle": "Chọn gói phù hợp với bạn",
+    "current": "Gói hiện tại",
+    "downgrade": "Hạ cấp",
+    "perMonth": "/tháng",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "Tất cả mô hình quản lý",
+    "proFeat2": "Tìm kiếm web",
+    "proFeat3": "Trò chuyện không giới hạn",
+    "ultraFeat1": "Mọi tính năng của Pro",
+    "ultraFeat2": "Tạo CV tùy chỉnh",
+    "ultraFeat3": "Hỗ trợ ưu tiên",
+    "freeFeat1": "Trò chuyện cơ bản",
+    "freeFeat2": "Một số mô hình quản lý"
+  },
+  "evidence": {
+    "title": "Thêm bằng chứng",
+    "kind": "Loại bằng chứng",
+    "placeholderTitle": "Tiêu đề",
+    "placeholderText": "Dán nội dung gốc (giữ nguyên số liệu và kinh nghiệm)",
+    "placeholderUrl": "URL nguồn (tùy chọn)",
+    "added": "Đã thêm bằng chứng",
+    "addFailed": "Không thể thêm",
+    "kinds": {
+      "RESUME": "Sơ yếu lý lịch",
+      "GITHUB": "GitHub",
+      "CAREER": "Kinh nghiệm",
+      "EDUCATION": "Học vấn",
+      "SKILL": "Kỹ năng",
+      "PROJECT": "Dự án"
+    }
+  },
+  "applications": {
+    "empty": "Chưa có đơn ứng tuyển",
+    "generating": "Đang tạo…",
+    "generateResume": "Tạo sơ yếu lý lịch phù hợp",
+    "resumeCreated": "Đã tạo sơ yếu lý lịch phù hợp",
+    "resumeFailed": "Không tạo được sơ yếu lý lịch",
+    "stages": {
+      "DISCOVERED": "Đang phân tích",
+      "PREPARING": "Đang chuẩn bị hồ sơ",
+      "READY": "Sẵn sàng nộp",
+      "APPLIED": "Đã ứng tuyển",
+      "SCREENING": "Đang sàng lọc",
+      "INTERVIEW": "Đang phỏng vấn",
+      "OFFER": "Offer",
+      "ACCEPTED": "Đỗ",
+      "REJECTED": "Trượt",
+      "WITHDRAWN": "Đã rút đơn"
+    }
+  },
+  "jobs": {
+    "detail": "Chi tiết tin tuyển dụng",
+    "analysis": "Phân tích yêu cầu",
+    "fitSummary": "Độ phù hợp {{score}} · {{matched}} khớp · thiếu {{missing}} ({{method}})",
+    "fitUnscored": "Không đánh giá",
+    "methodAi": "AI hỗ trợ",
+    "methodRule": "Dựa trên quy tắc",
+    "core": "Cốt lõi: {{items}}",
+    "risks": "Rủi ro: {{items}}",
+    "vaultDiff": "Chênh lệch vault",
+    "evidenceLinkable": "{{count}} bằng chứng có thể liên kết · {{missing}} yêu cầu thiếu",
+    "noAnalysis": "Chưa có kết quả phân tích. Sẽ phân tích khi bắt đầu chuẩn bị.",
+    "startPrep": "Bắt đầu chuẩn bị ứng tuyển",
+    "started": "Đã bắt đầu ứng tuyển",
+    "startFailed": "Không thể bắt đầu ứng tuyển",
+    "addTitle": "Thêm tin tuyển dụng",
+    "company": "Tên công ty",
+    "jobTitle": "Vị trí",
+    "sourcePlaceholder": "Dán URL tin tuyển dụng hoặc nội dung gốc",
+    "sourceKind": "Cách thu thập",
+    "added": "Đã thêm tin tuyển dụng",
+    "addFailed": "Không thể thêm",
+    "applicationAdded": "Đã thêm ứng tuyển",
+    "applicationFailed": "Không tạo được ứng tuyển"
+  },
+  "interviews": {
+    "add": "Chuẩn bị phỏng vấn",
+    "empty": "Chưa có chuẩn bị phỏng vấn",
+    "reflection": "Tự đánh giá",
+    "minutes": "{{count}} phút"
+  },
+  "calendar": {
+    "connect": "Kết nối Google",
+    "sync": "Đồng bộ",
+    "syncStarted": "Đã bắt đầu đồng bộ",
+    "syncFailed": "Không đồng bộ được",
+    "connectFailed": "Không kết nối được",
+    "empty": "Không có sự kiện sắp tới",
+    "types": {
+      "INTERVIEW": "Phỏng vấn",
+      "DEADLINE": "Hạn chót",
+      "FOLLOW_UP": "Theo dõi",
+      "CUSTOM": "Sự kiện"
+    }
+  },
+  "documents": {
+    "empty": "Chưa có tài liệu",
+    "exportSaved": "Đã lưu tệp {{format}}",
+    "exportFailed": "Không xuất được",
+    "untitled": "Tài liệu"
+  },
+  "vault": {
+    "add": "Thêm bằng chứng",
+    "empty": "Chưa có bằng chứng"
+  }
+}

@@ -15,8 +15,8 @@ test('settings shows current plan with upgrade button to plan page', async ({ pa
   await page.getByRole('button', { name: '업그레이드' }).click()
   await page.waitForURL('/settings/plan')
   await expect(page.locator('.plan-card')).toHaveCount(3)
-  await expect(page.locator('.plan-card').nth(1)).toContainText('$9')
-  await expect(page.locator('.plan-card').nth(2)).toContainText('$29')
+  await expect(page.locator('.plan-card').nth(1)).toContainText('$30')
+  await expect(page.locator('.plan-card').nth(2)).toContainText('$100')
 })
 
 test('byok credentials live in settings, not chat popover', async ({ page }) => {

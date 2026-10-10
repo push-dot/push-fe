@@ -54,6 +54,7 @@ const ChatStream = ({
     keyAt,
     listRef,
     pinnedRef: atBottomRef,
+    resetKey: messages[0]?.conversationId,
   })
   const visible = virtual.active
     ? messages.slice(virtual.start, virtual.end)

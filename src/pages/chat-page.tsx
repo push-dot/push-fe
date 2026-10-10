@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { DropOverlay, showToast } from '@/shared/components'
 import { useFileDrop } from '@/features/chat'
@@ -38,8 +38,15 @@ const ChatPage = () => {
     initialEvidence?: { id: string; title: string }[]
   } | null
 
+  const sentRef = useRef(false)
+
   useEffect(() => {
-    if (!initialState?.initialMessage || status !== 'success') return
+    sentRef.current = false
+  }, [id])
+
+  useEffect(() => {
+    if (!initialState?.initialMessage || status !== 'success' || sentRef.current) return
+    sentRef.current = true
     void send(id, initialState.initialMessage, initialState.initialEvidence)
     navigate(location.pathname, { replace: true, state: null })
   }, [initialState, status, id, send, navigate, location.pathname])

@@ -1,6 +1,7 @@
 import { useT } from '@/shared/i18n'
 import { CanvasHeader, ErrorState, Form, SkeletonRows } from '@/shared/components'
 import { useAiModels } from '@/features/inference'
+import { useInferenceSettings } from '@/features/inference'
 import { AccountSection } from '@/features/auth'
 import { CredentialSection } from '@/features/inference'
 import { PlanSection } from '@/features/billing'
@@ -13,6 +14,7 @@ const SettingsPage = () => {
   const meQuery = useMe()
   const billingQuery = useBilling()
   const modelsQuery = useAiModels()
+  const aiOptions = useInferenceSettings((s) => s.aiOptions)
   const me = meQuery.data ?? null
   const models = modelsQuery.data ?? []
   const status: 'loading' | 'error' | 'success' =
@@ -28,7 +30,8 @@ const SettingsPage = () => {
     await Promise.all([meQuery.refetch(), billingQuery.refetch(), modelsQuery.refetch()])
   }
 
-  const modelLabel = models.find((m) => m.available)?.label ?? '—'
+  const selected = aiOptions()?.model ?? null
+  const modelLabel = (selected && models.find((m) => m.model === selected)?.label) ?? selected ?? '—'
 
   return (
     <>

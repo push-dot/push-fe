@@ -1,0 +1,266 @@
+{
+  "app": {
+    "tagline": "A desktop app for managing applications, documents, and projects via chat"
+  },
+  "login": {
+    "google": "Continue with Google",
+    "github": "Continue with GitHub"
+  },
+  "nav": {
+    "chat": "Chats",
+    "newChat": "New chat",
+    "deleteChat": "Delete chat",
+    "features": "Features",
+    "documents": "Documents",
+    "applications": "Applications",
+    "vault": "Career Vault",
+    "interview": "Interview",
+    "calendar": "Calendar",
+    "settings": "Settings",
+    "projectTag": "Project",
+    "pinSidebar": "Pin sidebar",
+    "collapseSidebar": "Collapse sidebar"
+  },
+  "toast": {
+    "createChatFailed": "Could not create chat",
+    "deleteChatFailed": "Could not delete chat",
+    "runFailed": "Run failed"
+  },
+  "home": {
+    "title": "What can I help with?",
+    "titleAlt": "What shall we push today?"
+  },
+  "composer": {
+    "placeholder": "Type a message",
+    "attach": "Attach file",
+    "inference": "Inference settings",
+    "stop": "Stop",
+    "send": "Send",
+    "uploaded": "File uploaded",
+    "uploadFailed": "Upload failed",
+    "drop": "Drop files to upload",
+    "removeFile": "Remove file"
+  },
+  "infer": {
+    "model": "Model",
+    "noModels": "No models available",
+    "effort": "Effort",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "webSearch": "Web search",
+    "credential": "Credentials",
+    "managed": "Managed by Push",
+    "byok": "My API key",
+    "apiKey": "API key",
+    "byokHint": "Key stays on this device"
+  },
+  "chat": {
+    "running": "Run status",
+    "verified": "Verification",
+    "evidenceLinked": "Evidence linked",
+    "docVersion": "Document version",
+    "copy": "Copy",
+    "copied": "Copied",
+    "exportPdf": "PDF",
+    "exportDocx": "DOCX",
+    "loadingMore": "Loading earlier messages…",
+    "jumpLatest": "Jump to latest",
+    "messages": "Messages",
+    "loadMoreFailed": "Could not load earlier messages",
+    "modelConfigFailed": "Could not load model settings",
+    "noResponse": "No response received",
+    "sendFailed": "Could not send"
+  },
+  "common": {
+    "retry": "Retry",
+    "loadFailed": "Could not load",
+    "networkError": "Check your network and try again.",
+    "save": "Save",
+    "saved": "Saved",
+    "back": "Back",
+    "cancel": "Cancel",
+    "add": "Add"
+  },
+  "settings": {
+    "account": "Account",
+    "name": "Name",
+    "locale": "Locale",
+    "language": "Language",
+    "ai": "AI",
+    "model": "Model",
+    "plan": "Plan",
+    "currentPlan": "Current plan",
+    "upgrade": "Upgrade",
+    "manageBilling": "Manage billing",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "credentials": "Credentials",
+    "byokModel": "BYOK model",
+    "byokProvider": "BYOK provider"
+  },
+  "menu": {
+    "rename": "Rename",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "delete": "Delete"
+  },
+  "approval": {
+    "title": "Approval required",
+    "kindCli": "Approve CLI execution",
+    "kindDoc": "Finalize document",
+    "kindApp": "Approve application submit",
+    "kindEvidence": "Approve evidence use",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusDenied": "Denied",
+    "statusExpired": "Expired",
+    "statusConsumed": "Consumed",
+    "body": "Review the details, then approve or deny.",
+    "approve": "Approve",
+    "deny": "Deny",
+    "approved": "Approved",
+    "denied": "Denied",
+    "failed": "Could not process",
+    "dir": "Directory",
+    "prompt": "Prompt"
+  },
+  "docDialog": {
+    "new": "New document",
+    "cancel": "Cancel",
+    "create": "Create",
+    "title": "Document title",
+    "kind": "Document type",
+    "application": "Linked application",
+    "pickApplication": "Select application",
+    "needApplication": "Add a job posting in Applications first.",
+    "createFailed": "Could not create the document",
+    "kindResume": "Resume",
+    "kindCoverLetter": "Cover letter",
+    "kindPortfolio": "Portfolio"
+  },
+  "interviewDialog": {
+    "title": "Interview prep",
+    "cancel": "Cancel",
+    "add": "Add",
+    "application": "Linked application",
+    "pickApplication": "Select application",
+    "name": "Interview name",
+    "at": "Interview date & time",
+    "needApplication": "Add a job posting in Applications first.",
+    "created": "Interview prep created",
+    "failed": "Could not create"
+  },
+  "plan": {
+    "title": "Upgrade plan",
+    "subtitle": "Choose the plan that fits you",
+    "current": "Current plan",
+    "downgrade": "Downgrade",
+    "perMonth": "/mo",
+    "proName": "Pro",
+    "ultraName": "Ultra",
+    "proPrice": "$30",
+    "ultraPrice": "$100",
+    "proFeat1": "All managed models",
+    "proFeat2": "Web search",
+    "proFeat3": "Unlimited chats",
+    "ultraFeat1": "Everything in Pro",
+    "ultraFeat2": "Tailored resume generation",
+    "ultraFeat3": "Priority support",
+    "freeFeat1": "Basic chat",
+    "freeFeat2": "Some managed models"
+  },
+  "evidence": {
+    "title": "Add evidence",
+    "kind": "Evidence kind",
+    "placeholderTitle": "Title",
+    "placeholderText": "Paste the source text (keep figures and experience verbatim)",
+    "placeholderUrl": "Source URL (optional)",
+    "added": "Evidence added",
+    "addFailed": "Could not add",
+    "kinds": {
+      "RESUME": "Resume",
+      "GITHUB": "GitHub",
+      "CAREER": "Career",
+      "EDUCATION": "Education",
+      "SKILL": "Skill",
+      "PROJECT": "Project"
+    }
+  },
+  "applications": {
+    "empty": "No applications yet",
+    "generating": "Generating…",
+    "generateResume": "Generate tailored resume",
+    "resumeCreated": "Tailored resume created",
+    "resumeFailed": "Failed to generate resume",
+    "stages": {
+      "DISCOVERED": "Analyzing posting",
+      "PREPARING": "Preparing docs",
+      "READY": "Ready to submit",
+      "APPLIED": "Applied",
+      "SCREENING": "Screening",
+      "INTERVIEW": "Interviewing",
+      "OFFER": "Offer",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "WITHDRAWN": "Withdrawn"
+    }
+  },
+  "jobs": {
+    "detail": "Job details",
+    "analysis": "Requirements analysis",
+    "fitSummary": "Fit {{score}} · {{matched}} matched · {{missing}} missing ({{method}})",
+    "fitUnscored": "N/A",
+    "methodAi": "AI assisted",
+    "methodRule": "Rule based",
+    "core": "Core: {{items}}",
+    "risks": "Risks: {{items}}",
+    "vaultDiff": "Career vault gap",
+    "evidenceLinkable": "{{count}} evidence linkable · {{missing}} missing requirements",
+    "noAnalysis": "No analysis yet. It will run when you start preparing.",
+    "startPrep": "Start preparing",
+    "started": "Application started",
+    "startFailed": "Could not start application",
+    "addTitle": "Add job posting",
+    "company": "Company",
+    "jobTitle": "Job title",
+    "sourcePlaceholder": "Paste the job URL or the job description",
+    "sourceKind": "Source kind",
+    "added": "Job posting added",
+    "addFailed": "Could not add",
+    "applicationAdded": "Application added",
+    "applicationFailed": "Could not create application"
+  },
+  "interviews": {
+    "add": "Prepare interview",
+    "empty": "No interview prep yet",
+    "reflection": "Reflection",
+    "minutes": "{{count}} min"
+  },
+  "calendar": {
+    "connect": "Connect Google",
+    "sync": "Sync",
+    "syncStarted": "Sync started",
+    "syncFailed": "Could not sync",
+    "connectFailed": "Could not connect",
+    "empty": "No upcoming events",
+    "types": {
+      "INTERVIEW": "Interview",
+      "DEADLINE": "Deadline",
+      "FOLLOW_UP": "Follow-up",
+      "CUSTOM": "Event"
+    }
+  },
+  "documents": {
+    "empty": "No documents yet",
+    "exportSaved": "{{format}} file saved",
+    "exportFailed": "Could not export",
+    "untitled": "Document"
+  },
+  "vault": {
+    "add": "Add evidence",
+    "empty": "No evidence yet"
+  }
+}

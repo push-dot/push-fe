@@ -123,14 +123,8 @@ export const docCardMeta = style({
   color: vars.color.textMuted,
 })
 
-export const dialogBackdrop = style({
-  position: 'absolute',
-  inset: 0,
+export const dialogOverlay = style({
   background: vars.color.overlay,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: vars.z.dialog,
 })
 
 export const dialog = style({
@@ -153,6 +147,38 @@ export const dialogActions = style({
   display: 'flex',
   gap: vars.space.s8,
   justifyContent: 'flex-end',
+})
+
+export const menuDropdown = style({
+  minWidth: '150px',
+  padding: vars.space.s4,
+  background: vars.color.surface1,
+  border: `1px solid ${vars.color.border}`,
+  borderRadius: vars.radius.md,
+  boxShadow: vars.shadow.md,
+})
+
+export const menuItem = style({
+  width: '100%',
+  gap: vars.space.s8,
+  padding: vars.space.s8,
+  borderRadius: vars.radius.sm,
+  color: vars.color.text,
+  fontSize: vars.fs.bodySm,
+  textAlign: 'left',
+  selectors: {
+    '&:hover:not(:disabled), &:focus:not(:disabled)': {
+      background: vars.color.surface2,
+    },
+    '&:focus-visible': {
+      outline: `2px solid ${vars.color.accent}`,
+      outlineOffset: '-2px',
+    },
+  },
+})
+
+export const menuItemDanger = style({
+  color: vars.color.danger,
 })
 
 export const dataList = style({

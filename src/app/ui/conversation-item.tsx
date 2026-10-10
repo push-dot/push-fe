@@ -49,6 +49,7 @@ const ConversationItem = ({
         <input
           className="sidebar-item-input"
           defaultValue={conv.title}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- the input only mounts when the user invokes rename, so focusing it is the expected behavior
           autoFocus
           onBlur={(e) => onEditEnd(e.target.value)}
           onKeyDown={(e) => {

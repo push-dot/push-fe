@@ -12,8 +12,10 @@ import {
   showToast,
 } from '@/shared/components'
 import { useDocument } from '@/features/documents'
+import { useT } from '@/shared/i18n'
 
 const DocEditorPage = () => {
+  const t = useT()
   const { id = '' } = useParams()
   const { data, isPending, isError, error, refetch } = useDocument(id)
   const current = data?.document ?? null
@@ -23,6 +25,7 @@ const DocEditorPage = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
+    editable: false,
     editorProps: { attributes: { class: 'editor-body' } },
   })
 
@@ -42,9 +45,12 @@ const DocEditorPage = () => {
         format,
         title: current.title,
       })
-      showToast(`${format} 파일을 저장했어요`, 'file-down')
+      showToast(t('documents.exportSaved', { format }), 'file-down')
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '출력하지 못했어요', 'circle-alert')
+      showToast(
+        error instanceof Error ? error.message : t('documents.exportFailed'),
+        'circle-alert',
+      )
     } finally {
       setExporting(null)
     }
@@ -53,7 +59,7 @@ const DocEditorPage = () => {
   return (
     <>
       <CanvasHeader
-        title={current?.title ?? '문서'}
+        title={current?.title ?? t('documents.untitled')}
         actions={
           <>
             <Button

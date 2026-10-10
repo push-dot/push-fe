@@ -5,7 +5,7 @@ import { createPkcePair } from '@/shared/lib/pkce'
 import type { Session } from '@/shared/auth/session'
 import type { AuthProvider, AuthUser, OAuthStart } from './schemas'
 
-import { OAUTH_REDIRECT_URI, PKCE_VERIFIER_STORAGE_KEY } from '../constants'
+import { OAUTH_REDIRECT_URI, OAUTH_STATE_STORAGE_KEY, PKCE_VERIFIER_STORAGE_KEY } from '../constants'
 export const startOAuth = async (provider: AuthProvider): Promise<OAuthStart> => {
   const { verifier, challenge } = await createPkcePair()
   const env = await request<DataEnvelope<OAuthStart>>(() =>
@@ -18,8 +18,12 @@ export const startOAuth = async (provider: AuthProvider): Promise<OAuthStart> =>
     }),
   )
   sessionStorage.setItem(PKCE_VERIFIER_STORAGE_KEY, verifier)
+  sessionStorage.setItem(OAUTH_STATE_STORAGE_KEY, env.data.state)
   return env.data
 }
+
+export const oauthStateMatches = (state: string | null): boolean =>
+  Boolean(state) && state === sessionStorage.getItem(OAUTH_STATE_STORAGE_KEY)
 
 export const exchangeCode = async (code: string): Promise<Session> => {
   const codeVerifier = sessionStorage.getItem(PKCE_VERIFIER_STORAGE_KEY) ?? ''
@@ -27,6 +31,7 @@ export const exchangeCode = async (code: string): Promise<Session> => {
     api.post('auth/exchange', { json: { code, codeVerifier } }),
   )
   sessionStorage.removeItem(PKCE_VERIFIER_STORAGE_KEY)
+  sessionStorage.removeItem(OAUTH_STATE_STORAGE_KEY)
   return env.data
 }
 
