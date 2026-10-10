@@ -76,7 +76,6 @@ export const installApiMocks = async (
     const request = route.request()
     const method = request.method()
     const path = new URL(request.url()).pathname.replace(/^\/api\/v1\/?/, '')
-    const seg = path.split('/').filter(Boolean)
     const body = () => {
       try {
         return (request.postDataJSON() ?? {}) as Record<string, unknown>
@@ -348,11 +347,136 @@ export const installApiMocks = async (
       )
     }
 
-    // --- catch-all: empty list for collection GETs, empty data otherwise ---
-    console.warn(`[mock-api] unhandled ${method} /api/v1/${path}`)
-    if (method === 'GET') {
-      return route.fulfill(seg.length > 1 ? data({}) : list())
+    // --- approvals ---
+    const approvalMatch = path.match(/^approvals\/([^/]+)(?:\/(decision))?$/)
+    if (approvalMatch) {
+      const approval = {
+        id: approvalMatch[1],
+        revision: 1,
+        kind: 'CLI_EXECUTE',
+        applicationId: 'app-1',
+        targetId: 'run-1',
+        targetRevision: 1,
+        payloadHash: 'e2e',
+        status: 'PENDING',
+        expiresAt: null,
+        decidedAt: null,
+        consumedAt: null,
+        createdAt: now(),
+        updatedAt: now(),
+      }
+      if (method === 'GET') {
+        return route.fulfill(data({ approval, targetSummary: null }))
+      }
+      if (method === 'POST' && approvalMatch[2] === 'decision') {
+        return route.fulfill(
+          data({ ...approval, status: (body().decision as string) ?? 'APPROVED', decidedAt: now() }),
+        )
+      }
     }
-    return route.fulfill(data({}))
+
+    // --- operations ---
+    const opMatch = path.match(/^operations\/([^/]+)$/)
+    if (opMatch && method === 'GET') {
+      return route.fulfill(
+        data({
+          id: opMatch[1],
+          type: 'GENERIC',
+          applicationId: null,
+          status: 'SUCCEEDED',
+          progress: 1,
+          result: null,
+          error: null,
+          inputRequest: null,
+          createdAt: now(),
+          updatedAt: now(),
+        }),
+      )
+    }
+
+    // --- remaining collections ---
+    if (
+      method === 'GET' &&
+      ['applications', 'jobs', 'interviews', 'projects', 'documents'].includes(path)
+    ) {
+      return route.fulfill(list())
+    }
+    if (
+      method === 'GET' &&
+      (/^jobs\/[^/]+\/analyses$/.test(path) ||
+        /^projects\/[^/]+\/(runs|evidence)$/.test(path) ||
+        /^documents\/[^/]+\/versions$/.test(path))
+    ) {
+      return route.fulfill(list())
+    }
+    if (method === 'GET' && /^interviews\/[^/]+$/.test(path)) {
+      return route.fulfill(data({}))
+    }
+    if (method === 'GET' && path === 'integrations/google') {
+      return route.fulfill(data({ connected: false, email: null, calendarId: null }))
+    }
+
+    // --- writes that just need an envelope ---
+    if (
+      method === 'POST' &&
+      [
+        'auth/logout',
+        'applications',
+        'jobs',
+        'interviews',
+        'documents',
+        'career-evidence',
+        'billing/checkout',
+        'billing/portal',
+        'integrations/google/connect',
+        'integrations/google/complete',
+        'integrations/google/sync',
+      ].includes(path)
+    ) {
+      return route.fulfill(data({}))
+    }
+    if (
+      method === 'POST' &&
+      (/^applications\/[^/]+\/resume-run$/.test(path) ||
+        /^career-evidence\/[^/]+\/archive$/.test(path))
+    ) {
+      return route.fulfill(data({}))
+    }
+    if (method === 'PATCH' && /^applications\/[^/]+$/.test(path)) {
+      return route.fulfill(data({}))
+    }
+    if (method === 'GET' && /^auth\/[^/]+\/start$/.test(path)) {
+      return route.fulfill(
+        data({
+          authorizationUrl: 'http://localhost:8080/oauth/authorize?state=e2e-state',
+          state: 'e2e-state',
+          expiresAt: now(),
+        }),
+      )
+    }
+    if (method === 'POST' && path === 'auth/exchange') {
+      return route.fulfill(
+        data({
+          accessToken: 'dev-token',
+          refreshToken: 'dev-refresh',
+          expiresIn: 86400,
+          user: {
+            id: '00000000-0000-4000-8000-000000000001',
+            displayName: 'Dev',
+            locale: 'ko',
+          },
+        }),
+      )
+    }
+
+    // --- catch-all: fail loudly so contract drift is visible ---
+    console.warn(`[mock-api] unhandled ${method} /api/v1/${path}`)
+    return route.fulfill({
+      status: 501,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: { code: 'NOT_MOCKED', message: `unhandled ${method} /api/v1/${path}` },
+      }),
+    })
   })
 }

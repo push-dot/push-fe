@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useHasSession } from '@/shared/auth/session'
 import { listAiModels } from './fetchers'
 
 const keys = {
@@ -8,6 +9,7 @@ const keys = {
 export const useAiModels = () =>
   useQuery({
     queryKey: keys.models,
+    enabled: useHasSession(),
     queryFn: () =>
       listAiModels({ provider: 'OPENAI', credentialMode: 'MANAGED' }).then((env) => env.data),
   })

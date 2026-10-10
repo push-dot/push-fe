@@ -96,6 +96,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
   create<MessagesState>()((set, get) => {
     let abortCtrl: AbortController | null = null
     let lastSeq = 0
+    let epoch = 0
     let streamVariant = 'A'
     let lastDoneAt = 0
     const buf = {
@@ -138,8 +139,8 @@ export const createMessagesStore = (deps: MessagesDeps) =>
 
     const mergePage = (existing: Message[], page: Message[]): Message[] => {
       const pageIds = new Set(page.map((m) => m.id))
-      return [...existing.filter((m) => !pageIds.has(m.id)), ...page].sort((a, b) =>
-        a.createdAt.localeCompare(b.createdAt),
+      return [...existing.filter((m) => !pageIds.has(m.id)), ...page].sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
       )
     }
 
@@ -353,12 +354,16 @@ export const createMessagesStore = (deps: MessagesDeps) =>
             set({ loadingMore: false })
             return
           }
-          set((s) => ({
-            messages: [...[...env.data].reverse(), ...s.messages],
-            nextCursor: env.page.nextCursor,
-            hasMore: env.page.hasMore,
-            loadingMore: false,
-          }))
+          set((s) => {
+            const seen = new Set(s.messages.map((m) => m.id))
+            const older = [...env.data].reverse().filter((m) => !seen.has(m.id))
+            return {
+              messages: [...older, ...s.messages],
+              nextCursor: env.page.nextCursor,
+              hasMore: env.page.hasMore,
+              loadingMore: false,
+            }
+          })
         } catch {
           set({ loadingMore: false })
           showToast(t('chat.loadMoreFailed'), 'circle-alert')
@@ -366,17 +371,24 @@ export const createMessagesStore = (deps: MessagesDeps) =>
       },
 
       send: async (conversationId, text, evidence = []) => {
+        const myEpoch = ++epoch
+        const live = () =>
+          myEpoch === epoch &&
+          (get().conversationId === null || get().conversationId === conversationId)
         let ai = deps.aiOptions()
         if (!ai) {
           await deps.ensureModels()
           ai = deps.aiOptions()
         }
+        if (!live()) return
         if (!ai) {
           showToast(t('chat.modelConfigFailed'), 'circle-alert')
           return
         }
         const accessMode = deps.accessMode()
         streamVariant = await deps.streamRenderVariant()
+        if (!live()) return
+        lastSeq = 0
         if (Date.now() - lastDoneAt <= STREAM_FOLLOW_UP_MS) {
           trackExperiment(
             EXPERIMENT_KEYS.streamRender,
@@ -512,6 +524,7 @@ export const createMessagesStore = (deps: MessagesDeps) =>
         abortCtrl = null
         clearStream()
         lastSeq = 0
+        epoch += 1
         set({
           conversationId: null,
           messages: [],

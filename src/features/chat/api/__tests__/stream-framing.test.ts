@@ -26,6 +26,18 @@ const sseResponse = (
 const encode = (s: string) => new TextEncoder().encode(s)
 
 describe('SSE framing', () => {
+  it('parses data: lines without a space after the colon', async () => {
+    vi.mocked(api.get).mockResolvedValue(
+      sseResponse((c) => {
+        c.enqueue(encode('data:{"type":"token","text":"a","seq":1}\n\n'))
+      }) as never,
+    )
+    const events = streamActive('c1')
+    const first = await events.next()
+    expect(first.value).toMatchObject({ type: 'token', text: 'a' })
+    await events.return(undefined)
+  })
+
   it('yields events framed by CRLF separators without waiting for EOF', async () => {
     vi.mocked(api.get).mockResolvedValue(
       sseResponse((c) => {

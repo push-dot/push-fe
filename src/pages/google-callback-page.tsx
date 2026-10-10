@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import { useCompleteGoogle } from '@/features/calendar'
+import { googleStateMatches, useCompleteGoogle } from '@/features/calendar'
 import type { GoogleStatus } from '@/features/calendar'
 import { ErrorState, Skeleton } from '@/shared/components'
 
@@ -24,16 +24,17 @@ const GoogleCallbackPage = () => {
   const [attempt, setAttempt] = useState(0)
   const complete = useCompleteGoogle()
   const code = params.get('code')
+  const stateOk = googleStateMatches(params.get('state'))
 
   useEffect(() => {
-    if (!code) return
+    if (!code || !stateOk) return
     completeOnce(code, complete.mutateAsync)
       .then(() => setDone(true))
       .catch(() => setFailed(true))
-  }, [code, complete.mutateAsync, attempt])
+  }, [code, stateOk, complete.mutateAsync, attempt])
 
   if (done) return <Navigate to="/calendar" replace />
-  if (!code) return <ErrorState />
+  if (!code || !stateOk) return <ErrorState />
   if (failed) {
     return (
       <ErrorState

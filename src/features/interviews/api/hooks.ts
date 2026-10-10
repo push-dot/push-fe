@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import { createInterview, listInterviews } from './fetchers'
 import type { InterviewSession } from './schemas'
 
@@ -12,7 +13,8 @@ const interviewsQuery = {
   queryFn: () => listInterviews({ limit: 50 }).then((env) => env.data),
 }
 
-export const useInterviews = () => useQuery(interviewsQuery)
+export const useInterviews = () =>
+  useQuery({ ...interviewsQuery, enabled: useHasSession() })
 
 export const prefetchInterviews = () => prefetchList(interviewsQuery)
 

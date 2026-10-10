@@ -14,7 +14,7 @@ vi.mock('../api/fetchers', async (importOriginal) => {
 import { listMessages, streamMessage } from '../api/fetchers'
 import { queryClient } from '@/shared/api'
 import { useInferenceSettings } from '@/features/inference'
-import { useMessagesStore } from '../stores'
+import { createMessagesStore, useMessagesStore } from '../stores'
 
 const message = (over: Partial<Message> = {}): Message => ({
   id: 'm1',
@@ -107,6 +107,77 @@ describe('messages store', () => {
     expect(s.messages.map((m) => m.id)).toEqual(['old1', 'new1'])
     expect(s.hasMore).toBe(false)
     expect(s.loadingMore).toBe(false)
+  })
+
+  it('deduplicates overlapping messages on loadMore', async () => {
+    vi.mocked(listMessages)
+      .mockResolvedValueOnce({
+        data: [message({ id: 'new1' }), message({ id: 'new2' })],
+        page: { nextCursor: 'cur1', hasMore: true },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          message({ id: 'old1', createdAt: '2026-08-01T00:00:00Z' }),
+          message({ id: 'new1' }),
+        ],
+        page: { nextCursor: null, hasMore: false },
+      })
+    await useMessagesStore.getState().load('c1')
+    await useMessagesStore.getState().loadMore()
+    const s = useMessagesStore.getState()
+    expect(s.messages.map((m) => m.id).sort()).toEqual(['new1', 'new2', 'old1'])
+    expect(s.messages.filter((m) => m.id === 'new1')).toHaveLength(1)
+  })
+
+  it('abandons a send when the conversation resets during ensureModels', async () => {
+    useInferenceSettings.setState({ models: [], modelsStatus: 'idle' } as never)
+    let release: (() => void) | null = null
+    const gate = new Promise<void>((r) => {
+      release = r
+    })
+    const store = createMessagesStore({
+      aiOptions: () => null,
+      ensureModels: () => gate,
+      accessMode: () => 'SUGGEST',
+      byokKey: () => '',
+      ensureApproval: () => {},
+      streamRenderVariant: async () => 'A',
+    })
+    const send = store.getState().send('c1', 'hello')
+    store.getState().reset()
+    release!()
+    await send
+    expect(streamMessage).not.toHaveBeenCalled()
+    expect(store.getState().messages).toHaveLength(0)
+  })
+
+  it('resets the stream sequence filter on each send', async () => {
+    enableAi()
+    let release: (() => void) | null = null
+    const gate = new Promise<void>((r) => {
+      release = r
+    })
+    vi.mocked(streamMessage)
+      .mockImplementationOnce(
+        () =>
+          streamOf([
+            { type: 'token', text: 'first', seq: 7 },
+            { type: 'done', seq: 8, operation: operation() },
+          ]) as never,
+      )
+      .mockImplementationOnce(async function* () {
+        yield { type: 'token', text: 'low', seq: 1 }
+        await gate
+        yield { type: 'done', seq: 2, operation: operation() }
+      } as never)
+    await useMessagesStore.getState().send('c1', 'one')
+    const second = useMessagesStore.getState().send('c1', 'two')
+    await vi.waitFor(() =>
+      expect(useMessagesStore.getState().sendStatus).toBe('streaming'),
+    )
+    release!()
+    await second
+    expect(useMessagesStore.getState().sendStatus).toBe('idle')
   })
 
   it('skips loadMore without cursor', async () => {

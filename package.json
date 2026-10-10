@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "audit:lighthouse": "node scripts/lighthouse.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test:e2e": "playwright test",

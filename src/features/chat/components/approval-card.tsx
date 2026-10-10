@@ -5,20 +5,22 @@ import { Button, Icon, StatusChip, showToast } from '@/shared/components'
 import { trackExperimentEvent } from '@/shared/api'
 import { EXPERIMENT_EVENTS, EXPERIMENT_KEYS } from '@/shared/constants'
 import { useExperimentConversion } from '@/shared/lib/experiment'
+import { useT } from '@/shared/i18n'
+import type { MsgKey } from '@/shared/i18n'
 
-const KIND_TITLES: Record<ApprovalKind, string> = {
-  CLI_EXECUTE: 'CLI 실행 승인',
-  DOCUMENT_FINALIZE: '문서 확정',
-  APPLICATION_SUBMIT: '지원 제출 승인',
-  EVIDENCE_USE: '근거 사용 승인',
+const KIND_TITLES: Record<ApprovalKind, MsgKey> = {
+  CLI_EXECUTE: 'approval.kindCli',
+  DOCUMENT_FINALIZE: 'approval.kindDoc',
+  APPLICATION_SUBMIT: 'approval.kindApp',
+  EVIDENCE_USE: 'approval.kindEvidence',
 }
 
-const STATUS_LABELS: Record<Approval['status'], string> = {
-  PENDING: '대기 중',
-  APPROVED: '승인됨',
-  DENIED: '거부됨',
-  EXPIRED: '만료됨',
-  CONSUMED: '처리됨',
+const STATUS_LABELS: Record<Approval['status'], MsgKey> = {
+  PENDING: 'approval.statusPending',
+  APPROVED: 'approval.statusApproved',
+  DENIED: 'approval.statusDenied',
+  EXPIRED: 'approval.statusExpired',
+  CONSUMED: 'approval.statusConsumed',
 }
 
 type ApprovalCardProps = {
@@ -26,6 +28,7 @@ type ApprovalCardProps = {
 }
 
 const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
+  const t = useT()
   const { data } = useApproval(approvalId)
   const approval = data?.approval ?? null
   const summary = data?.targetSummary ?? null
@@ -45,17 +48,17 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
           () => undefined,
         )
       }
-      showToast(decision === 'APPROVED' ? '승인했어요' : '거부했어요')
+      showToast(decision === 'APPROVED' ? t('approval.approved') : t('approval.denied'))
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '처리하지 못했어요', 'circle-alert')
+      showToast(error instanceof Error ? error.message : t('approval.failed'), 'circle-alert')
     } finally {
       setBusy(false)
     }
   }
 
   const title = summary?.title
-    ? `${KIND_TITLES[approval.kind]} — ${summary.title}`
-    : KIND_TITLES[approval.kind]
+    ? `${t(KIND_TITLES[approval.kind])} — ${summary.title}`
+    : t(KIND_TITLES[approval.kind])
 
   const command =
     summary?.executable || summary?.prompt
@@ -63,8 +66,8 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
           summary.executable
             ? `$ ${summary.executable}${summary.arguments?.length ? ` ${summary.arguments.join(' ')}` : ''}`
             : null,
-          summary.workingDirectory ? `디렉터리: ${summary.workingDirectory}` : null,
-          summary.prompt ? `프롬프트: ${summary.prompt}` : null,
+          summary.workingDirectory ? `${t('approval.dir')}: ${summary.workingDirectory}` : null,
+          summary.prompt ? `${t('approval.prompt')}: ${summary.prompt}` : null,
         ]
           .filter(Boolean)
           .join('\n')
@@ -76,8 +79,8 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
       {command ? <div className="approval-card-cmd">{command}</div> : null}
       <div className="approval-card-body">
         {approval.status === 'PENDING'
-          ? '내용을 확인한 뒤 승인하거나 거부할 수 있어요.'
-          : STATUS_LABELS[approval.status]}
+          ? t('approval.body')
+          : t(STATUS_LABELS[approval.status])}
       </div>
       {approval.status === 'PENDING' ? (
         <div className="approval-card-actions">
@@ -87,7 +90,7 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
             loading={busy}
             onClick={() => void onDecide('DENIED')}
           >
-            <Icon name="x" size={20} /> 거부
+            <Icon name="x" size={20} /> {t('approval.deny')}
           </Button>
           <Button
             variant="primary"
@@ -95,14 +98,14 @@ const ApprovalCard = ({ approvalId }: ApprovalCardProps) => {
             loading={busy}
             onClick={() => void onDecide('APPROVED')}
           >
-            <Icon name="check" size={20} /> 승인
+            <Icon name="check" size={20} /> {t('approval.approve')}
           </Button>
         </div>
       ) : (
         <div className="approval-card-actions">
           <StatusChip
             tone={approval.status === 'APPROVED' ? 'verified' : 'pending'}
-            label={STATUS_LABELS[approval.status]}
+            label={t(STATUS_LABELS[approval.status])}
           />
         </div>
       )}

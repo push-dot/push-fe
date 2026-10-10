@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import { useExchangeCode } from '@/features/auth'
+import { oauthStateMatches, useExchangeCode } from '@/features/auth'
 import { useSessionStore } from '@/shared/auth/session'
 import type { Session } from '@/shared/auth/session'
 import { ErrorState, Skeleton } from '@/shared/components'
@@ -26,16 +26,17 @@ const AuthCallbackPage = () => {
   const [attempt, setAttempt] = useState(0)
   const exchange = useExchangeCode()
   const code = params.get('code')
+  const stateOk = oauthStateMatches(params.get('state'))
 
   useEffect(() => {
-    if (!code || session) return
+    if (!code || !stateOk || session) return
     exchangeOnce(code, exchange.mutateAsync)
       .then(setSession)
       .catch(() => setFailed(true))
-  }, [code, session, setSession, exchange.mutateAsync, attempt])
+  }, [code, stateOk, session, setSession, exchange.mutateAsync, attempt])
 
   if (session) return <Navigate to="/" replace />
-  if (!code) return <ErrorState />
+  if (!code || !stateOk) return <ErrorState />
   if (failed) {
     return (
       <ErrorState

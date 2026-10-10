@@ -157,17 +157,19 @@ const readEvents = async function* (
 
 const parseFrame = function* (frame: string): Generator<MessageStreamEvent> {
   for (const line of frame.split(/\r?\n/)) {
-    if (!line.startsWith('data: ')) continue
+    if (!line.startsWith('data:')) continue
     try {
-      yield JSON.parse(line.slice(6)) as MessageStreamEvent
+      yield JSON.parse(line.slice(5).trimStart()) as MessageStreamEvent
     } catch {
       yield { type: 'error', error: { code: 'STREAM_PARSE', message: 'malformed stream frame' } }
     }
   }
 }
 
-export const getApproval = async (id: string): Promise<ApprovalSummary> =>
-  request(() => api.get(`approvals/${id}`))
+export const getApproval = async (id: string): Promise<ApprovalSummary> => {
+  const env = await request<DataEnvelope<ApprovalSummary>>(() => api.get(`approvals/${id}`))
+  return env.data
+}
 
 export const decideApproval = async (
   id: string,

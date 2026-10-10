@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { prefetchList, queryClient } from '@/shared/api'
+import { useHasSession } from '@/shared/auth/session'
 import {
   archiveConversation,
   createConversation,
@@ -24,7 +25,8 @@ const conversationsQuery = {
   queryFn: () => listConversations({ limit: 50 }).then((env) => env.data),
 }
 
-export const useConversations = () => useQuery(conversationsQuery)
+export const useConversations = () =>
+  useQuery({ ...conversationsQuery, enabled: useHasSession() })
 
 export const prefetchMessages = (conversationId: string) =>
   prefetchList({

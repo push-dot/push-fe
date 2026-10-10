@@ -29,7 +29,10 @@ const subscribeTauriDrop = async (
       void (async () => {
         const files = await Promise.all(
           p.paths.map(async (path) =>
-            fileFromBytes(await invoke<number[]>('read_dropped_file', { path }), path),
+            fileFromBytes(
+              await invoke<number[]>('read_dropped_file', { path, allowlist: p.paths }),
+              path,
+            ),
           ),
         )
         onFiles(files)
