@@ -56,7 +56,7 @@ e2e/              Playwright e2e (웹)
 e2e-tauri/        WebdriverIO tauri e2e
 ```
 
-엔트리 경계(`app/`, `main.tsx`)는 피처/페이지 배럴(`index.ts`) 대신 모듈을 직접 import한다. 배럴을 경유하면 lazy 페이지 의존성이 엔트리 청크로 올라간다 — `docs/bundle-optimization.md` 참조.
+엔트리 경계(`app/`, `main.tsx`)는 피처/페이지 배럴(`index.ts`) 대신 모듈을 직접 import한다. 배럴을 경유하면 lazy 페이지 의존성이 엔트리 청크로 올라간다.
 
 ## 실행
 
