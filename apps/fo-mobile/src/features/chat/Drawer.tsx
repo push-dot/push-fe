@@ -13,20 +13,13 @@ import { BookmarksModal } from './BookmarksModal'
 import { DocsModal } from './DocsModal'
 import { LinksModal } from './LinksModal'
 import { SPRING, useReduceMotion } from './motion'
+import { useMe } from './useMe'
 import { ago, Mark } from './parts'
 
 type Sheet = 'account' | 'docs' | 'links' | 'bookmarks' | null
 
 export const statusBadge = (s: ConversationRow['status']) =>
   s === 'NEEDS_APPROVAL' ? <Badge label="확인 필요" tone="orange" /> : s === 'RUNNING' ? <Badge label="작업 중" tone="ac" /> : null
-
-/** Me: name for the drawer and account modal (profile when available, session otherwise). */
-export function useMe() {
-  const session = useSession((s) => s.session)
-  const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: api.me.profile })
-  const name = profile.data?.displayName ?? session?.user.displayName ?? '나'
-  return { name, given: name.length > 2 ? name.slice(-2) : name, profile: profile.data }
-}
 
 /** Full-width slide bar over the tab bar (ChatDrawer). `currentId` is set inside a conversation. */
 export function ChatDrawer({ visible, onClose, currentId }: { visible: boolean; onClose: () => void; currentId?: string }) {

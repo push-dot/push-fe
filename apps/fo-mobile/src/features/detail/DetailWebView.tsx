@@ -1,4 +1,4 @@
-import { router } from 'expo-router'
+import { router, type Href } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
@@ -36,7 +36,7 @@ export function DetailWebView({ path, onTitle }: Props) {
       return
     }
     if (m.type === 'title' && typeof m.title === 'string') onTitle?.(m.title)
-    else if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path)
+    else if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path as Href) // dynamic path from web; validated above
     else if (m.type === 'external' && typeof m.url === 'string' && /^https?:\/\//.test(m.url)) void WebBrowser.openBrowserAsync(m.url)
     else if (m.type === 'error') setFailed(true)
   }

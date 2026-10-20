@@ -8,7 +8,7 @@ import { api } from '../../lib/api'
 import { fontFor, useColors } from '../../theme'
 import { Badge, BottomSheet, Button, GlassButton, Icon, SegmentedControl, SettingsGroup, SettingsRow, Switch, Text } from '../../ui'
 import { chatApi, type Account } from './api'
-import { useMe } from './Drawer'
+import { useMe } from './useMe'
 import { Appear } from './motion'
 import { Mark, Note, PageModal, Pick } from './parts'
 import { usePrefs } from './store'
@@ -88,7 +88,7 @@ function AccountPage({ visible, account, onPlan, onClose }: { visible: boolean; 
         <Text v="h2" style={{ marginTop: 6 }}>
           {me.name}
         </Text>
-        {account ? (
+        {account?.email ? (
           <Text v="b2" color="t3">
             {account.email}
           </Text>
@@ -118,7 +118,7 @@ function AccountPage({ visible, account, onPlan, onClose }: { visible: boolean; 
         <View>
           <SettingsGroup title="AI가 참고하는 내 정보" note="대화를 시작할 때 AI가 이 정보부터 읽어요.">
             <SettingsRow label={me.profile?.headline || '희망 직무'} onPress={toMy} />
-            <SettingsRow label={me.profile ? `${me.profile.tenureYears}년차` : '연차'} onPress={toMy} />
+            <SettingsRow label={me.profile?.tenureYears != null ? `${me.profile.tenureYears}년차` : '연차'} onPress={toMy} />
             <SettingsRow label={docs.data?.find((d) => !d.aiMade)?.fileName ?? '기본 서류'} onPress={toMy} />
           </SettingsGroup>
         </View>
@@ -249,7 +249,7 @@ function PlanPage({ account }: { account: Account }) {
         <SettingsGroup>
           <SettingsRow
             label="크레딧 충전"
-            sub={`남은 크레딧 ${(account.credits.total - account.credits.used).toLocaleString()}`}
+            sub={account.credits ? `남은 크레딧 ${(account.credits.total - account.credits.used).toLocaleString()}` : undefined}
             right={<Button label="충전" size="sm" variant="secondary" onPress={() => Alert.alert('크레딧 충전', '추가 구매는 곧 열려요. 지금은 요금제를 올려 크레딧을 늘릴 수 있어요.')} />}
           />
         </SettingsGroup>
