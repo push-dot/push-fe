@@ -298,6 +298,37 @@ describe('employer api', () => {
     expect(bodyOf(hits[2]!)).toEqual({ expectedRevision: 4 })
   })
 
+  it('lists the signed-in company postings', async () => {
+    const page = {
+      data: [
+        {
+          id: 'job-1',
+          company: '모아페이',
+          title: '시니어 백엔드',
+          jobCategory: 'dev' as const,
+          imageUrl: null,
+          skills: [] as string[],
+          careerMin: 5,
+          careerMax: null,
+          location: '서울 강남구',
+          employmentType: 'full_time' as const,
+          deadline: null,
+          bookmarked: false,
+          applied: false,
+          sourceUrl: null,
+          createdAt: '2026-10-21T00:00:00.000Z',
+          revision: 1,
+          closedAt: null,
+        },
+      ],
+      page: { nextCursor: null, hasMore: false, total: 1 },
+    }
+    const { api, hits } = harness(() => json(200, page))
+    await expect(api.postings.mine()).resolves.toEqual(page)
+    expect(hits[0]!.method).toBe('GET')
+    expect(new URL(hits[0]!.url).pathname.endsWith('/companies/me/postings')).toBe(true)
+  })
+
   it('lists applicants and loads one snapshot', async () => {
     const summary = {
       applicationId: 'a1',

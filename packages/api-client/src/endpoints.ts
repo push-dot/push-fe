@@ -37,6 +37,7 @@ export const createApi = (c: Client) => ({
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
+    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),

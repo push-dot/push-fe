@@ -18,8 +18,12 @@ import SearchPage from '../pages/search/search-page'
 import SettingsPage from '../pages/settings/settings-page'
 import PostPage from '../pages/social/post-page'
 import SocialPage from '../pages/social/social-page'
+import ApplicantPage from '../pages/employer/applicant-page'
+import ApplicantsPage from '../pages/employer/applicants-page'
 import InvitePage from '../pages/employer/invite-page'
 import MembersPage from '../pages/employer/members-page'
+import PostingEditorPage from '../pages/employer/posting-editor-page'
+import PostingsPage from '../pages/employer/postings-page'
 import EmployerVerifyPage from '../pages/employer/verify-page'
 import SoonPage from '../pages/soon-page'
 import { SOON_TITLE } from './constants'
@@ -61,14 +65,11 @@ const AppRouter = () => {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/employer/verify" element={<EmployerVerifyPage />} />
-            <Route path="/employer/postings" element={<SoonPage title={SOON_TITLE.postings} />} />
-            <Route path="/employer/postings/new" element={<SoonPage title={SOON_TITLE.postings} />} />
-            <Route path="/employer/postings/:id/edit" element={<SoonPage title={SOON_TITLE.postings} />} />
-            <Route path="/employer/postings/:id/applicants" element={<SoonPage title={SOON_TITLE.postings} />} />
-            <Route
-              path="/employer/postings/:id/applicants/:applicationId"
-              element={<SoonPage title={SOON_TITLE.postings} />}
-            />
+            <Route path="/employer/postings" element={<PostingsPage />} />
+            <Route path="/employer/postings/new" element={<PostingEditorPage />} />
+            <Route path="/employer/postings/:id/edit" element={<PostingEditorPage />} />
+            <Route path="/employer/postings/:id/applicants" element={<ApplicantsPage />} />
+            <Route path="/employer/postings/:id/applicants/:applicationId" element={<ApplicantPage />} />
             <Route path="/employer/chat" element={<SoonPage title={SOON_TITLE.chat} />} />
             <Route path="/employer/chat/new" element={<SoonPage title={SOON_TITLE.chat} />} />
             <Route path="/employer/chat/:id" element={<SoonPage title={SOON_TITLE.chat} />} />

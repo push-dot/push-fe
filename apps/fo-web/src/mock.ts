@@ -7,6 +7,8 @@ import type {
   Company,
   CompanyMember,
   Consent,
+  EmploymentType,
+  JobCategory,
   Offer,
   OfferMessage,
   Post,
@@ -278,6 +280,173 @@ const flags = new Map<string, { bookmarked: boolean; applied: boolean }>(
 const present = (item: Posting): Posting => {
   const flag = flags.get(item.id)
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
+}
+
+type CompanyPosting = PostingDetail & { revision: number; closedAt: string | null }
+
+const JOB_CATEGORY_KEYS = ['dev', 'data', 'design', 'plan', 'marketing', 'sales', 'hr', 'ops'] as const
+const EMPLOYMENT_TYPE_KEYS = ['full_time', 'contract', 'intern', 'freelance', 'dispatch'] as const
+const APPLICATION_STAGES = [
+  'DISCOVERED',
+  'PREPARING',
+  'READY',
+  'APPLIED',
+  'SCREENING',
+  'INTERVIEW',
+  'OFFER',
+  'ACCEPTED',
+  'REJECTED',
+  'WITHDRAWN',
+] as const
+const TERMINAL_APPLICANT_STAGES = new Set<Application['stage']>(['REJECTED', 'ACCEPTED', 'WITHDRAWN'])
+
+const asJobCategory = (value: unknown): JobCategory => JOB_CATEGORY_KEYS.find((key) => key === value) ?? 'dev'
+
+const asEmploymentType = (value: unknown): EmploymentType => EMPLOYMENT_TYPE_KEYS.find((key) => key === value) ?? 'full_time'
+
+const asStage = (value: unknown) => APPLICATION_STAGES.find((stage) => stage === value) ?? null
+
+const stringList = (value: unknown) => (Array.isArray(value) ? value.map(String) : [])
+
+const recordOf = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
+
+const careerMinOf = (value: unknown) => {
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const deadlineOf = (value: unknown) => (typeof value === 'string' && value.trim() ? value : null)
+
+const companyPosting = (patch: Partial<CompanyPosting> & Pick<CompanyPosting, 'id' | 'title'>): CompanyPosting => ({
+  company: '모아페이',
+  jobCategory: 'dev',
+  imageUrl: null,
+  skills: [],
+  careerMin: 5,
+  careerMax: null,
+  location: '서울 강남구',
+  employmentType: 'full_time',
+  deadline: '2026-11-30',
+  bookmarked: false,
+  applied: false,
+  sourceUrl: null,
+  createdAt: '2026-10-21T00:00:00.000Z',
+  description: '결제 승인 API를 설계해요',
+  requirements: ['서버 개발 5년'],
+  preferred: ['금융 도메인'],
+  workConditions: { 조건: '주 5일' },
+  revision: 1,
+  closedAt: null,
+  ...patch,
+})
+
+const companyPostings: CompanyPosting[] = [
+  companyPosting({ id: 'job-1', title: '시니어 백엔드', revision: 1, closedAt: null }),
+  companyPosting({ id: 'job-2', title: '주니어 프론트엔드', revision: 1, deadline: null, closedAt: '2026-10-01T00:00:00.000Z' }),
+]
+
+let companyPostingSeq = companyPostings.length
+
+const employerOwnsPostings = () => persona === 'employer' || persona === 'employer-pro' || persona === 'employer-new'
+
+const toCard = (item: CompanyPosting): Posting => ({
+  id: item.id,
+  company: item.company,
+  title: item.title,
+  jobCategory: item.jobCategory,
+  imageUrl: item.imageUrl,
+  skills: item.skills,
+  careerMin: item.careerMin,
+  careerMax: item.careerMax,
+  location: item.location,
+  employmentType: item.employmentType,
+  deadline: item.deadline,
+  bookmarked: item.bookmarked,
+  applied: item.applied,
+  sourceUrl: item.sourceUrl,
+  createdAt: item.createdAt,
+  revision: item.revision,
+  closedAt: item.closedAt,
+})
+
+type ApplicantRecord = {
+  application: Application
+  displayName: string
+  headline: string
+  documents: { id: string; title: string; content: string }[]
+}
+
+const applicantRecord = (
+  id: string,
+  stage: Application['stage'],
+  displayName: string,
+  headline: string,
+  documents: ApplicantRecord['documents'],
+): ApplicantRecord => ({
+  application: {
+    id,
+    revision: 1,
+    jobId: 'job-1',
+    company: '모아페이',
+    title: '시니어 백엔드',
+    stage,
+    appliedAt: '2026-10-18T00:00:00.000Z',
+    createdAt: '2026-10-18T00:00:00.000Z',
+  },
+  displayName,
+  headline,
+  documents,
+})
+
+const applicantsByPosting = new Map<string, ApplicantRecord[]>([
+  [
+    'job-1',
+    [
+      applicantRecord('app-1', 'APPLIED', '김서준', '결제 서버를 만들어요', [
+        { id: 'doc-1', title: '이력서', content: '결제 API를 5년 만들었어요' },
+        { id: 'doc-2', title: '경력 기술서', content: '정산 배치를 운영했어요' },
+      ]),
+      applicantRecord('app-2', 'SCREENING', '이하은', '화면 속도를 올려요', [
+        { id: 'doc-3', title: '이력서', content: 'React로 관리자 화면을 만들었어요' },
+        { id: 'doc-4', title: '포트폴리오', content: '디자인 시스템을 정리했어요' },
+      ]),
+    ],
+  ],
+])
+
+const syncListing = (item: CompanyPosting) => {
+  const listing = listings.find((row) => row.id === item.id)
+  if (listing) Object.assign(listing, toCard(item))
+}
+
+const applyPostingPatch = (item: CompanyPosting, payload: Record<string, unknown>) => {
+  if (typeof payload.title === 'string') item.title = payload.title
+  if (typeof payload.description === 'string') item.description = payload.description
+  if (Array.isArray(payload.requirements)) item.requirements = stringList(payload.requirements)
+  if (Array.isArray(payload.preferred)) item.preferred = stringList(payload.preferred)
+  if ('workConditions' in payload) item.workConditions = recordOf(payload.workConditions)
+  if ('jobCategory' in payload) item.jobCategory = asJobCategory(payload.jobCategory)
+  if ('careerMin' in payload) item.careerMin = careerMinOf(payload.careerMin)
+  if ('careerMax' in payload) item.careerMax = typeof payload.careerMax === 'number' ? payload.careerMax : null
+  if (typeof payload.location === 'string') item.location = payload.location
+  if ('employmentType' in payload) item.employmentType = asEmploymentType(payload.employmentType)
+  if ('deadline' in payload) item.deadline = deadlineOf(payload.deadline)
+  if (Array.isArray(payload.skills)) item.skills = stringList(payload.skills)
+  item.revision += 1
+}
+
+const ownedPostingResponse = (id: string) => {
+  const owned = companyPostings.find((item) => item.id === id)
+  if (!owned) return null
+  const flag = flags.get(id)
+  return json(200, {
+    data: {
+      ...owned,
+      bookmarked: flag?.bookmarked ?? owned.bookmarked,
+      applied: flag?.applied ?? owned.applied,
+    },
+  })
 }
 
 const splitParam = (url: URL, key: string) =>
@@ -1004,6 +1173,95 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   return null
 }
 
+const handleEmployerPostings = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
+  const tail = routeTail(pathname)
+  if (method === 'GET' && tail === '/companies/me/postings') {
+    const items = employerOwnsPostings() ? companyPostings.map(present) : []
+    return json(200, pageOf(url, items))
+  }
+  if (method === 'POST' && tail === '/postings') {
+    const payload = await readJson(input, init)
+    companyPostingSeq += 1
+    const created = companyPosting({
+      id: `job-${companyPostingSeq}`,
+      title: String(payload.title ?? ''),
+      jobCategory: asJobCategory(payload.jobCategory),
+      careerMin: careerMinOf(payload.careerMin),
+      careerMax: typeof payload.careerMax === 'number' ? payload.careerMax : null,
+      location: String(payload.location ?? ''),
+      employmentType: asEmploymentType(payload.employmentType),
+      deadline: deadlineOf(payload.deadline),
+      description: String(payload.description ?? ''),
+      requirements: stringList(payload.requirements),
+      preferred: stringList(payload.preferred),
+      workConditions: recordOf(payload.workConditions),
+      skills: stringList(payload.skills),
+      createdAt: new Date().toISOString(),
+      revision: 1,
+      closedAt: null,
+      company: '모아페이',
+    })
+    companyPostings.unshift(created)
+    listings.unshift(toCard(created))
+    return json(201, { data: created })
+  }
+  const applicantMatch = tail.match(/^\/postings\/([^/]+)\/applicants\/([^/]+)$/)
+  if (applicantMatch && (method === 'GET' || method === 'PATCH')) {
+    const postingId = decodeURIComponent(applicantMatch[1] ?? '')
+    const applicationId = decodeURIComponent(applicantMatch[2] ?? '')
+    const record = (applicantsByPosting.get(postingId) ?? []).find((item) => item.application.id === applicationId)
+    if (!record) return json(404, { error: { code: 'NOT_FOUND', message: '지원자를 찾지 못했어요' } })
+    if (method === 'PATCH') {
+      if (TERMINAL_APPLICANT_STAGES.has(record.application.stage)) {
+        return json(409, { error: { code: 'INVALID_TRANSITION', message: '이미 끝난 지원이에요' } })
+      }
+      const payload = await readJson(input, init)
+      const stage = asStage(payload.stage)
+      if (stage) record.application.stage = stage
+      return json(200, { data: record.application })
+    }
+    return json(200, { data: { application: record.application, documents: record.documents } })
+  }
+  const applicantsMatch = tail.match(/^\/postings\/([^/]+)\/applicants$/)
+  if (applicantsMatch && method === 'GET') {
+    const postingId = decodeURIComponent(applicantsMatch[1] ?? '')
+    const stage = url.searchParams.get('stage')
+    const records = (applicantsByPosting.get(postingId) ?? []).filter((item) => !stage || item.application.stage === stage)
+    const summaries = records.map((item) => ({
+      applicationId: item.application.id,
+      applicant: { displayName: item.displayName, headline: item.headline },
+      stage: item.application.stage,
+      appliedAt: item.application.appliedAt ?? item.application.createdAt,
+    }))
+    return json(200, slicePage(url, summaries, (item) => item.applicationId))
+  }
+  const closeMatch = tail.match(/^\/postings\/([^/]+)\/close$/)
+  if (closeMatch && method === 'POST') {
+    const id = decodeURIComponent(closeMatch[1] ?? '')
+    const found = companyPostings.find((item) => item.id === id)
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
+    found.closedAt = new Date().toISOString()
+    found.revision += 1
+    syncListing(found)
+    return json(200, { data: found })
+  }
+  const patchMatch = tail.match(/^\/postings\/([^/]+)$/)
+  if (patchMatch && method === 'PATCH') {
+    const id = decodeURIComponent(patchMatch[1] ?? '')
+    const found = companyPostings.find((item) => item.id === id)
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
+    applyPostingPatch(found, await readJson(input, init))
+    syncListing(found)
+    return json(200, { data: found })
+  }
+  const detailMatch = tail.match(/^\/postings\/([^/]+)$/)
+  if (detailMatch && method === 'GET') {
+    const owned = ownedPostingResponse(decodeURIComponent(detailMatch[1] ?? ''))
+    if (owned) return owned
+  }
+  return null
+}
+
 const flagFor = (id: string) => flags.get(id) ?? { bookmarked: id === posting.id ? posting.bookmarked : false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
@@ -1016,6 +1274,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
   const pathname = url.pathname
   const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
   await new Promise((resolve) => setTimeout(resolve, 250))
+  const employerPosting = await handleEmployerPostings(method, url, pathname, input, init)
+  if (employerPosting) return employerPosting
   if (method === 'GET' && pathname.endsWith('/postings/locations')) {
     return json(200, {
       data: [
