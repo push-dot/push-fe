@@ -4,7 +4,7 @@ import CallbackPage from '../pages/login/callback-page'
 import LoginPage from '../pages/login/login-page'
 import ResetPage from '../pages/login/reset-page'
 import SignupPage from '../pages/login/signup-page'
-import VerifyPage from '../pages/login/verify-page'
+import EmailVerifyPage from '../pages/login/verify-page'
 import HomePage from '../pages/home/home-page'
 import HubPage from '../pages/hub/hub-page'
 import JobsPage from '../pages/jobs/jobs-page'
@@ -18,6 +18,9 @@ import SearchPage from '../pages/search/search-page'
 import SettingsPage from '../pages/settings/settings-page'
 import PostPage from '../pages/social/post-page'
 import SocialPage from '../pages/social/social-page'
+import InvitePage from '../pages/employer/invite-page'
+import MembersPage from '../pages/employer/members-page'
+import EmployerVerifyPage from '../pages/employer/verify-page'
 import SoonPage from '../pages/soon-page'
 import { SOON_TITLE } from './constants'
 import RequireAuth from './require-auth'
@@ -44,7 +47,7 @@ const AppRouter = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/auth/callback" element={<CallbackPage />} />
-          <Route path="/auth/verify" element={<VerifyPage />} />
+          <Route path="/auth/verify" element={<EmailVerifyPage />} />
           <Route path="/auth/reset" element={<ResetPage />} />
           <Route path="/postings/:id" element={<PostingPage />} />
           <Route element={<RequireAuth />}>
@@ -57,7 +60,7 @@ const AppRouter = () => {
             <Route path="/offers/:id" element={<OfferDetailPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/employer/verify" element={<SoonPage title={SOON_TITLE.verify} />} />
+            <Route path="/employer/verify" element={<EmployerVerifyPage />} />
             <Route path="/employer/postings" element={<SoonPage title={SOON_TITLE.postings} />} />
             <Route path="/employer/postings/new" element={<SoonPage title={SOON_TITLE.postings} />} />
             <Route path="/employer/postings/:id/edit" element={<SoonPage title={SOON_TITLE.postings} />} />
@@ -69,9 +72,9 @@ const AppRouter = () => {
             <Route path="/employer/chat" element={<SoonPage title={SOON_TITLE.chat} />} />
             <Route path="/employer/chat/new" element={<SoonPage title={SOON_TITLE.chat} />} />
             <Route path="/employer/chat/:id" element={<SoonPage title={SOON_TITLE.chat} />} />
-            <Route path="/employer/members" element={<SoonPage title={SOON_TITLE.members} />} />
+            <Route path="/employer/members" element={<MembersPage />} />
             <Route path="/employer/plans" element={<SoonPage title={SOON_TITLE.plans} />} />
-            <Route path="/invites/:token" element={<SoonPage title={SOON_TITLE.invite} />} />
+            <Route path="/invites/:token" element={<InvitePage />} />
           </Route>
         </Route>
       </Routes>

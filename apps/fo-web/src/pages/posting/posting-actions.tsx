@@ -5,6 +5,7 @@ import { api } from '../../api'
 import { isWebView } from '../../bridge'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
+import { canUseEmployerAi } from '../../shared/model/employer-plan'
 import type { PostingView } from '../../mock'
 import ApplySheet from './apply-sheet'
 import {
@@ -13,6 +14,7 @@ import {
   APPLY_LABEL,
   BOOKMARK_LABEL,
   EMPLOYER_POSTING_CTA,
+  EMPLOYER_VERIFY_PATH,
   LINK_COPIED_TOAST,
   SHARE_LABEL,
 } from './constants'
@@ -80,7 +82,14 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
       </div>
       <div className="bottom-bar">
         {mode === 'employer' ? (
-          <Link className="pill" to={`/employer/chat/new?postingId=${encodeURIComponent(posting.id)}`}>
+          <Link
+            className="pill"
+            to={
+              canUseEmployerAi(session?.user.companyId != null && session.user.companyId !== '')
+                ? `/employer/chat/new?postingId=${encodeURIComponent(posting.id)}`
+                : EMPLOYER_VERIFY_PATH
+            }
+          >
             {EMPLOYER_POSTING_CTA}
           </Link>
         ) : (

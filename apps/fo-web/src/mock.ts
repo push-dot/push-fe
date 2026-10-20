@@ -5,6 +5,7 @@ import type {
   CalendarEvent,
   Comment,
   Company,
+  CompanyMember,
   Consent,
   Offer,
   OfferMessage,
@@ -575,18 +576,76 @@ const employerPersona = () => {
   return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-new'
 }
 
-const companyMe = (): Company | null => {
+type CompanyRecord = {
+  company: Company
+  members: CompanyMember[]
+}
+
+const companyRecords = new Map<string, CompanyRecord>()
+let inviteSeq = 0
+
+const personaKey = () => mockPersona() ?? 'default'
+
+const currentUserId = () => sessionStore.load()?.user.id ?? 'u1'
+
+const adminMember = (joinedAt: string): CompanyMember => ({
+  userId: currentUserId(),
+  email: `${currentUserId()}@push.app`,
+  role: 'ADMIN',
+  joinedAt,
+})
+
+const seedCompany = (): CompanyRecord | null => {
   const kind = mockPersona()
-  if (kind !== 'employer' && kind !== 'employer-pro') return null
-  return {
-    id: 'co-1',
-    bNo: '1234567890',
-    name: '모아페이',
-    plan: kind === 'employer-pro' ? 'PRO' : 'BASIC',
-    verifiedAt: '2026-09-01T00:00:00.000Z',
-    role: 'ADMIN',
-    seats: { used: 1, limit: kind === 'employer-pro' ? 2 : 0 },
+  const verifiedAt = '2026-09-01T00:00:00.000Z'
+  if (kind === 'employer') {
+    return {
+      company: {
+        id: 'co-1',
+        bNo: '1234567890',
+        name: '모아페이',
+        plan: 'BASIC',
+        verifiedAt,
+        role: 'ADMIN',
+        seats: { used: 0, limit: 0 },
+      },
+      members: [adminMember(verifiedAt)],
+    }
   }
+  if (kind === 'employer-pro') {
+    return {
+      company: {
+        id: 'co-1',
+        bNo: '1234567890',
+        name: '모아페이',
+        plan: 'PRO',
+        verifiedAt,
+        role: 'ADMIN',
+        seats: { used: 1, limit: 2 },
+      },
+      members: [
+        adminMember(verifiedAt),
+        { userId: 'u-member', email: 'member@push.app', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
+      ],
+    }
+  }
+  return null
+}
+
+const companyRecord = (): CompanyRecord | null => {
+  const key = personaKey()
+  const existing = companyRecords.get(key)
+  if (existing) return existing
+  const seeded = seedCompany()
+  if (!seeded) return null
+  companyRecords.set(key, seeded)
+  return seeded
+}
+
+const companyMe = (): Company | null => companyRecord()?.company ?? null
+
+const rememberCompany = (record: CompanyRecord) => {
+  companyRecords.set(personaKey(), record)
 }
 
 const routeTail = (pathname: string) => {
@@ -856,6 +915,81 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     consent = { referenceData: Boolean(payload.referenceData), updatedAt: new Date().toISOString() }
     return json(200, { data: consent })
   }
+  if (method === 'POST' && tail === '/companies/verify') {
+    const payload = await readJson(input, init)
+    const bNo = String(payload.bNo ?? '').replace(/\D/g, '')
+    if (bNo === '0000000000' || bNo.length !== 10) {
+      return json(422, {
+        error: {
+          code: 'BUSINESS_NOT_VERIFIED',
+          message: '사업자 정보를 확인하지 못했어요',
+          details: { reason: 'MISMATCH' },
+        },
+      })
+    }
+    if (bNo === '1111111111') {
+      return json(409, { error: { code: 'COMPANY_EXISTS', message: '이미 등록된 사업자번호예요' } })
+    }
+    const verifiedAt = new Date().toISOString()
+    const company: Company = {
+      id: 'co-1',
+      bNo,
+      name: String(payload.bNm ?? ''),
+      plan: null,
+      verifiedAt,
+      role: 'ADMIN',
+      seats: { used: 0, limit: 0 },
+    }
+    rememberCompany({ company, members: [adminMember(verifiedAt)] })
+    return json(201, { data: company })
+  }
+  if (method === 'GET' && tail === '/companies/me/members') {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    return json(200, { data: record.members })
+  }
+  if (method === 'POST' && tail === '/companies/me/invites') {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    if (record.company.seats.used >= record.company.seats.limit) {
+      return json(403, { error: { code: 'SEAT_LIMIT', message: '담당자 수를 넘었어요' } })
+    }
+    const payload = await readJson(input, init)
+    record.members.push({
+      userId: `u-invite-${++inviteSeq}`,
+      email: String(payload.email ?? ''),
+      role: 'MEMBER',
+      joinedAt: new Date().toISOString(),
+    })
+    record.company.seats.used += 1
+    return json(201, { data: { email: String(payload.email ?? '') } })
+  }
+  const memberPath = tail.match(/^\/companies\/me\/members\/([^/]+)$/)
+  if (memberPath && (method === 'DELETE' || method === 'PATCH')) {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    const userId = decodeURIComponent(memberPath[1] ?? '')
+    if (method === 'DELETE') {
+      const index = record.members.findIndex((member) => member.userId === userId)
+      if (index < 0) return json(404, { error: { code: 'NOT_FOUND', message: '담당자를 찾지 못했어요' } })
+      record.members.splice(index, 1)
+      record.company.seats.used = Math.max(0, record.company.seats.used - 1)
+      return new Response(null, { status: 204 })
+    }
+    const payload = await readJson(input, init)
+    if (payload.role !== 'ADMIN') return json(400, { error: { code: 'INVALID', message: '역할을 확인해 주세요' } })
+    const target = record.members.find((member) => member.userId === userId)
+    if (!target) return json(404, { error: { code: 'NOT_FOUND', message: '담당자를 찾지 못했어요' } })
+    for (const member of record.members) {
+      if (member.userId === userId) member.role = 'ADMIN'
+      else if (member.role === 'ADMIN') member.role = 'MEMBER'
+    }
+    const mine = record.members.find((member) => member.userId === currentUserId())
+    if (mine) record.company.role = mine.role
+    return new Response(null, { status: 204 })
+  }
+  const acceptPath = tail.match(/^\/companies\/invites\/([^/]+)\/accept$/)
+  if (acceptPath && method === 'POST') return new Response(null, { status: 204 })
   if (method === 'GET' && tail === '/companies/me') {
     const company = companyMe()
     return company ? json(200, { data: company }) : json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
@@ -991,6 +1125,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
   }
   if (method === 'GET' && matches(pathname, '/auth/me')) {
     const user = sessionStore.load()?.user
+    const record = companyRecord()
     return json(200, {
       data: {
         id: user?.id ?? 'u1',
@@ -998,8 +1133,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
         locale: user?.locale ?? 'ko',
         createdAt: '2026-10-01T00:00:00.000Z',
         accountType: user?.accountType ?? 'PERSONAL',
-        companyId: user?.companyId ?? null,
-        companyRole: user?.companyRole ?? null,
+        companyId: record?.company.id ?? user?.companyId ?? null,
+        companyRole: record?.company.role ?? user?.companyRole ?? null,
       },
     })
   }
