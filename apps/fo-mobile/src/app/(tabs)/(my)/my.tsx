@@ -1,10 +1,3 @@
-import { Text, View } from 'react-native'
+import { MyScreen } from '../../../features/my/MyScreen'
 
-// Placeholder until the Claude Design screen is implemented.
-export default function Screen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>마이</Text>
-    </View>
-  )
-}
+export default MyScreen
