@@ -7,7 +7,7 @@ dist-ssr
 .env.*
 !.env.example
 .DS_Store
-src-tauri/target
+**/src-tauri/target
 test-results
 playwright-report
 lighthouse

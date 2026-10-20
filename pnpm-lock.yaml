@@ -7,6 +7,18 @@ settings:
 importers:
 
   .:
+    devDependencies:
+      prettier:
+        specifier: ^3.9.7
+        version: 3.9.9
+      turbo:
+        specifier: 2.11.3
+        version: 2.11.3
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+
+  apps/fo-desktop:
     dependencies:
       '@mantine/core':
         specifier: 8.3.18
@@ -16,7 +28,7 @@ importers:
         version: 8.3.18(react@19.3.0)
       '@push/design-system':
         specifier: workspace:*
-        version: link:packages/design-system
+        version: link:../../packages/design-system
       '@sentry/react':
         specifier: ^10.75.2
         version: 10.75.3(react@19.3.0)
@@ -168,12 +180,6 @@ importers:
       lighthouse:
         specifier: ^13.5.0
         version: 13.5.0(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(yauzl@2.10.0)
-      prettier:
-        specifier: ^3.9.7
-        version: 3.9.9
-      turbo:
-        specifier: 2.11.3
-        version: 2.11.3
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -2569,11 +2575,6 @@ packages:
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
-
-  chrome-launcher@1.2.1:
-    resolution: {integrity: sha512-qmFR5PLMzHyuNJHwOloHPAHhbaNglkfeV/xDtt5b7xiFFyU1I+AZZX0PYseMuhenJSSirgxELYIbswcoc+5H4A==}
-    engines: {node: '>=12.13.0'}
-    hasBin: true
 
   chrome-launcher@1.2.2:
     resolution: {integrity: sha512-sI90u5qf3854bTrWsQMMdsQfSjjMbeSn7QtxVb9zrikf+QgMfHQ71KepHW7ZfixQKrDlAFKb+qnVlSR+xepBzw==}
@@ -8060,15 +8061,6 @@ snapshots:
     dependencies:
       readdirp: 4.1.2
 
-  chrome-launcher@1.2.1:
-    dependencies:
-      '@types/node': 22.20.4
-      escape-string-regexp: 4.0.0
-      is-wsl: 2.2.0
-      lighthouse-logger: 2.0.2
-    transitivePeerDependencies:
-      - supports-color
-
   chrome-launcher@1.2.2:
     dependencies:
       '@types/node': 22.20.4
@@ -9465,7 +9457,7 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       axe-core: 4.13.0
-      chrome-launcher: 1.2.1
+      chrome-launcher: 1.2.2
       configstore: 7.1.0
       csp_evaluator: 1.1.8
       devtools-protocol: 0.0.1687809

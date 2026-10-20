@@ -4,26 +4,22 @@
   "envMode": "loose",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", "storybook-static/**"]
-    },
-    "//#build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "storybook-static/**"
+      ]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
-    "//#test": {},
     "typecheck": {},
-    "//#typecheck": {},
     "lint": {},
-    "//#lint": {},
     "dev": {
-      "persistent": true,
-      "cache": false
-    },
-    "//#dev": {
       "persistent": true,
       "cache": false
     },
@@ -32,8 +28,24 @@
       "cache": false
     },
     "build-storybook": {
-      "dependsOn": ["^build"],
-      "outputs": ["storybook-static/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "storybook-static/**"
+      ]
+    },
+    "start": {
+      "persistent": true,
+      "cache": false
+    },
+    "ios": {
+      "persistent": true,
+      "cache": false
+    },
+    "android": {
+      "persistent": true,
+      "cache": false
     }
   }
 }
