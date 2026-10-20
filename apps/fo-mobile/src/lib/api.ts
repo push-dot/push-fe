@@ -1,0 +1,36 @@
+import { fetch as expoFetch } from 'expo/fetch'
+import * as Crypto from 'expo-crypto'
+import { createApi, createClient } from '@push/api-client'
+import { API_BASE_URL } from './config'
+import { useSession } from './session'
+
+let refreshing: Promise<boolean> | null = null
+
+// Single-flight refresh: concurrent 401s share one refresh call.
+const refresh = () => {
+  refreshing ??= (async () => {
+    const { session, set } = useSession.getState()
+    if (!session?.refreshToken) return false
+    try {
+      await set(await api.auth.refresh(session.refreshToken))
+      return true
+    } catch {
+      await set(null)
+      return false
+    } finally {
+      refreshing = null
+    }
+  })()
+  return refreshing
+}
+
+const client = createClient({
+  baseUrl: API_BASE_URL,
+  getToken: () => useSession.getState().session?.accessToken,
+  refresh,
+  // expo/fetch exposes a ReadableStream body, needed for chat SSE.
+  fetch: expoFetch as unknown as typeof fetch,
+  uuid: () => Crypto.randomUUID(),
+})
+
+export const api = createApi(client)

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createClient } from '../client.ts'
-import { ApiError } from '../errors.ts'
-import { chipLabel, stageBadge } from '../labels.ts'
-import { readEvents } from '../sse.ts'
+import { createClient } from '../client'
+import { ApiError } from '../errors'
+import { chipLabel, stageBadge } from '../labels'
+import { readEvents } from '../sse'
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

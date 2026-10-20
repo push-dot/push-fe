@@ -1,4 +1,4 @@
-import { ApiError, type ApiErrorBody } from './errors.ts'
+import { ApiError, type ApiErrorBody } from './errors'
 
 type Query = Record<string, string | number | boolean | string[] | undefined | null>
 

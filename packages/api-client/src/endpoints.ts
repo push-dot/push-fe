@@ -1,11 +1,11 @@
-import type { Client } from './client.ts'
-import { readEvents } from './sse.ts'
-import { ApiError } from './errors.ts'
+import type { Client } from './client'
+import { readEvents } from './sse'
+import { ApiError } from './errors'
 import type {
   AiOptions, AppNotification, Application, Comment, Conversation, DataEnvelope, LinkKind, ListEnvelope, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
   ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UserLink,
-} from './types.ts'
+} from './types'
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 

@@ -1,4 +1,4 @@
-import type { CareerStatus, CareerYears, EmploymentType, JobCategory, PostCategory, Tenure, ApplicationStage } from './types.ts'
+import type { CareerStatus, CareerYears, EmploymentType, JobCategory, PostCategory, Tenure, ApplicationStage } from './types'
 
 // Order matches the Claude Design filter sheets.
 export const JOB_CATEGORIES: { key: JobCategory; label: string }[] = [
