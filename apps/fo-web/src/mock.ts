@@ -7,8 +7,10 @@ import type {
   Company,
   CompanyMember,
   Consent,
+  Conversation,
   EmploymentType,
   JobCategory,
+  Message,
   Offer,
   OfferMessage,
   Post,
@@ -22,6 +24,7 @@ import type {
 } from '@push/api-client'
 import { sessionStore } from './shared/auth/session'
 import { searchHangul } from './shared/lib/hangul-search'
+import { assistantReply, type ChatIntent } from './shared/model/employer-chat'
 
 /** Fields the boards show but api-spec §4 doesn't define yet. */
 export type PostingView = PostingDetail & { industry?: string; preferred?: string[] }
@@ -94,9 +97,9 @@ export const mockFit: Fit = {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-export type MockPersona = 'personal' | 'employer' | 'employer-pro' | 'employer-new'
+export type MockPersona = 'personal' | 'employer' | 'employer-pro' | 'employer-ultra' | 'employer-new'
 
-const PERSONAS: MockPersona[] = ['personal', 'employer', 'employer-pro', 'employer-new']
+const PERSONAS: MockPersona[] = ['personal', 'employer', 'employer-pro', 'employer-ultra', 'employer-new']
 
 let persona: MockPersona | null = null
 let signupEmail = ''
@@ -108,7 +111,7 @@ export const setMockPersona = (value: string | null | undefined) => {
 }
 
 export const mockSession = (kind: MockPersona): Session => {
-  if (kind === 'employer' || kind === 'employer-pro') {
+  if (kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra') {
     return {
       accessToken: 'mock-access',
       refreshToken: 'mock-refresh',
@@ -348,7 +351,8 @@ const companyPostings: CompanyPosting[] = [
 
 let companyPostingSeq = companyPostings.length
 
-const employerOwnsPostings = () => persona === 'employer' || persona === 'employer-pro' || persona === 'employer-new'
+const employerOwnsPostings = () =>
+  persona === 'employer' || persona === 'employer-pro' || persona === 'employer-ultra' || persona === 'employer-new'
 
 const toCard = (item: CompanyPosting): Posting => ({
   id: item.id,
@@ -742,7 +746,7 @@ const allSources = () => [...uploadedSources, ...seedSources]
 
 const employerPersona = () => {
   const kind = mockPersona()
-  return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-new'
+  return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra' || kind === 'employer-new'
 }
 
 type CompanyRecord = {
@@ -796,6 +800,20 @@ const seedCompany = (): CompanyRecord | null => {
         adminMember(verifiedAt),
         { userId: 'u-member', email: 'member@push.app', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
       ],
+    }
+  }
+  if (kind === 'employer-ultra') {
+    return {
+      company: {
+        id: 'co-1',
+        bNo: '1234567890',
+        name: '모아페이',
+        plan: 'ULTRA',
+        verifiedAt,
+        role: 'ADMIN',
+        seats: { used: 0, limit: 5 },
+      },
+      members: [adminMember(verifiedAt)],
     }
   }
   return null
@@ -1165,7 +1183,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   }
   if (method === 'DELETE' && tail === '/me') {
     const kind = mockPersona()
-    if (kind === 'employer' || kind === 'employer-pro') {
+    if (kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra') {
       return json(409, { error: { code: 'ADMIN_TRANSFER_REQUIRED', message: '관리자를 넘겨 주세요' } })
     }
     return new Response(null, { status: 204 })
@@ -1262,6 +1280,111 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
   return null
 }
 
+type ChatBucket = {
+  conversations: Conversation[]
+  messages: Map<string, Message[]>
+  postingIds: Map<string, string>
+}
+
+const chatBuckets = new Map<string, ChatBucket>()
+let chatSeq = 0
+let messageSeq = 0
+
+const chatBucket = (): ChatBucket => {
+  const key = personaKey()
+  const existing = chatBuckets.get(key)
+  if (existing) return existing
+  const created: ChatBucket = { conversations: [], messages: new Map(), postingIds: new Map() }
+  chatBuckets.set(key, created)
+  return created
+}
+
+const chatMessage = (conversationId: string, role: Message['role'], text: string): Message => ({
+  id: `m-${++messageSeq}`,
+  conversationId,
+  role,
+  text,
+  attachments: [],
+  operationId: null,
+  createdAt: new Date().toISOString(),
+})
+
+const asIntent = (value: unknown): ChatIntent | undefined =>
+  value === 'posting' || value === 'review' || value === 'interview' || value === 'general' ? value : undefined
+
+const planRequired = (requiredPlan: 'PRO' | 'ULTRA', message: string) =>
+  json(403, { error: { code: 'PLAN_REQUIRED', message, details: { requiredPlan } } })
+
+const interviewBlocked = (payload: Record<string, unknown>) => {
+  const plan = companyMe()?.plan ?? null
+  if (plan === 'PRO' || plan === 'ULTRA') return false
+  return payload.intent === 'interview' || String(payload.text ?? '').includes('면접 준비')
+}
+
+const fileNameOf = (value: FormDataEntryValue | null) => {
+  if (typeof File !== 'undefined' && value instanceof File && value.name) return value.name
+  return 'file'
+}
+
+const handleEmployerChat = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
+  const tail = routeTail(pathname)
+  if (!tail.startsWith('/conversations')) return null
+  const attachment = tail.match(/^\/conversations\/([^/]+)\/attachments$/)
+  if (attachment && method === 'POST') {
+    if ((companyMe()?.plan ?? null) !== 'ULTRA') return planRequired('ULTRA', 'Ultra에서 외부 PDF를 올릴 수 있어요')
+    const form = await readForm(input, init)
+    return json(201, { data: { id: 'file-1', fileName: fileNameOf(form?.get('file') ?? null) } })
+  }
+  const messagesPath = tail.match(/^\/conversations\/([^/]+)\/messages$/)
+  if (messagesPath && (method === 'GET' || method === 'POST')) {
+    const id = decodeURIComponent(messagesPath[1] ?? '')
+    const bucket = chatBucket()
+    const conversation = bucket.conversations.find((item) => item.id === id)
+    if (!conversation) return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
+    const items = bucket.messages.get(id) ?? []
+    if (method === 'GET') return json(200, { data: items, page: { nextCursor: null, hasMore: false, total: items.length } })
+    const payload = await readJson(input, init)
+    if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
+    const text = String(payload.text ?? '')
+    const user = chatMessage(id, 'USER', text)
+    const assistant = chatMessage(id, 'ASSISTANT', assistantReply(asIntent(payload.intent), text))
+    const next = [...items, user, assistant]
+    bucket.messages.set(id, next)
+    conversation.updatedAt = assistant.createdAt
+    return json(202, { data: null })
+  }
+  if (method === 'GET' && tail === '/conversations') {
+    const audience = url.searchParams.get('audience')
+    const items =
+      audience && audience !== 'EMPLOYER'
+        ? []
+        : [...chatBucket().conversations].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    return json(200, { data: items, page: { nextCursor: null, hasMore: false, total: items.length } })
+  }
+  if (method === 'POST' && tail === '/conversations') {
+    const payload = await readJson(input, init)
+    if (payload.audience !== 'EMPLOYER') return json(404, { error: { code: 'NOT_FOUND', message: '대화를 만들지 못했어요' } })
+    if (!companyMe()) return json(403, { error: { code: 'BUSINESS_NOT_VERIFIED', message: '사업자 인증이 필요해요' } })
+    const now = new Date().toISOString()
+    const id = `c-${++chatSeq}`
+    const conversation: Conversation = {
+      id,
+      revision: 1,
+      applicationId: typeof payload.applicationId === 'string' ? payload.applicationId : null,
+      title: String(payload.title ?? ''),
+      pinned: false,
+      createdAt: now,
+      updatedAt: now,
+    }
+    const bucket = chatBucket()
+    bucket.conversations.unshift(conversation)
+    bucket.messages.set(id, [])
+    if (typeof payload.postingId === 'string') bucket.postingIds.set(id, payload.postingId)
+    return json(201, { data: conversation })
+  }
+  return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${pathname}` } })
+}
+
 const flagFor = (id: string) => flags.get(id) ?? { bookmarked: id === posting.id ? posting.bookmarked : false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
@@ -1274,6 +1397,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
   const pathname = url.pathname
   const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
   await new Promise((resolve) => setTimeout(resolve, 250))
+  const employerChat = await handleEmployerChat(method, url, pathname, input, init)
+  if (employerChat) return employerChat
   const employerPosting = await handleEmployerPostings(method, url, pathname, input, init)
   if (employerPosting) return employerPosting
   if (method === 'GET' && pathname.endsWith('/postings/locations')) {

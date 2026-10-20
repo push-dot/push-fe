@@ -222,3 +222,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .notice{display:flex;flex-direction:column;gap:4px;width:100%;padding:14px 0;border-bottom:1px solid var(--line);text-align:left}
 .notice.read{opacity:.62}
 .hub-card:focus-visible,.post-card:focus-visible,.bookmark-row:focus-visible,.offer-row:focus-visible,.notice:focus-visible,.tabs button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.shortcut{border:0;cursor:pointer;font:inherit}
+.lock-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
+.field input[type="file"]{height:auto;padding:8px 0;border:0;background:transparent}
+.field input[type="file"]:disabled{opacity:.55}

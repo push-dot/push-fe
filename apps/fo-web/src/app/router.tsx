@@ -20,6 +20,9 @@ import PostPage from '../pages/social/post-page'
 import SocialPage from '../pages/social/social-page'
 import ApplicantPage from '../pages/employer/applicant-page'
 import ApplicantsPage from '../pages/employer/applicants-page'
+import ChatNewPage from '../pages/employer/chat-new-page'
+import ChatPage from '../pages/employer/chat-page'
+import ChatThreadPage from '../pages/employer/chat-thread-page'
 import InvitePage from '../pages/employer/invite-page'
 import MembersPage from '../pages/employer/members-page'
 import PostingEditorPage from '../pages/employer/posting-editor-page'
@@ -70,9 +73,9 @@ const AppRouter = () => {
             <Route path="/employer/postings/:id/edit" element={<PostingEditorPage />} />
             <Route path="/employer/postings/:id/applicants" element={<ApplicantsPage />} />
             <Route path="/employer/postings/:id/applicants/:applicationId" element={<ApplicantPage />} />
-            <Route path="/employer/chat" element={<SoonPage title={SOON_TITLE.chat} />} />
-            <Route path="/employer/chat/new" element={<SoonPage title={SOON_TITLE.chat} />} />
-            <Route path="/employer/chat/:id" element={<SoonPage title={SOON_TITLE.chat} />} />
+            <Route path="/employer/chat" element={<ChatPage />} />
+            <Route path="/employer/chat/new" element={<ChatNewPage />} />
+            <Route path="/employer/chat/:id" element={<ChatThreadPage />} />
             <Route path="/employer/members" element={<MembersPage />} />
             <Route path="/employer/plans" element={<SoonPage title={SOON_TITLE.plans} />} />
             <Route path="/invites/:token" element={<InvitePage />} />

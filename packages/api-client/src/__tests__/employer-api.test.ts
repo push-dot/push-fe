@@ -109,6 +109,14 @@ describe('employer api', () => {
     expect(bodyOf(hits[0]!)).toEqual({ title: 'hello' })
   })
 
+  it('posts a conversation message and does not require a json envelope', async () => {
+    const { api, hits } = harness(() => new Response('accepted', { status: 202, headers: { 'Content-Type': 'text/plain' } }))
+    await api.conversations.send('c1', { text: '면접 준비', accessMode: 'SUGGEST', intent: 'interview' })
+    expect(hits[0]!.method).toBe('POST')
+    expect(new URL(hits[0]!.url).pathname.endsWith('/conversations/c1/messages')).toBe(true)
+    expect(bodyOf(hits[0]!)).toMatchObject({ text: '면접 준비', accessMode: 'SUGGEST' })
+  })
+
   it('checks out BASIC by planId', async () => {
     const { api, hits } = harness(() => json(200, { data: { url: 'https://pay.example/basic' } }))
     await expect(api.billing.checkout('BASIC')).resolves.toEqual({ url: 'https://pay.example/basic' })

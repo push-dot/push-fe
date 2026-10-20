@@ -161,6 +161,17 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<Conversation>>(`conversations/${id}/archive`, { body: { expectedRevision } })),
     messages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<Message>>(`conversations/${id}/messages`, { query: p }),
+    send: async (
+      id: string,
+      body: {
+        text: string
+        accessMode: 'SUGGEST' | 'CONFIRM_ACTIONS'
+        intent?: 'posting' | 'review' | 'interview' | 'general'
+        applicationId?: string
+      },
+    ) => {
+      await c.raw('POST', `conversations/${id}/messages`, { body })
+    },
     /** Streams a reply. Pass expo/fetch's fetch on React Native so `body` is a ReadableStream. */
     stream: async function* (
       id: string,
