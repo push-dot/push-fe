@@ -130,10 +130,48 @@ describe('incremental markdown', () => {
       await useMessagesStore.getState().send('c1', 'hello')
     })
 
-    const stableCalls = h.calls.filter((c) => c.endsWith('\n\n'))
+    const assistant = useMessagesStore.getState().messages.at(-1)?.text ?? ''
     expect(useMessagesStore.getState().sendStatus).toBe('idle')
-    expect(stableCalls.length).toBeLessThanOrEqual(BLOCK_COUNT + 1)
-    expect(new Set(stableCalls).size).toBe(stableCalls.length)
+    expect(assistant.endsWith('\n\n')).toBe(true)
+
+    // Completed blocks are split off the live tail, so a tail parse never
+    // contains a finished blank-line boundary. Re-parsing the whole buffer
+    // on each token would put those boundaries in the tail calls.
+    const tailCalls = h.calls.filter((call) => !call.endsWith('\n\n'))
+    expect(tailCalls.length).toBeGreaterThan(0)
+    for (const tail of tailCalls) {
+      expect(tail.includes('\n\n')).toBe(false)
+    }
+
+    // Stable snapshots are the nested prefixes committed at block boundaries.
+    // A boundary can be coalesced into a later flush, but each one that
+    // commits must extend the previous prefix of the final document.
+    const stableCalls = h.calls.filter((call) => call.endsWith('\n\n'))
+    const counts = new Map<string, number>()
+    const firstSeen: string[] = []
+    for (const call of stableCalls) {
+      counts.set(call, (counts.get(call) ?? 0) + 1)
+      if (firstSeen[firstSeen.length - 1] !== call) firstSeen.push(call)
+    }
+    expect(firstSeen.length).toBeGreaterThan(1)
+    expect(firstSeen.length).toBeLessThanOrEqual(BLOCK_COUNT)
+    for (const prefix of firstSeen) {
+      expect(assistant.startsWith(prefix)).toBe(true)
+    }
+    for (let i = 1; i < firstSeen.length; i++) {
+      expect(firstSeen[i].startsWith(firstSeen[i - 1])).toBe(true)
+      expect(firstSeen[i].length).toBeGreaterThan(firstSeen[i - 1].length)
+    }
+
+    // The committed assistant message parses the full document once. When the
+    // 16ms flush timer paints that same snapshot in its own turn before
+    // `done`, the live bubble parses it once too. Which of those two commits
+    // lands is timer order, so the final document may be seen twice. An
+    // earlier prefix repeating would mean a finished block was re-parsed.
+    for (const [text, n] of counts) {
+      expect(n).toBeLessThanOrEqual(text === assistant ? 2 : 1)
+    }
+    expect(counts.get(assistant)).toBeGreaterThanOrEqual(1)
   })
 
   it('renders fenced code and tables identically after stream completes', async () => {
