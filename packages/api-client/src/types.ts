@@ -29,6 +29,8 @@ export type Posting = {
   applied: boolean
   sourceUrl: string | null
   createdAt: string
+  revision?: number
+  closedAt?: string | null
 }
 
 export type PostingDetail = Posting & {
@@ -36,6 +38,7 @@ export type PostingDetail = Posting & {
   requirements: string[]
   /** Free-form object (e.g. { 근무: '주 5일' }); render with workConditionLines. */
   workConditions: Record<string, unknown>
+  preferred?: string[]
 }
 
 export type PostingFilters = PageParams & {
@@ -99,7 +102,7 @@ export type OfferMessage = { id: string; offerId: string; sender: UserRef; body:
 
 export type Post = {
   id: string
-  author: UserRef
+  author: UserRef & { employer?: boolean; companyName?: string | null }
   category: PostCategory
   title: string
   body: string
@@ -123,13 +126,13 @@ export type UserLink = {
   createdAt: string
 }
 
-export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE'
+export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE' | 'APPLICATION_STAGE'
 export type AppNotification = {
   id: string
   type: NotificationType
   title: string
   body: string
-  target: { kind: 'posting' | 'offer' | 'post' | 'conversation'; id: string }
+  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'activity'; id: string }
   readAt: string | null
   createdAt: string
 }
@@ -139,6 +142,7 @@ export type Settings = {
   notifyOffer: boolean
   notifyComment: boolean
   notifyAiDone: boolean
+  notifyApplicationStage?: boolean
   locale: 'ko' | 'en'
   profilePublic: boolean
   careerStatusVisibility: 'everyone' | 'followers' | 'private'
@@ -166,6 +170,7 @@ export type Application = {
   stage: ApplicationStage
   appliedAt: string | null
   createdAt: string
+  fitScore?: number | null
 }
 
 export type Conversation = {
@@ -201,17 +206,133 @@ export type StreamEvent =
   | { type: 'done'; operation: unknown; seq?: number }
   | { type: 'error'; error: { code: string; message: string; details?: unknown }; seq?: number }
 
+export type AccountType = 'PERSONAL' | 'EMPLOYER'
+export type CompanyRole = 'ADMIN' | 'MEMBER'
+export type EmployerPlan = 'BASIC' | 'PRO' | 'ULTRA'
+export type BillingAudience = 'PERSONAL' | 'EMPLOYER'
+export type BillingSource = 'STRIPE' | 'APP_STORE' | 'GOOGLE_PLAY'
+
 export type BillingStatus = {
   subscriptionStatus: string
-  plan: 'FREE' | 'PRO' | 'ULTRA' | null
+  plan: 'FREE' | 'PRO' | 'ULTRA' | 'BASIC' | null
   periodEndsAt: string | null
   balanceMicroCredits: number
   reservedMicroCredits: number
+  audience?: BillingAudience
+  source?: BillingSource
 }
 
 export type Session = {
   accessToken: string
   refreshToken: string
   expiresIn: number
-  user: { id: string; displayName: string; locale: string }
+  user: {
+    id: string
+    displayName: string
+    locale: string
+    accountType?: AccountType
+    companyId?: string | null
+    companyRole?: CompanyRole | null
+  }
 }
+
+export type Me = {
+  id: string
+  displayName: string
+  locale: string
+  createdAt: string
+  accountType: AccountType
+  companyId: string | null
+  companyRole: CompanyRole | null
+}
+
+export type Company = {
+  id: string
+  bNo: string
+  name: string
+  plan: EmployerPlan | null
+  verifiedAt: string
+  role: CompanyRole
+  seats: { used: number; limit: number }
+}
+
+export type CompanyMember = { userId: string; email: string; role: CompanyRole; joinedAt: string }
+
+export type EmployerStage = 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
+
+export type ApplicantSummary = {
+  applicationId: string
+  applicant: { displayName: string; headline: string | null }
+  stage: ApplicationStage
+  appliedAt: string
+}
+
+export type ApplicantDetail = {
+  application: Application
+  documents: { id: string; title: string; content: string }[]
+}
+
+export type Consent = { referenceData: boolean; updatedAt: string | null }
+
+export type CreatePostingInput = {
+  title: string
+  jobCategory: JobCategory
+  careerMin: number
+  careerMax?: number | null
+  location: string
+  employmentType: EmploymentType
+  description: string
+  skills?: string[]
+  imageKey?: string
+  deadline?: string | null
+  requirements?: string[]
+  preferred?: string[]
+  workConditions?: Record<string, unknown>
+}
+
+export type UpdatePostingInput = Partial<CreatePostingInput> & { expectedRevision: number }
+
+export type LedgerEntry = {
+  type: 'PURCHASE' | 'REFUND'
+  amountMicroCredits: number
+  balanceAfter: number
+  createdAt: string
+}
+
+export type EmailSignupInput = {
+  email: string
+  password: string
+  accountType: AccountType
+  displayName: string
+  consentReference?: boolean
+}
+
+export type VerifyIapInput = {
+  platform: 'APP_STORE' | 'GOOGLE_PLAY'
+  productId: string
+  signedTransaction?: string
+  purchaseToken?: string
+}
+
+export type VerifyIapResult = {
+  plan: BillingStatus['plan']
+  periodEndsAt: string | null
+}
+
+export type CalendarEvent = {
+  id: string
+  revision: number
+  applicationId: string | null
+  type: 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'CUSTOM'
+  title: string
+  startsAt: string
+  endsAt: string
+  timeZone: string
+  source: 'LOCAL' | 'GOOGLE'
+  externalId: string | null
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ConversationAttachment = { id: string }

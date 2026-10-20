@@ -2,22 +2,36 @@ import type { Client } from './client'
 import { readEvents } from './sse'
 import { ApiError } from './errors'
 import type {
-  AiOptions, AppNotification, Application, BillingStatus, Comment, Conversation, DataEnvelope, LinkKind, ListEnvelope, Message,
+  AccountType, AiOptions, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  CalendarEvent, Comment, Company, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
-  ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UserLink,
+  ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
 } from './types'
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
 export const createApi = (c: Client) => ({
   auth: {
-    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string }) =>
+    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
       unwrap(c.get<DataEnvelope<{ authorizationUrl: string; state: string }>>(`auth/${provider}/start`, {
         query: { ...query, codeChallengeMethod: 'S256' },
       })),
     exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<Session>>('auth/exchange', { body })),
     refresh: (refreshToken: string) => unwrap(c.post<DataEnvelope<Session>>('auth/refresh', { body: { refreshToken } })),
     logout: (refreshToken: string) => c.post<void>('auth/logout', { body: { refreshToken } }),
+    me: () => unwrap(c.get<DataEnvelope<Me>>('auth/me')),
+    emailSignup: async (body: EmailSignupInput) => {
+      await c.raw('POST', 'auth/email/signup', { body })
+    },
+    emailVerify: (token: string) => unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token } })),
+    emailLogin: (email: string, password: string) =>
+      unwrap(c.post<DataEnvelope<Session>>('auth/email/login', { body: { email, password } })),
+    requestPasswordReset: async (email: string) => {
+      await c.raw('POST', 'auth/email/password-reset', { body: { email } })
+    },
+    confirmPasswordReset: (token: string, password: string) =>
+      c.post<void>('auth/email/password-reset/confirm', { body: { token, password } }),
   },
 
   postings: {
@@ -29,6 +43,16 @@ export const createApi = (c: Client) => ({
     unbookmark: (id: string) => c.delete<void>(`postings/${id}/bookmark`),
     apply: (id: string, documentIds: string[]) =>
       unwrap(c.post<DataEnvelope<Application>>(`postings/${id}/apply`, { body: { documentIds } })),
+    create: (body: CreatePostingInput) => unwrap(c.post<DataEnvelope<PostingDetail>>('postings', { body })),
+    update: (id: string, body: UpdatePostingInput) => unwrap(c.patch<DataEnvelope<PostingDetail>>(`postings/${id}`, { body })),
+    close: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<PostingDetail>>(`postings/${id}/close`, { body: { expectedRevision } })),
+    applicants: (id: string, query?: PageParams & { stage?: ApplicationStage }) =>
+      c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
+    applicant: (postingId: string, applicationId: string) =>
+      unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
+      unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
   },
 
   search: <T extends 'postings' | 'people' | 'posts'>(q: string, type: T, page: PageParams = {}) =>
@@ -79,6 +103,9 @@ export const createApi = (c: Client) => ({
     settings: () => unwrap(c.get<DataEnvelope<Settings>>('me/settings')),
     updateSettings: (patch: Partial<Settings> & { defaultTone?: Tone }) =>
       unwrap(c.patch<DataEnvelope<Settings>>('me/settings', { body: patch })),
+    consents: () => unwrap(c.get<DataEnvelope<Consent>>('me/consents')),
+    updateConsents: (referenceData: boolean) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
   },
 
   posts: {
@@ -98,7 +125,11 @@ export const createApi = (c: Client) => ({
 
   billing: {
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
-    checkout: (planId: 'PRO' | 'ULTRA') => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
+    checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
+    topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
+    portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
+    ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
+    verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
   },
 
   // Existing push-be APIs.
@@ -113,8 +144,13 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<Application>>('applications', { query: p }),
   },
   conversations: {
-    list: (p: PageParams = {}) => c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
+    list: (p: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' } = {}) =>
+      c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
     create: (title: string) => unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { title } })),
+    createEmployer: (body: { title: string; postingId?: string; applicationId?: string }) =>
+      unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { ...body, audience: 'EMPLOYER' } })),
+    attach: (id: string, form: FormData) =>
+      unwrap(c.post<DataEnvelope<ConversationAttachment>>(`conversations/${id}/attachments`, { form })),
     rename: (id: string, expectedRevision: number, title: string) =>
       unwrap(c.patch<DataEnvelope<Conversation>>(`conversations/${id}`, { body: { expectedRevision, title } })),
     archive: (id: string, expectedRevision: number) =>
@@ -144,6 +180,22 @@ export const createApi = (c: Client) => ({
       if (res.status === 204 || !res.body) return
       yield* readEvents<StreamEvent>(res.body, signal)
     },
+  },
+
+  companies: {
+    verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
+      unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
+    me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
+    removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
+    transferAdmin: (userId: string) =>
+      c.patch<void>(`companies/me/members/${userId}`, { body: { role: 'ADMIN' } }),
+  },
+
+  calendar: {
+    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
   },
 })
 
