@@ -172,3 +172,53 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .source-list .check>span{display:flex;flex-direction:column}
 @media (min-width:800px){.job-grid{grid-template-columns:1fr 1fr}.job-grid .posting-card{width:auto}}
 .shortcut:focus-visible,.chip:focus-visible,.option:focus-visible,.bookmark:focus-visible,.posting-card-body:focus-visible,.more:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+
+.hub-head,.social-head,.my-head{gap:14px}
+.hub-search{display:flex;align-items:center;height:48px;padding:0 16px;border-radius:24px;background:var(--fill);color:var(--t3);text-decoration:none}
+.stack{display:flex;flex-direction:column;gap:12px;padding:0 20px}
+.hub-card,.bookmark-row,.offer-row{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.hub-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex:none;object-fit:cover}
+.hub-copy,.bookmark-row,.offer-row{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hub-name,.offer-line,.post-author,.my-links,.link-row,.month-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.profile-tools{display:flex;justify-content:flex-end;gap:8px;padding:0 20px}
+.profile-tools button,.primary.slim{height:36px;padding:0 14px;border-radius:999px;background:var(--fill);font-weight:700}
+.profile-tools button[aria-pressed="true"]{background:var(--acSoft);color:var(--acText)}
+.primary.slim{background:var(--ac);color:#fff;width:auto}
+.primary:disabled{opacity:.5;cursor:default}
+.field textarea,.field select{box-sizing:border-box;width:100%;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--t1);padding:12px 14px;font:inherit}
+.field select{height:48px;padding:0 14px}
+.sheet textarea{box-sizing:border-box;width:100%;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--t1);padding:12px 14px;font:inherit;resize:vertical}
+.post-list{display:flex;flex-direction:column;padding:0 20px}
+.post-card{display:flex;flex-direction:column;gap:6px;padding:16px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+.post-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post-body{white-space:pre-wrap}
+.post-detail,.post-images{display:flex;flex-direction:column;gap:10px}
+.post-images img{width:100%;border-radius:16px}
+.tabs{display:flex;gap:4px;margin:0 20px;padding:4px;background:var(--fill);border-radius:999px}
+.tabs button{flex:1;height:36px;border-radius:999px;color:var(--t2);font-weight:700}
+.tabs button[aria-selected="true"]{background:var(--bg);color:var(--t1)}
+.my-links a,.link-row a{color:var(--acText);font-weight:700;text-decoration:none}
+.my-links a{display:inline-flex;align-items:center;gap:6px}
+.activity-chips{padding:0}
+.activity-list,.doc-list,.comment-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.activity-row,.doc-row,.comment{display:flex;flex-direction:column;gap:4px;padding:14px 0;border-bottom:1px solid var(--line)}
+.fit-score{color:var(--t2);font-size:13px}
+.file-button{display:inline-flex;align-items:center;justify-content:center;width:fit-content;padding:0 16px;text-decoration:none}
+.file-input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.facts{display:flex;flex-direction:column;gap:10px;margin:0}
+.facts div{display:flex;justify-content:space-between;gap:12px}
+.facts dt{color:var(--t3)}
+.facts dd{margin:0;font-weight:700}
+.month-bar{justify-content:space-between}
+.form{padding-bottom:12px}
+.career-fields{display:flex;flex-direction:column;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.empty-copy{padding:0 20px}
+.settings{gap:28px}
+.settings-group{display:flex;flex-direction:column;gap:12px;padding:0 20px}
+.switch-row,.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;text-align:left}
+.switch-row>span{display:flex;flex-direction:column;gap:4px}
+.switch-row input{width:44px;height:26px;accent-color:var(--ac)}
+.settings-row.danger,.text-link.danger{color:var(--red)}
+.notice{display:flex;flex-direction:column;gap:4px;width:100%;padding:14px 0;border-bottom:1px solid var(--line);text-align:left}
+.notice.read{opacity:.62}
+.hub-card:focus-visible,.post-card:focus-visible,.bookmark-row:focus-visible,.offer-row:focus-visible,.notice:focus-visible,.tabs button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}

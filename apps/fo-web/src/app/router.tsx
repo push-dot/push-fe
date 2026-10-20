@@ -6,10 +6,18 @@ import ResetPage from '../pages/login/reset-page'
 import SignupPage from '../pages/login/signup-page'
 import VerifyPage from '../pages/login/verify-page'
 import HomePage from '../pages/home/home-page'
+import HubPage from '../pages/hub/hub-page'
 import JobsPage from '../pages/jobs/jobs-page'
+import MyPage from '../pages/my/my-page'
+import NotificationsPage from '../pages/notifications/notifications-page'
+import OfferDetailPage from '../pages/offers/offer-detail-page'
+import OffersPage from '../pages/offers/offers-page'
 import { PostingPage } from '../pages/PostingPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import SearchPage from '../pages/search/search-page'
+import SettingsPage from '../pages/settings/settings-page'
+import PostPage from '../pages/social/post-page'
+import SocialPage from '../pages/social/social-page'
 import SoonPage from '../pages/soon-page'
 import { SOON_TITLE } from './constants'
 import RequireAuth from './require-auth'
@@ -41,14 +49,14 @@ const AppRouter = () => {
           <Route path="/postings/:id" element={<PostingPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/profiles/:id" element={<ProfilePage />} />
-            <Route path="/hub" element={<SoonPage title={SOON_TITLE.hub} />} />
-            <Route path="/social" element={<SoonPage title={SOON_TITLE.social} />} />
-            <Route path="/posts/:id" element={<SoonPage title={SOON_TITLE.social} />} />
-            <Route path="/me" element={<SoonPage title={SOON_TITLE.my} />} />
-            <Route path="/offers" element={<SoonPage title={SOON_TITLE.offers} />} />
-            <Route path="/offers/:id" element={<SoonPage title={SOON_TITLE.offers} />} />
-            <Route path="/notifications" element={<SoonPage title={SOON_TITLE.notifications} />} />
-            <Route path="/settings" element={<SoonPage title={SOON_TITLE.settings} />} />
+            <Route path="/hub" element={<HubPage />} />
+            <Route path="/social" element={<SocialPage />} />
+            <Route path="/posts/:id" element={<PostPage />} />
+            <Route path="/me" element={<MyPage />} />
+            <Route path="/offers" element={<OffersPage />} />
+            <Route path="/offers/:id" element={<OfferDetailPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/employer/verify" element={<SoonPage title={SOON_TITLE.verify} />} />
             <Route path="/employer/postings" element={<SoonPage title={SOON_TITLE.postings} />} />
             <Route path="/employer/postings/new" element={<SoonPage title={SOON_TITLE.postings} />} />

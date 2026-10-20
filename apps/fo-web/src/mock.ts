@@ -1,6 +1,22 @@
 // Dev fixtures for ?mock=1 (or window.__PUSH__.mock), matching the Claude Design boards.
 // shortcut: every id returns the same sample; drop once push-be v2 serves these endpoints.
-import type { Post, Posting, PostingDetail, Profile, Session } from '@push/api-client'
+import type {
+  Application,
+  CalendarEvent,
+  Comment,
+  Company,
+  Consent,
+  Offer,
+  OfferMessage,
+  Post,
+  Posting,
+  PostingDetail,
+  Profile,
+  Session,
+  Settings,
+  Source,
+  WebNotification,
+} from '@push/api-client'
 import { sessionStore } from './shared/auth/session'
 import { searchHangul } from './shared/lib/hangul-search'
 
@@ -148,6 +164,16 @@ const readJson = async (input: RequestInfo | URL, init?: RequestInit) => {
   } catch {
     return {}
   }
+}
+
+const readForm = async (input: RequestInfo | URL, init?: RequestInit) => {
+  try {
+    if (input instanceof Request) return await input.clone().formData()
+    if (typeof FormData !== 'undefined' && init?.body instanceof FormData) return init.body
+  } catch {
+    return null
+  }
+  return null
 }
 
 const matches = (pathname: string, suffix: string) => pathname === suffix || pathname.endsWith(suffix)
@@ -340,6 +366,510 @@ const searchPost: Post = {
   createdAt: '2026-10-20T01:00:00.000Z',
 }
 
+const employerPost: Post = {
+  id: 'post-emp',
+  author: { id: 'u-emp', displayName: '김담당', avatarUrl: null, employer: true, companyName: '모아페이' },
+  category: 'work',
+  title: '모아페이에서 백엔드를 뽑아요',
+  body: '결제 도메인 백엔드를 함께할 분을 찾아요',
+  imageUrls: [],
+  commentCount: 1,
+  viewCount: 18,
+  createdAt: '2026-10-19T09:00:00.000Z',
+}
+
+const hubProfiles: Profile[] = [
+  profile,
+  {
+    userId: 'u2',
+    displayName: '박민재',
+    avatarUrl: null,
+    headline: '데이터로 결제 지표를 봐요',
+    jobCategory: 'data',
+    tenureYears: 6,
+    careerStatus: 'satisfied',
+    openToOffers: false,
+    intro: '지표를 읽고 실험을 설계해요.',
+    careers: [{ company: '핀다', role: '데이터 분석가', startedOn: '2020-01-01', endedOn: null, description: '' }],
+    skills: ['Python', 'SQL'],
+    followerCount: 40,
+    resumeSourceId: null,
+    updatedAt: '2026-10-17T09:00:00.000Z',
+  },
+]
+
+const socialFlags = new Map<string, { following: boolean; offered: boolean }>([['u2', { following: true, offered: false }]])
+
+const withFlags = (item: Profile): Profile => {
+  const flag = socialFlags.get(item.userId)
+  return { ...item, following: flag?.following ?? false, offered: flag?.offered ?? false }
+}
+
+const profileById = (id: string): Profile => withFlags(hubProfiles.find((item) => item.userId === id) ?? { ...profile, userId: id })
+
+let meProfile: Profile = {
+  userId: 'u1',
+  displayName: '김서준',
+  avatarUrl: null,
+  headline: '백엔드로 결제 시스템을 만들어요',
+  jobCategory: 'dev',
+  tenureYears: 5,
+  careerStatus: 'seeking',
+  openToOffers: true,
+  intro: '결제 승인 API를 만들어 왔어요.',
+  careers: [{ company: '하루랩스', role: '백엔드 개발자', startedOn: '2021-04-01', endedOn: null, description: '' }],
+  skills: ['Kotlin', 'Spring'],
+  followerCount: 12,
+  resumeSourceId: 'src-resume',
+  updatedAt: '2026-10-18T09:00:00.000Z',
+}
+
+let feed: Post[] = [employerPost, searchPost]
+
+const commentThreads = new Map<string, Comment[]>([
+  [
+    'post-emp',
+    [
+      {
+        id: 'c1',
+        author: { id: 'u1', displayName: '김서준', avatarUrl: null },
+        body: '응원해요',
+        parentId: null,
+        createdAt: '2026-10-20T03:00:00.000Z',
+      },
+    ],
+  ],
+])
+
+let receivedOffers: Offer[] = [
+  {
+    id: 'offer-1',
+    sender: { id: 'u-emp', displayName: '모아페이', avatarUrl: null, affiliation: '모아페이' },
+    recipient: { id: 'u1', displayName: '김서준', avatarUrl: null },
+    message: '백엔드 엔지니어로 함께하고 싶어요.',
+    posting: { id: 'p1', company: '모아페이', title: '백엔드 엔지니어 (Kotlin·Spring)', imageUrl: null },
+    status: 'SENT',
+    readAt: null,
+    createdAt: '2026-10-20T01:00:00.000Z',
+  },
+]
+
+let sentOffers: Offer[] = [
+  {
+    id: 'offer-2',
+    sender: { id: 'u1', displayName: '김서준', avatarUrl: null },
+    recipient: { id: 'u2', displayName: '박민재', avatarUrl: null },
+    message: '데이터 지표 이야기를 나누고 싶어요.',
+    posting: null,
+    status: 'READ',
+    readAt: '2026-10-19T02:00:00.000Z',
+    createdAt: '2026-10-19T01:00:00.000Z',
+  },
+]
+
+const offerThreads = new Map<string, OfferMessage[]>()
+
+const offerById = (id: string) => receivedOffers.find((item) => item.id === id) ?? sentOffers.find((item) => item.id === id)
+
+let notices: WebNotification[] = [
+  {
+    id: 'n-stage',
+    type: 'APPLICATION_STAGE',
+    title: '지원 상태가 바뀌었어요',
+    body: '모아페이 지원이 서류 단계로 넘어갔어요.',
+    target: { kind: 'activity', id: 'applications' },
+    readAt: null,
+    createdAt: '2026-10-20T02:00:00.000Z',
+  },
+  {
+    id: 'n-offer',
+    type: 'OFFER',
+    title: '새 제안',
+    body: '모아페이에서 제안을 보냈어요.',
+    target: { kind: 'offer', id: 'offer-1' },
+    readAt: null,
+    createdAt: '2026-10-20T01:00:00.000Z',
+  },
+  {
+    id: 'n-ai',
+    type: 'AI_DONE',
+    title: 'AI 작업이 끝났어요',
+    body: '대화가 준비됐어요.',
+    target: { kind: 'conversation', id: 'c1' },
+    readAt: null,
+    createdAt: '2026-10-19T01:00:00.000Z',
+  },
+]
+
+let settings: Settings = {
+  notifyDeadline: true,
+  notifyOffer: true,
+  notifyComment: true,
+  notifyAiDone: true,
+  notifyApplicationStage: true,
+  locale: 'ko',
+  profilePublic: true,
+  careerStatusVisibility: 'everyone',
+  hideFromCurrentCompany: false,
+  contactVisibility: 'everyone',
+  defaultTone: 'as_is',
+  chatRetentionDays: null,
+  allowAiReadMyFiles: false,
+}
+
+let consent: Consent = { referenceData: false, updatedAt: null }
+
+const applications: Application[] = [
+  {
+    id: 'app-fit',
+    revision: 1,
+    jobId: 'p1',
+    company: '모아페이',
+    title: '백엔드 엔지니어 (Kotlin·Spring)',
+    stage: 'APPLIED',
+    appliedAt: '2026-10-18T01:00:00.000Z',
+    createdAt: '2026-10-18T01:00:00.000Z',
+    fitScore: 6.9,
+  },
+  {
+    id: 'app-plain',
+    revision: 1,
+    jobId: 'p2',
+    company: '누리클라우드',
+    title: '프론트엔드 개발자',
+    stage: 'SCREENING',
+    appliedAt: '2026-10-12T01:00:00.000Z',
+    createdAt: '2026-10-12T01:00:00.000Z',
+  },
+]
+
+const calendarEvents: CalendarEvent[] = [
+  {
+    id: 'ev-1',
+    revision: 1,
+    applicationId: 'app-fit',
+    type: 'INTERVIEW',
+    title: '모아페이 면접',
+    startsAt: '2026-10-28T01:00:00.000Z',
+    endsAt: '2026-10-28T02:00:00.000Z',
+    timeZone: 'Asia/Seoul',
+    source: 'LOCAL',
+    externalId: null,
+    notes: '',
+    createdAt: '2026-10-20T00:00:00.000Z',
+    updatedAt: '2026-10-20T00:00:00.000Z',
+  },
+]
+
+const seedSources: Source[] = [
+  { id: 'src-resume', fileName: '김서준_이력서.pdf', mimeType: 'application/pdf', size: 120000, sha256: 'abc', status: 'READY' },
+  { id: 'src-extra', fileName: '김서준_포트폴리오.pdf', mimeType: 'application/pdf', size: 84000, sha256: 'def', status: 'READY' },
+]
+
+const uploadedSources: Source[] = []
+
+const allSources = () => [...uploadedSources, ...seedSources]
+
+const employerPersona = () => {
+  const kind = mockPersona()
+  return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-new'
+}
+
+const companyMe = (): Company | null => {
+  const kind = mockPersona()
+  if (kind !== 'employer' && kind !== 'employer-pro') return null
+  return {
+    id: 'co-1',
+    bNo: '1234567890',
+    name: '모아페이',
+    plan: kind === 'employer-pro' ? 'PRO' : 'BASIC',
+    verifiedAt: '2026-09-01T00:00:00.000Z',
+    role: 'ADMIN',
+    seats: { used: 1, limit: kind === 'employer-pro' ? 2 : 0 },
+  }
+}
+
+const routeTail = (pathname: string) => {
+  const marker = '/api/v1'
+  const at = pathname.indexOf(marker)
+  const tail = (at >= 0 ? pathname.slice(at + marker.length) : pathname).replace(/\/+$/, '')
+  return tail || '/'
+}
+
+const slicePage = <T,>(url: URL, items: T[], idOf: (item: T) => string) => {
+  const rawLimit = Number(url.searchParams.get('limit') ?? String(items.length || 1))
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : items.length || 1
+  const cursor = url.searchParams.get('cursor')
+  const found = cursor ? items.findIndex((item) => idOf(item) === cursor) : -1
+  const start = found >= 0 ? found + 1 : 0
+  const data = items.slice(start, start + limit)
+  const hasMore = start + limit < items.length
+  const last = data[data.length - 1]
+  return { data, page: { nextCursor: hasMore && last ? idOf(last) : null, hasMore, total: items.length } }
+}
+
+const asStrings = (value: unknown) => (Array.isArray(value) ? value.map(String) : null)
+
+const asCareers = (value: unknown): Profile['careers'] | null => {
+  if (!Array.isArray(value)) return null
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return []
+    const row = item as Record<string, unknown>
+    return [
+      {
+        company: String(row.company ?? ''),
+        role: String(row.role ?? ''),
+        startedOn: String(row.startedOn ?? ''),
+        endedOn: row.endedOn == null || row.endedOn === '' ? null : String(row.endedOn),
+        description: String(row.description ?? ''),
+      },
+    ]
+  })
+}
+
+const handleCommunity = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
+  const tail = routeTail(pathname)
+  if (method === 'POST' && tail === '/uploads/images') {
+    return json(200, { data: { key: `img-${Date.now()}`, url: '/api/v1/uploads/images/mock.png' } })
+  }
+  if (method === 'POST' && tail === '/sources') {
+    const form = await readForm(input, init)
+    const file = form?.get('file')
+    const named = typeof File !== 'undefined' && file instanceof File
+    const source: Source = {
+      id: `src-up-${uploadedSources.length + 1}`,
+      fileName: named ? file.name : '이력서.pdf',
+      mimeType: named && file.type ? file.type : 'application/pdf',
+      size: named ? file.size : 1024,
+      sha256: 'upload',
+      status: 'READY',
+      createdAt: new Date().toISOString(),
+    }
+    uploadedSources.unshift(source)
+    return json(200, { data: source })
+  }
+  const sourceMatch = tail.match(/^\/sources\/([^/]+)$/)
+  if (sourceMatch && method === 'GET') {
+    const found = allSources().find((item) => item.id === sourceMatch[1])
+    return found ? json(200, { data: found }) : json(404, { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } })
+  }
+  if (method === 'GET' && tail === '/profiles') {
+    const categories = splitParam(url, 'category')
+    const items = hubProfiles
+      .filter((item) => categories.length === 0 || (item.jobCategory !== null && categories.includes(item.jobCategory)))
+      .map(withFlags)
+    return json(200, slicePage(url, items, (item) => item.userId))
+  }
+  const offerCreate = tail.match(/^\/profiles\/([^/]+)\/offer$/)
+  if (offerCreate && method === 'POST') {
+    const id = offerCreate[1] ?? ''
+    const payload = await readJson(input, init)
+    const created: Offer = {
+      id: `offer-${Date.now()}`,
+      sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null },
+      recipient: { id, displayName: profileById(id).displayName, avatarUrl: null },
+      message: String(payload.message ?? ''),
+      posting: null,
+      status: 'SENT',
+      readAt: null,
+      createdAt: new Date().toISOString(),
+    }
+    sentOffers = [created, ...sentOffers]
+    const flag = socialFlags.get(id) ?? { following: false, offered: false }
+    socialFlags.set(id, { ...flag, offered: true })
+    return json(200, { data: created })
+  }
+  const followMatch = tail.match(/^\/users\/([^/]+)\/follow$/)
+  if (followMatch && (method === 'POST' || method === 'DELETE')) {
+    const id = followMatch[1] ?? ''
+    const flag = socialFlags.get(id) ?? { following: false, offered: false }
+    socialFlags.set(id, { ...flag, following: method === 'POST' })
+    return new Response(null, { status: 204 })
+  }
+  if (method === 'GET' && tail === '/posts') {
+    const category = url.searchParams.get('category')
+    const items = feed.filter((item) => !category || item.category === category)
+    return json(200, slicePage(url, items, (item) => item.id))
+  }
+  if (method === 'POST' && tail === '/posts') {
+    const payload = await readJson(input, init)
+    const keys = asStrings(payload.imageKeys) ?? []
+    const created: Post = {
+      id: `post-${feed.length + 1}`,
+      author: employerPersona()
+        ? { id: 'u1', displayName: '모아페이', avatarUrl: null, employer: true, companyName: '모아페이' }
+        : { id: 'u1', displayName: '김서준', avatarUrl: null },
+      category: (typeof payload.category === 'string' ? payload.category : 'work') as Post['category'],
+      title: String(payload.title ?? ''),
+      body: String(payload.body ?? ''),
+      imageUrls: keys.map((key) => `/api/v1/uploads/images/${key}`),
+      commentCount: 0,
+      viewCount: 0,
+      createdAt: new Date().toISOString(),
+    }
+    feed = [created, ...feed]
+    return json(200, { data: created })
+  }
+  const commentsMatch = tail.match(/^\/posts\/([^/]+)\/comments$/)
+  if (commentsMatch) {
+    const postId = commentsMatch[1] ?? ''
+    const postItem = feed.find((item) => item.id === postId)
+    if (!postItem) return json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
+    if (method === 'GET') {
+      const data = commentThreads.get(postId) ?? []
+      return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+    }
+    if (method === 'POST') {
+      const payload = await readJson(input, init)
+      const comment: Comment = {
+        id: `c-${Date.now()}`,
+        author: { id: 'u1', displayName: '김서준', avatarUrl: null },
+        body: String(payload.body ?? ''),
+        parentId: typeof payload.parentId === 'string' ? payload.parentId : null,
+        createdAt: new Date().toISOString(),
+      }
+      const list = commentThreads.get(postId) ?? []
+      list.push(comment)
+      commentThreads.set(postId, list)
+      postItem.commentCount += 1
+      return json(200, { data: comment })
+    }
+  }
+  const postMatch = tail.match(/^\/posts\/([^/]+)$/)
+  if (postMatch && method === 'GET') {
+    const postItem = feed.find((item) => item.id === postMatch[1])
+    return postItem ? json(200, { data: postItem }) : json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
+  }
+  if (tail === '/me/profile' && method === 'GET') return json(200, { data: meProfile })
+  if (tail === '/me/profile' && method === 'PATCH') {
+    const payload = await readJson(input, init)
+    const careers = asCareers(payload.careers)
+    const skills = asStrings(payload.skills)
+    meProfile = {
+      ...meProfile,
+      displayName: typeof payload.displayName === 'string' ? payload.displayName : meProfile.displayName,
+      headline: typeof payload.headline === 'string' ? payload.headline : meProfile.headline,
+      intro: typeof payload.intro === 'string' ? payload.intro : meProfile.intro,
+      careers: careers ?? meProfile.careers,
+      skills: skills ?? meProfile.skills,
+      updatedAt: new Date().toISOString(),
+    }
+    return json(200, { data: meProfile })
+  }
+  if (method === 'GET' && tail === '/me/bookmarks') return json(200, slicePage(url, listings.filter((item) => present(item).bookmarked), (item) => item.id))
+  if (method === 'GET' && tail === '/me/follows') {
+    const ids = new Set<string>()
+    for (const item of hubProfiles) if (withFlags(item).following) ids.add(item.userId)
+    for (const [id, flag] of socialFlags) if (flag.following) ids.add(id)
+    return json(200, { data: [...ids].map((id) => profileById(id)), page: { nextCursor: null, hasMore: false, total: ids.size } })
+  }
+  if (method === 'GET' && tail === '/me/posts') {
+    const mine = feed.filter((item) => (employerPersona() ? item.author.employer === true : item.author.employer !== true))
+    return json(200, slicePage(url, mine, (item) => item.id))
+  }
+  if (method === 'GET' && tail === '/applications') {
+    return json(200, { data: applications, page: { nextCursor: null, hasMore: false, total: applications.length } })
+  }
+  if (method === 'GET' && tail === '/calendar/events') {
+    const from = url.searchParams.get('from') ?? ''
+    const to = url.searchParams.get('to') ?? ''
+    const data = calendarEvents.filter((event) => (!from || event.startsAt >= from) && (!to || event.startsAt < to))
+    return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+  }
+  if (method === 'GET' && tail === '/me/offers') {
+    const box = url.searchParams.get('box') === 'sent' ? sentOffers : receivedOffers
+    return json(200, { data: box, page: { nextCursor: null, hasMore: false, total: box.length } })
+  }
+  const offerMessages = tail.match(/^\/me\/offers\/([^/]+)\/messages$/)
+  if (offerMessages) {
+    const id = offerMessages[1] ?? ''
+    if (!offerById(id)) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    if (method === 'GET') {
+      const data = offerThreads.get(id) ?? []
+      return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+    }
+    if (method === 'POST') {
+      const payload = await readJson(input, init)
+      const created: OfferMessage = {
+        id: `msg-${Date.now()}`,
+        offerId: id,
+        sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null },
+        body: String(payload.body ?? ''),
+        createdAt: new Date().toISOString(),
+      }
+      const list = offerThreads.get(id) ?? []
+      list.push(created)
+      offerThreads.set(id, list)
+      return json(200, { data: created })
+    }
+  }
+  const offerAccept = tail.match(/^\/me\/offers\/([^/]+)\/accept$/)
+  if (offerAccept && method === 'POST') {
+    const found = offerById(offerAccept[1] ?? '')
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    const payload = await readJson(input, init)
+    found.status = 'ACCEPTED'
+    if (typeof payload.reply === 'string' && payload.reply.trim()) {
+      const list = offerThreads.get(found.id) ?? []
+      list.push({
+        id: `msg-${Date.now()}`,
+        offerId: found.id,
+        sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null },
+        body: payload.reply.trim(),
+        createdAt: new Date().toISOString(),
+      })
+      offerThreads.set(found.id, list)
+    }
+    return json(200, { data: found })
+  }
+  const offerDecline = tail.match(/^\/me\/offers\/([^/]+)\/decline$/)
+  if (offerDecline && method === 'POST') {
+    const found = offerById(offerDecline[1] ?? '')
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    found.status = 'DECLINED'
+    return json(200, { data: found })
+  }
+  const offerDetail = tail.match(/^\/me\/offers\/([^/]+)$/)
+  if (offerDetail && method === 'GET') {
+    const found = offerById(offerDetail[1] ?? '')
+    return found ? json(200, { data: found }) : json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+  }
+  if (method === 'POST' && tail === '/me/notifications/read') {
+    const payload = await readJson(input, init)
+    const now = new Date().toISOString()
+    const ids = Array.isArray(payload.ids) ? new Set(payload.ids.map(String)) : null
+    notices = notices.map((item) => (payload.all === true || ids?.has(item.id) ? { ...item, readAt: item.readAt ?? now } : item))
+    return new Response(null, { status: 204 })
+  }
+  if (method === 'GET' && tail === '/me/notifications') {
+    return json(200, { data: notices, page: { nextCursor: null, hasMore: false, total: notices.length } })
+  }
+  if (tail === '/me/settings' && method === 'GET') return json(200, { data: settings })
+  if (tail === '/me/settings' && method === 'PATCH') {
+    const payload = await readJson(input, init)
+    settings = { ...settings, ...(payload as Partial<Settings>) }
+    return json(200, { data: settings })
+  }
+  if (tail === '/me/consents' && method === 'GET') return json(200, { data: consent })
+  if (tail === '/me/consents' && method === 'PUT') {
+    const payload = await readJson(input, init)
+    consent = { referenceData: Boolean(payload.referenceData), updatedAt: new Date().toISOString() }
+    return json(200, { data: consent })
+  }
+  if (method === 'GET' && tail === '/companies/me') {
+    const company = companyMe()
+    return company ? json(200, { data: company }) : json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+  }
+  if (method === 'DELETE' && tail === '/me') {
+    const kind = mockPersona()
+    if (kind === 'employer' || kind === 'employer-pro') {
+      return json(409, { error: { code: 'ADMIN_TRANSFER_REQUIRED', message: '관리자를 넘겨 주세요' } })
+    }
+    return new Response(null, { status: 204 })
+  }
+  return null
+}
+
 const flagFor = (id: string) => flags.get(id) ?? { bookmarked: id === posting.id ? posting.bookmarked : false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
@@ -402,27 +932,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && /\/sources\/?$/.test(pathname)) {
-    return json(200, {
-      data: [
-        {
-          id: 'src-resume',
-          fileName: '김서준_이력서.pdf',
-          mimeType: 'application/pdf',
-          size: 120000,
-          sha256: 'abc',
-          status: 'READY',
-        },
-        {
-          id: 'src-extra',
-          fileName: '김서준_포트폴리오.pdf',
-          mimeType: 'application/pdf',
-          size: 84000,
-          sha256: 'def',
-          status: 'READY',
-        },
-      ],
-      page: { nextCursor: null, hasMore: false },
-    })
+    return json(200, { data: allSources(), page: { nextCursor: null, hasMore: false } })
   }
   if (method === 'GET' && /\/postings\/[^/]+$/.test(pathname)) {
     const id = pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? posting.id
@@ -436,7 +946,10 @@ export const mockFetch: typeof fetch = async (input, init) => {
       },
     })
   }
-  if (/\/profiles\/[^/]+$/.test(pathname)) return json(200, { data: profile })
+  if (method === 'GET' && /\/profiles\/[^/]+$/.test(pathname)) {
+    const id = pathname.match(/\/profiles\/([^/]+)$/)?.[1] ?? profile.userId
+    return json(200, { data: profileById(id) })
+  }
   if (method === 'POST' && matches(pathname, '/auth/email/signup')) {
     const payload = await readJson(input, init)
     const email = String(payload.email ?? '')
@@ -493,5 +1006,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
   if (method === 'POST' && matches(pathname, '/auth/refresh')) {
     return json(200, { data: sessionStore.load() ?? mockSession(persona ?? 'personal') })
   }
+  const community = await handleCommunity(method, url, pathname, input, init)
+  if (community) return community
   return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${pathname}` } })
 }

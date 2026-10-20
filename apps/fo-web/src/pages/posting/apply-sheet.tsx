@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api } from '../../api'
 import { APPLY_CONFIRM, SOURCE_OPTIONAL, SOURCE_ORIGINAL } from './constants'
-import { listSources } from './sources'
+import { listSources } from '../../shared/api/sources'
 
 const ApplySheet = ({
   postingId,

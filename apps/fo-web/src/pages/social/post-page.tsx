@@ -1,0 +1,92 @@
+import { POST_CATEGORIES } from '@push/api-client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { api, assetUrl } from '../../api'
+import { COMMENT_MAX } from './constants'
+
+const postedAt = (iso: string) => {
+  const date = new Date(iso)
+  return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`
+}
+
+const PostPage = () => {
+  const { id = '' } = useParams()
+  const queryClient = useQueryClient()
+  const postQuery = useQuery({ queryKey: ['post', id], queryFn: () => api.posts.get(id) })
+  const commentsQuery = useQuery({ queryKey: ['comments', id], queryFn: () => api.posts.comments(id) })
+  const [body, setBody] = useState('')
+  const [parentId, setParentId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const post = postQuery.data
+  const comments = commentsQuery.data?.data ?? []
+  const ready = body.trim().length >= 1 && body.trim().length <= COMMENT_MAX
+  const send = useMutation({
+    mutationFn: () => api.posts.comment(id, body.trim(), parentId ?? undefined),
+    onSuccess: async () => {
+      setBody('')
+      setParentId(null)
+      setError(null)
+      await queryClient.invalidateQueries({ queryKey: ['comments', id] })
+      await queryClient.invalidateQueries({ queryKey: ['post', id] })
+      await queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: () => setError('댓글을 올리지 못했어요. 잠시 후 다시 시도해 주세요.'),
+  })
+  if (postQuery.isError) return <main className="page"><p className="b2 t3">글을 불러오지 못했어요.</p></main>
+  if (!post) return <main className="page" aria-busy="true" />
+  const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
+  const name = post.author.employer ? post.author.companyName : post.author.displayName
+  return (
+    <main className="page">
+      <article className="stack post-detail">
+        <span className="post-author">
+          <span className="b2 w7">{name}</span>
+          {post.author.employer ? <span className="badge grey">기업</span> : null}
+          <span className="c1 t3">{category}</span>
+        </span>
+        <h1 className="h2">{post.title}</h1>
+        <p className="b1 post-body">{post.body}</p>
+        {post.imageUrls.length > 0 ? (
+          <div className="post-images">
+            {post.imageUrls.map((url) => (
+              <img key={url} src={assetUrl(url)} alt="" />
+            ))}
+          </div>
+        ) : null}
+        <span className="c1 t3">{postedAt(post.createdAt)}</span>
+      </article>
+      <section className="stack">
+        <h2 className="h3">댓글</h2>
+        {comments.length === 0 ? <p className="b2 t3">아직 댓글이 없어요.</p> : null}
+        <ul className="comment-list">
+          {comments.map((comment) => (
+            <li key={comment.id} className="comment">
+              <span className="b2 w7">{comment.author.displayName}</span>
+              <p className="b2">{comment.body}</p>
+              <button type="button" className="text-link" onClick={() => setParentId(comment.id)}>
+                답글
+              </button>
+            </li>
+          ))}
+        </ul>
+        <label className="field">
+          {parentId ? '답글' : '댓글'}
+          <textarea value={body} maxLength={COMMENT_MAX} rows={4} onChange={(event) => setBody(event.target.value)} />
+          <span className="c1 t3">{`${body.length} / ${COMMENT_MAX}`}</span>
+        </label>
+        {parentId ? (
+          <button type="button" className="text-link" onClick={() => setParentId(null)}>
+            답글 취소
+          </button>
+        ) : null}
+        {error ? <p className="auth-error">{error}</p> : null}
+        <button type="button" className="primary" disabled={!ready || send.isPending} onClick={() => send.mutate()}>
+          {parentId ? '답글 달기' : '댓글 달기'}
+        </button>
+      </section>
+    </main>
+  )
+}
+
+export default PostPage
