@@ -11,6 +11,9 @@ import type { ChatEvent, ChatState } from './types'
 export const useChatStore = create<{ chats: Record<string, ChatState> }>(() => ({ chats: {} }))
 export const useChat = (id: string) => useChatStore((s) => s.chats[id] ?? emptyChat)
 
+/** 계정 › 대화 settings that have no server field yet (shortcut: session-only until push-be adds them). */
+export const usePrefs = create<{ effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'; confirm: boolean }>(() => ({ effort: 'MEDIUM', confirm: true }))
+
 const get = (id: string) => useChatStore.getState().chats[id] ?? emptyChat
 const runs = new Map<string, AbortController>()
 
@@ -37,7 +40,7 @@ async function* scripted(input: RunInput, signal: AbortSignal): AsyncGenerator<C
 
 /** Real backend: the SSE stream only has token/status/done/error today. */
 async function* streamed(input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
-  const body = { text: input.text ?? '', accessMode: 'CONFIRM_ACTIONS' as const }
+  const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('CONFIRM_ACTIONS' as const) : ('SUGGEST' as const) }
   for await (const ev of api.conversations.stream(input.conversationId, body, signal)) {
     if (ev.type === 'token') yield { type: 'token', text: ev.text }
     else if (ev.type === 'status') yield { type: 'status', verbs: [ev.text] }

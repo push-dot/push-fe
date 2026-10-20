@@ -69,6 +69,7 @@ export const chatApi = {
   docs: () => data(c.get<DataEnvelope<ChatDoc[]>>('chat/docs')),
   // shortcut: records name/size only; switch to api.sources.upload once 내 서류 lists sources.
   addDoc: (body: { fileName: string; size: number }) => data(c.post<DataEnvelope<ChatDoc>>('chat/docs', { body })),
+  checkout: (planId: 'PRO' | 'ULTRA') => data(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
   account: () => data(c.get<DataEnvelope<Account>>('chat/account')),
   quickStart: (key: string) => data(c.get<DataEnvelope<QsData>>(`chat/quick-starts/${key}`)),
 }

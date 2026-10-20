@@ -1,10 +1,3 @@
-import { Text, View } from 'react-native'
+import { ChatHomeScreen } from '../../../features/chat/ChatHomeScreen'
 
-// Placeholder until the Claude Design screen is implemented.
-export default function Screen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>AI 채팅</Text>
-    </View>
-  )
-}
+export default ChatHomeScreen

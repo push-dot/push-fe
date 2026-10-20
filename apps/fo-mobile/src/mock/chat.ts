@@ -2,6 +2,7 @@
 // Sample data follows the AI 채팅 artboards (김서준, 모아페이 …).
 import type { LinkKind, Message, UserLink } from '@push/api-client'
 import type { ConversationRow, ChatDoc, QsData, RunInput } from '../features/chat/api'
+import { kindOf } from '../features/chat/links'
 import type { Approval, ChatEvent, ChatItem, Choice, Step } from '../features/chat/types'
 import { mock, page } from './server'
 
@@ -442,7 +443,8 @@ mock('POST', 'chat/runs', ({ body }) => {
     steps = (next[b.answer.approvalId] ?? ((_c: number) => generic(b.text ?? '')))(b.answer.choice, state.labels)
   } else if (b.interrupted && state && !pick(b.text ?? '', true)) {
     // Talking after 중지 resumes the stopped work with the new request folded in (ChatInterrupt).
-    state = { ...state, labels: TODO_PLUS }
+    // Fresh ids: the stopped lines stay in the transcript and the resumed work continues below them.
+    state = { prefix: `r${++seq}`, labels: TODO_PLUS }
     scenario.set(id, state)
     steps = tailorResume
   } else {
@@ -476,13 +478,6 @@ const links: UserLink[] = [
   { id: 'l6', kind: 'portfolio', url: 'https://seojun.notion.site', title: '김서준 포트폴리오', status: null, fitCount: 0, aiRead: false, createdAt: ago(20000) },
   { id: 'l7', kind: 'blog', url: 'https://velog.io/@seojun/p99', title: '결제 승인 API p99 절반으로 줄이기', status: null, fitCount: 0, aiRead: false, createdAt: ago(30000) },
 ]
-
-const kindOf = (url: string): LinkKind =>
-  /github\.com/.test(url) ? 'github'
-    : /velog|tistory|medium|brunch|blog/.test(url) ? 'blog'
-      : /notion|portfolio|behance/.test(url) ? 'portfolio'
-        : /career|jobs|recruit|wanted|saramin|jobkorea|greeting/.test(url) ? 'job'
-          : 'other'
 
 mock('GET', 'me/links', ({ query }) => {
   const kind = query.get('kind')
@@ -618,3 +613,5 @@ const quick: Record<string, QsData> = {
   },
 }
 mock('GET', 'chat/quick-starts/:key', ({ params }) => ({ data: quick[params.key!] ?? { items: [] } }))
+
+mock('POST', 'billing/checkout', () => ({ data: { url: 'https://push.example/checkout', expiresAt: ago(-30) } }))
