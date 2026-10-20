@@ -5,8 +5,11 @@ import LoginPage from '../pages/login/login-page'
 import ResetPage from '../pages/login/reset-page'
 import SignupPage from '../pages/login/signup-page'
 import VerifyPage from '../pages/login/verify-page'
+import HomePage from '../pages/home/home-page'
+import JobsPage from '../pages/jobs/jobs-page'
 import { PostingPage } from '../pages/PostingPage'
 import { ProfilePage } from '../pages/ProfilePage'
+import SearchPage from '../pages/search/search-page'
 import SoonPage from '../pages/soon-page'
 import { SOON_TITLE } from './constants'
 import RequireAuth from './require-auth'
@@ -27,9 +30,9 @@ const AppRouter = () => {
     <BrowserRouter>
       <Routes>
         <Route element={<Shell />}>
-          <Route path="/" element={<SoonPage title={SOON_TITLE.home} />} />
-          <Route path="/jobs" element={<SoonPage title={SOON_TITLE.jobs} />} />
-          <Route path="/search" element={<SoonPage title={SOON_TITLE.search} />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/auth/callback" element={<CallbackPage />} />

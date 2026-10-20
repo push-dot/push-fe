@@ -1,21 +1,26 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
 import { useParams } from 'react-router-dom'
 import { api, assetUrl } from '../api'
-import { send } from '../bridge'
+import { isWebView, send } from '../bridge'
 import { brandOf, careerLabel, dDay } from '../format'
 import type { PostingView } from '../mock'
+import { showFitCard } from '../shared/model/fit-card'
+import Toast, { useToast } from '../shared/ui/toast'
 import { useDetail } from '../useDetail'
 import { FitCard } from './FitCard'
+import PostingActions from './posting/posting-actions'
 import { Section, Status } from './Section'
 
-export function PostingPage() {
+export const PostingPage = () => {
   const { id = '' } = useParams()
-  const { data: p, error } = useDetail(['posting', id], () => api.postings.get(id) as Promise<PostingView>, (p) => p.company)
+  const toast = useToast()
+  const { data: p, error } = useDetail(['posting', id], () => api.postings.get(id) as Promise<PostingView>, (item) => item.company)
   if (!p) return <Status error={!!error} what="공고" />
   const dday = dDay(p.deadline)
   const duties = p.description.split('\n').map((s) => s.trim()).filter(Boolean)
   return (
-    <main className="page">
+    <main className={isWebView() ? 'page' : 'page browser-posting'}>
+      <PostingActions posting={p} onToast={toast.show} />
       <header className="head">
         <div className="company">
           {p.imageUrl ? (
@@ -36,7 +41,7 @@ export function PostingPage() {
           <span className="badge grey">{EMPLOYMENT_TYPES.find((t) => t.key === p.employmentType)?.label}</span>
         </div>
       </header>
-      <FitCard postingId={p.id} />
+      {showFitCard(isWebView()) ? <FitCard postingId={p.id} /> : null}
       <Section title="하는 일" items={duties} />
       <Section title="자격 요건" items={p.requirements} />
       <Section title="우대 사항" items={p.preferred ?? []} />
@@ -59,6 +64,7 @@ export function PostingPage() {
           </svg>
         </a>
       ) : null}
+      <Toast message={toast.message} />
     </main>
   )
 }

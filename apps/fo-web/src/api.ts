@@ -4,10 +4,11 @@ import { mockFetch } from './mock'
 import { readAccessToken, sessionStore } from './shared/auth/session'
 import { accessToken } from './shared/auth/token-source'
 
-const baseUrl = pushEnv().apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL ?? 'https://push-be.youngjoon568.workers.dev/api/v1'
+export const apiBaseUrl =
+  pushEnv().apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL ?? 'https://push-be.youngjoon568.workers.dev/api/v1'
 const mockTransport = isMock()
 
-export const assetUrl = (url: string | null | undefined) => absoluteUrl(url, baseUrl) ?? undefined
+export const assetUrl = (url: string | null | undefined) => absoluteUrl(url, apiBaseUrl) ?? undefined
 
 let refreshInFlight: Promise<boolean> | null = null
 
@@ -19,7 +20,7 @@ const refreshOnce = async () => {
   }
   try {
     const transport = mockTransport ? mockFetch : fetch
-    const response = await transport(`${baseUrl.replace(/\/+$/, '')}/auth/refresh`, {
+    const response = await transport(`${apiBaseUrl.replace(/\/+$/, '')}/auth/refresh`, {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: current.refreshToken }),
@@ -51,7 +52,7 @@ const refreshSession = () => {
 
 export const api = createApi(
   createClient({
-    baseUrl,
+    baseUrl: apiBaseUrl,
     getToken: () => accessToken({ webView: isWebView(), injected: pushEnv().token, session: readAccessToken() }),
     refresh: refreshSession,
     fetch: mockTransport ? mockFetch : undefined,
