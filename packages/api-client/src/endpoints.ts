@@ -3,10 +3,11 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import type {
   AccountType, AiOptions, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, Company, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
   ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  WebNotification,
 } from './types'
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
@@ -95,6 +96,7 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<UserLink>>('me/links', { body })),
     deleteLink: (id: string) => c.delete<void>(`me/links/${id}`),
     notifications: (p: PageParams = {}) => c.get<ListEnvelope<AppNotification>>('me/notifications', { query: p }),
+    webNotifications: (p: PageParams = {}) => c.get<ListEnvelope<WebNotification>>('me/notifications', { query: p }),
     readNotifications: (ids: string[] | 'all') =>
       c.post<void>('me/notifications/read', { body: ids === 'all' ? { all: true } : { ids } }),
     registerDevice: (token: string, platform: 'ios' | 'android') =>
@@ -125,6 +127,7 @@ export const createApi = (c: Client) => ({
 
   billing: {
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
+    companyStatus: () => unwrap(c.get<DataEnvelope<CompanyBillingStatus>>('billing')),
     checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
     topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
     portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),

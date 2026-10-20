@@ -126,15 +126,21 @@ export type UserLink = {
   createdAt: string
 }
 
-export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE' | 'APPLICATION_STAGE'
+export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE'
 export type AppNotification = {
   id: string
   type: NotificationType
   title: string
   body: string
-  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'activity'; id: string }
+  target: { kind: 'posting' | 'offer' | 'post' | 'conversation'; id: string }
   readAt: string | null
   createdAt: string
+}
+
+export type WebNotificationType = NotificationType | 'APPLICATION_STAGE'
+export type WebNotification = Omit<AppNotification, 'type' | 'target'> & {
+  type: WebNotificationType
+  target: AppNotification['target'] | { kind: 'activity'; id: string }
 }
 
 export type Settings = {
@@ -214,12 +220,17 @@ export type BillingSource = 'STRIPE' | 'APP_STORE' | 'GOOGLE_PLAY'
 
 export type BillingStatus = {
   subscriptionStatus: string
-  plan: 'FREE' | 'PRO' | 'ULTRA' | 'BASIC' | null
+  plan: 'FREE' | 'PRO' | 'ULTRA' | null
   periodEndsAt: string | null
   balanceMicroCredits: number
   reservedMicroCredits: number
   audience?: BillingAudience
   source?: BillingSource
+}
+
+export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
+  plan: 'BASIC' | 'PRO' | 'ULTRA' | null
+  audience?: BillingAudience
 }
 
 export type Session = {

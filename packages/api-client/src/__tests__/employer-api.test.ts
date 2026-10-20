@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createClient } from '../client'
 import { createApi } from '../endpoints'
-import type { Application, AppNotification, BillingStatus, Post, PostingDetail, Session, Settings } from '../types'
+import type {
+  Application, BillingStatus, CompanyBillingStatus, Post, PostingDetail, Session, Settings, WebNotification,
+} from '../types'
 
 // conversations.list(page?: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' }) — not a second argument.
 
@@ -373,6 +375,36 @@ describe('employer api', () => {
     expect(hits[0]!.body).toContain('resume.pdf')
   })
 
+  it('reads company billing and web notifications on the personal paths', async () => {
+    const status = {
+      subscriptionStatus: 'ACTIVE',
+      plan: 'BASIC' as const,
+      periodEndsAt: null,
+      balanceMicroCredits: 1,
+      reservedMicroCredits: 0,
+      audience: 'EMPLOYER' as const,
+    }
+    const note = {
+      id: 'n1',
+      type: 'APPLICATION_STAGE' as const,
+      title: '단계',
+      body: '서류',
+      target: { kind: 'activity' as const, id: 'applications' },
+      readAt: null,
+      createdAt: '2026-10-21T00:00:00.000Z',
+    }
+    const page = { data: [note], page: { nextCursor: null, hasMore: false } }
+    const { api, hits } = harness((req) => {
+      if (new URL(req.url).pathname.endsWith('/billing')) return json(200, { data: status })
+      return json(200, page)
+    })
+    await expect(api.billing.companyStatus()).resolves.toEqual(status)
+    await expect(api.me.webNotifications({ limit: 10 })).resolves.toEqual(page)
+    expect(hits[0]!.method).toBe('GET')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/billing')
+    expect(decodeURIComponent(hits[1]!.url)).toBe('http://x/api/v1/me/notifications?limit=10')
+  })
+
   it('keeps employer fields optional on existing shapes', () => {
     const legacyBilling: BillingStatus = {
       subscriptionStatus: 'ACTIVE',
@@ -381,7 +413,7 @@ describe('employer api', () => {
       balanceMicroCredits: 0,
       reservedMicroCredits: 0,
     }
-    const employerBilling: BillingStatus = {
+    const employerBilling: CompanyBillingStatus = {
       ...legacyBilling,
       plan: 'BASIC',
       audience: 'EMPLOYER',
@@ -456,7 +488,7 @@ describe('employer api', () => {
       ...legacySession,
       user: { ...legacySession.user, accountType: 'EMPLOYER', companyId: 'co1', companyRole: 'ADMIN' },
     }
-    const note: AppNotification = {
+    const note: WebNotification = {
       id: 'n1',
       type: 'APPLICATION_STAGE',
       title: '단계',
