@@ -1,8 +1,14 @@
+import { useSegments } from 'expo-router'
 import { NativeTabs } from 'expo-router/native-tabs'
 
+// Screens drawn without a tab bar in the Claude Design boards (detail, search, inbox, settings).
+const NO_TAB_BAR = new Set(['postings', 'profiles', 'posts', 'notifications', 'search', 'offers', 'settings', 'docs'])
+
 export default function TabsLayout() {
+  const segments = useSegments() as string[]
+  const hidden = segments.some((s) => NO_TAB_BAR.has(s))
   return (
-    <NativeTabs minimizeBehavior="onScrollDown">
+    <NativeTabs minimizeBehavior="onScrollDown" hidden={hidden}>
       <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>홈</NativeTabs.Trigger.Label>
