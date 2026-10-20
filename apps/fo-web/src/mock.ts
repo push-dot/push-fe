@@ -1,6 +1,7 @@
 // Dev fixtures for ?mock=1 (or window.__PUSH__.mock), matching the Claude Design boards.
 // shortcut: every id returns the same sample; drop once push-be v2 serves these endpoints.
-import type { PostingDetail, Profile } from '@push/api-client'
+import type { PostingDetail, Profile, Session } from '@push/api-client'
+import { sessionStore } from './shared/auth/session'
 
 /** Fields the boards show but api-spec §4 doesn't define yet. */
 export type PostingView = PostingDetail & { industry?: string; preferred?: string[] }
@@ -73,11 +74,145 @@ export const mockFit: Fit = {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-export const mockFetch: typeof fetch = async (input) => {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-  const path = new URL(url, location.href).pathname
-  await new Promise((r) => setTimeout(r, 250))
-  if (/\/postings\/[^/]+$/.test(path)) return json(200, { data: posting })
-  if (/\/profiles\/[^/]+$/.test(path)) return json(200, { data: profile })
-  return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${path}` } })
+export type MockPersona = 'personal' | 'employer' | 'employer-pro' | 'employer-new'
+
+const PERSONAS: MockPersona[] = ['personal', 'employer', 'employer-pro', 'employer-new']
+
+let persona: MockPersona | null = null
+let signupEmail = ''
+
+export const mockPersona = () => persona
+
+export const setMockPersona = (value: string | null | undefined) => {
+  persona = PERSONAS.find((item) => item === value) ?? null
+}
+
+export const mockSession = (kind: MockPersona): Session => {
+  if (kind === 'employer' || kind === 'employer-pro') {
+    return {
+      accessToken: 'mock-access',
+      refreshToken: 'mock-refresh',
+      expiresIn: 900,
+      user: {
+        id: 'u1',
+        displayName: '모아페이',
+        locale: 'ko',
+        accountType: 'EMPLOYER',
+        companyId: 'co-1',
+        companyRole: 'ADMIN',
+      },
+    }
+  }
+  if (kind === 'employer-new') {
+    return {
+      accessToken: 'mock-access',
+      refreshToken: 'mock-refresh',
+      expiresIn: 900,
+      user: {
+        id: 'u1',
+        displayName: '새 담당자',
+        locale: 'ko',
+        accountType: 'EMPLOYER',
+        companyId: null,
+        companyRole: null,
+      },
+    }
+  }
+  return {
+    accessToken: 'mock-access',
+    refreshToken: 'mock-refresh',
+    expiresIn: 900,
+    user: {
+      id: 'u1',
+      displayName: '김서준',
+      locale: 'ko',
+      accountType: 'PERSONAL',
+      companyId: null,
+      companyRole: null,
+    },
+  }
+}
+
+const loginPersona = (email: string): MockPersona => {
+  if (email.startsWith('employer-new')) return 'employer-new'
+  if (email.startsWith('employer')) return 'employer'
+  return persona ?? 'personal'
+}
+
+const readJson = async (input: RequestInfo | URL, init?: RequestInit) => {
+  try {
+    if (input instanceof Request) return (await input.clone().json()) as Record<string, unknown>
+    if (typeof init?.body === 'string') return JSON.parse(init.body) as Record<string, unknown>
+    return {}
+  } catch {
+    return {}
+  }
+}
+
+const matches = (pathname: string, suffix: string) => pathname === suffix || pathname.endsWith(suffix)
+
+export const mockFetch: typeof fetch = async (input, init) => {
+  const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+  const pathname = new URL(requestUrl, typeof location === 'undefined' ? 'http://localhost' : location.href).pathname
+  const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
+  await new Promise((resolve) => setTimeout(resolve, 250))
+  if (/\/postings\/[^/]+$/.test(pathname)) return json(200, { data: posting })
+  if (/\/profiles\/[^/]+$/.test(pathname)) return json(200, { data: profile })
+  if (method === 'POST' && matches(pathname, '/auth/email/signup')) {
+    const payload = await readJson(input, init)
+    const email = String(payload.email ?? '')
+    if (email === 'taken@push.app') {
+      return json(409, {
+        error: { code: 'EMAIL_TAKEN', message: 'taken', details: { accountType: 'PERSONAL' } },
+      })
+    }
+    signupEmail = email
+    return new Response(null, { status: 202 })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/email/login')) {
+    const payload = await readJson(input, init)
+    const email = String(payload.email ?? '')
+    const password = String(payload.password ?? '')
+    if (password.length < 8 || email === 'bad@push.app') {
+      return json(401, { error: { code: 'INVALID_CREDENTIALS', message: 'no' } })
+    }
+    if (email === 'unverified@push.app') {
+      return json(403, { error: { code: 'EMAIL_NOT_VERIFIED', message: 'unverified' } })
+    }
+    return json(200, { data: mockSession(loginPersona(email)) })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/email/verify')) {
+    const payload = await readJson(input, init)
+    const token = String(payload.token ?? '')
+    if (token === 'bad') return json(400, { error: { code: 'INVALID_TOKEN', message: 'bad' } })
+    const kind = token === 'employer' || signupEmail.startsWith('employer') ? 'employer-new' : 'personal'
+    return json(200, { data: mockSession(kind) })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/email/password-reset/confirm')) {
+    return new Response(null, { status: 204 })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/email/password-reset')) {
+    return new Response(null, { status: 202 })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/exchange')) {
+    return json(200, { data: mockSession(persona ?? 'personal') })
+  }
+  if (method === 'GET' && matches(pathname, '/auth/me')) {
+    const user = sessionStore.load()?.user
+    return json(200, {
+      data: {
+        id: user?.id ?? 'u1',
+        displayName: user?.displayName ?? '김서준',
+        locale: user?.locale ?? 'ko',
+        createdAt: '2026-10-01T00:00:00.000Z',
+        accountType: user?.accountType ?? 'PERSONAL',
+        companyId: user?.companyId ?? null,
+        companyRole: user?.companyRole ?? null,
+      },
+    })
+  }
+  if (method === 'POST' && matches(pathname, '/auth/refresh')) {
+    return json(200, { data: sessionStore.load() ?? mockSession(persona ?? 'personal') })
+  }
+  return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${pathname}` } })
 }

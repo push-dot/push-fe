@@ -35,3 +35,9 @@ export const EMPLOYER_STAGE_ACTIONS = [
   { label: '합격', stage: 'OFFER' },
   { label: '불합격', stage: 'REJECTED' },
 ] as const
+
+export const PASSWORD_MIN = 8
+export const PASSWORD_MAX = 128
+export const PASSWORD_LENGTH_COPY = '비밀번호는 8자 이상이어야 해요'
+export const EMAIL_TAKEN_PERSONAL_COPY = '이 이메일은 개인 계정으로 가입되어 있어요'
+export const EMAIL_TAKEN_EMPLOYER_COPY = '이 이메일은 기업 계정으로 가입되어 있어요'

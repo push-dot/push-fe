@@ -16,7 +16,15 @@ declare global {
 
 export const pushEnv = (): PushEnv => (window.__PUSH__ ??= {})
 
-export const isMock = () => !!pushEnv().mock || new URLSearchParams(location.search).has('mock')
+export const isWebView = () => !!window.ReactNativeWebView
+
+let mockLatched = false
+
+export const isMock = () => {
+  if (mockLatched) return true
+  mockLatched = !!pushEnv().mock || new URLSearchParams(location.search).has('mock')
+  return mockLatched
+}
 
 window.addEventListener('push:token', (e) => {
   pushEnv().token = (e as CustomEvent<{ token?: string | null }>).detail?.token
