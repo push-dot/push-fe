@@ -1,14 +1,10 @@
-import * as Crypto from 'expo-crypto'
 import {
-  createClient,
   type DataEnvelope,
   type ListEnvelope,
   type Profile,
   type Source,
 } from '@push/api-client'
-import { API_BASE_URL, API_MOCK } from '../../lib/config'
-import { useSession } from '../../lib/session'
-import { mockFetch } from '../../mock'
+import { http } from '../../lib/api'
 
 export type CalendarEventType = 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'COFFEE_CHAT' | 'CUSTOM'
 export type CalendarEvent = {
@@ -32,14 +28,9 @@ export type ResumeDraft = {
   >
 }
 
-// shortcut: endpoints @push/api-client lacks (sources list, calendar, resume→profile draft) go through this
-// second client without token refresh; move them into @push/api-client once push-be ships them.
-const c = createClient({
-  baseUrl: API_BASE_URL,
-  getToken: () => useSession.getState().session?.accessToken,
-  fetch: API_MOCK ? mockFetch : undefined,
-  uuid: () => Crypto.randomUUID(),
-})
+// shortcut: endpoints @push/api-client lacks go through the shared client directly; move them into
+// @push/api-client once push-be ships them.
+const c = http
 
 export const myApi = {
   sources: () => c.get<ListEnvelope<Source>>('sources'),

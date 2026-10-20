@@ -1,8 +1,5 @@
-import * as Crypto from 'expo-crypto'
-import { createClient, type Conversation, type DataEnvelope, type ListEnvelope } from '@push/api-client'
-import { API_BASE_URL, API_MOCK } from '../../lib/config'
-import { useSession } from '../../lib/session'
-import { mockFetch } from '../../mock'
+import { type Conversation, type DataEnvelope, type ListEnvelope } from '@push/api-client'
+import { http } from '../../lib/api'
 import type { Step } from './types'
 
 /** Conversation plus the list badges (확인 필요 / 작업 중) and last progress line the design needs. */
@@ -51,14 +48,9 @@ export type RunInput = {
   interrupted?: boolean
 }
 
-// shortcut: endpoints @push/api-client lacks (scripted runs, 내 서류 list, account/credits, quick-start ingredients)
-// go through this second client without token refresh; move them into @push/api-client once push-be ships them.
-const c = createClient({
-  baseUrl: API_BASE_URL,
-  getToken: () => useSession.getState().session?.accessToken,
-  fetch: API_MOCK ? mockFetch : undefined,
-  uuid: () => Crypto.randomUUID(),
-})
+// shortcut: endpoints @push/api-client lacks go through the shared client directly; move them into
+// @push/api-client once push-be ships them.
+const c = http
 
 const data = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 

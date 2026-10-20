@@ -334,6 +334,10 @@ importers:
         version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.4)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.33.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)
 
   packages/api-client:
+    dependencies:
+      ky:
+        specifier: ^1.14.3
+        version: 1.14.3
     devDependencies:
       typescript:
         specifier: ~5.8.3
@@ -9510,9 +9514,7 @@ snapshots:
       metro-runtime: 0.87.1
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.88.0': {}
 

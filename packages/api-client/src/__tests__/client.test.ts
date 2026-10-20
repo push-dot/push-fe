@@ -7,32 +7,37 @@ import { readEvents } from '../sse'
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
+const reqOf = (call: unknown[]) => call[0] as Request
+
 describe('createClient', () => {
   it('adds bearer, idempotency key on POST, and comma-joins array query', async () => {
     const fetch = vi.fn(async () => json(200, { data: 1 }))
     const c = createClient({ baseUrl: 'http://x/api/v1/', getToken: () => 't', fetch, uuid: () => 'k1' })
     await c.post('postings/1/bookmark')
     await c.get('postings', { query: { category: ['dev', 'data'], q: '', limit: 20 } })
-    const [postUrl, postInit] = fetch.mock.calls[0] as unknown as [string, RequestInit]
-    expect(postUrl).toBe('http://x/api/v1/postings/1/bookmark')
-    expect(postInit.headers).toMatchObject({ Authorization: 'Bearer t', 'Idempotency-Key': 'k1' })
-    const [getUrl, getInit] = fetch.mock.calls[1] as unknown as [string, RequestInit]
-    expect(decodeURIComponent(getUrl)).toBe('http://x/api/v1/postings?category=dev,data&limit=20')
-    expect(getInit.headers).not.toHaveProperty('Idempotency-Key')
+    const post = reqOf(fetch.mock.calls[0]!)
+    expect(post.url).toBe('http://x/api/v1/postings/1/bookmark')
+    expect(post.headers.get('Authorization')).toBe('Bearer t')
+    expect(post.headers.get('Idempotency-Key')).toBe('k1')
+    const get = reqOf(fetch.mock.calls[1]!)
+    expect(decodeURIComponent(get.url)).toBe('http://x/api/v1/postings?category=dev,data&limit=20')
+    expect(get.headers.has('Idempotency-Key')).toBe(false)
   })
 
   it('refreshes once on 401 and retries with the same idempotency key', async () => {
     let token = 'old'
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(json(401, { error: { code: 'TOKEN_EXPIRED', message: 'x' } }))
-      .mockResolvedValueOnce(json(201, { data: { ok: true } }))
+    const bodies: string[] = []
+    const replies = [json(401, { error: { code: 'TOKEN_EXPIRED', message: 'x' } }), json(201, { data: { ok: true } })]
+    // Read the body at send time: the retry must resend the same JSON.
+    const fetch = vi.fn(async (req: RequestInfo | URL) => (bodies.push(await (req as Request).clone().text()), replies.shift()!))
     const refresh = vi.fn(async () => ((token = 'new'), true))
     const c = createClient({ baseUrl: 'http://x', getToken: () => token, refresh, fetch, uuid: () => 'k2' })
     await expect(c.post('posts', { body: { a: 1 } })).resolves.toEqual({ data: { ok: true } })
     expect(refresh).toHaveBeenCalledTimes(1)
-    const retry = fetch.mock.calls[1][1] as RequestInit
-    expect(retry.headers).toMatchObject({ Authorization: 'Bearer new', 'Idempotency-Key': 'k2' })
+    const retry = reqOf(fetch.mock.calls[1]!)
+    expect(retry.headers.get('Authorization')).toBe('Bearer new')
+    expect(retry.headers.get('Idempotency-Key')).toBe('k2')
+    expect(bodies).toEqual(['{"a":1}', '{"a":1}'])
   })
 
   it('throws ApiError with server code', async () => {

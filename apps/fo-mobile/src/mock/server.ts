@@ -30,10 +30,22 @@ const json = (status: number, body: unknown) =>
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export const mockFetch: typeof fetch = async (input, init) => {
-  const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url)
+  // ky passes a Request; plain callers pass (url, init).
+  const req = input instanceof Request ? input : new Request(input, init)
+  const url = new URL(req.url)
   const path = url.pathname.replace(/^.*\/api\/v1\//, '')
-  const method = (init?.method ?? 'GET').toUpperCase()
-  const body = typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body
+  const method = req.method.toUpperCase()
+  // RN's fetch polyfill keeps the original FormData on the Request; uploads need its parts, not text.
+  const form = (req as unknown as { _bodyFormData?: FormData })._bodyFormData
+  const text = form || method === 'GET' || method === 'HEAD' ? '' : await req.clone().text().catch(() => '')
+  const parse = (t: string) => {
+    try {
+      return JSON.parse(t) as unknown
+    } catch {
+      return t
+    }
+  }
+  const body: unknown = form ?? (text ? parse(text) : undefined)
   await delay(250)
   for (const r of routes) {
     if (r.method !== method) continue

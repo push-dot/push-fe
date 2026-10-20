@@ -1,3 +1,4 @@
+import ky, { HTTPError, type KyInstance } from 'ky'
 import { ApiError, type ApiErrorBody } from './errors'
 
 type Query = Record<string, string | number | boolean | string[] | undefined | null>
@@ -16,53 +17,71 @@ export type ClientConfig = {
   getToken: () => string | null | undefined | Promise<string | null | undefined>
   /** Called once on 401. Return true when a new token is ready so the request retries. */
   refresh?: () => Promise<boolean>
+  /** Swap the transport: expo/fetch for streaming on RN, or a mock in dev. */
   fetch?: typeof fetch
   uuid?: () => string
 }
 
 export type Client = ReturnType<typeof createClient>
 
-const toSearch = (query?: Query): string => {
-  if (!query) return ''
+const toSearch = (query?: Query) => {
   const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(query)) {
+  for (const [key, value] of Object.entries(query ?? {})) {
     if (value === undefined || value === null || value === '') continue
     // Multi-value filters are sent comma-joined (api-spec: category=a,b).
     params.set(key, Array.isArray(value) ? value.join(',') : String(value))
   }
-  const text = params.toString()
-  return text ? `?${text}` : ''
+  return params
 }
 
 export const createClient = (config: ClientConfig) => {
-  const doFetch = config.fetch ?? globalThis.fetch.bind(globalThis)
   const uuid = config.uuid ?? (() => globalThis.crypto.randomUUID())
-  const base = config.baseUrl.replace(/\/+$/, '')
 
-  const send = async (method: string, path: string, options: RequestOptions = {}, retried = false): Promise<Response> => {
-    const headers: Record<string, string> = { Accept: 'application/json', ...options.headers }
-    const token = await config.getToken()
-    if (token) headers.Authorization = `Bearer ${token}`
-    let body: BodyInit | undefined
-    if (options.form) body = options.form
-    else if (options.body !== undefined) {
-      headers['Content-Type'] = 'application/json'
-      body = JSON.stringify(options.body)
-    }
-    // Every authed POST needs a key; reuse the caller's key on retries.
+  const http: KyInstance = ky.create({
+    prefixUrl: config.baseUrl.replace(/\/+$/, ''),
+    fetch: config.fetch,
+    // Chat SSE streams stay open; callers pass a signal when they need to stop.
+    timeout: false,
+    // No automatic retries; the only retry is the forced one after a token refresh (limit 1).
+    retry: { limit: 1, methods: [], statusCodes: [] },
+    headers: { Accept: 'application/json' },
+    hooks: {
+      beforeRequest: [
+        async (request) => {
+          const token = await config.getToken()
+          if (token) request.headers.set('Authorization', `Bearer ${token}`)
+        },
+      ],
+      afterResponse: [
+        async (request, _options, response, { retryCount }) => {
+          if (response.status !== 401 || !config.refresh || retryCount > 0) return
+          if (!(await config.refresh())) return
+          const headers = new Headers(request.headers)
+          const token = await config.getToken()
+          if (token) headers.set('Authorization', `Bearer ${token}`)
+          // Headers are copied, so the original Idempotency-Key is kept on the retry.
+          return ky.retry({ request: new Request(request, { headers }), code: 'TOKEN_REFRESHED', delay: 0 })
+        },
+      ],
+    },
+  })
+
+  const send = async (method: string, path: string, options: RequestOptions = {}): Promise<Response> => {
+    const headers: Record<string, string> = { ...options.headers }
     const key = options.idempotencyKey ?? (method === 'POST' && !path.endsWith('/stream') ? uuid() : undefined)
     if (key) headers['Idempotency-Key'] = key
-    const res = await doFetch(`${base}/${path.replace(/^\/+/, '')}${toSearch(options.query)}`, {
-      method,
-      headers,
-      body,
-      signal: options.signal,
-    })
-    if (res.status === 401 && !retried && config.refresh && (await config.refresh())) {
-      return send(method, path, { ...options, idempotencyKey: key }, true)
+    try {
+      return await http(path.replace(/^\/+/, ''), {
+        method,
+        headers,
+        searchParams: toSearch(options.query),
+        json: options.form || options.body === undefined ? undefined : options.body,
+        body: options.form,
+        signal: options.signal,
+      })
+    } catch (error) {
+      throw await toApiError(error)
     }
-    if (!res.ok) throw await toError(res)
-    return res
   }
 
   const json = async <T>(method: string, path: string, options?: RequestOptions): Promise<T> => {
@@ -81,12 +100,17 @@ export const createClient = (config: ClientConfig) => {
   }
 }
 
-const toError = async (res: Response): Promise<ApiError> => {
-  try {
-    const body = (await res.json()) as { error?: ApiErrorBody }
-    if (body.error) return new ApiError(body.error.message, body.error.code, res.status, body.error.details)
-  } catch {
-    // fall through to a generic error
+const toApiError = async (error: unknown): Promise<ApiError> => {
+  if (error instanceof ApiError) return error
+  if (error instanceof HTTPError) {
+    try {
+      const body = (await error.response.clone().json()) as { error?: ApiErrorBody }
+      if (body.error) return new ApiError(body.error.message, body.error.code, error.response.status, body.error.details)
+    } catch {
+      // fall through to a generic error
+    }
+    return new ApiError(error.response.statusText || 'request failed', 'HTTP_ERROR', error.response.status)
   }
-  return new ApiError(res.statusText || 'request failed', 'HTTP_ERROR', res.status)
+  if (error instanceof Error && error.name === 'AbortError') return new ApiError('aborted', 'ABORTED', 0)
+  return new ApiError(error instanceof Error ? error.message : 'network error', 'NETWORK_ERROR', 0)
 }

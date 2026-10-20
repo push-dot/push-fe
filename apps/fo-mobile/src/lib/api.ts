@@ -25,7 +25,8 @@ const refresh = () => {
   return refreshing
 }
 
-const client = createClient({
+/** Shared ky-based client; screens with endpoints not yet in @push/api-client call it directly. */
+export const http = createClient({
   baseUrl: API_BASE_URL,
   getToken: () => useSession.getState().session?.accessToken,
   refresh,
@@ -34,4 +35,4 @@ const client = createClient({
   uuid: () => Crypto.randomUUID(),
 })
 
-export const api = createApi(client)
+export const api = createApi(http)
