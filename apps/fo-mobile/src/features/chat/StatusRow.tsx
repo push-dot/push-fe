@@ -14,11 +14,15 @@ type Props = { verbs: string[]; startedAt: number; onStop: () => void }
  */
 export function StatusRow({ verbs, startedAt, onStop }: Props) {
   const c = useColors()
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] = useState(() => Date.now())
   const [i, setI] = useState(0)
+  const [seen, setSeen] = useState(verbs)
+  if (verbs !== seen) {
+    setSeen(verbs)
+    setI(0)
+  }
   const shimmer = usePulse(true, 2000, 0.5)
   useEffect(() => {
-    setI(0)
     const tick = setInterval(() => setNow(Date.now()), 1000)
     const rotate = setInterval(() => setI((n) => n + 1), 2500)
     return () => (clearInterval(tick), clearInterval(rotate))

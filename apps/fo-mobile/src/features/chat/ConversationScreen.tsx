@@ -33,7 +33,8 @@ export function ConversationScreen({ id }: { id: string }) {
   const [docs, setDocs] = useState(false)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [qs, setQs] = useState<QuickStart | null>(null)
-  const [saying, setSaying] = useState(false)
+  // "말로 하기" applies to one approval; a new approval resets it.
+  const [sayingFor, setSayingFor] = useState<string>()
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
   const scroll = useRef<ScrollViewInstance>(null)
@@ -43,7 +44,7 @@ export function ConversationScreen({ id }: { id: string }) {
   useEffect(() => {
     hydrate(id).catch(() => undefined)
   }, [id])
-  useEffect(() => setSaying(false), [chat.approval?.id])
+  const saying = !!chat.approval && sayingFor === chat.approval.id
 
   const rename = useMutation({
     mutationFn: (title: string) => api.conversations.rename(id, conv!.revision, title),
@@ -136,7 +137,7 @@ export function ConversationScreen({ id }: { id: string }) {
               key={chat.approval!.id}
               approval={chat.approval!}
               onAnswer={(text, choice) => answer(id, text, choice)}
-              onSay={() => (setSaying(true), setTimeout(() => input.current?.focus(), 50))}
+              onSay={() => (setSayingFor(chat.approval?.id), setTimeout(() => input.current?.focus(), 50))}
             />
           ) : (
             <View style={{ paddingHorizontal: 12, paddingBottom: Math.max(insets.bottom, 6) }}>

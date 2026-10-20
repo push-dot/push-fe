@@ -101,7 +101,9 @@ export function Toast({ message, onHide, bottom }: { message: string | null; onH
   const c = useColors()
   const insets = useSafeAreaInsets()
   const hide = useRef(onHide)
-  hide.current = onHide
+  useEffect(() => {
+    hide.current = onHide
+  })
   useEffect(() => {
     if (!message) return
     const t = setTimeout(() => hide.current(), 3000)

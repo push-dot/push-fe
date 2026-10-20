@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, Share, View } from 'react-native'
 import { fontFor, useColors, type Colors } from '../../theme'
 import { Badge, Button, Glass, Icon, Text } from '../../ui'
@@ -275,7 +275,7 @@ function Diff({ item }: { item: Of<'diff'> }) {
 function Bar({ pct, low, height = 8, delay = 150 }: { pct: number; low?: boolean; height?: number; delay?: number }) {
   const c = useColors()
   const reduce = useReduceMotion()
-  const v = useRef(new Animated.Value(reduce ? 1 : 0)).current
+  const v = useState(() => new Animated.Value(reduce ? 1 : 0))[0]
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: reduce ? 0 : 900, delay, easing: Easing.bezier(0.2, 0.8, 0.2, 1), useNativeDriver: false }).start()
   }, [v, reduce, delay])
@@ -450,14 +450,14 @@ export function Glyph({ still, size = 17, color }: { still?: boolean; size?: num
   const frames = ['·', '✢', '✳', '✶', '✻', '✽']
   const [i, setI] = useState(4)
   useEffect(() => {
-    if (still || reduce) return setI(4)
+    if (still || reduce) return
     // 6 frames per 1.1s, stepped.
     const t = setInterval(() => setI((n) => (n + 1) % frames.length), 1100 / frames.length)
     return () => clearInterval(t)
   }, [still, reduce, frames.length])
   return (
     <Text style={{ width: size + 1, textAlign: 'center', fontSize: size, lineHeight: 20, color: color ?? c.ac }} accessibilityElementsHidden>
-      {frames[i]}
+      {frames[still || reduce ? 4 : i]}
     </Text>
   )
 }

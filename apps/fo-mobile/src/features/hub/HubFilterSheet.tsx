@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { CAREER_STATUSES, TENURES, type JobCategory } from '@push/api-client'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Pressable, View } from 'react-native'
 import { api } from '../../lib/api'
 import { BottomSheet, Chip, Text } from '../../ui'
@@ -30,9 +30,12 @@ const useTotal = (key: unknown[], query: Parameters<typeof api.profiles.list>[0]
 /** 허브 · 필터 sheet. Edits a draft; "프로필 N개 보기" applies it with the live total. */
 export function HubFilterSheet({ visible, onClose, category, value, onApply }: Props) {
   const [draft, setDraft] = useState(value)
-  useEffect(() => {
+  // Start each opening from the applied filters.
+  const [opened, setOpened] = useState({ visible, value })
+  if (opened.visible !== visible || opened.value !== value) {
+    setOpened({ visible, value })
     if (visible) setDraft(value)
-  }, [visible, value])
+  }
 
   const total = useTotal([category, draft], profileQuery(category, draft), visible)
   const sent = useTotal(['offers'], { explore: 'offers' }, visible)

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors } from '../../theme'
 import { Badge, BottomSheet, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '../../ui'
@@ -30,12 +30,14 @@ function Sheet({ qs, onClose }: { qs: QuickStart; onClose: () => void }) {
   const [task, setTask] = useState(0)
   const [custom, setCustom] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!d) return
+  // Reset the picks when new quick-start data arrives (adjusting state during render, not in an effect).
+  const [seen, setSeen] = useState(d)
+  if (d && d !== seen) {
+    setSeen(d)
     setSel(d.items.filter((i) => i.selected).map((i) => i.id))
     setChips(d.chips ?? [])
     setDoc(d.doc)
-  }, [d])
+  }
 
   const visible = d?.items.filter((i) => (i.seg ?? 0) === seg) ?? []
   const picked = qs.layout === 'deadline' || qs.layout === 'calendar' ? (d?.items ?? []) : (d?.items ?? []).filter((i) => sel.includes(i.id))

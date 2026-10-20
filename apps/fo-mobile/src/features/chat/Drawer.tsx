@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { api } from '../../lib/api'
-import { useSession } from '../../lib/session'
 import { useColors } from '../../theme'
 import { Badge, GlassButton, Icon, Text, type IconName } from '../../ui'
 import { AccountModal } from './AccountModal'
@@ -27,7 +25,7 @@ export function ChatDrawer({ visible, onClose, currentId }: { visible: boolean; 
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const reduce = useReduceMotion()
-  const x = useRef(new Animated.Value(0)).current
+  const x = useState(() => new Animated.Value(0))[0]
   const [sheet, setSheet] = useState<Sheet>(null)
   const me = useMe()
   const account = useQuery({ queryKey: ['chat', 'account'], queryFn: chatApi.account, enabled: visible })

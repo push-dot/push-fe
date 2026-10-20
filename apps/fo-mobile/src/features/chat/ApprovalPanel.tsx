@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Animated, Platform, Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { radius, useColors } from '../../theme'
@@ -23,7 +23,7 @@ export function ApprovalPanel({ approval, onAnswer, onSay }: Props) {
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
   const reduce = useReduceMotion()
-  const rise = useRef(new Animated.Value(0)).current
+  const rise = useState(() => new Animated.Value(0))[0]
   const [sel, setSel] = useState(() => approval.sections.map((s) => ('selected' in s ? s.selected : [])))
   const numbered = !approval.submit && approval.sections.length === 1 && approval.sections[0]!.kind === 'choices' && !approval.sections[0]!.multi
 

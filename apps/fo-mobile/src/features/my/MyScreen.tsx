@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
 import { useColors } from '../../theme'
 import { SegmentedControl } from '../../ui'
@@ -26,10 +26,13 @@ export function MyScreen() {
   const [tab, setTab] = useState<Tab>(asTab(params.tab))
   const [sub, setSub] = useState<ActivitySub>(asSub(params.sub))
 
-  useEffect(() => {
+  // Apply new deep-link params (adjusting state during render, not in an effect).
+  const [seen, setSeen] = useState(params)
+  if (seen.tab !== params.tab || seen.sub !== params.sub) {
+    setSeen(params)
     if (params.tab) setTab(asTab(params.tab))
     if (params.sub) setSub(asSub(params.sub))
-  }, [params.tab, params.sub])
+  }
 
   // Keep params in sync so a later deep link with the same values still applies.
   const pick = (t: Tab) => {
