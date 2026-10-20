@@ -1,7 +1,8 @@
 import { fetch as expoFetch } from 'expo/fetch'
 import * as Crypto from 'expo-crypto'
 import { createApi, createClient } from '@push/api-client'
-import { API_BASE_URL } from './config'
+import { API_BASE_URL, API_MOCK } from './config'
+import { mockFetch } from '../mock'
 import { useSession } from './session'
 
 let refreshing: Promise<boolean> | null = null
@@ -29,7 +30,7 @@ const client = createClient({
   getToken: () => useSession.getState().session?.accessToken,
   refresh,
   // expo/fetch exposes a ReadableStream body, needed for chat SSE.
-  fetch: expoFetch as unknown as typeof fetch,
+  fetch: API_MOCK ? mockFetch : (expoFetch as unknown as typeof fetch),
   uuid: () => Crypto.randomUUID(),
 })
 

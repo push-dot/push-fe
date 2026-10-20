@@ -11,3 +11,6 @@ dist-ssr
 test-results
 playwright-report
 lighthouse
+
+# Claude Design exports (local reference, regenerated from the design)
+.design-ref

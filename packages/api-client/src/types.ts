@@ -39,6 +39,8 @@ export type PostingDetail = Posting & {
 
 export type PostingFilters = PageParams & {
   q?: string
+  /** latest (default) · deadline (마감 7일 이내, 임박순) · popular (이번 주 많이 본) */
+  sort?: 'latest' | 'deadline' | 'popular'
   category?: JobCategory[]
   skills?: string[]
   careerYears?: CareerYears[]
