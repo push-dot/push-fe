@@ -17,6 +17,12 @@ export const signIn = async (provider: 'google' | 'github') => {
   return true
 }
 
+/** The server revokes every token, so only the local session needs clearing. */
+export const deleteAccount = async () => {
+  await api.me.deleteAccount()
+  await useSession.getState().set(null)
+}
+
 export const signOut = async () => {
   const { session, set } = useSession.getState()
   if (session?.refreshToken) await api.auth.logout(session.refreshToken).catch(() => undefined)

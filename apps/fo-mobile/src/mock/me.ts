@@ -474,6 +474,7 @@ let settings: Settings = {
   chatRetentionDays: 30,
   allowAiReadMyFiles: true,
 }
+mock('DELETE', 'me', () => null)
 mock('GET', 'me/settings', () => ({ data: settings }))
 mock('PATCH', 'me/settings', ({ body }) => {
   settings = { ...settings, ...(body as Partial<Settings>) }

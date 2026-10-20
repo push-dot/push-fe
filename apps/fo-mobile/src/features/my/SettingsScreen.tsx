@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, View } from 'react-native'
 import type { Settings, Tone } from '@push/api-client'
 import { api } from '../../lib/api'
-import { signOut } from '../../lib/auth'
+import { deleteAccount, signOut } from '../../lib/auth'
 import { useColors } from '../../theme'
 import {
   BottomSheet,
@@ -241,6 +241,20 @@ export function SettingsScreen() {
       { text: '취소', style: 'cancel' },
       { text: '로그아웃', style: 'destructive', onPress: () => void signOut() },
     ])
+  const withdraw = () =>
+    Alert.alert(
+      '회원 탈퇴할까요?',
+      '유료 구독은 바로 해지돼요. 30일 안에 다시 로그인하면 계정이 복구되고, 30일이 지나면 이력서·서류·글·댓글이 모두 삭제돼요. 삭제된 뒤에는 되돌릴 수 없어요.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '탈퇴',
+          style: 'destructive',
+          onPress: () =>
+            void deleteAccount().catch(() => Alert.alert('탈퇴하지 못했어요', '잠시 후 다시 시도해 주세요.')),
+        },
+      ],
+    )
 
   return (
     <Screen title="설정">
@@ -328,6 +342,7 @@ export function SettingsScreen() {
         <SettingsRow label="고객센터" right={<Icon name="chev" size={18} color="t4" />} />
         <SettingsRow label="약관 및 정책" right={<Icon name="chev" size={18} color="t4" />} />
         <SettingsRow label="로그아웃" danger onPress={logout} right={<View />} />
+        <SettingsRow label="회원 탈퇴" danger onPress={withdraw} right={<View />} />
       </SettingsGroup>
 
       <Pick

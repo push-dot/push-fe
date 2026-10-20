@@ -46,6 +46,8 @@ export const createApi = (c: Client) => ({
   },
 
   me: {
+    /** Marks the account for deletion (30-day grace; logging in again restores it). */
+    deleteAccount: () => c.delete<void>('me'),
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
