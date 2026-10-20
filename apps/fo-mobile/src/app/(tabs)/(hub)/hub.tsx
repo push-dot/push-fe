@@ -1,10 +1,3 @@
-import { Text, View } from 'react-native'
+import { HubScreen } from '../../../features/hub/HubScreen'
 
-// Placeholder until the Claude Design screen is implemented.
-export default function Screen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>허브</Text>
-    </View>
-  )
-}
+export default HubScreen
