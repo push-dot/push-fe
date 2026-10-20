@@ -4,7 +4,6 @@ import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native'
 import type { Source } from '@push/api-client'
-import { api } from '../../lib/api'
 import { useColors } from '../../theme'
 import { BottomSheet, Button, Icon, Text, type IconName } from '../../ui'
 import { myApi } from './api'
@@ -65,17 +64,9 @@ const useUpload = (onDone: () => void) => {
       () => setUpload((u) => u && { ...u, progress: u.progress + (0.9 - u.progress) * 0.12 }),
       200,
     )
-    const form = new FormData()
-    // React Native FormData takes a { uri, name, type } file descriptor.
-    form.append('file', {
-      uri: file.uri,
-      name: file.name,
-      type: file.mimeType ?? 'application/pdf',
-      size,
-    } as unknown as Blob)
     try {
-      const s = await api.sources.upload(form)
-      if (cancelled.current) await api.sources.remove(s.id).catch(() => undefined)
+      const s = await myApi.upload(file)
+      if (cancelled.current) await myApi.remove(s.id).catch(() => undefined)
       else onDone()
     } catch {
       if (!cancelled.current)
@@ -153,7 +144,7 @@ export function DocMenu({
 }) {
   const qc = useQueryClient()
   const remove = useMutation({
-    mutationFn: (id: string) => api.sources.remove(id),
+    mutationFn: (id: string) => myApi.remove(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['me', 'sources'] })
       onClose()

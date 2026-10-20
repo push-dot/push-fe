@@ -1,5 +1,6 @@
 import { Image } from 'expo-image'
 import { View } from 'react-native'
+import { assetUrl } from '../../lib/config'
 import { Text } from '../../ui'
 import { givenName } from './filters'
 
@@ -11,7 +12,7 @@ const fillFor = (id: string) => FILLS[[...id].reduce((n, ch) => n + ch.charCodeA
 /** Round avatar: photo when present, otherwise the given name on a stable color. */
 export function Avatar({ userId, name, url, size }: { userId: string; name: string; url?: string | null; size: number }) {
   const box = { width: size, height: size, borderRadius: size / 2 }
-  if (url) return <Image source={url} style={box} accessibilityIgnoresInvertColors />
+  if (url) return <Image source={assetUrl(url)} style={box} accessibilityIgnoresInvertColors />
   return (
     <View style={[box, { backgroundColor: fillFor(userId), alignItems: 'center', justifyContent: 'center' }]}>
       <Text weight="700" style={{ color: '#FFFFFF', fontSize: size / 3, lineHeight: size / 2.2 }}>

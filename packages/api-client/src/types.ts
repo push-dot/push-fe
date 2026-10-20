@@ -1,11 +1,11 @@
-// Shapes follow docs/api-spec.md. Section 4 (v2) is an unconfirmed draft.
+// Shapes follow what push-be actually serves (core-api routes/recruiting.ts, ai routers).
 
 export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: number }
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
 
-export type JobCategory = 'dev' | 'data' | 'design' | 'planning' | 'marketing' | 'sales' | 'hr' | 'management'
+export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sales' | 'hr' | 'ops'
 export type CareerYears = '0' | '1-3' | '4-6' | '7-9' | '10+'
 export type EmploymentType = 'full_time' | 'contract' | 'intern' | 'freelance' | 'dispatch'
 export type CareerStatus = 'satisfied' | 'seeking' | 'feedback'
@@ -34,12 +34,13 @@ export type Posting = {
 export type PostingDetail = Posting & {
   description: string
   requirements: string[]
-  workConditions: string[]
+  /** Free-form object (e.g. { 근무: '주 5일' }); render with workConditionLines. */
+  workConditions: Record<string, unknown>
 }
 
 export type PostingFilters = PageParams & {
   q?: string
-  /** latest (default) · deadline (마감 7일 이내, 임박순) · popular (이번 주 많이 본) */
+  /** latest (default) · deadline (마감 7일 이내, 임박순) · popular (이번 주 많이 본). push-be ignores it today (always latest). */
   sort?: 'latest' | 'deadline' | 'popular'
   category?: JobCategory[]
   skills?: string[]
@@ -55,9 +56,10 @@ export type Profile = {
   displayName: string
   avatarUrl: string | null
   headline: string
-  jobCategory: JobCategory
-  tenureYears: number
-  careerStatus: CareerStatus
+  /** null until the user fills the profile. careerStatus is also null when hidden by careerStatusVisibility. */
+  jobCategory: JobCategory | null
+  tenureYears: number | null
+  careerStatus: CareerStatus | null
   openToOffers: boolean
   intro: string
   careers: Career[]
@@ -72,20 +74,23 @@ export type Profile = {
 export type ProfileFilters = PageParams & {
   q?: string
   category?: JobCategory[]
-  tenure?: Tenure[]
-  status?: CareerStatus[]
+  /** push-be takes one tenure bucket and one status (no comma lists). */
+  tenure?: Tenure
+  status?: CareerStatus
   explore?: 'recommended' | 'offers'
 }
 
 export type UserRef = { id: string; displayName: string; avatarUrl?: string | null }
 
 export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
+/** Offers embed a posting stub; fetch postings/:id for the rest. */
+export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'>
 export type Offer = {
   id: string
   sender: UserRef & { affiliation?: string }
   recipient: UserRef
   message: string
-  posting: Posting | null
+  posting: OfferPosting | null
   status: OfferStatus
   readAt: string | null
   createdAt: string
@@ -103,6 +108,7 @@ export type Post = {
   viewCount: number
   createdAt: string
 }
+// shortcut: push-be has no comment threads (parentId is dropped, replies come back as top-level); keep until it adds them.
 export type Comment = { id: string; author: UserRef; body: string; parentId?: string | null; createdAt: string }
 
 export type LinkKind = 'job' | 'github' | 'portfolio' | 'blog' | 'other'
@@ -137,13 +143,15 @@ export type Settings = {
   profilePublic: boolean
   careerStatusVisibility: 'everyone' | 'followers' | 'private'
   hideFromCurrentCompany: boolean
-  contactVisibility: 'everyone' | 'accepted'
+  contactVisibility: 'everyone' | 'followers' | 'accepted' | 'private'
   defaultTone: Tone
-  chatRetentionDays: number
+  /** null = unlimited (ULTRA only). */
+  chatRetentionDays: number | null
   allowAiReadMyFiles: boolean
 }
 
 // Existing APIs (implemented in push-be).
+/** createdAt is missing on the upload response, present on GET sources/:id. */
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
 
 export type ApplicationStage =
@@ -192,6 +200,14 @@ export type StreamEvent =
   | { type: 'status'; text: string; seq?: number }
   | { type: 'done'; operation: unknown; seq?: number }
   | { type: 'error'; error: { code: string; message: string; details?: unknown }; seq?: number }
+
+export type BillingStatus = {
+  subscriptionStatus: string
+  plan: 'FREE' | 'PRO' | 'ULTRA' | null
+  periodEndsAt: string | null
+  balanceMicroCredits: number
+  reservedMicroCredits: number
+}
 
 export type Session = {
   accessToken: string

@@ -21,9 +21,11 @@ const ym = (iso: string) => `${Number(iso.slice(0, 4))}년 ${Number(iso.slice(5,
 export const periodLabel = (c: Pick<Career, 'startedOn' | 'endedOn'>) =>
   `${ym(c.startedOn)} – ${c.endedOn ? ym(c.endedOn) : '현재'}`
 
-/** "개발 · 4년차" */
-export const roleLabel = (category: JobCategory, years: number) =>
-  `${JOB_CATEGORIES.find((c) => c.key === category)?.label ?? category} · ${years}년차`
+/** "개발 · 4년차"; parts the profile hasn't filled are left out. */
+export const roleLabel = (category: JobCategory | null, years: number | null) =>
+  [category && (JOB_CATEGORIES.find((c) => c.key === category)?.label ?? category), years == null ? null : `${years}년차`]
+    .filter(Boolean)
+    .join(' · ')
 
 /** Avatar initials: given name for 3+ syllable Korean names ("이하은" → "하은"). */
 export const initials = (name: string) => ([...name].length >= 3 ? [...name].slice(-2).join('') : name)

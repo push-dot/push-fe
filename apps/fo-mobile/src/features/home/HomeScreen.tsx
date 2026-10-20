@@ -3,6 +3,7 @@ import { router, type Href } from 'expo-router'
 import { ActivityIndicator, FlatList, Pressable, ScrollView, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { api } from '../../lib/api'
+import { API_MOCK } from '../../lib/config'
 import { useColors } from '../../theme'
 import { GlassButton, Icon, Icon3D, JobCard, Text, TopBar, Wordmark, type Icon3DName } from '../../ui'
 import { useToggleBookmark } from '../jobs/queries'
@@ -15,6 +16,10 @@ const SHORTCUTS: { label: string; icon: Icon3DName; glow: string; opacity: numbe
   { label: '북마크', icon: 'bookmark', glow: '#FF8A2A', opacity: 0.28, href: { pathname: '/(tabs)/(my)/my', params: { tab: 'activity', sub: 'bookmarks' } } },
   { label: '내 활동', icon: 'chart', glow: '#12A866', opacity: 0.26, href: { pathname: '/(tabs)/(my)/my', params: { tab: 'activity', sub: 'applications' } } },
 ]
+
+// shortcut: push-be ignores ?sort (always newest), so 마감 임박 / 많이 본 would repeat 새로 올라온; shown in mock only
+// until push-be sorts by deadline and views.
+const HOME_SECTIONS: SectionKind[] = API_MOCK ? ['latest', 'deadline', 'popular'] : ['latest']
 
 /** 홈: Push. header, three 3D shortcut cards, then 새로 올라온 · 마감 임박 · 많이 본 공고 rows. */
 export function HomeScreen() {
@@ -39,7 +44,7 @@ export function HomeScreen() {
             <Shortcut key={s.label} {...s} />
           ))}
         </View>
-        {(['latest', 'deadline', 'popular'] as const).map((k) => (
+        {HOME_SECTIONS.map((k) => (
           <Section key={k} kind={k} />
         ))}
       </ScrollView>

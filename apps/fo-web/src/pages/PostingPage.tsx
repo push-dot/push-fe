@@ -1,6 +1,6 @@
-import { EMPLOYMENT_TYPES } from '@push/api-client'
+import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
 import { useParams } from 'react-router-dom'
-import { api } from '../api'
+import { api, assetUrl } from '../api'
 import { send } from '../bridge'
 import { brandOf, careerLabel, dDay } from '../format'
 import type { PostingView } from '../mock'
@@ -19,7 +19,7 @@ export function PostingPage() {
       <header className="head">
         <div className="company">
           {p.imageUrl ? (
-            <img className="logo" src={p.imageUrl} alt="" />
+            <img className="logo" src={assetUrl(p.imageUrl)} alt="" />
           ) : (
             <div className="logo" style={{ background: brandOf(p.company) }} aria-hidden="true">
               {[...p.company][0]}
@@ -40,7 +40,7 @@ export function PostingPage() {
       <Section title="하는 일" items={duties} />
       <Section title="자격 요건" items={p.requirements} />
       <Section title="우대 사항" items={p.preferred ?? []} />
-      <Section title="근무 조건" items={p.workConditions} />
+      <Section title="근무 조건" items={workConditionLines(p.workConditions)} />
       {p.sourceUrl ? (
         <a
           className="c1 w6 source"

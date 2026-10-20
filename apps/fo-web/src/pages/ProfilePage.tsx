@@ -1,6 +1,6 @@
 import { CAREER_STATUSES } from '@push/api-client'
 import { useParams } from 'react-router-dom'
-import { api } from '../api'
+import { api, assetUrl } from '../api'
 import { brandOf, initials, periodLabel, roleLabel } from '../format'
 import { useDetail } from '../useDetail'
 import { Status } from './Section'
@@ -14,7 +14,7 @@ export function ProfilePage() {
     <main className="page profile">
       <header className="profile-head">
         {p.avatarUrl ? (
-          <img className="av" src={p.avatarUrl} alt="" />
+          <img className="av" src={assetUrl(p.avatarUrl)} alt="" />
         ) : (
           <div className="av" style={{ background: brandOf(p.displayName) }} aria-hidden="true">
             {initials(p.displayName)}
@@ -23,7 +23,7 @@ export function ProfilePage() {
         <h1 className="h1">{p.displayName}</h1>
         <span className="b2 t2">{p.headline}</span>
         <span className="badges">
-          <span className="badge grey">{roleLabel(p.jobCategory, p.tenureYears)}</span>
+          {p.jobCategory || p.tenureYears != null ? <span className="badge grey">{roleLabel(p.jobCategory, p.tenureYears)}</span> : null}
           {status ? <span className={`badge ${p.careerStatus === 'seeking' ? 'ac' : 'grey'}`}>{status}</span> : null}
         </span>
       </header>

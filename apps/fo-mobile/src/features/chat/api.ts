@@ -1,5 +1,8 @@
 import { type Conversation, type DataEnvelope, type ListEnvelope } from '@push/api-client'
-import { http } from '../../lib/api'
+import { api, http } from '../../lib/api'
+import { API_MOCK } from '../../lib/config'
+import { myApi, type PickedFile } from '../my/api'
+import { QS_NEEDS, quickStartFrom, type QsSources } from './quickStartData'
 import type { Step } from './types'
 
 /** Conversation plus the list badges (확인 필요 / 작업 중) and last progress line the design needs. */
@@ -8,9 +11,11 @@ export type ConversationRow = Conversation & { status?: 'NEEDS_APPROVAL' | 'RUNN
 export type ChatDoc = { id: string; fileName: string; size: number; createdAt: string; aiMade?: boolean }
 
 export type Account = {
-  email: string
+  /** null in real mode: push-be doesn't return the email. */
+  email: string | null
   plan: 'FREE' | 'PRO' | 'ULTRA'
-  credits: { used: number; total: number }
+  /** null in real mode: push-be has a balance but no plan quota to show used/total against. */
+  credits: { used: number; total: number } | null
 }
 
 export type QsItem = {
@@ -54,14 +59,41 @@ const c = http
 
 const data = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
+/** 내 서류 for chat: the same list as 마이 › 서류. */
+const realDocs = async (): Promise<ChatDoc[]> =>
+  (await myApi.sources()).data.map((s) => ({ id: s.id, fileName: s.fileName, size: s.size, createdAt: s.createdAt ?? new Date().toISOString() }))
+
+const load: { [K in keyof QsSources]-?: () => Promise<QsSources[K]> } = {
+  bookmarks: async () => (await api.me.bookmarks({ limit: 50 })).data,
+  applications: async () => (await api.applications.list({ limit: 50 })).data,
+  offers: async () => (await api.me.offers('received', { limit: 50 })).data,
+  follows: async () => (await api.me.follows({ limit: 50 })).data,
+  doc: async () => (await realDocs())[0]?.fileName,
+  connected: () => myApi.googleConnected(),
+}
+
 export const chatApi = {
   conversations: (q: { limit?: number } = {}) => c.get<ListEnvelope<ConversationRow>>('conversations', { query: q }),
   /** Mock-only: the scripted agent run for one message or approval answer. */
   run: (body: RunInput) => data(c.post<DataEnvelope<Step[]>>('chat/runs', { body })),
-  docs: () => data(c.get<DataEnvelope<ChatDoc[]>>('chat/docs')),
-  // shortcut: records name/size only; switch to api.sources.upload once 내 서류 lists sources.
-  addDoc: (body: { fileName: string; size: number }) => data(c.post<DataEnvelope<ChatDoc>>('chat/docs', { body })),
-  checkout: (planId: 'PRO' | 'ULTRA') => data(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
-  account: () => data(c.get<DataEnvelope<Account>>('chat/account')),
-  quickStart: (key: string) => data(c.get<DataEnvelope<QsData>>(`chat/quick-starts/${key}`)),
+  // shortcut: push-be has no chat/docs; real mode reads 마이 › 서류 (myApi.sources) and uploads there.
+  docs: () => (API_MOCK ? data(c.get<DataEnvelope<ChatDoc[]>>('chat/docs')) : realDocs()),
+  addDoc: async (file: PickedFile) => {
+    if (API_MOCK) return data(c.post<DataEnvelope<ChatDoc>>('chat/docs', { body: { fileName: file.name, size: file.size ?? 0 } }))
+    await myApi.upload(file)
+  },
+  checkout: (planId: 'PRO' | 'ULTRA') => api.billing.checkout(planId),
+  // shortcut: push-be has no account summary (email, credit quota); real mode shows the billing plan only.
+  account: async (): Promise<Account> => {
+    if (API_MOCK) return data(c.get<DataEnvelope<Account>>('chat/account'))
+    const b = await api.billing.status()
+    return { email: null, plan: b.plan ?? 'FREE', credits: null }
+  },
+  // shortcut: push-be has no chat/quick-starts; real mode assembles each sheet from existing lists (quickStartFrom).
+  quickStart: async (key: string): Promise<QsData> => {
+    if (API_MOCK) return data(c.get<DataEnvelope<QsData>>(`chat/quick-starts/${key}`))
+    const needs = QS_NEEDS[key] ?? []
+    const got = await Promise.all(needs.map((k) => load[k]().catch(() => undefined)))
+    return quickStartFrom(key, Object.fromEntries(needs.map((k, i) => [k, got[i]])))
+  },
 }

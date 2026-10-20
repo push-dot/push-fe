@@ -39,7 +39,7 @@ export const profiles: Profile[] = [
   base({ userId: 'u5', displayName: '정민재', headline: '쿠버네티스 운영이 즐거운 DevOps', tenureYears: 4, careerStatus: 'satisfied', skills: ['Kubernetes', 'AWS'] }),
   base({ userId: 'u6', displayName: '한서연', headline: '실험으로 증명하는 프로덕트 디자이너', jobCategory: 'design', tenureYears: 6, careerStatus: 'seeking', skills: ['Figma'] }),
   base({ userId: 'u7', displayName: '오지훈', headline: '추천 랭킹을 고민하는 데이터 분석가', jobCategory: 'data', tenureYears: 2, careerStatus: 'feedback', skills: ['SQL', 'Python'] }),
-  base({ userId: 'u8', displayName: '윤채원', headline: '0→1 서비스를 기획하는 PM', jobCategory: 'planning', tenureYears: 8, careerStatus: 'satisfied' }),
+  base({ userId: 'u8', displayName: '윤채원', headline: '0→1 서비스를 기획하는 PM', jobCategory: 'plan', tenureYears: 8, careerStatus: 'satisfied' }),
   base({ userId: 'u9', displayName: '강현우', headline: '퍼포먼스 마케팅과 그로스 실험', jobCategory: 'marketing', tenureYears: 3, careerStatus: 'seeking' }),
   base({ userId: 'u10', displayName: '서지민', headline: 'B2B SaaS 세일즈를 이끌어요', jobCategory: 'sales', tenureYears: 11, careerStatus: 'satisfied' }),
   base({ userId: 'u11', displayName: '임도현', headline: 'Go로 트래픽을 견디는 서버를 만들어요', tenureYears: 7, careerStatus: 'seeking', skills: ['Go', 'gRPC'] }),
@@ -55,11 +55,12 @@ const notFound = { status: 404, body: { error: { code: 'NOT_FOUND', message: '�
 mock('GET', 'profiles', ({ query }) => {
   let list = profiles
   const cats = csv(query, 'category')
-  if (cats.length) list = list.filter((p) => cats.includes(p.jobCategory))
-  const tenure = csv(query, 'tenure')
-  if (tenure.length) list = list.filter((p) => tenure.includes(tenureOf(p.tenureYears)))
-  const status = csv(query, 'status')
-  if (status.length) list = list.filter((p) => status.includes(p.careerStatus))
+  if (cats.length) list = list.filter((p) => p.jobCategory && cats.includes(p.jobCategory))
+  // push-be takes a single tenure / status value.
+  const tenure = query.get('tenure')
+  if (tenure) list = list.filter((p) => p.tenureYears != null && tenureOf(p.tenureYears) === tenure)
+  const status = query.get('status')
+  if (status) list = list.filter((p) => p.careerStatus === status)
   // shortcut: 추천 returns everyone (no "my 직군" in the mock); the real API matches the viewer's category.
   if (query.get('explore') === 'offers') list = list.filter((p) => offers.has(p.userId))
   const q = query.get('q') ?? ''

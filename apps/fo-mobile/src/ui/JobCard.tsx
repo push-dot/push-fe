@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'expo-image'
 import { Pressable, View } from 'react-native'
 import type { Posting } from '@push/api-client'
+import { assetUrl } from '../lib/config'
 import { radius } from '../theme'
 import { Icon } from './Icon'
 import { Text } from './Text'
@@ -27,7 +28,7 @@ export function JobCard({ posting: p, width = 200, onPress, onBookmark }: Props)
     <Pressable accessibilityRole="button" accessibilityLabel={`${p.company} ${p.title}`} onPress={onPress} style={{ width, gap: 10 }}>
       <View style={{ height: Math.round((width * 136) / 200), borderRadius: radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
         {p.imageUrl ? (
-          <Image source={{ uri: p.imageUrl }} style={{ position: 'absolute', inset: 0 }} contentFit="cover" />
+          <Image source={{ uri: assetUrl(p.imageUrl) }} style={{ position: 'absolute', inset: 0 }} contentFit="cover" />
         ) : (
           <>
             <LinearGradient colors={[brand, `${brand}B3`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', inset: 0 }} />

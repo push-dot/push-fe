@@ -16,12 +16,13 @@ export const mock = (method: string, pattern: string, handler: Handler) => {
   routes.push({ method, re, keys, handler })
 }
 
-export const page = <T>(items: T[], query: URLSearchParams) => {
+/** Cursor page like push-be. Only GET postings reports `total`, so other lists leave it out too. */
+export const page = <T>(items: T[], query: URLSearchParams, withTotal = false) => {
   const limit = Number(query.get('limit') ?? 20)
   const start = Number(query.get('cursor') ?? 0)
   const slice = items.slice(start, start + limit)
   const next = start + limit < items.length ? String(start + limit) : null
-  return { data: slice, page: { nextCursor: next, hasMore: next !== null, total: items.length } }
+  return { data: slice, page: { nextCursor: next, hasMore: next !== null, ...(withTotal ? { total: items.length } : {}) } }
 }
 
 const json = (status: number, body: unknown) =>

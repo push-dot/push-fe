@@ -67,8 +67,8 @@ export function ProfileTab() {
           </Text>
         ) : null}
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
-          <Badge label={`${job} · ${tenureLabel(p.tenureYears)}`} tone="grey" />
-          <Badge label={status} tone={p.careerStatus === 'seeking' ? 'ac' : 'grey'} />
+          {job || p.tenureYears != null ? <Badge label={[job, tenureLabel(p.tenureYears)].filter(Boolean).join(' · ')} tone="grey" /> : null}
+          {status ? <Badge label={status} tone={p.careerStatus === 'seeking' ? 'ac' : 'grey'} /> : null}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 }}>
           <Icon name="people" size={14} color="t3" />

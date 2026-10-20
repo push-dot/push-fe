@@ -6,6 +6,8 @@ import { api } from '../../lib/api'
 import { useColors } from '../../theme'
 import { BottomSheet, Glass, Icon, Text } from '../../ui'
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 type Doc = { id: string; name: string; note: string; kind: 'tailored' | 'original' | 'portfolio' }
 
 // shortcut: @push/api-client has no "my documents" endpoint yet; board samples until push-be exposes one.
@@ -32,7 +34,8 @@ export function ApplySheet({ postingId, company, visible, onClose, onApplied, ti
   const [resume, setResume] = useState(docs[0]!.id)
   const [portfolio, setPortfolio] = useState(false)
   const apply = useMutation({
-    mutationFn: () => api.postings.apply(postingId, portfolio ? [resume, 'doc-portfolio'] : [resume]),
+    // push-be 400s on non-UUID document ids, so the board samples are dropped and the application goes in without files.
+    mutationFn: () => api.postings.apply(postingId, (portfolio ? [resume, 'doc-portfolio'] : [resume]).filter((d) => UUID.test(d))),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['postings'] })
       onApplied()

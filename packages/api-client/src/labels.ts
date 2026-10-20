@@ -5,11 +5,11 @@ export const JOB_CATEGORIES: { key: JobCategory; label: string }[] = [
   { key: 'dev', label: '개발' },
   { key: 'data', label: '데이터' },
   { key: 'design', label: '디자인' },
-  { key: 'planning', label: '기획' },
+  { key: 'plan', label: '기획' },
   { key: 'marketing', label: '마케팅' },
   { key: 'sales', label: '영업' },
   { key: 'hr', label: '인사' },
-  { key: 'management', label: '경영지원' },
+  { key: 'ops', label: '경영지원' },
 ]
 
 // Hub toggle chips use the first six.
@@ -79,3 +79,17 @@ export const stageBadge = (stage: ApplicationStage): string => {
 /** "개발 외 1" style chip label for multi-select filters. */
 export const chipLabel = (fallback: string, selected: string[]): string =>
   selected.length === 0 ? fallback : selected.length === 1 ? selected[0]! : `${selected[0]} 외 ${selected.length - 1}`
+
+/** 근무 조건 rows from push-be's free-form workConditions object ("근무 · 주 5일"). Arrays of strings pass through. */
+export const workConditionLines = (w: unknown): string[] => {
+  if (Array.isArray(w)) return w.map(String)
+  if (!w || typeof w !== 'object') return []
+  return Object.entries(w).flatMap(([k, v]) => {
+    const text = Array.isArray(v) ? v.join(', ') : v == null || typeof v === 'object' ? '' : String(v)
+    return text ? [`${k} · ${text}`] : []
+  })
+}
+
+/** push-be serves images as "/api/v1/uploads/images/…"; native Image and other origins need it absolute. */
+export const absoluteUrl = (url: string | null | undefined, apiBaseUrl: string): string | null =>
+  !url ? null : url.startsWith('/') ? new URL(url, apiBaseUrl).href : url

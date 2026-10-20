@@ -4,6 +4,7 @@ import { router } from 'expo-router'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Platform, Pressable, View } from 'react-native'
 import { api } from '../../lib/api'
+import { assetUrl } from '../../lib/config'
 import { radius, useColors } from '../../theme'
 import { Glass, GlassButton, Icon, Text, TopBar } from '../../ui'
 import { givenName, tintOf } from './lib'
@@ -20,7 +21,7 @@ export function Avatar({
 }) {
   return url ? (
     <Image
-      source={{ uri: url }}
+      source={{ uri: assetUrl(url) }}
       style={{ width: size, height: size, borderRadius: size / 2 }}
       accessibilityIgnoresInvertColors
     />

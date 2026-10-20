@@ -283,7 +283,15 @@ export function DocViewerScreen({ id }: { id: string }) {
           </View>
         ) : null}
         <View style={{ paddingTop: 4, paddingHorizontal: 36 }}>
-          {d ? <Paper d={d} /> : <ActivityIndicator style={{ marginTop: 60 }} />}
+          {d ? (
+            <Paper d={d} />
+          ) : draft.isPending ? (
+            <ActivityIndicator style={{ marginTop: 60 }} />
+          ) : (
+            <Text v="b2" color="t3" style={{ marginTop: 60, textAlign: 'center' }}>
+              미리보기는 곧 볼 수 있어요
+            </Text>
+          )}
         </View>
       </ScrollView>
       <View

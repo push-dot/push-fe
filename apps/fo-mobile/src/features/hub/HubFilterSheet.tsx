@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Pressable, View } from 'react-native'
 import { api } from '../../lib/api'
 import { BottomSheet, Chip, Text } from '../../ui'
-import { EMPTY_SHEET, toggle, type SheetFilters } from './filters'
+import { EMPTY_SHEET, profileQuery, toggle, type SheetFilters } from './filters'
 
 type Props = {
   visible: boolean
@@ -23,6 +23,7 @@ const Group = ({ title, children }: { title: string; children: ReactNode }) => (
   </View>
 )
 
+// push-be's profiles page has no total yet, so the CTA falls back to "프로필 보기" in real mode.
 const useTotal = (key: unknown[], query: Parameters<typeof api.profiles.list>[0], enabled: boolean) =>
   useQuery({ queryKey: ['profiles', 'count', ...key], queryFn: () => api.profiles.list({ ...query, limit: 1 }), enabled }).data?.page.total
 
@@ -33,7 +34,7 @@ export function HubFilterSheet({ visible, onClose, category, value, onApply }: P
     if (visible) setDraft(value)
   }, [visible, value])
 
-  const total = useTotal([category, draft], { category, ...draft }, visible)
+  const total = useTotal([category, draft], profileQuery(category, draft), visible)
   const sent = useTotal(['offers'], { explore: 'offers' }, visible)
 
   return (

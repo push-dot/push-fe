@@ -9,7 +9,8 @@ export function SegmentedControl<K extends string>({
   onChange,
 }: {
   items: { key: K; label: string }[]
-  value: K
+  /** null = nothing picked yet. */
+  value: K | null
   onChange: (k: K) => void
 }) {
   const c = useColors()

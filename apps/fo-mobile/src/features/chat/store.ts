@@ -5,6 +5,7 @@ import { api } from '../../lib/api'
 import { API_MOCK } from '../../lib/config'
 import { chatApi, type RunInput } from './api'
 import { applyEvent, emptyChat } from './reducer'
+import { errorText, fromStream } from './stream'
 import type { ChatEvent, ChatState } from './types'
 
 // Runs live outside React so they keep going when the conversation screen closes (feature-spec 2).
@@ -38,23 +39,12 @@ async function* scripted(input: RunInput, signal: AbortSignal): AsyncGenerator<C
   }
 }
 
-/** Real backend: the SSE stream only has token/status/done/error today. */
-async function* streamed(input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
+/** Real backend: the SSE stream only has token/status/done/error today (approvals stay mock-only). */
+function streamed(input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
+  const id = input.conversationId
   const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('CONFIRM_ACTIONS' as const) : ('SUGGEST' as const) }
-  for await (const ev of api.conversations.stream(input.conversationId, body, signal)) {
-    if (ev.type === 'token') yield { type: 'token', text: ev.text }
-    else if (ev.type === 'status') yield { type: 'status', verbs: [ev.text] }
-    else if (ev.type === 'error') yield { type: 'error', id: `err-${Date.now()}`, text: errorText(ev.error.code) }
-    else yield { type: 'done', at: 0 }
-  }
+  return fromStream(api.conversations.stream(id, body, signal), (after) => api.conversations.active(id, after, signal))
 }
-
-const errorText = (code?: string) =>
-  code === 'FEATURE_DISABLED'
-    ? '크레딧이 모자라요. 요금제에서 충전할 수 있어요.'
-    : code === 'INTEGRATION_REQUIRED'
-      ? 'AI 키를 연결해야 쓸 수 있어요.'
-      : '작업을 이어가지 못했어요. 다시 보내 주세요.'
 
 async function startRun(input: RunInput) {
   const id = input.conversationId
@@ -109,7 +99,8 @@ export function stop(id: string) {
 export async function hydrate(id: string) {
   if (get(id).items.length || runs.has(id)) return
   const res = await api.conversations.messages(id, { limit: 50 })
-  for (const m of res.data) {
+  // push-be pages newest first; the transcript reads oldest first.
+  for (const m of [...res.data].reverse()) {
     dispatch(id, m.role === 'USER' ? { type: 'user', id: m.id, text: m.text } : { type: 'agentText', id: m.id, text: m.text })
   }
 }

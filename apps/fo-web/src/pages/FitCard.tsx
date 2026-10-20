@@ -4,10 +4,11 @@ import { mockFit, type Fit } from '../mock'
 
 const C = 2 * Math.PI * 27
 
-// shortcut: no fit API yet; mock mode shows the board values, otherwise a placeholder after the loading state.
+// shortcut: push-be has no fit-score API; mock mode shows the board values after a fake load, real mode the placeholder.
 const loadFit = async (): Promise<Fit | null> => {
+  if (!isMock()) return null
   await new Promise((r) => setTimeout(r, 1200))
-  return isMock() ? mockFit : null
+  return mockFit
 }
 
 /** "내 적합도" card. Tapping asks the app to open AI 채팅 with this posting attached (feature-spec 14). */

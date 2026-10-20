@@ -2,7 +2,7 @@ import type { Client } from './client'
 import { readEvents } from './sse'
 import { ApiError } from './errors'
 import type {
-  AiOptions, AppNotification, Application, Comment, Conversation, DataEnvelope, LinkKind, ListEnvelope, Message,
+  AiOptions, AppNotification, Application, BillingStatus, Comment, Conversation, DataEnvelope, LinkKind, ListEnvelope, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
   ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UserLink,
 } from './types'
@@ -94,8 +94,14 @@ export const createApi = (c: Client) => ({
     image: (form: FormData) => unwrap(c.post<DataEnvelope<{ key: string; url: string }>>('uploads/images', { form })),
   },
 
+  billing: {
+    status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
+    checkout: (planId: 'PRO' | 'ULTRA') => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
+  },
+
   // Existing push-be APIs.
   sources: {
+    /** push-be requires a `kind` form field next to `file`; it is stored as-is. */
     upload: (form: FormData) => unwrap(c.post<DataEnvelope<Source>>('sources', { form })),
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),

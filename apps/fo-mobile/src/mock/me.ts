@@ -5,7 +5,7 @@ import type {
   Offer,
   OfferMessage,
   Post,
-  Posting,
+  OfferPosting,
   Profile,
   Settings,
   Source,
@@ -186,33 +186,32 @@ const ev = (
   title,
   startsAt,
   endsAt: null,
-  location: null,
-  note: null,
+  notes: '',
   ...extra,
 })
 const events: CalendarEvent[] = [
   ev('e1', 'FOLLOW_UP', '라온헬스 후속 연락', on(10, 2, 11)),
   ev('e2', 'INTERVIEW', '도토리증권 기술 면접', on(10, 8, 14)),
   ev('e3', 'DEADLINE', '도토리증권 서버 개발자', on(10, 15, 23, 59), {
-    note: '서류 확정이 필요해요',
+    notes: '서류 확정이 필요해요',
   }),
   ev('e4', 'CUSTOM', '포트폴리오 정리', on(10, 16, 20)),
   ev('e5', 'INTERVIEW', '모아페이 결제 플랫폼팀 1차 면접', on(10, 21, 15), {
     endsAt: on(10, 21, 16),
-    location: 'Google Meet',
+    notes: 'Google Meet',
   }),
   ev('e6', 'DEADLINE', '파도AI 데이터 분석가', on(10, 22, 23, 59), {
-    note: '서류 확정이 필요해요',
+    notes: '서류 확정이 필요해요',
   }),
   ev('e7', 'COFFEE_CHAT', '최지우 님과 커피챗', on(10, 23, 12, 30), {
     endsAt: on(10, 23, 13),
-    location: '강남역',
+    notes: '강남역',
   }),
   ev('e8', 'DEADLINE', '그린티켓 그로스 마케터', on(10, 24, 23, 59)),
   ev('e9', 'FOLLOW_UP', '도토리증권 결과 확인', on(10, 27, 10)),
   ev('e10', 'INTERVIEW', '별빛게임즈 1차 면접', on(10, 29, 16), {
     endsAt: on(10, 29, 17),
-    location: '판교 오피스',
+    notes: '판교 오피스',
   }),
   ev('e11', 'CUSTOM', '부하 테스트 스터디', on(10, 29, 20)),
   ev('e12', 'FOLLOW_UP', '모아페이 면접 후기 보내기', on(10, 30, 10)),
@@ -220,11 +219,9 @@ const events: CalendarEvent[] = [
 mock('GET', 'calendar/events', ({ query }) => {
   const from = query.get('from') ?? ''
   const to = query.get('to') ?? '9999'
-  return {
-    data: events.filter((e) => e.startsAt >= from && e.startsAt < to),
-    google: { connected: true },
-  }
+  return page(events.filter((e) => e.startsAt >= from && e.startsAt < to), query)
 })
+mock('GET', 'integrations/google', () => ({ data: { enabled: true, connected: true, calendarStatus: 'CONNECTED' } }))
 mock('POST', 'calendar/events', ({ body }) => {
   const e = ev(
     `e${Date.now()}`,
@@ -303,23 +300,8 @@ mock('GET', 'me/posts', ({ query }) => page(myPosts, query))
 mock('GET', 'me/commented-posts', ({ query }) => page(commented, query))
 
 // 제안함
-const offerPosting: Posting = {
-  id: 'p1',
-  company: '모아페이',
-  title: '결제 플랫폼 시니어 엔지니어',
-  jobCategory: 'dev',
-  imageUrl: null,
-  skills: ['Kotlin', 'Spring Boot'],
-  careerMin: 5,
-  careerMax: null,
-  location: '서울 강남구',
-  employmentType: 'full_time',
-  deadline: new Date(Date.now() + 21 * D).toISOString(),
-  bookmarked: false,
-  applied: false,
-  sourceUrl: null,
-  createdAt: ago(5 * D),
-}
+// push-be embeds only a posting stub in offers.
+const offerPosting: OfferPosting = { id: 'p1', company: '모아페이', title: '백엔드 엔지니어 (Kotlin·Spring) · 결제 플랫폼팀', imageUrl: null }
 const user = (id: string, displayName: string, affiliation: string) => ({
   id,
   displayName,

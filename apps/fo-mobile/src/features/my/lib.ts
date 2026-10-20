@@ -55,7 +55,7 @@ export const parseYm = (text: string) => {
   return month >= 1 && month <= 12 ? `${m[1]}-${String(month).padStart(2, '0')}` : null
 }
 
-export const tenureLabel = (years: number) => (years <= 0 ? '신입' : `${years}년차`)
+export const tenureLabel = (years: number | null) => (years == null ? '' : years <= 0 ? '신입' : `${years}년차`)
 
 /** Badge tone per 지원 단계 (MyActivity board). */
 export const stageTone = (stage: ApplicationStage): BadgeTone => {

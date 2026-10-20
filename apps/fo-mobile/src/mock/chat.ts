@@ -59,7 +59,8 @@ mock('GET', 'conversations/:id/messages', ({ params, query }) => {
           { id: `${c.id}-a`, conversationId: c.id, role: 'ASSISTANT', text: c.lastLine, attachments: [], operationId: null, createdAt: c.updatedAt },
         ]
       : []
-  return page(msgs, query)
+  // Newest first, like push-be.
+  return page(msgs.reverse(), query)
 })
 
 // ---------- scripted runs ----------

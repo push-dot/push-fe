@@ -1,4 +1,4 @@
-import { JOB_CATEGORIES, CAREER_STATUSES } from '@push/api-client'
+import { CAREER_STATUSES } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
@@ -8,6 +8,7 @@ import { WEB_BASE_URL } from '../../lib/config'
 import { useSession } from '../../lib/session'
 import { useColors } from '../../theme'
 import { Glass, Icon, Text, TopBar } from '../../ui'
+import { careerLine } from '../hub/filters'
 import { ProposalSheet } from '../hub/ProposalSheet'
 import { DetailWebView } from './DetailWebView'
 
@@ -28,7 +29,7 @@ export function ProfileDetailScreen({ id }: { id: string }) {
   const self = me === id
   const subtitle = p
     ? [
-        `${JOB_CATEGORIES.find((j) => j.key === p.jobCategory)?.label ?? ''} · ${p.tenureYears}년차`,
+        careerLine(p),
         CAREER_STATUSES.find((s) => s.key === p.careerStatus)?.label,
       ]
         .filter(Boolean)

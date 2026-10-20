@@ -32,11 +32,11 @@ export const postings: Posting[] = [
   base({ id: 'p13', company: '모아페이', title: '프로덕트 디자이너', jobCategory: 'design', location: '서울 강남구', careerMin: 3, careerMax: 5, skills: ['Figma'], deadline: null, createdAt: '2026-10-14T09:00:00Z' }),
   base({ id: 'p14', company: '파도AI', title: 'AI 엔지니어 (LLM)', location: '원격', careerMin: 4, careerMax: 6, skills: ['Python', 'PyTorch'], employmentType: 'contract', deadline: '2026-11-08', createdAt: '2026-10-13T09:00:00Z' }),
   base({ id: 'p15', company: '바다물류', title: '데이터 엔지니어', jobCategory: 'data', location: '부산 해운대구', careerMin: 1, careerMax: 3, skills: ['Kafka', 'Python', 'AWS'], deadline: '2026-11-18', createdAt: '2026-10-12T09:00:00Z' }),
-  base({ id: 'p16', company: '하늘항공', title: '서비스 기획자', jobCategory: 'planning', location: '인천 중구', careerMin: 0, deadline: '2026-10-26', createdAt: '2026-10-11T09:00:00Z' }),
+  base({ id: 'p16', company: '하늘항공', title: '서비스 기획자', jobCategory: 'plan', location: '인천 중구', careerMin: 0, deadline: '2026-10-26', createdAt: '2026-10-11T09:00:00Z' }),
   base({ id: 'p17', company: '한빛연구소', title: '연구 데이터 분석 인턴', jobCategory: 'data', location: '대전 유성구', careerMin: 0, skills: ['Python', 'SQL'], employmentType: 'intern', deadline: '2026-11-01', createdAt: '2026-10-10T09:00:00Z' }),
   base({ id: 'p18', company: '새벽마켓', title: 'B2B 영업 매니저', jobCategory: 'sales', location: '서울 송파구', careerMin: 4, careerMax: 6, deadline: '2026-11-22', createdAt: '2026-10-09T09:00:00Z' }),
   base({ id: 'p19', company: '도토리증권', title: 'HR 비즈니스 파트너', jobCategory: 'hr', location: '서울 영등포구', careerMin: 7, careerMax: 9, deadline: null, createdAt: '2026-10-08T09:00:00Z' }),
-  base({ id: 'p20', company: '그린티켓', title: '재무회계 담당자', jobCategory: 'management', location: '서울 중구', careerMin: 1, careerMax: 3, deadline: '2026-11-25', createdAt: '2026-10-07T09:00:00Z' }),
+  base({ id: 'p20', company: '그린티켓', title: '재무회계 담당자', jobCategory: 'ops', location: '서울 중구', careerMin: 1, careerMax: 3, deadline: '2026-11-25', createdAt: '2026-10-07T09:00:00Z' }),
   base({ id: 'p21', company: '누리클라우드', title: '프론트엔드 개발자 (Vue)', location: '원격', careerMin: 1, careerMax: 3, skills: ['Vue', 'TypeScript'], employmentType: 'freelance', deadline: '2026-11-10', createdAt: '2026-10-06T09:00:00Z' }),
   base({ id: 'p22', company: '라온헬스', title: 'iOS 개발자', location: '서울 서초구', careerMin: 10, skills: ['Swift', 'SwiftUI'], deadline: '2026-12-01', createdAt: '2026-10-05T09:00:00Z' }),
   base({ id: 'p23', company: '바다물류', title: '물류 시스템 개발자', location: '경기 수원시', careerMin: 4, careerMax: 6, skills: ['Java', 'Spring Boot'], employmentType: 'dispatch', deadline: '2026-11-28', createdAt: '2026-10-04T09:00:00Z' }),
@@ -46,7 +46,7 @@ export const postings: Posting[] = [
 const details: Record<string, Partial<Omit<PostingDetail, keyof Posting>>> = {
   p1: {
     requirements: ['Kotlin 또는 Java로 4년 이상 서버 개발', 'Spring Boot, JPA 실무 경험'],
-    workConditions: ['주 5일, 유연 출퇴근 (코어 11–16시)', '연봉 협의 · 스톡옵션'],
+    workConditions: { 근무: '주 5일, 유연 출퇴근 (코어 11–16시)', 보상: '연봉 협의 · 스톡옵션' },
   },
 }
 
@@ -89,7 +89,7 @@ mock('GET', 'postings', ({ query }) => {
   if (sort === 'deadline') list = list.filter((p) => days(p.deadline) <= 7).sort((a, b) => days(a.deadline) - days(b.deadline))
   else if (sort === 'popular') list = list.filter((p) => views[p.id]).sort((a, b) => views[b.id]! - views[a.id]!)
   else list = [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  return page(list, query)
+  return page(list, query, true)
 })
 
 // Per-district counts for the 지역 sheet, ignoring the current location filter.
@@ -106,7 +106,7 @@ mock('GET', 'postings/:id', ({ params }) => {
     ...p,
     description: '결제 승인·취소 API를 설계하고 개발해요\n정산 배치의 성능과 정확도를 높여요',
     requirements: [],
-    workConditions: [],
+    workConditions: {},
     ...details[p.id],
   }
   return { data: detail }

@@ -34,7 +34,7 @@ const posting: PostingView = {
   description: '결제 승인·취소 API를 설계하고 개발해요\n정산 배치의 성능과 정확도를 높여요',
   requirements: ['Kotlin 또는 Java로 4년 이상 서버 개발', 'Spring Boot, JPA 실무 경험'],
   preferred: ['결제·금융 도메인 경험', 'Kafka 등 메시징 시스템 운영 경험'],
-  workConditions: ['주 5일, 유연 출퇴근 (코어 11–16시)', '연봉 협의 · 스톡옵션'],
+  workConditions: { 근무: '주 5일, 유연 출퇴근 (코어 11–16시)', 보상: '연봉 협의 · 스톡옵션' },
 }
 
 const profile: Profile = {

@@ -138,7 +138,7 @@ function PickSheet<K extends string | number>({
 }: {
   title: string
   items: { key: K; label: string }[]
-  value: K
+  value: K | null
   onPick: (k: K) => void
   onClose: () => void
   visible: boolean
@@ -186,9 +186,9 @@ function EditBasic({ p }: { p: Profile }) {
   const save = useSave()
   const [name, setName] = useState(p.displayName)
   const [headline, setHeadline] = useState(p.headline)
-  const [job, setJob] = useState<JobCategory>(p.jobCategory)
+  const [job, setJob] = useState<JobCategory | null>(p.jobCategory)
   const [years, setYears] = useState(p.tenureYears)
-  const [status, setStatus] = useState<CareerStatus>(p.careerStatus)
+  const [status, setStatus] = useState<CareerStatus | null>(p.careerStatus)
   const [offers, setOffers] = useState(p.openToOffers)
   const [photo, setPhoto] = useState<{ uri: string; key?: string } | null>(null)
   const [sheet, setSheet] = useState<'job' | 'years' | null>(null)
@@ -301,7 +301,7 @@ function EditBasic({ p }: { p: Profile }) {
           />
           <SelectField
             label="연차"
-            value={YEARS[Math.min(years, 20)]!.label}
+            value={years == null ? '' : YEARS[Math.min(years, 20)]!.label}
             onPress={() => setSheet('years')}
           />
         </View>
@@ -341,7 +341,7 @@ function EditBasic({ p }: { p: Profile }) {
       <PickSheet
         title="몇 년차인가요?"
         items={YEARS}
-        value={Math.min(years, 20)}
+        value={Math.min(years ?? 0, 20)}
         onPick={setYears}
         visible={sheet === 'years'}
         onClose={() => setSheet(null)}

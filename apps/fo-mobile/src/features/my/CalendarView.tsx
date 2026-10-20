@@ -20,7 +20,7 @@ const typeOf = (k: CalendarEventType) => TYPES.find((t) => t.key === k)!
 const subline = (e: CalendarEvent) => {
   const mins = e.endsAt ? Math.round((Date.parse(e.endsAt) - Date.parse(e.startsAt)) / 60_000) : 0
   const dur = mins >= 60 ? `${mins / 60}시간` : mins > 0 ? `${mins}분` : ''
-  return [e.location, dur].filter(Boolean).join(' · ') || e.note
+  return [dur, e.notes].filter(Boolean).join(' · ')
 }
 
 function AddEvent({ day, visible, onClose }: { day: Date; visible: boolean; onClose: () => void }) {

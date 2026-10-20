@@ -2,6 +2,7 @@ import type { Post, UserRef } from '@push/api-client'
 import { POST_CATEGORIES } from '@push/api-client'
 import { Image } from 'expo-image'
 import { View } from 'react-native'
+import { assetUrl } from '../../lib/config'
 import { fontFor, useColors } from '../../theme'
 import { Text } from '../../ui'
 import { givenName, timeAgo } from './lib'
@@ -13,7 +14,7 @@ export const categoryLabel = (key: Post['category']) => POST_CATEGORIES.find((c)
 
 export function Avatar({ user, size }: { user: UserRef; size: number }) {
   if (user.avatarUrl) {
-    return <Image source={user.avatarUrl} style={{ width: size, height: size, borderRadius: size / 2 }} accessibilityIgnoresInvertColors />
+    return <Image source={assetUrl(user.avatarUrl)} style={{ width: size, height: size, borderRadius: size / 2 }} accessibilityIgnoresInvertColors />
   }
   const hash = [...user.id].reduce((h, ch) => h + ch.charCodeAt(0), 0)
   return (
@@ -59,7 +60,7 @@ export function ImageGrid({ urls, row }: { urls: string[]; row: number }) {
   const img = (i: number, style: object) => (
     <Image
       key={i}
-      source={urls[i]}
+      source={assetUrl(urls[i])}
       contentFit="cover"
       accessibilityIgnoresInvertColors
       style={[{ borderRadius: 14, backgroundColor: c.fill2 }, style]}

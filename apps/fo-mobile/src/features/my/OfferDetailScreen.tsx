@@ -162,6 +162,13 @@ export function OfferDetailScreen({ id, box = 'received' }: { id: string; box?: 
     onError: () => Alert.alert('수락하지 못했어요', '잠시 뒤에 다시 시도해 주세요.'),
   })
   const decline = useMutation({ mutationFn: () => api.me.declineOffer(id), onSuccess: done })
+  // The offer only carries a posting stub; the detail (shared cache with the posting screen) fills 지역 · 경력 · 마감.
+  const postingId = o?.posting?.id
+  const { data: full } = useQuery({
+    queryKey: ['postings', 'detail', postingId],
+    queryFn: () => api.postings.get(postingId!),
+    enabled: !!postingId,
+  })
 
   if (isLoading || !o) {
     return (
@@ -248,7 +255,7 @@ export function OfferDetailScreen({ id, box = 'received' }: { id: string; box?: 
                   {p.title}
                 </Text>
                 <Text v="c1" color="t3" numberOfLines={1}>
-                  {[p.location, `경력 ${careerLabel(p)}`, p.deadline ? dday(p.deadline) : null]
+                  {[full?.location, full && `경력 ${careerLabel(full)}`, full?.deadline ? dday(full.deadline) : null]
                     .filter(Boolean)
                     .join(' · ')}
                 </Text>

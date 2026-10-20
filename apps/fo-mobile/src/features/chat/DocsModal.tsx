@@ -17,14 +17,15 @@ export function DocsModal({ visible, onClose }: { visible: boolean; onClose: () 
     mutationFn: async () => {
       const r = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        copyToCacheDirectory: false,
+        // The upload reads the file from the app cache.
+        copyToCacheDirectory: true,
       })
       const f = r.canceled ? null : r.assets[0]
       if (!f) return
       if ((f.size ?? 0) > 20_000_000) throw new Error('too big')
-      await chatApi.addDoc({ fileName: f.name, size: f.size ?? 0 })
+      await chatApi.addDoc(f)
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['chat', 'docs'] }),
+    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ['chat', 'docs'] }), qc.invalidateQueries({ queryKey: ['me', 'sources'] })]),
     onError: (e) => Alert.alert('올리지 못했어요', e.message === 'too big' ? '20MB까지 올릴 수 있어요.' : '잠시 뒤에 다시 해 주세요.'),
   })
   return (

@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { HUB_CATEGORIES, type JobCategory, type Profile } from '@push/api-client'
+import { HUB_CATEGORIES, type CareerStatus, type JobCategory, type Profile } from '@push/api-client'
 import { router, type Href } from 'expo-router'
 import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, View, type ViewStyle } from 'react-native'
@@ -7,10 +7,10 @@ import { api } from '../../lib/api'
 import { useColors } from '../../theme'
 import { Badge, Chip, Glass, Icon, Text, TopBar, type BadgeTone } from '../../ui'
 import { Avatar } from './Avatar'
-import { appliedCount, careerLine, EMPTY_SHEET, filterSummary, statusLabel, toggle, type SheetFilters } from './filters'
+import { appliedCount, careerLine, EMPTY_SHEET, filterSummary, matchesSheet, profileQuery, statusLabel, toggle, type SheetFilters } from './filters'
 import { HubFilterSheet } from './HubFilterSheet'
 
-const STATUS_TONE: Record<Profile['careerStatus'], BadgeTone> = { seeking: 'ac', feedback: 'orange', satisfied: 'green' }
+const STATUS_TONE: Record<CareerStatus, BadgeTone> = { seeking: 'ac', feedback: 'orange', satisfied: 'green' }
 
 const Flat = ({ style, children }: { style: ViewStyle; children: ReactNode }) => {
   const c = useColors()
@@ -55,7 +55,7 @@ function ProfileRow({ p }: { p: Profile }) {
           <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
             {p.displayName}
           </Text>
-          <Badge label={statusLabel(p.careerStatus)} tone={STATUS_TONE[p.careerStatus]} />
+          {p.careerStatus ? <Badge label={statusLabel(p.careerStatus)} tone={STATUS_TONE[p.careerStatus]} /> : null}
         </View>
         <Text v="b2" color="t2" numberOfLines={1}>
           {p.headline}
@@ -80,11 +80,11 @@ export function HubScreen() {
 
   const list = useInfiniteQuery({
     queryKey: ['profiles', 'list', category, sheet],
-    queryFn: ({ pageParam }) => api.profiles.list({ category, ...sheet, cursor: pageParam }),
+    queryFn: ({ pageParam }) => api.profiles.list({ ...profileQuery(category, sheet), cursor: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.page.nextCursor ?? undefined,
   })
-  const items = list.data?.pages.flatMap((p) => p.data) ?? []
+  const items = list.data?.pages.flatMap((p) => p.data).filter((p) => matchesSheet(p, sheet)) ?? []
   const summary = filterSummary(sheet)
 
   const header = (

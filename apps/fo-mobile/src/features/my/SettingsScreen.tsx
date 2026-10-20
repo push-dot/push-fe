@@ -27,7 +27,8 @@ const TONES: { key: Tone; label: string }[] = [
   { key: 'technical', label: '기술 중심' },
   { key: 'friendly', label: '친근한' },
 ]
-// shortcut: plan limits (FREE 7일 · ULTRA 무제한) aren't exposed yet, so every option is offered; 0 means 무제한.
+// shortcut: plan limits (FREE 7일 · PRO 30일 · ULTRA 무제한) aren't exposed yet, so every option is offered and push-be
+// rejects the ones over the plan; 0 here is push-be's null (무제한).
 const RETENTION = [7, 30, 90, 0].map((d) => ({ key: d, label: d ? `${d}일` : '무제한' }))
 const CONTACT: { key: Settings['contactVisibility']; label: string }[] = [
   { key: 'accepted', label: '제안 수락한 사람만' },
@@ -311,7 +312,7 @@ export function SettingsScreen() {
         <SettingsRow
           label="대화 기록 보관"
           value={
-            RETENTION.find((r) => r.key === s.chatRetentionDays)?.label ??
+            RETENTION.find((r) => r.key === (s.chatRetentionDays ?? 0))?.label ??
             `${s.chatRetentionDays}일`
           }
           onPress={() => setSheet('retention')}
@@ -348,8 +349,8 @@ export function SettingsScreen() {
       <Pick
         title="대화 기록을 얼마나 보관할까요?"
         items={RETENTION}
-        value={s.chatRetentionDays}
-        onPick={(chatRetentionDays) => set({ chatRetentionDays })}
+        value={s.chatRetentionDays ?? 0}
+        onPick={(d) => set({ chatRetentionDays: d || null })}
         visible={sheet === 'retention'}
         onClose={() => setSheet(null)}
       />
