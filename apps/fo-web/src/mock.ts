@@ -5,6 +5,7 @@ import type {
   CalendarEvent,
   Comment,
   Company,
+  CompanyBillingStatus,
   CompanyMember,
   Consent,
   Conversation,
@@ -1385,6 +1386,47 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
   return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${pathname}` } })
 }
 
+const companyBillingStatus = (): CompanyBillingStatus => {
+  const kind = mockPersona()
+  const balance =
+    kind === 'employer' ? 3000000 : kind === 'employer-pro' ? 15000000 : kind === 'employer-ultra' ? 30000000 : 0
+  const plan = kind === 'employer' ? 'BASIC' : kind === 'employer-pro' ? 'PRO' : kind === 'employer-ultra' ? 'ULTRA' : null
+  return {
+    plan,
+    audience: kind === 'personal' || kind === null ? 'PERSONAL' : 'EMPLOYER',
+    balanceMicroCredits: balance,
+    subscriptionStatus: 'active',
+    periodEndsAt: null,
+    reservedMicroCredits: 0,
+  }
+}
+
+const billingChangeAllowed = () => {
+  const company = companyMe()
+  if (company) return company.role === 'ADMIN'
+  return employerPersona()
+}
+
+const handleBilling = async (method: string, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
+  const tail = routeTail(pathname)
+  if (method === 'GET' && tail === '/billing/ledger') {
+    return json(200, { data: [], page: { nextCursor: null, hasMore: false, total: 0 } })
+  }
+  if (method === 'POST' && (tail === '/billing/checkout' || tail === '/billing/topup')) {
+    if (!billingChangeAllowed()) {
+      return json(403, { error: { code: 'FORBIDDEN', message: '요금제 변경은 관리자만 할 수 있어요' } })
+    }
+    const payload = await readJson(input, init)
+    if (tail === '/billing/checkout') {
+      const planId = typeof payload.planId === 'string' ? payload.planId : ''
+      return json(200, { data: { url: `https://example.test/checkout?plan=${planId}` } })
+    }
+    return json(200, { data: { url: `https://example.test/topup?amount=${String(payload.amount ?? '')}` } })
+  }
+  if (method === 'GET' && tail === '/billing') return json(200, { data: companyBillingStatus() })
+  return null
+}
+
 const flagFor = (id: string) => flags.get(id) ?? { bookmarked: id === posting.id ? posting.bookmarked : false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
@@ -1397,6 +1439,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
   const pathname = url.pathname
   const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
   await new Promise((resolve) => setTimeout(resolve, 250))
+  const billing = await handleBilling(method, pathname, input, init)
+  if (billing) return billing
   const employerChat = await handleEmployerChat(method, url, pathname, input, init)
   if (employerChat) return employerChat
   const employerPosting = await handleEmployerPostings(method, url, pathname, input, init)

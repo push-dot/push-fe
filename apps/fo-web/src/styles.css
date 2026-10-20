@@ -226,3 +226,6 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .lock-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
 .field input[type="file"]{height:auto;padding:8px 0;border:0;background:transparent}
 .field input[type="file"]:disabled{opacity:.55}
+.plan-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
+.plan-card .primary{width:100%}

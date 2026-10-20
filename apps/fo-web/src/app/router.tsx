@@ -26,10 +26,9 @@ import ChatThreadPage from '../pages/employer/chat-thread-page'
 import InvitePage from '../pages/employer/invite-page'
 import MembersPage from '../pages/employer/members-page'
 import PostingEditorPage from '../pages/employer/posting-editor-page'
+import PlansPage from '../pages/employer/plans-page'
 import PostingsPage from '../pages/employer/postings-page'
 import EmployerVerifyPage from '../pages/employer/verify-page'
-import SoonPage from '../pages/soon-page'
-import { SOON_TITLE } from './constants'
 import RequireAuth from './require-auth'
 import Shell from './shell'
 
@@ -77,7 +76,7 @@ const AppRouter = () => {
             <Route path="/employer/chat/new" element={<ChatNewPage />} />
             <Route path="/employer/chat/:id" element={<ChatThreadPage />} />
             <Route path="/employer/members" element={<MembersPage />} />
-            <Route path="/employer/plans" element={<SoonPage title={SOON_TITLE.plans} />} />
+            <Route path="/employer/plans" element={<PlansPage />} />
             <Route path="/invites/:token" element={<InvitePage />} />
           </Route>
         </Route>

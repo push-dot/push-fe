@@ -148,3 +148,100 @@ describe('employer chat mock', () => {
     expect(ultra.data.fileName).toBe('resume.pdf')
   })
 })
+
+describe('employer billing mock', () => {
+  const billing = () => mockFetch('http://localhost/api/v1/billing')
+
+  it('returns each persona company plan without putting Basic on a personal account', async () => {
+    setMockPersona('employer')
+    const basic = await read<{ data: { plan: string; audience: string; balanceMicroCredits: number; subscriptionStatus: string; periodEndsAt: null; reservedMicroCredits: number } }>(
+      await billing(),
+    )
+    expect(basic.data).toEqual({
+      plan: 'BASIC',
+      audience: 'EMPLOYER',
+      balanceMicroCredits: 3000000,
+      subscriptionStatus: 'active',
+      periodEndsAt: null,
+      reservedMicroCredits: 0,
+    })
+
+    setMockPersona('employer-pro')
+    const pro = await read<{ data: { plan: string; balanceMicroCredits: number; audience: string } }>(await billing())
+    expect(pro.data.plan).toBe('PRO')
+    expect(pro.data.audience).toBe('EMPLOYER')
+    expect(pro.data.balanceMicroCredits).toBe(15000000)
+
+    setMockPersona('employer-ultra')
+    const ultra = await read<{ data: { plan: string; balanceMicroCredits: number } }>(await billing())
+    expect(ultra.data.plan).toBe('ULTRA')
+    expect(ultra.data.balanceMicroCredits).toBe(30000000)
+
+    setMockPersona('employer-new')
+    const fresh = await read<{ data: { plan: null; audience: string; balanceMicroCredits: number } }>(await billing())
+    expect(fresh.data).toMatchObject({ plan: null, audience: 'EMPLOYER', balanceMicroCredits: 0 })
+
+    setMockPersona('personal')
+    const personal = await read<{ data: { plan: string | null; audience: string; balanceMicroCredits: number } }>(await billing())
+    expect(personal.data.plan).toBeNull()
+    expect(personal.data.plan).not.toBe('BASIC')
+    expect(personal.data.audience).toBe('PERSONAL')
+    expect(personal.data.balanceMicroCredits).toBe(0)
+  })
+
+  it('opens checkout and top-up for an admin and refuses a member', async () => {
+    setMockPersona('employer')
+    const checkout = await read<{ data: { url: string } }>(
+      await postJson('http://localhost/api/v1/billing/checkout', { planId: 'PRO' }),
+    )
+    expect(checkout.data.url).toBe('https://example.test/checkout?plan=PRO')
+    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 }))
+    expect(topup.data.url).toBe('https://example.test/topup?amount=3000')
+
+    setMockPersona('employer-pro')
+    const transferred = await mockFetch('http://localhost/api/v1/companies/me/members/u-member', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'ADMIN' }),
+    })
+    expect(transferred.status).toBe(204)
+    const forbidden = await read<{ error: { code: string } }>(
+      await postJson('http://localhost/api/v1/billing/checkout', { planId: 'ULTRA' }),
+    )
+    expect(forbidden.error.code).toBe('FORBIDDEN')
+    const forbiddenTopup = await mockFetch('http://localhost/api/v1/billing/topup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 10 }),
+    })
+    expect(forbiddenTopup.status).toBe(403)
+    await mockFetch('http://localhost/api/v1/companies/me/members/u1', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'ADMIN' }),
+    })
+
+    setMockPersona('personal')
+    const personalCheckout = await mockFetch('http://localhost/api/v1/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId: 'BASIC' }),
+    })
+    expect(personalCheckout.status).toBe(403)
+
+    setMockPersona('employer-new')
+    const firstPlan = await read<{ data: { url: string } }>(
+      await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' }),
+    )
+    expect(firstPlan.data.url).toBe('https://example.test/checkout?plan=BASIC')
+  })
+
+  it('returns an empty ledger', async () => {
+    setMockPersona('employer')
+    const ledger = await read<{ data: unknown[]; page: { nextCursor: null; total: number } }>(
+      await mockFetch('http://localhost/api/v1/billing/ledger'),
+    )
+    expect(ledger.data).toEqual([])
+    expect(ledger.page).toMatchObject({ nextCursor: null, total: 0 })
+  })
+})

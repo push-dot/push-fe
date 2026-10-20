@@ -86,3 +86,17 @@ export const SEND_MESSAGE = '보내기'
 export const DRAFT_POSTING = '이 내용으로 공고 등록'
 export const CHAT_USER = '나'
 export const CHAT_ASSISTANT = '기업 AI'
+
+export const PLANS_TITLE = '기업 요금제'
+export const PLANS_LOADING = '요금제를 불러오고 있어요'
+export const PLANS_PERSONAL = '기업 요금제는 기업 계정에서 구독해요'
+export const PLAN_CURRENT = '지금 쓰는 중'
+export const PLAN_RECOMMENDED = '추천'
+export const PLAN_SUBSCRIBE = '구독하기'
+export const PLAN_TOPUP = '충전'
+export const PLAN_AMOUNT = '충전 금액'
+export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어요'
+export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
+export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
+
+export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${balanceMicroCredits}`
