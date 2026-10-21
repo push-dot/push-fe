@@ -10,7 +10,7 @@ import type { ChatEvent, ChatState } from './types'
 export const useChatStore = create<{ chats: Record<string, ChatState> }>(() => ({ chats: {} }))
 export const useChat = (id: string) => useChatStore((s) => s.chats[id] ?? emptyChat)
 
-/** 계정 › 대화 settings that have no server field yet (shortcut: session-only until push-be adds them). */
+// 계정 › 대화 settings that have no server field yet (shortcut: session-only until push-be adds them).
 export const usePrefs = create<{ effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'; confirm: boolean }>(() => ({ effort: 'MEDIUM', confirm: true }))
 
 const get = (id: string) => useChatStore.getState().chats[id] ?? emptyChat
@@ -29,22 +29,20 @@ const sleep = (ms: number, signal: AbortSignal) =>
     signal.addEventListener('abort', () => (clearTimeout(t), reject(new Error('aborted'))), { once: true })
   })
 
-/** Mock: replays the scripted run from src/mock/chat.ts with its timings. */
-async function* scripted(input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
+const scripted = async function* (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
   for (const step of await chatApi.run(input)) {
     await sleep(step.wait, signal)
     yield step.event
   }
 }
 
-/** Real backend: the SSE stream only has token/status/done/error today (approvals stay mock-only). */
-function streamed(input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
+const streamed = (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> => {
   const id = input.conversationId
   const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('CONFIRM_ACTIONS' as const) : ('SUGGEST' as const) }
   return fromStream(api.conversations.stream(id, body, signal), (after) => api.conversations.active(id, after, signal))
 }
 
-async function startRun(input: RunInput) {
+const startRun = async (input: RunInput) => {
   const id = input.conversationId
   const ctrl = new AbortController()
   runs.set(id, ctrl)
@@ -68,7 +66,7 @@ async function startRun(input: RunInput) {
   }
 }
 
-export function send(id: string, text: string, attachment?: string) {
+export const send = (id: string, text: string, attachment?: string) => {
   const s = get(id)
   if (s.working) return dispatch(id, { type: 'queue', text })
   if (s.approval) {
@@ -80,21 +78,20 @@ export function send(id: string, text: string, attachment?: string) {
   void startRun({ conversationId: id, text, interrupted: s.interrupted })
 }
 
-export function answer(id: string, text: string, choice: number) {
+export const answer = (id: string, text: string, choice: number) => {
   const approval = get(id).approval
   if (!approval) return
   dispatch(id, { type: 'answer', text })
   void startRun({ conversationId: id, text, answer: { approvalId: approval.id, choice } })
 }
 
-export function stop(id: string) {
+export const stop = (id: string) => {
   runs.get(id)?.abort()
   dispatch(id, { type: 'stop' })
   void hapticNotify('warning')
 }
 
-/** Loads saved messages once for a conversation this session hasn't seen yet. */
-export async function hydrate(id: string) {
+export const hydrate = async (id: string) => {
   if (get(id).items.length || runs.has(id)) return
   const res = await api.conversations.messages(id, { limit: 50 })
   // push-be pages newest first; the transcript reads oldest first.

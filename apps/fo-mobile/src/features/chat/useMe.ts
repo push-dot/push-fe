@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api, useSession } from '@/shared/infrastructure'
 
-/** Me: name for the drawer and account modal (profile when available, session otherwise). */
-export function useMe() {
+export const useMe = () => {
   const session = useSession((s) => s.session)
   const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: api.me.profile })
   const name = profile.data?.displayName ?? session?.user.displayName ?? '나'

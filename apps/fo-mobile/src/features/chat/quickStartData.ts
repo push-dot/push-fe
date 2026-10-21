@@ -2,7 +2,6 @@ import { stageBadge, type Application, type Offer, type Posting, type Profile } 
 import { dday, givenName, stageTone, timeAgo, tintOf } from '../my/utility'
 import type { QsData, QsItem } from './api/client'
 
-/** Real lists a quick-start sheet can be built from. */
 export type QsSources = {
   bookmarks?: Posting[]
   applications?: Application[]
@@ -29,11 +28,8 @@ const person = (id: string, name: string, extra: Partial<QsItem> = {}): QsItem =
   ...extra,
 })
 
-/**
- * Builds a quick-start sheet from real push-be lists (the mock serves chat/quick-starts/:key instead).
- * shortcut: AI-suggested items (경험 만들기, 커리어 글, 매칭 조건) stay empty until push-be suggests them.
- */
-export function quickStartFrom(key: string, s: QsSources, now = new Date()): QsData {
+// shortcut: AI-suggested items (경험 만들기, 커리어 글, 매칭 조건) stay empty until push-be suggests them.
+export const quickStartFrom = (key: string, s: QsSources, now = new Date()): QsData => {
   const bookmarks = s.bookmarks ?? []
   switch (key) {
     case 'gap':
@@ -87,7 +83,6 @@ export function quickStartFrom(key: string, s: QsSources, now = new Date()): QsD
   }
 }
 
-/** Which lists each quick start needs, so the sheet only loads those. */
 export const QS_NEEDS: Record<string, (keyof QsSources)[]> = {
   link: ['doc'],
   gap: ['bookmarks', 'doc'],
