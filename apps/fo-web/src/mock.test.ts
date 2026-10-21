@@ -103,6 +103,29 @@ describe('employer chat mock', () => {
     expect(missing.status).toBe(404)
   })
 
+  it('starts a new empty posting conversation without an attachment', async () => {
+    setMockPersona('employer')
+    const first = await read<{ data: { id: string; title: string; applicationId: string | null } }>(
+      await postJson('http://localhost/api/v1/conversations', { title: '새 공고', audience: 'EMPLOYER' }),
+    )
+    const second = await read<{ data: { id: string; title: string; applicationId: string | null } }>(
+      await postJson('http://localhost/api/v1/conversations', { title: '새 공고', audience: 'EMPLOYER' }),
+    )
+    expect(first.data.title).toBe('새 공고')
+    expect(first.data.applicationId).toBeNull()
+    expect(second.data.id).not.toBe(first.data.id)
+    const messages = await read<{ data: unknown[] }>(
+      await mockFetch(`http://localhost/api/v1/conversations/${first.data.id}/messages`),
+    )
+    expect(messages.data).toEqual([])
+    const listed = await read<{ data: { id: string; title: string }[] }>(
+      await mockFetch('http://localhost/api/v1/conversations?audience=EMPLOYER'),
+    )
+    expect(listed.data.filter((item) => item.title === '새 공고').map((item) => item.id)).toEqual(
+      expect.arrayContaining([first.data.id, second.data.id]),
+    )
+  })
+
   it('stores an employer conversation and lists it when audience is missing', async () => {
     setMockPersona('employer-pro')
     const created = await read<{ data: { id: string; revision: number; applicationId: string | null; title: string; pinned: boolean } }>(
