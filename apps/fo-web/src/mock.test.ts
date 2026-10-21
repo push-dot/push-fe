@@ -39,6 +39,21 @@ describe('employer applicant stage mock', () => {
   })
 })
 
+describe('posting detail mock', () => {
+  it('returns the listing whose id was requested', async () => {
+    setMockPersona('personal')
+    const response = await mockFetch('http://localhost/api/v1/postings/p2')
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { data: { id: string; company: string; title: string; jobCategory: string } }
+    expect(body.data).toMatchObject({
+      id: 'p2',
+      company: '누리클라우드',
+      title: '프론트엔드 개발자',
+      jobCategory: 'dev',
+    })
+  })
+})
+
 describe('employer chat mock', () => {
   it('gives employer-ultra an Ultra company and leaves the other personas in place', async () => {
     setMockPersona('employer-ultra')

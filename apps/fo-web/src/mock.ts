@@ -1,5 +1,4 @@
 // Dev fixtures for ?mock=1 (or window.__PUSH__.mock), matching the Claude Design boards.
-// shortcut: every id returns the same sample; drop once push-be v2 serves these endpoints.
 import type {
   Application,
   CalendarEvent,
@@ -284,6 +283,18 @@ const flags = new Map<string, { bookmarked: boolean; applied: boolean }>(
 const present = (item: Posting): Posting => {
   const flag = flags.get(item.id)
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
+}
+
+const detailFor = (item: Posting): PostingView => {
+  const shown = present(item)
+  if (shown.id === posting.id) return { ...posting, bookmarked: shown.bookmarked, applied: shown.applied }
+  return {
+    ...shown,
+    description: `${shown.company}에서 ${shown.title}를 채용해요`,
+    requirements: shown.skills,
+    preferred: [],
+    workConditions: {},
+  }
 }
 
 type CompanyPosting = PostingDetail & { revision: number; closedAt: string | null }
@@ -1498,16 +1509,12 @@ export const mockFetch: typeof fetch = async (input, init) => {
     return json(200, { data: allSources(), page: { nextCursor: null, hasMore: false } })
   }
   if (method === 'GET' && /\/postings\/[^/]+$/.test(pathname)) {
-    const id = pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? posting.id
-    const flag = flags.get(id)
-    return json(200, {
-      data: {
-        ...posting,
-        id,
-        bookmarked: flag?.bookmarked ?? posting.bookmarked,
-        applied: flag?.applied ?? posting.applied,
-      },
-    })
+    const id = decodeURIComponent(pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? '')
+    const listed = listings.find((item) => item.id === id)
+    if (listed) return json(200, { data: detailFor(listed) })
+    const owned = ownedPostingResponse(id)
+    if (owned) return owned
+    return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
   }
   if (method === 'GET' && /\/profiles\/[^/]+$/.test(pathname)) {
     const id = pathname.match(/\/profiles\/([^/]+)$/)?.[1] ?? profile.userId
