@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
 import { NOTIFICATION_EMPTY, NOTIFICATION_ERROR, NOTIFICATION_NOTE, NOTIFICATION_READ_ALL } from './constants'
 import { notificationPath, useNotifications } from '../../entities/notification'
-import { meReadNotifications } from '../../shared/api/operations'
+import { meReadNotifications } from '../../features/read-notifications'
 
 
 const NotificationsPage = () => {

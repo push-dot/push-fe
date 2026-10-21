@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import { useSources } from '../../entities/profile'
 import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_OPTIONAL, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
-import { postingsApply } from '../../shared/api/operations'
+import { postingsApply } from '../../features/apply-to-posting'
 
 
 const ApplySheet = ({

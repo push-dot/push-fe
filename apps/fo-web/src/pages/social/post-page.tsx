@@ -7,7 +7,7 @@ import { compactCount, relativeTime } from '../../shared/lib/format'
 import { authorLabel, usePost, usePostComments } from '../../entities/post'
 import CommentItem from './comment-item'
 import { COMMENT_MAX, COMMENT_PLACEHOLDER, EMPLOYER_BADGE } from './constants'
-import { postsComment } from '../../shared/api/operations'
+import { postsComment } from '../../features/comment-on-post'
 
 
 const PostPage = () => {

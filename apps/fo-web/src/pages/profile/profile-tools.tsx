@@ -6,7 +6,7 @@ import { useSession } from '../../shared/auth/use-session'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { LINK_COPIED, OFFER_ONCE } from './constants'
 import OfferSheet from './offer-sheet'
-import { profilesUnfollow, profilesFollow } from '../../shared/api/operations'
+import { profilesFollow, profilesUnfollow } from '../../features/follow-profile'
 
 
 const ProfileTools = ({ profile }: { profile: Profile }) => {

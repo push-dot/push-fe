@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { companiesAcceptInvite } from '../../shared/api/operations'
+import { companiesAcceptInvite } from '../../features/accept-invite'
 import {
   INVITE_ACCEPT_FAILED,
   INVITE_CAN,

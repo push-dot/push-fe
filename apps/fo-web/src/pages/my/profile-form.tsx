@@ -6,7 +6,7 @@ import { brandOf, initials, periodLabel } from '../../shared/lib/format'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { PROFILE_SAVED } from './constants'
 import { useMyProfile } from '../../entities/profile'
-import { meUpdateProfile } from '../../shared/api/operations'
+import { meUpdateProfile } from '../../features/update-profile'
 
 
 type CareerDraft = { company: string; role: string; startedOn: string; endedOn: string; description: string }

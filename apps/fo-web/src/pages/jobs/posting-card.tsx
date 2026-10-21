@@ -5,7 +5,7 @@ import { assetUrl } from '../../shared/api/client'
 import { brandOf, careerLabel } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
-import { postingsUnbookmark, postingsBookmark } from '../../shared/api/operations'
+import { postingsBookmark, postingsUnbookmark } from '../../features/bookmark-posting'
 
 
 const shortCareer = (min: number, max: number | null) => {

@@ -21,7 +21,7 @@ import {
   OFFER_SEND,
 } from './constants'
 import { offerStatusLabel, useOffer, useOfferMessages, useOffers } from '../../entities/offer'
-import { meAcceptOffer, meDeclineOffer, meSendOfferMessage } from '../../shared/api/operations'
+import { meAcceptOffer, meDeclineOffer, meSendOfferMessage } from '../../features/respond-to-offer'
 
 
 const OfferInbox = ({ selectedId }: { selectedId?: string }) => {

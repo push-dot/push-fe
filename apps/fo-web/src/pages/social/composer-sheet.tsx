@@ -2,8 +2,8 @@ import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { COMPOSER_ACTION, COMPOSER_PROMPT, POST_BODY_MAX, POST_IMAGE_MAX, POST_TITLE_MAX } from './constants'
-import { uploadsImage, postsCreate } from '../../shared/api/operations'
+import { COMPOSER_PROMPT, postsCreate, uploadsImage } from '../../features/compose-post'
+import { COMPOSER_ACTION, POST_BODY_MAX, POST_IMAGE_MAX, POST_TITLE_MAX } from './constants'
 
 
 const ComposerSheet = ({ onClose }: { onClose: () => void }) => {

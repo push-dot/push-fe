@@ -20,11 +20,12 @@ import {
   VERIFY_SUBMIT,
   VERIFY_TITLE,
 } from './constants'
-import { digitsOf, formatBno, formatStartDt } from './verify-input'
+import { digitsOf, formatBno, formatStartDt } from '../../features/verify-business'
 import VerifyDone from './verify-done'
 import VerifyField from './verify-field'
 import VerifySteps from './verify-steps'
-import { companiesVerify, authMe } from '../../shared/api/operations'
+import { authMe } from '../../entities/session'
+import { companiesVerify } from '../../features/verify-business'
 
 
 const VerifyPage = () => {

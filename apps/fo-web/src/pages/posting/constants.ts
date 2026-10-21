@@ -1,5 +1,4 @@
 export const MOCK_FIT_DELAY_MS = 1200
-export const LINK_COPIED_TOAST = '링크를 복사했어요'
 export const APPLIED_TOAST = '지원했어요. 내 활동에서 진행 상황을 볼 수 있어요'
 export const APPLY_LABEL = '지원하기'
 export const APPLIED_LABEL = '지원 완료'

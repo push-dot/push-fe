@@ -27,7 +27,7 @@ import {
   TERMS_REQUIRED,
 } from './constants'
 import VerifyMail from './verify-mail'
-import { authEmailSignup } from '../../shared/api/operations'
+import { authEmailSignup } from '../../features/sign-up'
 
 
 const SignupPage = () => {

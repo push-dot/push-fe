@@ -25,8 +25,8 @@ import {
 } from './constants'
 import GuestApplyDialog from './guest-apply-dialog'
 import { postingActionMode } from '../../entities/posting'
-import { shareLink } from './share-link'
-import { postingsUnbookmark, postingsBookmark } from '../../shared/api/operations'
+import { shareLink } from '../../features/share-posting'
+import { postingsBookmark, postingsUnbookmark } from '../../features/bookmark-posting'
 
 
 const copyUrl = async (url: string) => {

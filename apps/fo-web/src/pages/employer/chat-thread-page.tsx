@@ -9,7 +9,7 @@ import ChatApp from './chat-app'
 import ChatComposer from './chat-composer'
 import ChatLock from './chat-lock'
 import ChatMessage from './chat-message'
-import { chatGateFrom, chatRouteState, type ChatBlock } from './chat-gate'
+import { chatGateFrom, chatRouteState, conversationsAttach, conversationsSend, conversationsStream, type ChatBlock } from '../../features/employer-chat'
 import {
   CHAT_FAILED,
   CHAT_LOADING,
@@ -22,7 +22,6 @@ import { useEmployerApplicants } from '../../entities/application'
 import { useEmployerPlan } from '../../entities/company'
 import { useEmployerConversations, useEmployerMessages } from '../../entities/conversation'
 import { useMyPostings } from '../../entities/posting'
-import { conversationsAttach, conversationsSend, conversationsStream } from '../../shared/api/operations'
 
 
 const bubble = (conversationId: string, role: Message['role'], text: string): Message => ({

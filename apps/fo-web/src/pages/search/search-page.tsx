@@ -1,5 +1,4 @@
 import type { Post, Posting, Profile } from '@push/api-client'
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -10,7 +9,7 @@ import { useSession } from '../../shared/auth/use-session'
 import { matchHangul } from '../../shared/lib/hangul-search'
 import { SEARCH_EMPTY, SEARCH_LOGIN_COPY, SEARCH_TABS, TRENDING_SEARCHES, TRENDING_TITLE, type SearchType } from './constants'
 import { clearRecentSearches, readRecentSearches, saveRecentSearch } from '../../features/recent-searches'
-import { searchCatalog } from '../../shared/api/operations'
+import { useSearchPeople, useSearchPostings, useSearchPosts } from '../../features/search-catalog'
 
 
 const isSearchType = (value: string | null): value is SearchType => SEARCH_TABS.some((tab) => tab.type === value)
@@ -40,21 +39,9 @@ const SearchPage = () => {
     if (!next) return
     setRecent(saveRecentSearch(next))
   }, [q])
-  const postings = useQuery({
-    queryKey: ['search', 'postings', q],
-    queryFn: () => searchCatalog(q, 'postings'),
-    enabled: ready,
-  })
-  const people = useQuery({
-    queryKey: ['search', 'people', q],
-    queryFn: () => searchCatalog(q, 'people'),
-    enabled: ready && Boolean(session),
-  })
-  const posts = useQuery({
-    queryKey: ['search', 'posts', q],
-    queryFn: () => searchCatalog(q, 'posts'),
-    enabled: ready && Boolean(session),
-  })
+  const postings = useSearchPostings(q, ready)
+  const people = useSearchPeople(q, ready && Boolean(session))
+  const posts = useSearchPosts(q, ready && Boolean(session))
   const byType = { postings, people, posts }
   const gated = !session && type !== 'postings'
   const submit = (term: string) => {

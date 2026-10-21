@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { LOGIN_FAILED_COPY, MISSING_VERIFY_COPY } from './constants'
-import { authEmailVerify } from '../../shared/api/operations'
+import { authEmailVerify } from '../../features/verify-email'
 
 
 const VerifyPage = () => {

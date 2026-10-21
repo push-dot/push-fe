@@ -35,8 +35,6 @@ export const COMPANY_MISSING = '사업자 인증이 필요해요'
 export const VERIFY_LINK = '사업자 인증'
 export const ROLE_ADMIN = '관리자'
 export const ROLE_MEMBER = '담당자'
-export const INVITE_ADMIN_ONLY = '담당자 초대는 관리자만 할 수 있어요'
-export const INVITE_BASIC = 'Basic에서는 담당자를 초대할 수 없어요'
 export const INVITE_EMAIL = '이메일'
 export const INVITE_SUBMIT = '초대 메일 보내기'
 export const INVITE_SENT = '초대 메일을 보냈어요'
@@ -54,8 +52,6 @@ export const INVITE_LIMIT = '초대받은 이메일로만 들어올 수 있어�
 
 export const seatCount = (used: number, limit: number, plan: string | null) =>
   `담당자 ${used} / ${limit}명${plan ? ` · ${plan}` : ''} (관리자 제외)`
-
-export const inviteLimitCopy = (used: number, limit: number) => `담당자 ${used}/${limit}명까지 초대할 수 있어요`
 
 export const POSTINGS_TITLE = '공고 관리'
 export const NEW_POSTING = '새 공고'
@@ -100,7 +96,6 @@ export const CREATE_POSTING = '등록하기'
 export const SAVE_POSTING = '저장하기'
 export const CLOSE_POSTING = '마감하기'
 export const EDITOR_LOADING = '공고를 불러오고 있어요'
-export const EDITOR_FAILED = '공고를 저장하지 못했어요'
 export const CLOSED_STATE = '마감된 공고예요'
 
 export const CHAT_TITLE = '기업 AI'

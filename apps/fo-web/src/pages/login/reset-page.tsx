@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { passwordError } from '../../shared/model/login-providers'
 import AuthPasswordField from './auth-password-field'
-import { authRequestPasswordReset, authConfirmPasswordReset } from '../../shared/api/operations'
+import { authConfirmPasswordReset, authRequestPasswordReset } from '../../features/reset-password'
 import {
   EMAIL_LABEL,
   LOGIN_FAILED_COPY,

@@ -24,14 +24,12 @@ import {
   ROLE_MEMBER,
   VERIFY_LINK,
   inviteLead,
-  inviteLimitCopy,
   seatCount,
 } from './constants'
-import { inviteHint } from './invite-hint'
+import { companiesInvite, companiesRemoveMember, companiesTransferAdmin, inviteHint, inviteLimitCopy } from '../../features/invite-member'
 import MemberRow from './member-row'
 import { useMyCompany } from '../../entities/company'
 import { useCompanyMembers } from '../../entities/member'
-import { companiesInvite, companiesRemoveMember, companiesTransferAdmin } from '../../shared/api/operations'
 
 
 const MembersPage = () => {

@@ -7,7 +7,7 @@ import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
 import { useConsents, useSettings } from '../../entities/session'
-import { meUpdateSettings, meUpdateConsents, meDeleteAccount } from '../../shared/api/operations'
+import { meDeleteAccount, meUpdateConsents, meUpdateSettings } from '../../features/update-settings'
 import {
   CAREER_VISIBILITY,
   CONSENT_COPY,

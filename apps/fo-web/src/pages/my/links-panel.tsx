@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import { LINK_ADD_FAILED, LINK_EMPTY, LINK_FAILED, LINK_KINDS, LINK_NOTE } from './constants'
 import { useLinks } from '../../entities/profile'
-import { meAddLink } from '../../shared/api/operations'
+import { meAddLink } from '../../features/add-link'
 
 
 const LinksPanel = () => {

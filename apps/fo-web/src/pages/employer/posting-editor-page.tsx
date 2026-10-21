@@ -33,10 +33,9 @@ import {
   POSTINGS_TITLE,
   SAVE_POSTING,
 } from './constants'
-import { editorFailure } from './editor-failure'
+import { editorFailure, postingsClose, postingsCreate, postingsUpdate } from '../../features/edit-posting'
 import { useMyCompany } from '../../entities/company'
 import { conditionsFromText, draftFields, listFromLines, useEmployerPosting } from '../../entities/posting'
-import { postingsUpdate, postingsCreate, postingsClose } from '../../shared/api/operations'
 
 
 type EditorForm = {

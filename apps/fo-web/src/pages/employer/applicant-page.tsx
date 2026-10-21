@@ -8,7 +8,7 @@ import ApplicantDocument from './applicant-document'
 import ApplicantStageActions from './applicant-stage-actions'
 import { AI_INTERVIEW, AI_REVIEW, APPLICANT_FAILED, APPLICANT_LOADING, STAGE_CHANGED, STAGE_ENDED, STAGE_FAILED, stageNotice } from './constants'
 import { useEmployerApplicant } from '../../entities/application'
-import { postingsSetApplicantStage } from '../../shared/api/operations'
+import { postingsSetApplicantStage } from '../../features/change-applicant-stage'
 
 
 const appliedLabel = (iso: string) => {

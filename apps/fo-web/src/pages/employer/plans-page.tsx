@@ -31,7 +31,7 @@ import MySide from '../my/my-side'
 import PlanCard from './plan-card'
 import { useCompanyBilling } from '../../entities/billing'
 import { useMyCompany } from '../../entities/company'
-import { billingCheckout, billingTopup } from '../../shared/api/operations'
+import { billingCheckout, billingTopup } from '../../features/checkout-plan'
 
 
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404

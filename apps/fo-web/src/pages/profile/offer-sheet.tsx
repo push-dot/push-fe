@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { OFFER_MAX, OFFER_SENT } from './constants'
-import { profilesOffer } from '../../shared/api/operations'
+import { profilesOffer } from '../../features/send-offer'
 
 
 const OfferSheet = ({ userId, name, onClose, onSent }: { userId: string; name: string; onClose: () => void; onSent: (message: string) => void }) => {

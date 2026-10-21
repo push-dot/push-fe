@@ -7,7 +7,7 @@ import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { emailTakenCopy } from '../../shared/model/login-providers'
 import { LOGIN_FAILED_COPY, VERIFY_MAIL_COPY } from './constants'
-import { authExchange } from '../../shared/api/operations'
+import { authExchange } from '../../features/sign-in'
 
 
 const CallbackPage = () => {

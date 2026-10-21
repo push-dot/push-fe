@@ -1,13 +1,10 @@
-import type { Source } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
 
 import { useDocuments } from '../../entities/profile'
-import { rememberSource } from '../../shared/api/sources'
+import { resumeFileError, uploadResume } from '../../features/upload-resume'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
-import { resumeFileError } from './resume-file'
-import { sourcesUpload } from '../../shared/api/operations'
 
 const fileSize = (size: number) => (size >= 1048576 ? `${(size / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(size / 1024))}KB`)
 
@@ -23,14 +20,8 @@ const DocumentsPanel = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const query = useDocuments()
   const upload = useMutation({
-    mutationFn: async (file: File) => {
-      const form = new FormData()
-      form.set('file', file)
-      form.set('kind', 'resume')
-      return sourcesUpload(form)
-    },
-    onSuccess: async (source: Source) => {
-      rememberSource(source)
+    mutationFn: (file: File) => uploadResume(file),
+    onSuccess: async () => {
       show(DOCUMENT_UPLOADED)
       await queryClient.invalidateQueries({ queryKey: ['documents'] })
     },

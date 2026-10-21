@@ -13,7 +13,7 @@ import {
   VERIFY_FIRST_POSTING,
   VERIFY_STATUS,
 } from './constants'
-import { formatBno } from './verify-input'
+import { formatBno } from '../../features/verify-business'
 
 const VerifyDone = ({ company }: { company: Company }) => (
   <>

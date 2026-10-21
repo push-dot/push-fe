@@ -5,9 +5,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import ChatApp from './chat-app'
 import ChatLock from './chat-lock'
-import { chatGateFrom, type ChatBlock } from './chat-gate'
+import { chatGateFrom, conversationsCreateEmployer, type ChatBlock } from '../../features/employer-chat'
 import { CHAT_CREATING, CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, REFERENCE_POSTING, STARTER_POSTING, VERIFY_LINK } from './constants'
-import { conversationsCreateEmployer } from '../../shared/api/operations'
 
 
 const flights = new Map<string, Promise<Conversation>>()
