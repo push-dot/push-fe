@@ -5,6 +5,7 @@ import { brandOf, initials, roleLabel } from '../../format'
 
 const ProfileCard = ({ profile }: { profile: Profile }) => {
   const status = CAREER_STATUSES.find((item) => item.key === profile.careerStatus)?.label
+  const tone = profile.careerStatus === 'seeking' ? 'green' : profile.careerStatus === 'feedback' ? 'orange' : 'grey'
   return (
     <Link to={`/profiles/${profile.userId}`} className="hub-card">
       {profile.avatarUrl ? (
@@ -17,7 +18,7 @@ const ProfileCard = ({ profile }: { profile: Profile }) => {
       <span className="hub-copy">
         <span className="hub-name">
           <span className="b1 w7">{profile.displayName}</span>
-          {status ? <span className={`badge ${profile.careerStatus === 'seeking' ? 'ac' : 'grey'}`}>{status}</span> : null}
+          {status ? <span className={`badge ${tone}`}>{status}</span> : null}
         </span>
         <span className="b2 t2">{profile.headline}</span>
         <span className="c1 t3">{roleLabel(profile.jobCategory, profile.tenureYears)}</span>

@@ -4,3 +4,7 @@ export const POST_BODY_MAX = 5000
 export const POST_IMAGE_MAX = 4
 export const COMMENT_MAX = 1000
 export const EMPLOYER_BADGE = '기업'
+export const COMPOSER_PROMPT = '어떤 이야기를 나눌까요?'
+export const COMPOSER_ACTION = '글쓰기'
+export const POPULAR_TITLE = '이번 주 많이 본 글'
+export const COMMENT_PLACEHOLDER = '댓글을 남겨 주세요'

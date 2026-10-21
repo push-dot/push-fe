@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import { careerLabel } from '../../format'
-import { ACTIVITY_CHIP_KEY, APPLICATION_EMPTY, BOOKMARK_EMPTY, CALENDAR_EMPTY, FOLLOW_EMPTY, POST_EMPTY } from './constants'
+import { ACTIVITY_CHIP_KEY, APPLICATION_EMPTY, BOOKMARK_EMPTY, CALENDAR_EMPTY, FIT_NOTE, FOLLOW_EMPTY, POST_EMPTY } from './constants'
 
 const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1)
 
@@ -13,7 +13,9 @@ const dateLabel = (iso: string) => {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
 }
 
-const ActivityPanel = ({ chips, chip, onChip }: { chips: readonly string[]; chip: string; onChip: (label: string) => void }) => {
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+
+const ActivityPanel = ({ chip }: { chip: string }) => {
   const key = ACTIVITY_CHIP_KEY[chip as keyof typeof ACTIVITY_CHIP_KEY]
   const [month, setMonth] = useState(() => monthStart(new Date()))
   const from = month.toISOString()
@@ -27,15 +29,18 @@ const ActivityPanel = ({ chips, chip, onChip }: { chips: readonly string[]; chip
   const bookmarks = useQuery({ queryKey: ['bookmarks'], queryFn: () => api.me.bookmarks(), enabled: key === 'bookmarks' })
   const follows = useQuery({ queryKey: ['follows'], queryFn: () => api.me.follows(), enabled: key === 'follows' })
   const posts = useQuery({ queryKey: ['my-posts'], queryFn: () => api.me.posts(), enabled: key === 'posts' })
+  const [day, setDay] = useState<number | null>(null)
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
+  const lead = month.getDay()
+  const today = new Date()
+  const sameMonth = today.getFullYear() === month.getFullYear() && today.getMonth() === month.getMonth()
+  const selected = Math.min(day ?? (sameMonth ? today.getDate() : 1), daysInMonth)
+  const onDay = (events.data?.data ?? []).filter((event) => {
+    const date = new Date(event.startsAt)
+    return date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth() && date.getDate() === selected
+  })
   return (
     <section className="stack">
-      <div className="chips activity-chips">
-        {chips.map((label) => (
-          <button key={label} type="button" className="chip" aria-pressed={label === chip} onClick={() => onChip(label)}>
-            {label}
-          </button>
-        ))}
-      </div>
       {key === 'applications' ? (
         applications.data && applications.data.data.length === 0 ? (
           <p className="b2 t3">{APPLICATION_EMPTY}</p>
@@ -52,20 +57,50 @@ const ActivityPanel = ({ chips, chip, onChip }: { chips: readonly string[]; chip
           </ul>
         )
       ) : null}
+      {key === 'applications' ? <p className="c1 t3">{FIT_NOTE}</p> : null}
       {key === 'calendar' ? (
         <>
           <div className="month-bar">
-            <button type="button" className="text-link" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>
-              이전 달
+            <button type="button" className="hbtn" aria-label="이전 달" onClick={() => { setDay(null); setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1)) }}>
+              <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m15 6-6 6 6 6" />
+              </svg>
             </button>
-            <span className="b2 w7">{`${month.getFullYear()}년 ${month.getMonth() + 1}월`}</span>
-            <button type="button" className="text-link" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>
-              다음 달
+            <span className="h2 num">{`${month.getFullYear()}년 ${month.getMonth() + 1}월`}</span>
+            <button type="button" className="hbtn" aria-label="다음 달" onClick={() => { setDay(null); setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1)) }}>
+              <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 6 6 6-6 6" />
+              </svg>
             </button>
           </div>
-          {events.data && events.data.data.length === 0 ? <p className="b2 t3">{CALENDAR_EMPTY}</p> : null}
+          <div className="month box">
+            {WEEKDAYS.map((label) => (
+              <b key={label} className="c1">
+                {label}
+              </b>
+            ))}
+            {Array.from({ length: lead }, (_, index) => (
+              <span key={`pad-${index}`} />
+            ))}
+            {Array.from({ length: daysInMonth }, (_, index) => {
+              const date = index + 1
+              const titles = (events.data?.data ?? [])
+                .filter((event) => {
+                  const when = new Date(event.startsAt)
+                  return when.getFullYear() === month.getFullYear() && when.getMonth() === month.getMonth() && when.getDate() === date
+                })
+                .map((event) => event.title)
+              return (
+                <button key={date} type="button" className={date === selected ? 'on' : undefined} onClick={() => setDay(date)}>
+                  {date}
+                  {titles[0] ? <i>{titles[0]}</i> : null}
+                </button>
+              )
+            })}
+          </div>
+          {events.data && onDay.length === 0 ? <p className="b2 t3">{CALENDAR_EMPTY}</p> : null}
           <ul className="activity-list">
-            {(events.data?.data ?? []).map((event) => (
+            {onDay.map((event) => (
               <li key={event.id} className="activity-row">
                 <strong className="b1">{event.title}</strong>
                 <span className="c1 t3">{dateLabel(event.startsAt)}</span>

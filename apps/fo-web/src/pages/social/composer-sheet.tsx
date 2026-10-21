@@ -2,7 +2,7 @@ import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api } from '../../api'
-import { POST_BODY_MAX, POST_IMAGE_MAX, POST_TITLE_MAX } from './constants'
+import { COMPOSER_ACTION, COMPOSER_PROMPT, POST_BODY_MAX, POST_IMAGE_MAX, POST_TITLE_MAX } from './constants'
 
 const ComposerSheet = ({ onClose }: { onClose: () => void }) => {
   const queryClient = useQueryClient()
@@ -32,9 +32,9 @@ const ComposerSheet = ({ onClose }: { onClose: () => void }) => {
   })
   return (
     <div className="sheet-scrim" role="presentation" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label="새 글" onClick={(event) => event.stopPropagation()}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={COMPOSER_PROMPT} onClick={(event) => event.stopPropagation()}>
         <div className="sheet-head">
-          <h2 className="h3">새 글</h2>
+          <h2 className="h3">{COMPOSER_PROMPT}</h2>
           <button type="button" className="text-link" onClick={onClose}>
             닫기
           </button>
@@ -73,7 +73,7 @@ const ComposerSheet = ({ onClose }: { onClose: () => void }) => {
         {files.length > 0 ? <p className="c1 t3">{files.map((file) => file.name).join(', ')}</p> : null}
         {error ? <p className="auth-error">{error}</p> : null}
         <button type="button" className="primary" disabled={!ready || create.isPending} onClick={() => create.mutate()}>
-          올리기
+          {COMPOSER_ACTION}
         </button>
       </div>
     </div>

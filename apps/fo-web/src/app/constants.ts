@@ -4,7 +4,7 @@ export const AUTH_LOGOUT = '로그아웃'
 
 export const NAV = {
   home: '홈',
-  jobs: '채용',
+  jobs: '채용공고',
   hub: '허브',
   social: '소셜',
   my: '마이',
@@ -13,7 +13,13 @@ export const NAV = {
   login: '로그인',
   search: '검색',
   notifications: '알림',
+  offers: '제안함',
+  signup: '회원가입',
 } as const
+
+export const SEARCH_PLACEHOLDER = '공고, 사람, 글 검색'
+export const FOOTER_LINKS = ['이용약관', '개인정보 처리방침', '고객센터', '기업 서비스'] as const
+export const FOOTER_MARK = '© 2026 Push'
 
 export const SOON_TITLE = {
   home: '홈',

@@ -25,6 +25,13 @@ const FilterSheet = ({
 }) => {
   const [skillQuery, setSkillQuery] = useState('')
   const title = FILTER_CHIPS.find((chip) => chip.key === facet)?.label ?? ''
+  const cleared = (): JobFilters => {
+    if (facet === 'category') return { ...draft, category: [] }
+    if (facet === 'skills') return { ...draft, skills: [] }
+    if (facet === 'career') return { ...draft, careerYears: [] }
+    if (facet === 'location') return { ...draft, location: [] }
+    return { ...draft, employmentType: [] }
+  }
   const skills = searchHangul([...SKILL_OPTIONS], skillQuery, (skill) => [skill]).map((row) => row.item)
   return (
     <div className="sheet-scrim" role="presentation" onClick={onClose}>
@@ -127,9 +134,14 @@ const FilterSheet = ({
             ))}
           </div>
         ) : null}
-        <button type="button" className="primary" onClick={onApply}>
-          {`공고 ${total}개 보기`}
-        </button>
+        <div className="sheet-actions">
+          <button type="button" className="btn sec sm" onClick={() => onChange(cleared())}>
+            초기화
+          </button>
+          <button type="button" className="btn pri sm" onClick={onApply}>
+            {`공고 ${total}개 보기`}
+          </button>
+        </div>
       </div>
     </div>
   )

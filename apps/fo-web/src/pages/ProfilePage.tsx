@@ -4,17 +4,17 @@ import { api, assetUrl } from '../api'
 import { isWebView } from '../bridge'
 import { brandOf, initials, periodLabel, roleLabel } from '../format'
 import { useDetail } from '../useDetail'
-import ProfileTools from './profile/profile-tools'
+import BrowserProfile from './profile/browser-profile'
 import { Status } from './Section'
 
 export const ProfilePage = () => {
   const { id = '' } = useParams()
   const { data: p, error } = useDetail(['profile', id], () => api.profiles.get(id), (p) => p.displayName)
   if (!p) return <Status error={!!error} what="프로필" />
+  if (!isWebView()) return <BrowserProfile profile={p} />
   const status = CAREER_STATUSES.find((s) => s.key === p.careerStatus)?.label
   return (
     <>
-      {isWebView() ? null : <ProfileTools profile={p} />}
       <main className="page profile">
       <header className="profile-head">
         {p.avatarUrl ? (

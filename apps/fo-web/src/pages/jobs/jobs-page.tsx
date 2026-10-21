@@ -84,7 +84,7 @@ const JobsPage = () => {
   return (
     <main className="page">
       <header className="head">
-        <h1 className="h1">채용</h1>
+        <h1 className="h1">채용공고</h1>
         <div className="jobs-meta">
           <span className="b2 w7">{`공고 ${total}개`}</span>
           <span className="c1 t3">{SORT_LABEL[sort]}</span>

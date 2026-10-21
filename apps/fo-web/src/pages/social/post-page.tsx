@@ -1,16 +1,12 @@
 import { POST_CATEGORIES } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { api, assetUrl } from '../../api'
+import { compactCount, relativeTime } from '../../format'
 import { authorLabel } from './author-label'
 import CommentItem from './comment-item'
-import { COMMENT_MAX, EMPLOYER_BADGE } from './constants'
-
-const postedAt = (iso: string) => {
-  const date = new Date(iso)
-  return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`
-}
+import { COMMENT_MAX, COMMENT_PLACEHOLDER, EMPLOYER_BADGE } from './constants'
 
 const PostPage = () => {
   const { id = '' } = useParams()
@@ -40,11 +36,14 @@ const PostPage = () => {
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
   return (
     <main className="page">
+      <Link to="/social" className="back">
+        소셜
+      </Link>
       <article className="stack post-detail">
         <span className="post-author">
           <span className="b2 w7">{authorLabel(post.author)}</span>
           {post.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
-          <span className="c1 t3">{category}</span>
+          <span className="c1 t3">{`${category} · ${relativeTime(post.createdAt)} · 조회 ${compactCount(post.viewCount)}`}</span>
         </span>
         <h1 className="h2">{post.title}</h1>
         <p className="b1 post-body">{post.body}</p>
@@ -55,10 +54,9 @@ const PostPage = () => {
             ))}
           </div>
         ) : null}
-        <span className="c1 t3">{postedAt(post.createdAt)}</span>
       </article>
       <section className="stack">
-        <h2 className="h3">댓글</h2>
+        <h2 className="h3">{`댓글 ${comments.length}`}</h2>
         {comments.length === 0 ? <p className="b2 t3">아직 댓글이 없어요.</p> : null}
         <ul className="comment-list">
           {comments.map((comment) => (
@@ -67,7 +65,7 @@ const PostPage = () => {
         </ul>
         <label className="field">
           {parentId ? '답글' : '댓글'}
-          <textarea value={body} maxLength={COMMENT_MAX} rows={4} onChange={(event) => setBody(event.target.value)} />
+          <textarea value={body} maxLength={COMMENT_MAX} rows={4} placeholder={COMMENT_PLACEHOLDER} onChange={(event) => setBody(event.target.value)} />
           <span className="c1 t3">{`${body.length} / ${COMMENT_MAX}`}</span>
         </label>
         {parentId ? (

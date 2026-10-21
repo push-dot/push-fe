@@ -33,3 +33,26 @@ export const initials = (name: string) => ([...name].length >= 3 ? [...name].sli
 // Same placeholder palette as the mobile JobCard so logos match across app and web.
 const BRAND = ['#1F3A8A', '#0E7A5F', '#7A2E8C', '#B4501E', '#1B6E8F', '#5B4CF0', '#8C2F39']
 export const brandOf = (name: string) => BRAND[[...name].reduce((a, ch) => a + ch.charCodeAt(0), 0) % BRAND.length]!
+
+export const relativeTime = (iso: string, now = Date.now()) => {
+  const delta = now - new Date(iso).getTime()
+  const minute = Math.floor(delta / 60000)
+  if (minute < 1) return '방금'
+  if (minute < 60) return `${minute}분 전`
+  const hour = Math.floor(minute / 60)
+  if (hour < 24) return `${hour}시간 전`
+  const day = Math.floor(hour / 24)
+  if (day === 1) return '어제'
+  if (day < 7) return `${day}일 전`
+  const date = new Date(iso)
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`
+}
+
+export const compactCount = (count: number) => {
+  if (count < 1000) return String(count)
+  const value = count / 1000
+  const text = value >= 10 ? String(Math.round(value)) : String(Math.round(value * 10) / 10)
+  return `${text}천`
+}
+
+export const clockLabel = (iso: string) => new Date(iso).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })

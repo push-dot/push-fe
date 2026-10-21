@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api'
 import { listSources, rememberSource } from '../../shared/api/sources'
 import Toast, { useToast } from '../../shared/ui/toast'
-import { DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED } from './constants'
+import { useRef } from 'react'
+import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
 import { resumeFileError } from './resume-file'
 
 const loadDocuments = async () => {
@@ -17,9 +18,18 @@ const loadDocuments = async () => {
   }
 }
 
+const fileSize = (size: number) => (size >= 1048576 ? `${(size / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(size / 1024))}KB`)
+
+const fileWhen = (iso?: string) => {
+  if (!iso) return null
+  const date = new Date(iso)
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`
+}
+
 const DocumentsPanel = () => {
   const queryClient = useQueryClient()
   const { message, show } = useToast()
+  const inputRef = useRef<HTMLInputElement>(null)
   const query = useQuery({ queryKey: ['documents'], queryFn: loadDocuments })
   const upload = useMutation({
     mutationFn: async (file: File) => {
@@ -36,35 +46,62 @@ const DocumentsPanel = () => {
     onError: () => show('이력서 파일을 올리지 못했어요. 잠시 후 다시 시도해 주세요.'),
   })
   const files = query.data ?? []
+  const take = (file: File | undefined) => {
+    if (!file) return
+    const error = resumeFileError(file)
+    if (error) {
+      show(error)
+      return
+    }
+    upload.mutate(file)
+  }
   return (
     <section className="stack">
-      <h2 className="h3">{query.data ? `내 서류 ${files.length}개` : '내 서류'}</h2>
+      <div className="preview-head">
+        <span className="b2 t3">{query.data ? `내 서류 ${files.length}개` : '내 서류'}</span>
+        <button type="button" className="btn pri sm" onClick={() => inputRef.current?.click()}>
+          파일 올리기
+        </button>
+      </div>
+      <p className="c1 t3">{DOCUMENT_AI_LABEL}</p>
       {query.isError ? <p className="b2 t3">서류를 불러오지 못했어요.</p> : null}
       {!query.isLoading && files.length === 0 ? <p className="b2 t3">{DOCUMENT_EMPTY}</p> : null}
-      <ul className="doc-list">
-        {files.map((file) => (
-          <li key={file.id} className="doc-row">
-            <span className="b2">{file.fileName}</span>
-            <span className="c1 t3">{DOCUMENT_ORIGINAL}</span>
-          </li>
-        ))}
-      </ul>
-      <label className="primary file-button">
-        파일 올리기
+      {files.length ? (
+        <div className="box">
+          {files.map((file) => {
+            const ext = file.fileName.split('.').pop()?.toUpperCase() ?? 'FILE'
+            const when = fileWhen(file.createdAt)
+            return (
+              <div key={file.id} className="doc-file">
+                <span className={ext === 'PDF' ? 'badge red' : 'badge ac'}>{ext}</span>
+                <span className="doc-copy">
+                  <span className="b1 w7 cap">{file.fileName}</span>
+                  <span className="c1 t3">{[DOCUMENT_ORIGINAL, when, fileSize(file.size)].filter(Boolean).join(' · ')}</span>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
+      <label
+        className="drop"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault()
+          take(event.dataTransfer.files[0])
+        }}
+      >
+        <span className="b1 w7">{DROP_TITLE}</span>
+        <span className="c1 t3">{DROP_HINT}</span>
         <input
+          ref={inputRef}
           className="file-input"
           type="file"
           accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           onChange={(event) => {
             const file = event.target.files?.[0]
             event.target.value = ''
-            if (!file) return
-            const error = resumeFileError(file)
-            if (error) {
-              show(error)
-              return
-            }
-            upload.mutate(file)
+            take(file)
           }}
         />
       </label>

@@ -8,6 +8,7 @@ import { showFitCard } from '../shared/model/fit-card'
 import Toast, { useToast } from '../shared/ui/toast'
 import { useDetail } from '../useDetail'
 import { FitCard } from './FitCard'
+import BrowserPosting from './posting/browser-posting'
 import PostingActions from './posting/posting-actions'
 import { Section, Status } from './Section'
 
@@ -16,10 +17,11 @@ export const PostingPage = () => {
   const toast = useToast()
   const { data: p, error } = useDetail(['posting', id], () => api.postings.get(id) as Promise<PostingView>, (item) => item.company)
   if (!p) return <Status error={!!error} what="공고" />
+  if (!isWebView()) return <BrowserPosting posting={p} message={toast.message} onToast={toast.show} />
   const dday = dDay(p.deadline)
   const duties = p.description.split('\n').map((s) => s.trim()).filter(Boolean)
   return (
-    <main className={isWebView() ? 'page' : 'page browser-posting'}>
+    <main className="page">
       <PostingActions posting={p} onToast={toast.show} />
       <header className="head">
         <div className="company">

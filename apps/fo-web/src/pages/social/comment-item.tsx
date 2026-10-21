@@ -10,7 +10,7 @@ const CommentItem = ({ comment, onReply }: { comment: Comment; onReply: (id: str
     </span>
     <p className="b2">{comment.body}</p>
     <button type="button" className="text-link" onClick={() => onReply(comment.id)}>
-      답글
+      답글 달기
     </button>
   </li>
 )
