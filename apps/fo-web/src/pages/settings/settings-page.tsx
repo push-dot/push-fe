@@ -2,10 +2,11 @@ import { ApiError, type Settings } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../api'
+
 import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
+import { meSettings, meConsents, meUpdateSettings, meUpdateConsents, meDeleteAccount } from '../../shared/api/operations'
 import {
   CAREER_VISIBILITY,
   CONSENT_COPY,
@@ -26,20 +27,20 @@ const SettingsPage = () => {
   const session = useSession()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const settingsQuery = useQuery({ queryKey: ['settings'], queryFn: () => api.me.settings() })
-  const consentQuery = useQuery({ queryKey: ['consents'], queryFn: () => api.me.consents() })
+  const settingsQuery = useQuery({ queryKey: ['settings'], queryFn: () => meSettings() })
+  const consentQuery = useQuery({ queryKey: ['consents'], queryFn: () => meConsents() })
   const [confirming, setConfirming] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const saveSettings = useMutation({
-    mutationFn: (patch: Partial<Settings>) => api.me.updateSettings(patch),
+    mutationFn: (patch: Partial<Settings>) => meUpdateSettings(patch),
     onSuccess: (settings) => queryClient.setQueryData(['settings'], settings),
   })
   const saveConsent = useMutation({
-    mutationFn: (referenceData: boolean) => api.me.updateConsents(referenceData),
+    mutationFn: (referenceData: boolean) => meUpdateConsents(referenceData),
     onSuccess: (consent) => queryClient.setQueryData(['consents'], consent),
   })
   const withdraw = useMutation({
-    mutationFn: () => api.me.deleteAccount(),
+    mutationFn: () => meDeleteAccount(),
     onSuccess: () => {
       sessionStore.clear()
       navigate('/')

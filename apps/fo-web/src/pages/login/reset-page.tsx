@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { passwordError } from '../../shared/model/login-providers'
 import AuthPasswordField from './auth-password-field'
+import { authRequestPasswordReset, authConfirmPasswordReset } from '../../shared/api/operations'
 import {
   EMAIL_LABEL,
   LOGIN_FAILED_COPY,
@@ -25,7 +26,7 @@ const ResetPage = () => {
   const requestReset = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setPending(true)
-    await api.auth.requestPasswordReset(email).catch(() => undefined)
+    await authRequestPasswordReset(email).catch(() => undefined)
     setNotice(RESET_SENT_COPY)
     setPending(false)
   }
@@ -41,7 +42,7 @@ const ResetPage = () => {
     setError(null)
     setPending(true)
     try {
-      await api.auth.confirmPasswordReset(token, password)
+      await authConfirmPasswordReset(token, password)
       setNotice(PASSWORD_CHANGED_COPY)
     } catch {
       setError(LOGIN_FAILED_COPY)

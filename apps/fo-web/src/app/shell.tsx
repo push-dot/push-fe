@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { api } from '../api'
-import { brandOf, initials } from '../format'
+
+import { brandOf, initials } from '../shared/lib/format'
 import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
 import EmployerChip from './employer-chip'
 import { EMPLOYER_LINKS, topEndLinks } from './shell-links'
+import { meWebNotifications, meOffers } from '../shared/api/operations'
+
 
 const MAIN_NAV = [
   { to: '/', label: NAV.home, end: true, lock: false },
@@ -40,12 +42,12 @@ const Shell = () => {
   const end = topEndLinks(Boolean(session))
   const notes = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => api.me.webNotifications(),
+    queryFn: () => meWebNotifications(),
     enabled: Boolean(session) && !auth,
   })
   const received = useQuery({
     queryKey: ['offers', 'received'],
-    queryFn: () => api.me.offers('received'),
+    queryFn: () => meOffers('received'),
     enabled: Boolean(session) && !auth,
   })
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0

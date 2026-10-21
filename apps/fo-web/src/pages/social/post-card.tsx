@@ -1,6 +1,6 @@
 import { POST_CATEGORIES, type Post } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { compactCount, relativeTime } from '../../format'
+import { compactCount, relativeTime } from '../../shared/lib/format'
 import { authorLabel } from './author-label'
 import { EMPLOYER_BADGE } from './constants'
 

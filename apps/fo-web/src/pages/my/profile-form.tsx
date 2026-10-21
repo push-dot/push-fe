@@ -1,10 +1,12 @@
 import { CAREER_STATUSES, type Profile } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api, assetUrl } from '../../api'
-import { brandOf, initials, periodLabel } from '../../format'
+import { assetUrl } from '../../shared/api/client'
+import { brandOf, initials, periodLabel } from '../../shared/lib/format'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { PROFILE_SAVED } from './constants'
+import { meProfile, meUpdateProfile } from '../../shared/api/operations'
+
 
 type CareerDraft = { company: string; role: string; startedOn: string; endedOn: string; description: string }
 
@@ -31,14 +33,14 @@ const toDraft = (profile: Profile): Draft => ({
 const ProfileForm = () => {
   const queryClient = useQueryClient()
   const { message, show } = useToast()
-  const query = useQuery({ queryKey: ['me', 'profile'], queryFn: () => api.me.profile() })
+  const query = useQuery({ queryKey: ['me', 'profile'], queryFn: () => meProfile() })
   const [draft, setDraft] = useState<Draft | null>(null)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const form = draft ?? (query.data ? toDraft(query.data) : null)
   const save = useMutation({
     mutationFn: (next: Draft) =>
-      api.me.updateProfile({
+      meUpdateProfile({
         displayName: next.displayName.trim(),
         headline: next.headline.trim(),
         intro: next.intro.trim(),

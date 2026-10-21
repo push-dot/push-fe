@@ -1,7 +1,7 @@
 import { CAREER_STATUSES, type Profile } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { assetUrl } from '../../api'
-import { brandOf, initials, roleLabel } from '../../format'
+import { assetUrl } from '../../shared/api/client'
+import { brandOf, initials, roleLabel } from '../../shared/lib/format'
 
 const ProfileCard = ({ profile }: { profile: Profile }) => {
   const status = CAREER_STATUSES.find((item) => item.key === profile.careerStatus)?.label

@@ -1,10 +1,12 @@
 import type { Posting } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, assetUrl } from '../../api'
-import { brandOf, careerLabel } from '../../format'
+import { assetUrl } from '../../shared/api/client'
+import { brandOf, careerLabel } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
+import { postingsUnbookmark, postingsBookmark } from '../../shared/api/operations'
+
 
 const shortCareer = (min: number, max: number | null) => {
   const label = careerLabel(min, max)
@@ -16,7 +18,7 @@ const PostingCard = ({ posting }: { posting: Posting }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const bookmark = useMutation({
-    mutationFn: () => (posting.bookmarked ? api.postings.unbookmark(posting.id) : api.postings.bookmark(posting.id)),
+    mutationFn: () => (posting.bookmarked ? postingsUnbookmark(posting.id) : postingsBookmark(posting.id)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['postings'] })
       await queryClient.invalidateQueries({ queryKey: ['posting', posting.id] })

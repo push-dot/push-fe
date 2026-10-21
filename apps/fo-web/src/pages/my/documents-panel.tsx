@@ -1,17 +1,19 @@
 import type { Source } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../api'
+
 import { listSources, rememberSource } from '../../shared/api/sources'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { useRef } from 'react'
 import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
 import { resumeFileError } from './resume-file'
+import { meProfile, sourcesGet, sourcesUpload } from '../../shared/api/operations'
+
 
 const loadDocuments = async () => {
-  const [uploaded, profile] = await Promise.all([listSources(), api.me.profile()])
+  const [uploaded, profile] = await Promise.all([listSources(), meProfile()])
   if (!profile.resumeSourceId || uploaded.some((item) => item.id === profile.resumeSourceId)) return uploaded
   try {
-    const resume = await api.sources.get(profile.resumeSourceId)
+    const resume = await sourcesGet(profile.resumeSourceId)
     return [resume, ...uploaded]
   } catch {
     return uploaded
@@ -36,7 +38,7 @@ const DocumentsPanel = () => {
       const form = new FormData()
       form.set('file', file)
       form.set('kind', 'resume')
-      return api.sources.upload(form)
+      return sourcesUpload(form)
     },
     onSuccess: async (source: Source) => {
       rememberSource(source)

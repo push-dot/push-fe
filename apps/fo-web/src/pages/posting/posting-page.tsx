@@ -1,21 +1,24 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
 import { useParams } from 'react-router-dom'
-import { api, assetUrl } from '../api'
-import { isWebView, send } from '../bridge'
-import { brandOf, careerLabel, dDay } from '../format'
-import type { PostingView } from '../mock'
-import { showFitCard } from '../shared/model/fit-card'
-import Toast, { useToast } from '../shared/ui/toast'
-import { useDetail } from '../useDetail'
-import { FitCard } from './FitCard'
-import BrowserPosting from './posting/browser-posting'
-import PostingActions from './posting/posting-actions'
-import { Section, Status } from './Section'
+import { assetUrl } from '../../shared/api/client'
+import { isWebView, send } from '../../shared/lib/bridge'
+import { brandOf, careerLabel, dDay } from '../../shared/lib/format'
+import type { PostingView } from '../../shared/api/mock'
+import { showFitCard } from '../../shared/model/fit-card'
+import Toast, { useToast } from '../../shared/ui/toast'
+import { useDetail } from '../../shared/lib/use-detail'
+import FitCard from './fit-card'
+import BrowserPosting from './browser-posting'
+import PostingActions from './posting-actions'
+import Section from '../../shared/ui/section'
+import Status from '../../shared/ui/status'
+import { postingsGet } from '../../shared/api/operations'
 
-export const PostingPage = () => {
+
+const PostingPage = () => {
   const { id = '' } = useParams()
   const toast = useToast()
-  const { data: p, error } = useDetail(['posting', id], () => api.postings.get(id) as Promise<PostingView>, (item) => item.company)
+  const { data: p, error } = useDetail(['posting', id], () => postingsGet(id) as Promise<PostingView>, (item) => item.company)
   if (!p) return <Status error={!!error} what="공고" />
   if (!isWebView()) return <BrowserPosting posting={p} message={toast.message} onToast={toast.show} />
   const dday = dDay(p.deadline)
@@ -70,3 +73,5 @@ export const PostingPage = () => {
     </main>
   )
 }
+
+export default PostingPage

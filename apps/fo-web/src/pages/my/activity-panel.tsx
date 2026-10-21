@@ -2,9 +2,11 @@ import { stageBadge } from '@push/api-client'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../api'
-import { careerLabel } from '../../format'
+
+import { careerLabel } from '../../shared/lib/format'
 import { ACTIVITY_CHIP_KEY, APPLICATION_EMPTY, BOOKMARK_EMPTY, CALENDAR_EMPTY, FIT_NOTE, FOLLOW_EMPTY, POST_EMPTY } from './constants'
+import { applicationsList, calendarEvents, meBookmarks, meFollows, mePosts } from '../../shared/api/operations'
+
 
 const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1)
 
@@ -20,15 +22,15 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
   const [month, setMonth] = useState(() => monthStart(new Date()))
   const from = month.toISOString()
   const to = new Date(month.getFullYear(), month.getMonth() + 1, 1).toISOString()
-  const applications = useQuery({ queryKey: ['applications'], queryFn: () => api.applications.list(), enabled: key === 'applications' })
+  const applications = useQuery({ queryKey: ['applications'], queryFn: () => applicationsList(), enabled: key === 'applications' })
   const events = useQuery({
     queryKey: ['calendar', from, to],
-    queryFn: () => api.calendar.events(from, to),
+    queryFn: () => calendarEvents(from, to),
     enabled: key === 'calendar',
   })
-  const bookmarks = useQuery({ queryKey: ['bookmarks'], queryFn: () => api.me.bookmarks(), enabled: key === 'bookmarks' })
-  const follows = useQuery({ queryKey: ['follows'], queryFn: () => api.me.follows(), enabled: key === 'follows' })
-  const posts = useQuery({ queryKey: ['my-posts'], queryFn: () => api.me.posts(), enabled: key === 'posts' })
+  const bookmarks = useQuery({ queryKey: ['bookmarks'], queryFn: () => meBookmarks(), enabled: key === 'bookmarks' })
+  const follows = useQuery({ queryKey: ['follows'], queryFn: () => meFollows(), enabled: key === 'follows' })
+  const posts = useQuery({ queryKey: ['my-posts'], queryFn: () => mePosts(), enabled: key === 'posts' })
   const [day, setDay] = useState<number | null>(null)
   const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
   const lead = month.getDay()

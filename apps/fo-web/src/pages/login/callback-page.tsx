@@ -1,12 +1,14 @@
 import { ApiError } from '@push/api-client'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { takePkceVerifier } from '../../shared/auth/pkce'
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { emailTakenCopy } from '../../shared/model/login-providers'
 import { LOGIN_FAILED_COPY, VERIFY_MAIL_COPY } from './constants'
+import { authExchange } from '../../shared/api/operations'
+
 
 const CallbackPage = () => {
   const [params] = useSearchParams()
@@ -25,7 +27,7 @@ const CallbackPage = () => {
     }
     const run = async () => {
       try {
-        const session = await api.auth.exchange({ code, codeVerifier: verifier })
+        const session = await authExchange({ code, codeVerifier: verifier })
         sessionStore.save(session)
         navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
       } catch (caught) {

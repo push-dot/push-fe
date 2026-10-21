@@ -2,11 +2,13 @@ import type { Conversation } from '@push/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import ChatApp from './chat-app'
 import ChatLock from './chat-lock'
 import { chatGateFrom, type ChatBlock } from './chat-gate'
 import { CHAT_CREATING, CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, REFERENCE_POSTING, STARTER_POSTING, VERIFY_LINK } from './constants'
+import { conversationsCreateEmployer } from '../../shared/api/operations'
+
 
 const flights = new Map<string, Promise<Conversation>>()
 
@@ -24,7 +26,7 @@ const ChatNewPage = () => {
     const existing = flights.get(key)
     const flight =
       existing ??
-      api.conversations.createEmployer({
+      conversationsCreateEmployer({
         title: postingId ? REFERENCE_POSTING : STARTER_POSTING,
         postingId,
       })

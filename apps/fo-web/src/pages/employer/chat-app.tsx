@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { api } from '../../api'
+
 import { EMPLOYER_PLAN_CARDS } from '../../shared/model/employer-plans'
 import { PLAN_NAME } from '../../shared/model/employer-plan'
 import ChatSide from './chat-side'
 import { creditCount, creditText } from './credit-count'
 import { useEmployerPlan } from './use-employer-plan'
+import { conversationsList, billingCompanyStatus } from '../../shared/api/operations'
+
 
 const ChatApp = ({ activeId, children }: { activeId?: string; children: ReactNode }) => {
   const { plan } = useEmployerPlan()
-  const conversations = useQuery({ queryKey: ['employer-conversations'], queryFn: () => api.conversations.list({ audience: 'EMPLOYER' }) })
-  const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => api.billing.companyStatus() })
+  const conversations = useQuery({ queryKey: ['employer-conversations'], queryFn: () => conversationsList({ audience: 'EMPLOYER' }) })
+  const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => billingCompanyStatus() })
   const card = EMPLOYER_PLAN_CARDS.find((item) => item.id === plan)
   const allowance = card ? Number(card.credits.replaceAll(',', '')) : 0
   const remain = creditCount(billing.data?.balanceMicroCredits ?? 0)

@@ -2,8 +2,8 @@ import { ApiError, type Message } from '@push/api-client'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { api } from '../../api'
-import { isMock } from '../../bridge'
+
+import { isMock } from '../../shared/lib/bridge'
 import { pdfLocked, type ChatIntent } from '../../shared/model/employer-chat'
 import ChatApp from './chat-app'
 import ChatComposer from './chat-composer'
@@ -19,6 +19,8 @@ import {
   VERIFY_LINK,
 } from './constants'
 import { useEmployerPlan } from './use-employer-plan'
+import { conversationsList, conversationsMessages, postingsMine, postingsApplicants, conversationsAttach, conversationsSend, conversationsStream } from '../../shared/api/operations'
+
 
 const bubble = (conversationId: string, role: Message['role'], text: string): Message => ({
   id: `${role}:${text}`,
@@ -48,18 +50,18 @@ const ChatThreadPage = () => {
   }, [id, routed.intent])
   const conversations = useQuery({
     queryKey: ['employer-conversations'],
-    queryFn: () => api.conversations.list({ audience: 'EMPLOYER' }),
+    queryFn: () => conversationsList({ audience: 'EMPLOYER' }),
   })
   const messages = useQuery({
     queryKey: ['employer-messages', id],
-    queryFn: () => api.conversations.messages(id),
+    queryFn: () => conversationsMessages(id),
     enabled: Boolean(id),
   })
-  const postings = useQuery({ queryKey: ['company-postings'], queryFn: () => api.postings.mine() })
+  const postings = useQuery({ queryKey: ['company-postings'], queryFn: () => postingsMine() })
   const openPosting = postings.data?.data.find((item) => !item.closedAt)
   const applicants = useQuery({
     queryKey: ['employer-applicants', openPosting?.id, 'chat'],
-    queryFn: () => api.postings.applicants(openPosting?.id ?? ''),
+    queryFn: () => postingsApplicants(openPosting?.id ?? ''),
     enabled: Boolean(openPosting?.id),
   })
   const people = (applicants.data?.data ?? []).map((item) => ({
@@ -85,7 +87,7 @@ const ChatThreadPage = () => {
     const form = new FormData()
     form.append('file', file)
     try {
-      await api.conversations.attach(id, form)
+      await conversationsAttach(id, form)
     } catch (error) {
       setGate(chatGateFrom(error))
     }
@@ -100,14 +102,14 @@ const ChatThreadPage = () => {
     setPending(value)
     try {
       if (isMock()) {
-        await api.conversations.send(id, payload(value))
+        await conversationsSend(id, payload(value))
         await refresh()
         return
       }
       let next = ''
       setStreaming('')
       try {
-        for await (const chunk of api.conversations.stream(id, { text: value, accessMode: 'SUGGEST' })) {
+        for await (const chunk of conversationsStream(id, { text: value, accessMode: 'SUGGEST' })) {
           if (chunk.type === 'token') {
             next += chunk.text
             setStreaming(next)
@@ -125,7 +127,7 @@ const ChatThreadPage = () => {
         await refresh()
       } catch {
         setStreaming(null)
-        await api.conversations.send(id, payload(value))
+        await conversationsSend(id, payload(value))
         await refresh()
       }
     } catch (error) {

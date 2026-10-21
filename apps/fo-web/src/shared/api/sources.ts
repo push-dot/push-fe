@@ -1,7 +1,7 @@
 import type { Source } from '@push/api-client'
-import { apiBaseUrl } from '../../api'
-import { isMock } from '../../bridge'
-import { mockFetch } from '../../mock'
+import { isMock } from '../lib/bridge'
+import { apiBaseUrl } from './client'
+import { mockFetch } from './mock'
 
 const sessionSources: Source[] = []
 

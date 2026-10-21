@@ -2,10 +2,12 @@ import type { ApplicationStage } from '@push/api-client'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { EMPLOYER_STAGE_ACTIONS } from '../../shared/model/applicant-stage'
 import ApplicantRow from './applicant-row'
 import { APPLICANTS_EMPTY, APPLICANTS_FAILED, APPLICANTS_LOADING, APPLICANTS_NOTE, APPLICANTS_TITLE, FILTER_ALL, STAGE_APPLIED } from './constants'
+import { postingsApplicants } from '../../shared/api/operations'
+
 
 const ApplicantsPage = () => {
   const { id } = useParams()
@@ -13,7 +15,7 @@ const ApplicantsPage = () => {
   const filters = [{ label: FILTER_ALL, stage: null }, { label: STAGE_APPLIED, stage: 'APPLIED' as const }, ...EMPLOYER_STAGE_ACTIONS]
   const applicants = useQuery({
     queryKey: ['employer-applicants', id, stage],
-    queryFn: () => api.postings.applicants(id ?? '', stage ? { stage } : {}),
+    queryFn: () => postingsApplicants(id ?? '', stage ? { stage } : {}),
     enabled: Boolean(id),
   })
   return (

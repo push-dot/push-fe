@@ -2,10 +2,12 @@ import { CAREER_YEARS, chipLabel, EMPLOYMENT_TYPES, JOB_CATEGORIES, type CareerY
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import FilterSheet from './filter-sheet'
 import PostingCard from './posting-card'
 import { EMPTY_FILTERS, FILTER_CHIPS, JOB_PAGE_SIZE, JOB_SORTS, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
+import { postingsList, postingsLocations } from '../../shared/api/operations'
+
 
 const readList = (params: URLSearchParams, key: string) =>
   (params.get(key) ?? '')
@@ -40,18 +42,18 @@ const JobsPage = () => {
   const listQuery = useInfiniteQuery({
     queryKey: ['postings', params.toString()],
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => api.postings.list({ ...filters, sort, cursor: pageParam, limit: JOB_PAGE_SIZE }),
+    queryFn: ({ pageParam }) => postingsList({ ...filters, sort, cursor: pageParam, limit: JOB_PAGE_SIZE }),
     getNextPageParam: (last) => (last.page.hasMore ? (last.page.nextCursor ?? undefined) : undefined),
   })
   const countQuery = useQuery({
     queryKey: ['posting-count', sort, draft],
-    queryFn: () => api.postings.list({ ...draft, sort, limit: 1 }),
+    queryFn: () => postingsList({ ...draft, sort, limit: 1 }),
     enabled: facet !== null,
   })
   const locationQuery = useQuery({
     queryKey: ['posting-locations', sort, draft.category, draft.skills, draft.careerYears, draft.employmentType],
     queryFn: () =>
-      api.postings.locations({
+      postingsLocations({
         sort,
         category: draft.category,
         skills: draft.skills,

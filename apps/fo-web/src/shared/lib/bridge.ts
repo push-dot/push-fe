@@ -1,4 +1,3 @@
-// App ↔ web bridge (feature-spec 14). Native injects window.__PUSH__ before load and refreshes the token via `push:token`.
 type PushEnv = { token?: string | null; apiBaseUrl?: string; mock?: boolean }
 
 export type BridgeMessage =
@@ -33,6 +32,5 @@ window.addEventListener('push:token', (e) => {
 export const send = (message: BridgeMessage) => {
   if (message.type === 'title') document.title = message.title
   if (window.ReactNativeWebView) return window.ReactNativeWebView.postMessage(JSON.stringify(message))
-  // Plain browser (dev): open external links in a new tab.
   if (message.type === 'external') window.open(message.url, '_blank', 'noopener')
 }

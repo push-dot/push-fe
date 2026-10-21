@@ -1,4 +1,4 @@
-import { mockSession, setMockPersona, type MockPersona } from '../mock'
+import { mockSession, setMockPersona, type MockPersona } from '../shared/api/mock'
 import type { createSessionStore } from '../shared/auth/session'
 
 type SessionStore = ReturnType<typeof createSessionStore>

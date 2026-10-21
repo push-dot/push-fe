@@ -1,15 +1,17 @@
 import { CAREER_STATUSES } from '@push/api-client'
 import { useParams } from 'react-router-dom'
-import { api, assetUrl } from '../api'
-import { isWebView } from '../bridge'
-import { brandOf, initials, periodLabel, roleLabel } from '../format'
-import { useDetail } from '../useDetail'
-import BrowserProfile from './profile/browser-profile'
-import { Status } from './Section'
+import { assetUrl } from '../../shared/api/client'
+import { isWebView } from '../../shared/lib/bridge'
+import { brandOf, initials, periodLabel, roleLabel } from '../../shared/lib/format'
+import { useDetail } from '../../shared/lib/use-detail'
+import BrowserProfile from './browser-profile'
+import Status from '../../shared/ui/status'
+import { profilesGet } from '../../shared/api/operations'
 
-export const ProfilePage = () => {
+
+const ProfilePage = () => {
   const { id = '' } = useParams()
-  const { data: p, error } = useDetail(['profile', id], () => api.profiles.get(id), (p) => p.displayName)
+  const { data: p, error } = useDetail(['profile', id], () => profilesGet(id), (p) => p.displayName)
   if (!p) return <Status error={!!error} what="프로필" />
   if (!isWebView()) return <BrowserProfile profile={p} />
   const status = CAREER_STATUSES.find((s) => s.key === p.careerStatus)?.label
@@ -73,3 +75,5 @@ export const ProfilePage = () => {
     </>
   )
 }
+
+export default ProfilePage

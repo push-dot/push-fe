@@ -2,13 +2,13 @@ import { EMPLOYMENT_TYPES } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, assetUrl } from '../../api'
-import { isWebView } from '../../bridge'
-import { brandOf, careerLabel, dDay } from '../../format'
+import { assetUrl } from '../../shared/api/client'
+import { isWebView } from '../../shared/lib/bridge'
+import { brandOf, careerLabel, dDay } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { canUseEmployerAi } from '../../shared/model/employer-plan'
-import type { PostingView } from '../../mock'
+import type { PostingView } from '../../shared/api/mock'
 import ApplySheet from './apply-sheet'
 import {
   APPLIED_LABEL,
@@ -26,6 +26,8 @@ import {
 import GuestApplyDialog from './guest-apply-dialog'
 import { postingActionMode } from './posting-mode'
 import { shareLink } from './share-link'
+import { postingsUnbookmark, postingsBookmark } from '../../shared/api/operations'
+
 
 const copyUrl = async (url: string) => {
   try {
@@ -60,7 +62,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
     accountType: accountType === 'PERSONAL' || accountType === 'EMPLOYER' ? accountType : null,
   })
   const bookmark = useMutation({
-    mutationFn: () => (posting.bookmarked ? api.postings.unbookmark(posting.id) : api.postings.bookmark(posting.id)),
+    mutationFn: () => (posting.bookmarked ? postingsUnbookmark(posting.id) : postingsBookmark(posting.id)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['posting', posting.id] })
       await queryClient.invalidateQueries({ queryKey: ['postings'] })

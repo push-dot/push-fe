@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../api'
+
 import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_OPTIONAL, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
 import { listSources } from '../../shared/api/sources'
+import { postingsApply } from '../../shared/api/operations'
+
 
 const ApplySheet = ({
   postingId,
@@ -18,7 +20,7 @@ const ApplySheet = ({
   const [picked, setPicked] = useState<string[] | null>(null)
   const selected = picked ?? (sources.data?.[0] ? [sources.data[0].id] : [])
   const apply = useMutation({
-    mutationFn: () => api.postings.apply(postingId, selected),
+    mutationFn: () => postingsApply(postingId, selected),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['posting', postingId] })
       await queryClient.invalidateQueries({ queryKey: ['postings'] })

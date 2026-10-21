@@ -2,7 +2,7 @@ import { ApiError, type CompanyMember } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../api'
+
 import { useSession } from '../../shared/auth/use-session'
 import { PLAN_NAME, canInvite } from '../../shared/model/employer-plan'
 import Toast, { useToast } from '../../shared/ui/toast'
@@ -29,6 +29,8 @@ import {
 } from './constants'
 import { inviteHint } from './invite-hint'
 import MemberRow from './member-row'
+import { companiesMe, companiesMembers, companiesInvite, companiesRemoveMember, companiesTransferAdmin } from '../../shared/api/operations'
+
 
 const MembersPage = () => {
   const session = useSession()
@@ -37,14 +39,14 @@ const MembersPage = () => {
   const [email, setEmail] = useState('')
   const [inviting, setInviting] = useState(false)
   const [seatError, setSeatError] = useState<string | null>(null)
-  const companyQuery = useQuery({ queryKey: ['company', 'me'], queryFn: () => api.companies.me() })
-  const membersQuery = useQuery({ queryKey: ['company', 'members'], queryFn: () => api.companies.members() })
+  const companyQuery = useQuery({ queryKey: ['company', 'me'], queryFn: () => companiesMe() })
+  const membersQuery = useQuery({ queryKey: ['company', 'members'], queryFn: () => companiesMembers() })
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['company', 'me'] })
     await queryClient.invalidateQueries({ queryKey: ['company', 'members'] })
   }
   const invite = useMutation({
-    mutationFn: (next: string) => api.companies.invite(next),
+    mutationFn: (next: string) => companiesInvite(next),
     onSuccess: async () => {
       setEmail('')
       setSeatError(null)
@@ -63,11 +65,11 @@ const MembersPage = () => {
     },
   })
   const remove = useMutation({
-    mutationFn: (userId: string) => api.companies.removeMember(userId),
+    mutationFn: (userId: string) => companiesRemoveMember(userId),
     onSuccess: () => refresh(),
   })
   const transfer = useMutation({
-    mutationFn: (userId: string) => api.companies.transferAdmin(userId),
+    mutationFn: (userId: string) => companiesTransferAdmin(userId),
     onSuccess: () => refresh(),
   })
   const submit = (event: FormEvent<HTMLFormElement>) => {

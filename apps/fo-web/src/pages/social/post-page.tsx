@@ -2,17 +2,19 @@ import { POST_CATEGORIES } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api, assetUrl } from '../../api'
-import { compactCount, relativeTime } from '../../format'
+import { assetUrl } from '../../shared/api/client'
+import { compactCount, relativeTime } from '../../shared/lib/format'
 import { authorLabel } from './author-label'
 import CommentItem from './comment-item'
 import { COMMENT_MAX, COMMENT_PLACEHOLDER, EMPLOYER_BADGE } from './constants'
+import { postsGet, postsComments, postsComment } from '../../shared/api/operations'
+
 
 const PostPage = () => {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
-  const postQuery = useQuery({ queryKey: ['post', id], queryFn: () => api.posts.get(id) })
-  const commentsQuery = useQuery({ queryKey: ['comments', id], queryFn: () => api.posts.comments(id) })
+  const postQuery = useQuery({ queryKey: ['post', id], queryFn: () => postsGet(id) })
+  const commentsQuery = useQuery({ queryKey: ['comments', id], queryFn: () => postsComments(id) })
   const [body, setBody] = useState('')
   const [parentId, setParentId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +22,7 @@ const PostPage = () => {
   const comments = commentsQuery.data?.data ?? []
   const ready = body.trim().length >= 1 && body.trim().length <= COMMENT_MAX
   const send = useMutation({
-    mutationFn: () => api.posts.comment(id, body.trim(), parentId ?? undefined),
+    mutationFn: () => postsComment(id, body.trim(), parentId ?? undefined),
     onSuccess: async () => {
       setBody('')
       setParentId(null)

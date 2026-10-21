@@ -1,8 +1,8 @@
 import { CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { assetUrl } from '../../api'
+import { assetUrl } from '../../shared/api/client'
 import { NAV } from '../../app/constants'
-import { brandOf, initials, periodLabel } from '../../format'
+import { brandOf, initials, periodLabel } from '../../shared/lib/format'
 import ProfileTools from './profile-tools'
 
 const statusClass = (status: Profile['careerStatus']) => (status === 'seeking' ? 'green' : status === 'feedback' ? 'orange' : 'grey')

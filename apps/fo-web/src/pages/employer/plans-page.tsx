@@ -2,7 +2,7 @@ import { ApiError, type EmployerPlan } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
@@ -29,6 +29,8 @@ import {
 import { PLAN_NAME } from '../../shared/model/employer-plan'
 import MySide from '../my/my-side'
 import PlanCard from './plan-card'
+import { billingCompanyStatus, companiesMe, billingCheckout, billingTopup } from '../../shared/api/operations'
+
 
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404
 
@@ -40,10 +42,10 @@ const PlansPage = () => {
   const [actionError, setActionError] = useState<string | null>(null)
   const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
   const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
-  const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => api.billing.companyStatus() })
+  const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => billingCompanyStatus() })
   const company = useQuery({
     queryKey: ['company', 'me'],
-    queryFn: () => api.companies.me(),
+    queryFn: () => companiesMe(),
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
   })
   const openLocal = async (url: string) => {
@@ -57,7 +59,7 @@ const PlansPage = () => {
     location.assign(target.href)
   }
   const checkout = useMutation({
-    mutationFn: (planId: EmployerPlan) => api.billing.checkout(planId),
+    mutationFn: (planId: EmployerPlan) => billingCheckout(planId),
     onSuccess: (result) => {
       void openLocal(result.url)
     },
@@ -66,7 +68,7 @@ const PlansPage = () => {
     },
   })
   const topup = useMutation({
-    mutationFn: (amount: number) => api.billing.topup(amount),
+    mutationFn: (amount: number) => billingTopup(amount),
     onSuccess: (result) => {
       void openLocal(result.url)
     },

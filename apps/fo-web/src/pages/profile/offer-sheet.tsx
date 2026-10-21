@@ -1,15 +1,17 @@
 import { ApiError } from '@push/api-client'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../api'
+
 import { OFFER_MAX, OFFER_SENT } from './constants'
+import { profilesOffer } from '../../shared/api/operations'
+
 
 const OfferSheet = ({ userId, name, onClose, onSent }: { userId: string; name: string; onClose: () => void; onSent: (message: string) => void }) => {
   const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const ready = message.trim().length >= 1 && message.trim().length <= OFFER_MAX
   const send = useMutation({
-    mutationFn: () => api.profiles.offer(userId, { message: message.trim() }),
+    mutationFn: () => profilesOffer(userId, { message: message.trim() }),
     onSuccess: () => onSent(OFFER_SENT),
     onError: (reason) => {
       setError(reason instanceof ApiError && reason.code === 'CONFLICT' ? '이미 제안을 보냈어요.' : '제안을 보내지 못했어요. 잠시 후 다시 시도해 주세요.')

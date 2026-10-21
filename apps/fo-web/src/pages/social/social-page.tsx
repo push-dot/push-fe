@@ -2,13 +2,15 @@ import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../../api'
-import { brandOf, compactCount, initials } from '../../format'
+
+import { brandOf, compactCount, initials } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import ComposerSheet from './composer-sheet'
 import { composerPrompt } from './composer-prompt'
 import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE } from './constants'
 import PostCard from './post-card'
+import { postsList } from '../../shared/api/operations'
+
 
 const SocialPage = () => {
   const session = useSession()
@@ -17,7 +19,7 @@ const SocialPage = () => {
   const listQuery = useInfiniteQuery({
     queryKey: ['posts', category],
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => api.posts.list(category, { cursor: pageParam, limit: POST_PAGE_SIZE }),
+    queryFn: ({ pageParam }) => postsList(category, { cursor: pageParam, limit: POST_PAGE_SIZE }),
     getNextPageParam: (last) => (last.page.hasMore ? (last.page.nextCursor ?? undefined) : undefined),
   })
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []

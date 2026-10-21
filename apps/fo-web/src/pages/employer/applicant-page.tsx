@@ -2,11 +2,13 @@ import { ApiError, type EmployerStage } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import Toast, { useToast } from '../../shared/ui/toast'
 import ApplicantDocument from './applicant-document'
 import ApplicantStageActions from './applicant-stage-actions'
 import { AI_INTERVIEW, AI_REVIEW, APPLICANT_FAILED, APPLICANT_LOADING, STAGE_CHANGED, STAGE_ENDED, STAGE_FAILED, stageNotice } from './constants'
+import { postingsApplicant, postingsSetApplicantStage } from '../../shared/api/operations'
+
 
 const appliedLabel = (iso: string) => {
   const [year, month, day] = iso.slice(0, 10).split('-')
@@ -21,11 +23,11 @@ const ApplicantPage = () => {
   const [failure, setFailure] = useState<string | null>(null)
   const detail = useQuery({
     queryKey: ['employer-applicant', id, applicationId],
-    queryFn: () => api.postings.applicant(id ?? '', applicationId ?? ''),
+    queryFn: () => postingsApplicant(id ?? '', applicationId ?? ''),
     enabled: Boolean(id && applicationId),
   })
   const change = useMutation({
-    mutationFn: (stage: EmployerStage) => api.postings.setApplicantStage(id ?? '', applicationId ?? '', stage),
+    mutationFn: (stage: EmployerStage) => postingsSetApplicantStage(id ?? '', applicationId ?? '', stage),
     onSuccess: async () => {
       setFailure(null)
       toast.show(STAGE_CHANGED)

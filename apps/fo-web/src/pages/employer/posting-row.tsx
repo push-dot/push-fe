@@ -1,6 +1,6 @@
 import { EMPLOYMENT_TYPES, type Posting } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { careerLabel } from '../../format'
+import { careerLabel } from '../../shared/lib/format'
 import { APPLICANTS_LINK, DEADLINE_OPEN, STATUS_CLOSED, STATUS_OPEN } from './constants'
 
 const deadlineLabel = (iso: string | null) => {

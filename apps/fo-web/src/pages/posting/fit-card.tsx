@@ -1,18 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
-import { isMock, send } from '../bridge'
-import { mockFit, type Fit } from '../mock'
+import { MOCK_FIT_DELAY_MS } from './constants'
+import { isMock, send } from '../../shared/lib/bridge'
+import { mockFit, type Fit } from '../../shared/api/mock'
 
 const C = 2 * Math.PI * 27
 
-// shortcut: push-be has no fit-score API; mock mode shows the board values after a fake load, real mode the placeholder.
 const loadFit = async (): Promise<Fit | null> => {
   if (!isMock()) return null
-  await new Promise((r) => setTimeout(r, 1200))
+  await new Promise((r) => setTimeout(r, MOCK_FIT_DELAY_MS))
   return mockFit
 }
 
-/** "내 적합도" card. Tapping asks the app to open AI 채팅 with this posting attached (feature-spec 14). */
-export function FitCard({ postingId }: { postingId: string }) {
+const FitCard = ({ postingId }: { postingId: string }) => {
   const { data: fit, isPending } = useQuery({ queryKey: ['fit', postingId], queryFn: loadFit, staleTime: Infinity })
   const parts: { label: string; value: number | null }[] =
     fit?.parts ?? ['기술 스택', '경험 연관성', '키워드'].map((label) => ({ label, value: null }))
@@ -68,3 +67,5 @@ export function FitCard({ postingId }: { postingId: string }) {
     </button>
   )
 }
+
+export default FitCard

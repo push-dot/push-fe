@@ -1,9 +1,9 @@
 import { ApiError, type AccountType } from '@push/api-client'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
-import { isMock } from '../../bridge'
-import { mockSession } from '../../mock'
+
+import { isMock } from '../../shared/lib/bridge'
+import { mockSession } from '../../shared/api/mock'
 import { createPkce, savePkceVerifier } from '../../shared/auth/pkce'
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
@@ -11,6 +11,7 @@ import { loginProviders } from '../../shared/model/login-providers'
 import AccountTypeControl from './account-type-control'
 import AuthPasswordField from './auth-password-field'
 import AuthProviderButton from './auth-provider-button'
+import { authStart, authEmailLogin } from '../../shared/api/operations'
 import {
   BAD_CREDENTIALS_COPY,
   EMAIL_LABEL,
@@ -68,7 +69,7 @@ const LoginPage = () => {
     try {
       const { verifier, challenge } = await createPkce()
       savePkceVerifier(verifier)
-      const started = await api.auth.start(provider, {
+      const started = await authStart(provider, {
         codeChallenge: challenge,
         redirectUri: `${window.location.origin}${CALLBACK_PATH}`,
         accountType,
@@ -85,7 +86,7 @@ const LoginPage = () => {
     setError(null)
     setPending(true)
     try {
-      const session = await api.auth.emailLogin(email, password)
+      const session = await authEmailLogin(email, password)
       sessionStore.save(session)
       leave(session)
     } catch (caught) {

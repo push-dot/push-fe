@@ -1,4 +1,3 @@
-// Dev fixtures for ?mock=1 (or window.__PUSH__.mock), matching the Claude Design boards.
 import type {
   Application,
   CalendarEvent,
@@ -22,12 +21,11 @@ import type {
   Source,
   WebNotification,
 } from '@push/api-client'
-import { sessionStore } from './shared/auth/session'
-import { searchHangul } from './shared/lib/hangul-search'
-import { assistantReply, type ChatIntent } from './shared/model/employer-chat'
-import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from './shared/model/constants'
+import { sessionStore } from '../auth/session'
+import { searchHangul } from '../lib/hangul-search'
+import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from '../model/constants'
+import { assistantReply, type ChatIntent } from '../model/employer-chat'
 
-/** Fields the boards show but api-spec §4 doesn't define yet. */
 export type PostingView = PostingDetail & { industry?: string; preferred?: string[] }
 
 export type Fit = {
@@ -35,7 +33,6 @@ export type Fit = {
   score: number
   parts: { label: string; value: number }[]
   weakness: string
-  /** "조금만 고치면 N점대예요" */
   reachable: number
 }
 

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { LOGIN_FAILED_COPY, MISSING_VERIFY_COPY } from './constants'
+import { authEmailVerify } from '../../shared/api/operations'
+
 
 const VerifyPage = () => {
   const [params] = useSearchParams()
@@ -17,7 +19,7 @@ const VerifyPage = () => {
     started.current = true
     const run = async () => {
       try {
-        const session = await api.auth.emailVerify(token)
+        const session = await authEmailVerify(token)
         sessionStore.save(session)
         navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
       } catch {

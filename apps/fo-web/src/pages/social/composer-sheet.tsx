@@ -1,8 +1,10 @@
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../api'
+
 import { COMPOSER_ACTION, COMPOSER_PROMPT, POST_BODY_MAX, POST_IMAGE_MAX, POST_TITLE_MAX } from './constants'
+import { uploadsImage, postsCreate } from '../../shared/api/operations'
+
 
 const ComposerSheet = ({ onClose }: { onClose: () => void }) => {
   const queryClient = useQueryClient()
@@ -19,10 +21,10 @@ const ComposerSheet = ({ onClose }: { onClose: () => void }) => {
       for (const file of files.slice(0, POST_IMAGE_MAX)) {
         const form = new FormData()
         form.set('file', file)
-        const uploaded = await api.uploads.image(form)
+        const uploaded = await uploadsImage(form)
         imageKeys.push(uploaded.key)
       }
-      return api.posts.create({ category, title: title.trim(), body: body.trim(), imageKeys })
+      return postsCreate({ category, title: title.trim(), body: body.trim(), imageKeys })
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['posts'] })

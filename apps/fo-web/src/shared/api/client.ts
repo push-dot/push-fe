@@ -1,8 +1,8 @@
 import { absoluteUrl, createApi, createClient, type Session } from '@push/api-client'
-import { isMock, isWebView, pushEnv } from './bridge'
+import { readAccessToken, sessionStore } from '../auth/session'
+import { accessToken } from '../auth/token-source'
+import { isMock, isWebView, pushEnv } from '../lib/bridge'
 import { mockFetch } from './mock'
-import { readAccessToken, sessionStore } from './shared/auth/session'
-import { accessToken } from './shared/auth/token-source'
 
 export const apiBaseUrl =
   pushEnv().apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL ?? 'https://push-be.youngjoon568.workers.dev/api/v1'

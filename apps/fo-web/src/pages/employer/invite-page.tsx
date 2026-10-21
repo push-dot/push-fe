@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { api } from '../../api'
+
+import { companiesAcceptInvite } from '../../shared/api/operations'
 import {
   INVITE_ACCEPT_FAILED,
   INVITE_CAN,
@@ -23,7 +24,7 @@ const InvitePage = () => {
     setFailed(false)
     setPending(true)
     try {
-      await api.companies.acceptInvite(token)
+      await companiesAcceptInvite(token)
       navigate('/')
     } catch {
       setFailed(true)

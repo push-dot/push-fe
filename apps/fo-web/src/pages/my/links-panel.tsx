@@ -1,8 +1,10 @@
 import type { LinkKind } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../api'
+
 import { LINK_ADD_FAILED, LINK_EMPTY, LINK_FAILED, LINK_KINDS, LINK_NOTE } from './constants'
+import { meLinks, meAddLink } from '../../shared/api/operations'
+
 
 const LinksPanel = () => {
   const queryClient = useQueryClient()
@@ -12,10 +14,10 @@ const LinksPanel = () => {
   const [error, setError] = useState<string | null>(null)
   const query = useQuery({
     queryKey: ['links', kind],
-    queryFn: () => api.me.links(kind === 'all' ? undefined : (kind as LinkKind)),
+    queryFn: () => meLinks(kind === 'all' ? undefined : (kind as LinkKind)),
   })
   const add = useMutation({
-    mutationFn: () => api.me.addLink({ url: url.trim(), title: title.trim() || undefined, kind: kind === 'all' ? undefined : (kind as LinkKind) }),
+    mutationFn: () => meAddLink({ url: url.trim(), title: title.trim() || undefined, kind: kind === 'all' ? undefined : (kind as LinkKind) }),
     onSuccess: async () => {
       setUrl('')
       setTitle('')

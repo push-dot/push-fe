@@ -9,7 +9,7 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { useSession } from '../../shared/auth/use-session'
 import {
   CLOSE_POSTING,
@@ -35,6 +35,8 @@ import {
 } from './constants'
 import { editorFailure } from './editor-failure'
 import { conditionsFromText, draftFields, listFromLines } from './posting-draft'
+import { companiesMe, postingsGet, postingsUpdate, postingsCreate, postingsClose } from '../../shared/api/operations'
+
 
 type EditorForm = {
   title: string
@@ -114,12 +116,12 @@ const PostingEditorPage = () => {
   formRef.current = form
   const company = useQuery({
     queryKey: ['company', 'me'],
-    queryFn: () => api.companies.me(),
+    queryFn: () => companiesMe(),
     enabled: Boolean(session?.user.companyId),
   })
   const detail = useQuery({
     queryKey: ['employer-posting', id],
-    queryFn: () => api.postings.get(id ?? ''),
+    queryFn: () => postingsGet(id ?? ''),
     enabled: Boolean(id),
   })
   useEffect(() => {
@@ -132,13 +134,13 @@ const PostingEditorPage = () => {
   const save = useMutation({
     mutationFn: () => {
       const body = toInput(formRef.current)
-      return id ? api.postings.update(id, { ...body, expectedRevision: revisionRef.current }) : api.postings.create(body)
+      return id ? postingsUpdate(id, { ...body, expectedRevision: revisionRef.current }) : postingsCreate(body)
     },
     onSuccess: () => navigate('/employer/postings'),
     onError: (error) => setError(editorFailure(error)),
   })
   const close = useMutation({
-    mutationFn: () => api.postings.close(id ?? '', revisionRef.current),
+    mutationFn: () => postingsClose(id ?? '', revisionRef.current),
     onSuccess: (posting) => {
       revisionRef.current = posting.revision ?? revisionRef.current + 1
       setClosedAt(posting.closedAt ?? new Date().toISOString())

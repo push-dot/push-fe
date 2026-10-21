@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { careerLabel, dDay, initials, periodLabel, roleLabel } from '../format'
+import { careerLabel, dDay, initials, periodLabel, roleLabel } from './format'
 
 describe('format', () => {
   const today = new Date(2026, 9, 20, 23, 30)

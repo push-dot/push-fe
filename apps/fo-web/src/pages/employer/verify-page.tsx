@@ -1,6 +1,6 @@
 import { ApiError, type Company } from '@push/api-client'
 import { useState, type FormEvent } from 'react'
-import { api } from '../../api'
+
 import { sessionStore } from '../../shared/auth/session'
 import {
   BNO_DIGITS,
@@ -24,6 +24,8 @@ import { digitsOf, formatBno, formatStartDt } from './verify-input'
 import VerifyDone from './verify-done'
 import VerifyField from './verify-field'
 import VerifySteps from './verify-steps'
+import { companiesVerify, authMe } from '../../shared/api/operations'
+
 
 const VerifyPage = () => {
   const [bNo, setBNo] = useState('')
@@ -48,13 +50,13 @@ const VerifyPage = () => {
     setError(null)
     setPending(true)
     try {
-      const company = await api.companies.verify({
+      const company = await companiesVerify({
         bNo: bNoDigits,
         startDt: startDigits,
         pNm: pNm.trim(),
         bNm: bNm.trim(),
       })
-      const me = await api.auth.me()
+      const me = await authMe()
       const current = sessionStore.load()
       if (current) {
         sessionStore.save({

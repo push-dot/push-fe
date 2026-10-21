@@ -1,7 +1,7 @@
 import { ApiError, type AccountType } from '@push/api-client'
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
+
 import { EMAIL_TAKEN_EMPLOYER_COPY, EMAIL_TAKEN_PERSONAL_COPY, PASSWORD_LENGTH_COPY } from '../../shared/model/constants'
 import { emailTakenCopy, passwordError } from '../../shared/model/login-providers'
 import AccountTypeControl from './account-type-control'
@@ -27,6 +27,8 @@ import {
   TERMS_REQUIRED,
 } from './constants'
 import VerifyMail from './verify-mail'
+import { authEmailSignup } from '../../shared/api/operations'
+
 
 const SignupPage = () => {
   const [params] = useSearchParams()
@@ -57,7 +59,7 @@ const SignupPage = () => {
     setError(null)
     setPending(true)
     try {
-      await api.auth.emailSignup({
+      await authEmailSignup({
         email,
         password,
         accountType,

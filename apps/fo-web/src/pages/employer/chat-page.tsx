@@ -1,13 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api } from '../../api'
+
 import { intentLocked, type ChatIntent } from '../../shared/model/employer-chat'
 import ChatApp from './chat-app'
 import ChatLock from './chat-lock'
 import { chatGateFrom, type ChatBlock } from './chat-gate'
 import { CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, STARTER_INTERVIEW, STARTER_POSTING, STARTER_REVIEW, VERIFY_LINK } from './constants'
 import { useEmployerPlan } from './use-employer-plan'
+import { conversationsCreateEmployer } from '../../shared/api/operations'
+
 
 const STARTERS: { intent: ChatIntent; title: string }[] = [
   { intent: 'posting', title: STARTER_POSTING },
@@ -27,7 +29,7 @@ const ChatPage = () => {
       return
     }
     try {
-      const created = await api.conversations.createEmployer({ title })
+      const created = await conversationsCreateEmployer({ title })
       await queryClient.invalidateQueries({ queryKey: ['employer-conversations'] })
       navigate(`/employer/chat/${created.id}`, { state: { intent } })
     } catch (error) {

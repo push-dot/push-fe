@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
-import { brandOf, initials, roleLabel } from '../../format'
+
+import { brandOf, initials, roleLabel } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import { NAV } from '../../app/constants'
 import { ROLE_NAME } from '../../shared/model/employer-plan'
+import { meProfile, companiesMe, meOffers } from '../../shared/api/operations'
 import {
   EMPLOYER_ACTIVITY_MENU,
   EMPLOYER_MENU,
@@ -19,9 +20,9 @@ const MySide = () => {
   const employer = session?.user.accountType === 'EMPLOYER'
   const menu = employer ? EMPLOYER_MENU : PERSONAL_MENU
   const activity = employer ? EMPLOYER_ACTIVITY_MENU : PERSONAL_ACTIVITY_MENU
-  const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: () => api.me.profile(), enabled: Boolean(session) && !employer })
-  const company = useQuery({ queryKey: ['company', 'me'], queryFn: () => api.companies.me(), enabled: employer && Boolean(session?.user.companyId) })
-  const received = useQuery({ queryKey: ['offers', 'received'], queryFn: () => api.me.offers('received'), enabled: Boolean(session) })
+  const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: () => meProfile(), enabled: Boolean(session) && !employer })
+  const company = useQuery({ queryKey: ['company', 'me'], queryFn: () => companiesMe(), enabled: employer && Boolean(session?.user.companyId) })
+  const received = useQuery({ queryKey: ['offers', 'received'], queryFn: () => meOffers('received'), enabled: Boolean(session) })
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   const tab = params.get('tab') ?? (employer ? 'company' : 'profile')
   const chip = params.get('chip') ?? activity[0]?.to.split('chip=')[1]

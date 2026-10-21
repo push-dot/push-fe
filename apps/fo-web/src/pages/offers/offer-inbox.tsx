@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { api } from '../../api'
-import { brandOf, clockLabel, initials, relativeTime } from '../../format'
+
+import { brandOf, clockLabel, initials, relativeTime } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import Toast, { useToast } from '../../shared/ui/toast'
 import {
@@ -21,6 +21,8 @@ import {
   OFFER_SEND,
 } from './constants'
 import { offerStatusLabel } from './offer-status'
+import { meOffers, meOffer, meOfferMessages, meAcceptOffer, meDeclineOffer, meSendOfferMessage } from '../../shared/api/operations'
+
 
 const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
   const session = useSession()
@@ -30,12 +32,12 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
   const { message, show } = useToast()
   const [reply, setReply] = useState('')
   const [draft, setDraft] = useState('')
-  const received = useQuery({ queryKey: ['offers', 'received'], queryFn: () => api.me.offers('received') })
-  const sent = useQuery({ queryKey: ['offers', 'sent'], queryFn: () => api.me.offers('sent') })
-  const offerQuery = useQuery({ queryKey: ['offer', selectedId], queryFn: () => api.me.offer(selectedId ?? ''), enabled: Boolean(selectedId) })
+  const received = useQuery({ queryKey: ['offers', 'received'], queryFn: () => meOffers('received') })
+  const sent = useQuery({ queryKey: ['offers', 'sent'], queryFn: () => meOffers('sent') })
+  const offerQuery = useQuery({ queryKey: ['offer', selectedId], queryFn: () => meOffer(selectedId ?? ''), enabled: Boolean(selectedId) })
   const messagesQuery = useQuery({
     queryKey: ['offer-messages', selectedId],
-    queryFn: () => api.me.offerMessages(selectedId ?? ''),
+    queryFn: () => meOfferMessages(selectedId ?? ''),
     enabled: Boolean(selectedId),
   })
   const items = (box === 'sent' ? sent.data?.data : received.data?.data) ?? []
@@ -46,7 +48,7 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
     await queryClient.invalidateQueries({ queryKey: ['offers'] })
   }
   const accept = useMutation({
-    mutationFn: () => api.me.acceptOffer(selectedId ?? '', reply.trim()),
+    mutationFn: () => meAcceptOffer(selectedId ?? '', reply.trim()),
     onSuccess: async () => {
       setReply('')
       show(OFFER_ACCEPTED)
@@ -54,14 +56,14 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
     },
   })
   const decline = useMutation({
-    mutationFn: () => api.me.declineOffer(selectedId ?? ''),
+    mutationFn: () => meDeclineOffer(selectedId ?? ''),
     onSuccess: async () => {
       show(OFFER_DECLINED)
       await refresh()
     },
   })
   const send = useMutation({
-    mutationFn: () => api.me.sendOfferMessage(selectedId ?? '', draft.trim()),
+    mutationFn: () => meSendOfferMessage(selectedId ?? '', draft.trim()),
     onSuccess: async () => {
       setDraft('')
       await refresh()

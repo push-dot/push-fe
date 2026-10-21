@@ -1,6 +1,6 @@
 import type { Conversation } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { relativeTime } from '../../format'
+import { relativeTime } from '../../shared/lib/format'
 import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED, CHAT_TOPUP } from './constants'
 
 export type ChatUsage = { plan: string; remain: string; allowance: string; ratio: number }

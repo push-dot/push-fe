@@ -1,17 +1,19 @@
 import type { WebNotification } from '@push/api-client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../api'
-import { relativeTime } from '../../format'
+
+import { relativeTime } from '../../shared/lib/format'
 import { NOTIFICATION_EMPTY, NOTIFICATION_ERROR, NOTIFICATION_NOTE, NOTIFICATION_READ_ALL } from './constants'
 import { notificationPath } from './notification-path'
+import { meWebNotifications, meReadNotifications } from '../../shared/api/operations'
+
 
 const NotificationsPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const query = useQuery({ queryKey: ['notifications'], queryFn: () => api.me.webNotifications() })
+  const query = useQuery({ queryKey: ['notifications'], queryFn: () => meWebNotifications() })
   const read = useMutation({
-    mutationFn: (ids: string[] | 'all') => api.me.readNotifications(ids),
+    mutationFn: (ids: string[] | 'all') => meReadNotifications(ids),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },

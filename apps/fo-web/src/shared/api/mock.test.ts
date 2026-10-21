@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { GENERAL_REPLY, REVIEW_REPLY, parsePostingDraft } from './shared/model/employer-chat'
+import { GENERAL_REPLY, REVIEW_REPLY, parsePostingDraft } from '../model/employer-chat'
 import { mockFetch, setMockPersona } from './mock'
 
 const read = async <T>(response: Response) => (await response.json()) as T
