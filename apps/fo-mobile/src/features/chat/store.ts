@@ -1,8 +1,7 @@
-import * as Haptics from 'expo-haptics'
 import { create } from 'zustand'
 import { ApiError } from '@push/api-client'
-import { api, API_MOCK } from '@/shared/infrastructure'
-import { chatApi, type RunInput } from './api'
+import { api, API_MOCK, hapticImpactLight, hapticNotify } from '@/shared/infrastructure'
+import { chatApi, type RunInput } from './api/client'
 import { applyEvent, emptyChat } from './reducer'
 import { errorText, fromStream } from './stream'
 import type { ChatEvent, ChatState } from './types'
@@ -19,9 +18,9 @@ const runs = new Map<string, AbortController>()
 
 const dispatch = (id: string, e: ChatEvent) => {
   useChatStore.setState((s) => ({ chats: { ...s.chats, [id]: applyEvent(s.chats[id] ?? emptyChat, e) } }))
-  if (e.type === 'approval') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-  if (e.type === 'done') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-  if (e.type === 'error') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+  if (e.type === 'approval') void hapticImpactLight()
+  if (e.type === 'done') void hapticNotify('success')
+  if (e.type === 'error') void hapticNotify('warning')
 }
 
 const sleep = (ms: number, signal: AbortSignal) =>
@@ -91,7 +90,7 @@ export function answer(id: string, text: string, choice: number) {
 export function stop(id: string) {
   runs.get(id)?.abort()
   dispatch(id, { type: 'stop' })
-  void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+  void hapticNotify('warning')
 }
 
 /** Loads saved messages once for a conversation this session hasn't seen yet. */

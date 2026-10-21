@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as DocumentPicker from 'expo-document-picker'
 import { Alert, Pressable, Share, View } from 'react-native'
 import { GlassButton, Icon, Text } from '@/shared/components'
-import { chatApi, type ChatDoc } from './api'
+import { pickChatDoc } from './api/files'
+import { chatApi, type ChatDoc } from './api/client'
 import { FileTag } from './Items'
 import { ago, Note, PageModal } from './parts'
 
@@ -15,11 +15,7 @@ export function DocsModal({ visible, onClose }: { visible: boolean; onClose: () 
   const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs, enabled: visible })
   const upload = useMutation({
     mutationFn: async () => {
-      const r = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        // The upload reads the file from the app cache.
-        copyToCacheDirectory: true,
-      })
+      const r = await pickChatDoc()
       const f = r.canceled ? null : r.assets[0]
       if (!f) return
       if ((f.size ?? 0) > 20_000_000) throw new Error('too big')

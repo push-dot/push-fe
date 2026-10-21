@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import * as DocumentPicker from 'expo-document-picker'
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Platform, Pressable, ScrollView, View, type TextInputInstance } from 'react-native'
 import { api } from '@/shared/infrastructure'
 import { useColors, useShadow } from '../../theme'
 import { Glass, Icon, Text } from '@/shared/components'
-import { chatApi } from './api'
+import { pickChatAttachment } from './api/files'
+import { chatApi } from './api/client'
 import { Composer } from './Composer'
 import { FileTag } from './Items'
 import { filterMentions, insertMention, mentionQuery, type MentionGroup, type MentionItem } from './mentions'
@@ -46,10 +46,7 @@ export function ComposerArea({ placeholder, onSend, working, onStop, onShortcut,
     setAttachment(undefined)
   }
   const attach = async () => {
-    const r = await DocumentPicker.getDocumentAsync({
-      type: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown'],
-      copyToCacheDirectory: false,
-    })
+    const r = await pickChatAttachment()
     if (!r.canceled && r.assets[0]) setAttachment(r.assets[0].name)
   }
   const pick = (m: MentionItem) => {

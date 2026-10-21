@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Settings, Tone } from '@push/api-client'
 import { router } from 'expo-router'
-import * as WebBrowser from 'expo-web-browser'
 import { useState } from 'react'
 import { Alert, Pressable, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
 import { fontFor, useColors } from '../../theme'
 import { Badge, BottomSheet, Button, GlassButton, Icon, SegmentedControl, SettingsGroup, SettingsRow, Switch, Text } from '@/shared/components'
-import { chatApi, type Account } from './api'
+import { openExternal } from './api/files'
+import { chatApi, type Account } from './api/client'
 import { useMe } from './useMe'
 import { Appear } from './motion'
 import { Mark, Note, PageModal, Pick } from './parts'
@@ -38,7 +38,7 @@ export function AccountModal({ visible, onClose }: { visible: boolean; onClose: 
   const account = useQuery({ queryKey: ['chat', 'account'], queryFn: chatApi.account, enabled: visible })
   const checkout = useMutation({
     mutationFn: () => chatApi.checkout('ULTRA'),
-    onSuccess: ({ url }) => void WebBrowser.openBrowserAsync(url),
+    onSuccess: ({ url }) => void openExternal(url),
     onError: () => Alert.alert('결제 화면을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
   const plan = page === 'plan' && account.data

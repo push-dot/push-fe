@@ -1,9 +1,9 @@
 import { type Conversation, type DataEnvelope, type ListEnvelope } from '@push/api-client'
 import { api, http, API_MOCK } from '@/shared/infrastructure'
-import { myApi } from '../my/api/client'
-import type { PickedFile } from '../my/types'
-import { QS_NEEDS, quickStartFrom, type QsSources } from './quickStartData'
-import type { Step } from './types'
+import { myApi } from '../../my/api/client'
+import type { PickedFile } from '../../my/types'
+import { QS_NEEDS, quickStartFrom, type QsSources } from '../quickStartData'
+import type { Step } from '../types'
 
 /** Conversation plus the list badges (확인 필요 / 작업 중) and last progress line the design needs. */
 export type ConversationRow = Conversation & { status?: 'NEEDS_APPROVAL' | 'RUNNING' | null; lastLine?: string }

@@ -1,5 +1,5 @@
 import type { Icon3DName } from '@/shared/components'
-import type { QsItem } from './api'
+import type { QsItem } from './api/client'
 
 export type QsLayout = 'link' | 'match' | 'pick' | 'deadline' | 'status' | 'calendar' | 'cards' | 'reply'
 

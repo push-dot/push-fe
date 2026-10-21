@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchHangul } from '@/shared/utility'
 import { useColors } from '../../theme'
 import { GlassButton, Text, TextField, TopBar } from '@/shared/components'
-import { chatApi, type ConversationRow } from './api'
+import { chatApi, type ConversationRow } from './api/client'
 import { statusBadge } from './Drawer'
 import { ago } from './parts'
 
