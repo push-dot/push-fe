@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { givenName, threadComments, timeAgo } from '../lib'
+import { givenName, threadComments, timeAgo } from '.'
 
 const now = new Date(2026, 9, 20, 12, 0)
 const ago = (ms: number) => new Date(now.getTime() - ms).toISOString()

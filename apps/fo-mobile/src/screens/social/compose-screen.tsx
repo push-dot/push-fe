@@ -1,64 +1,29 @@
-import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Image } from 'expo-image'
-import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import { useState, type ReactNode } from 'react'
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { api } from '@/shared/infrastructure'
-import { fontFor, useColors } from '../../theme'
+import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
+import { MAX_IMAGES, categoryLabel, pickPostImages, useCreatePost, type SocialImage } from '@/features/social'
 import { BottomSheet, Button, Glass, GlassButton, Icon, SettingsGroup, SettingsRow, Text } from '@/shared/components'
-import { categoryLabel } from './parts'
+import { fontFor, useColors } from '@/theme'
 
-const MAX_IMAGES = 4
-const MAX_BYTES = 10 * 1024 * 1024
-const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
-
-const upload = async (a: ImagePicker.ImagePickerAsset) => {
-  const form = new FormData()
-  const type = a.mimeType ?? 'image/jpeg'
-  // React Native's FormData takes a { uri, name, type } file descriptor.
-  form.append('file', { uri: a.uri, name: a.fileName ?? `image.${type.split('/')[1]}`, type } as unknown as Blob)
-  return (await api.uploads.image(form)).key
-}
-
-/** 글쓰기 시트 "새 글": modal route, page sheet on iOS. */
-export function ComposeScreen() {
+const ComposeScreen = () => {
   const c = useColors()
   const insets = useSafeAreaInsets()
-  const qc = useQueryClient()
   const ios = Platform.OS === 'ios'
   const [category, setCategory] = useState<PostCategory | null>(null)
   const [picking, setPicking] = useState(false)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
-  const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([])
-
-  const submit = useMutation({
-    mutationFn: async () => {
-      const imageKeys = await Promise.all(images.map(upload))
-      return api.posts.create({ category: category!, title: title.trim(), body: body.trim(), imageKeys })
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['posts'] })
-      router.back()
-    },
-    onError: () => Alert.alert('글을 올리지 못했어요', '잠시 후 다시 시도해 주세요.'),
-  })
+  const [images, setImages] = useState<SocialImage[]>([])
+  const submit = useCreatePost()
   const ready = !!category && title.trim().length > 0 && body.trim().length > 0 && !submit.isPending
 
   const pick = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: MAX_IMAGES - images.length,
-      quality: 0.85,
-    })
-    if (res.canceled) return
-    const ok = res.assets.filter((a) => (!a.mimeType || TYPES.includes(a.mimeType)) && (a.fileSize ?? 0) <= MAX_BYTES)
-    if (ok.length < res.assets.length) Alert.alert('올릴 수 없는 사진이 있어요', 'JPG, PNG, WEBP, HEIC 사진만 장당 10MB까지 올릴 수 있어요.')
-    setImages((prev) => [...prev, ...ok].slice(0, MAX_IMAGES))
+    const picked = await pickPostImages(images.length)
+    if (!picked) return
+    setImages((prev) => [...prev, ...picked].slice(0, MAX_IMAGES))
   }
 
   const field = (children: ReactNode, style: object) =>
@@ -71,7 +36,7 @@ export function ComposeScreen() {
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>
           새 글
         </Text>
-        <Button label="게시" size="sm" disabled={!ready} onPress={() => submit.mutate()} />
+        <Button label="게시" size="sm" disabled={!ready} onPress={() => submit.mutate({ category: category!, title, body, images })} />
       </View>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, gap: 14, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
         <Pressable accessibilityRole="button" accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`} onPress={() => setPicking(true)}>
@@ -157,3 +122,5 @@ export function ComposeScreen() {
     </KeyboardAvoidingView>
   )
 }
+
+export default ComposeScreen

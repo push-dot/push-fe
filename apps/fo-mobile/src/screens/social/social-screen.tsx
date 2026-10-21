@@ -1,49 +1,15 @@
-import { POST_CATEGORIES, type Post, type PostCategory } from '@push/api-client'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, FlatList, Pressable, ScrollView, View } from 'react-native'
-import { api } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
-import { Button, Chip, GlassButton, Icon, Text, TopBar } from '@/shared/components'
-import { AuthorRow, Band, ImageGrid } from './parts'
+import { ActivityIndicator, FlatList, ScrollView, View } from 'react-native'
+import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
+import { Band, PostCard, usePosts } from '@/features/social'
+import { Button, Chip, GlassButton, Text, TopBar } from '@/shared/components'
+import { useColors } from '@/theme'
 
-export const openPost = (id: string) => router.push({ pathname: '/posts/[id]', params: { id } })
-
-function PostCard({ post }: { post: Post }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => openPost(post.id)}
-      style={({ pressed }) => ({ gap: 10, paddingVertical: 18, paddingHorizontal: 20, opacity: pressed ? 0.7 : 1 })}
-    >
-      <AuthorRow post={post} size={36} />
-      <View style={{ gap: 4 }}>
-        <Text v="h3">{post.title}</Text>
-        <Text v="b2" color="t2" numberOfLines={2}>
-          {post.body}
-        </Text>
-      </View>
-      <ImageGrid urls={post.imageUrls} row={88} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <Icon name="chat" size={16} color="t3" />
-        <Text v="c1" color="t3" weight="600">
-          댓글 {post.commentCount}
-        </Text>
-      </View>
-    </Pressable>
-  )
-}
-
-export function SocialScreen() {
+const SocialScreen = () => {
   const c = useColors()
   const [category, setCategory] = useState<PostCategory | null>(null)
-  const q = useInfiniteQuery({
-    queryKey: ['posts', category],
-    queryFn: ({ pageParam }) => api.posts.list(category, { cursor: pageParam }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.page.nextCursor ?? undefined,
-  })
+  const q = usePosts(category)
   const posts = q.data?.pages.flatMap((p) => p.data) ?? []
 
   return (
@@ -113,3 +79,5 @@ export function SocialScreen() {
     </View>
   )
 }
+
+export default SocialScreen
