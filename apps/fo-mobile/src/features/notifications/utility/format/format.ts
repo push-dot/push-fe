@@ -1,7 +1,6 @@
 const DAY = 86_400_000
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
 
-/** 10분 전 · 2시간 전 · 오전 9:00 · 어제 · 10월 17일 (Notifications board). */
 export const timeLabel = (iso: string, now = new Date()) => {
   const t = new Date(iso)
   const min = Math.floor((now.getTime() - t.getTime()) / 60_000)
@@ -17,7 +16,6 @@ export const timeLabel = (iso: string, now = new Date()) => {
   return `${t.getMonth() + 1}월 ${t.getDate()}일`
 }
 
-/** 오늘 · 이번 주 · 이전 */
 export const groupLabel = (iso: string, now = new Date()) => {
   const days = Math.round((startOfDay(now) - startOfDay(new Date(iso))) / DAY)
   return days === 0 ? '오늘' : days < 7 ? '이번 주' : '이전'

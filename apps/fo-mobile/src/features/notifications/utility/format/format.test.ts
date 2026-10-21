@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupLabel, timeLabel } from '../format'
+import { groupLabel, timeLabel } from './format'
 
 const now = new Date(2026, 9, 20, 15, 0)
 const at = (d: number, h: number, m = 0) => new Date(2026, 9, d, h, m).toISOString()

@@ -7,7 +7,7 @@ import { useColors } from '../../theme'
 import { GlassButton, Icon, Icon3D, JobCard, Text, TopBar, Wordmark, type Icon3DName } from '@/shared/components'
 import { useToggleBookmark } from '../jobs/queries'
 import { SECTIONS, type SectionKind } from '../jobs/SectionScreen'
-import { useUnreadCount } from '../notifications/queries'
+import { useUnreadCount } from '@/features/notifications'
 
 // Glow colours match each 3D icon's art, so they are not theme tokens.
 const SHORTCUTS: { label: string; icon: Icon3DName; glow: string; opacity: number; href: Href }[] = [

@@ -25,3 +25,11 @@ export const signOut = async () => {
   if (session?.refreshToken) await api.auth.logout(session.refreshToken).catch(() => undefined)
   await set(null)
 }
+
+export const signInWithDevToken = (accessToken: string) =>
+  useSession.getState().set({
+    accessToken,
+    refreshToken: '',
+    expiresIn: 0,
+    user: { id: 'dev', displayName: '개발자', locale: 'ko' },
+  })
