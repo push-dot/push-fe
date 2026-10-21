@@ -1,12 +1,11 @@
 import { CAREER_STATUSES, HUB_CATEGORIES, TENURES, type JobCategory } from '@push/api-client'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { HUB_PAGE_SIZE } from './constants'
 import HubFilterSheet, { type HubDraft } from './hub-filter-sheet'
 import ProfileCard from './profile-card'
-import { profilesList } from '../../shared/api/operations'
+import { useProfileCount, useProfilePages } from '../../entities/profile'
 
 
 const filtersOf = (categories: JobCategory[], draft: HubDraft) => ({
@@ -21,17 +20,8 @@ const HubPage = () => {
   const [applied, setApplied] = useState<HubDraft>({ explore: 'recommended' })
   const [draft, setDraft] = useState<HubDraft>({ explore: 'recommended' })
   const [open, setOpen] = useState(false)
-  const listQuery = useInfiniteQuery({
-    queryKey: ['profiles', categories, applied],
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => profilesList({ ...filtersOf(categories, applied), cursor: pageParam, limit: HUB_PAGE_SIZE }),
-    getNextPageParam: (last) => (last.page.hasMore ? (last.page.nextCursor ?? undefined) : undefined),
-  })
-  const countQuery = useQuery({
-    queryKey: ['profiles', 'count', categories, draft],
-    queryFn: () => profilesList({ ...filtersOf(categories, draft), limit: 1 }),
-    enabled: open,
-  })
+  const listQuery = useProfilePages(['profiles', categories, applied], { ...filtersOf(categories, applied), limit: HUB_PAGE_SIZE })
+  const countQuery = useProfileCount(['profiles', 'count', categories, draft], { ...filtersOf(categories, draft), limit: 1 }, open)
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const filterCount = (applied.tenure ? 1 : 0) + (applied.status ? 1 : 0) + (applied.explore === 'offers' ? 1 : 0)
   const summary = [

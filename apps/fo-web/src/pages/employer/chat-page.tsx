@@ -7,7 +7,7 @@ import ChatApp from './chat-app'
 import ChatLock from './chat-lock'
 import { chatGateFrom, type ChatBlock } from './chat-gate'
 import { CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, STARTER_INTERVIEW, STARTER_POSTING, STARTER_REVIEW, VERIFY_LINK } from './constants'
-import { useEmployerPlan } from './use-employer-plan'
+import { useEmployerPlan } from '../../entities/company'
 import { conversationsCreateEmployer } from '../../shared/api/operations'
 
 

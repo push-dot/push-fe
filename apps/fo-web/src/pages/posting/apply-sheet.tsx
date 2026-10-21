@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
+import { useSources } from '../../entities/profile'
 import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_OPTIONAL, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
-import { listSources } from '../../shared/api/sources'
 import { postingsApply } from '../../shared/api/operations'
 
 
@@ -16,7 +16,7 @@ const ApplySheet = ({
   onApplied: () => void
 }) => {
   const queryClient = useQueryClient()
-  const sources = useQuery({ queryKey: ['sources'], queryFn: listSources })
+  const sources = useSources()
   const [picked, setPicked] = useState<string[] | null>(null)
   const selected = picked ?? (sources.data?.[0] ? [sources.data[0].id] : [])
   const apply = useMutation({

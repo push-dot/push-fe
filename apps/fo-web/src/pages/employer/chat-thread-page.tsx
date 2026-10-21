@@ -1,5 +1,5 @@
 import { ApiError, type Message } from '@push/api-client'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 
@@ -18,8 +18,11 @@ import {
   REFERENCE_POSTING,
   VERIFY_LINK,
 } from './constants'
-import { useEmployerPlan } from './use-employer-plan'
-import { conversationsList, conversationsMessages, postingsMine, postingsApplicants, conversationsAttach, conversationsSend, conversationsStream } from '../../shared/api/operations'
+import { useEmployerApplicants } from '../../entities/application'
+import { useEmployerPlan } from '../../entities/company'
+import { useEmployerConversations, useEmployerMessages } from '../../entities/conversation'
+import { useMyPostings } from '../../entities/posting'
+import { conversationsAttach, conversationsSend, conversationsStream } from '../../shared/api/operations'
 
 
 const bubble = (conversationId: string, role: Message['role'], text: string): Message => ({
@@ -48,20 +51,12 @@ const ChatThreadPage = () => {
   useEffect(() => {
     setIntent(routed.intent)
   }, [id, routed.intent])
-  const conversations = useQuery({
-    queryKey: ['employer-conversations'],
-    queryFn: () => conversationsList({ audience: 'EMPLOYER' }),
-  })
-  const messages = useQuery({
-    queryKey: ['employer-messages', id],
-    queryFn: () => conversationsMessages(id),
-    enabled: Boolean(id),
-  })
-  const postings = useQuery({ queryKey: ['company-postings'], queryFn: () => postingsMine() })
+  const conversations = useEmployerConversations()
+  const messages = useEmployerMessages(id)
+  const postings = useMyPostings()
   const openPosting = postings.data?.data.find((item) => !item.closedAt)
-  const applicants = useQuery({
+  const applicants = useEmployerApplicants(openPosting?.id, undefined, {
     queryKey: ['employer-applicants', openPosting?.id, 'chat'],
-    queryFn: () => postingsApplicants(openPosting?.id ?? ''),
     enabled: Boolean(openPosting?.id),
   })
   const people = (applicants.data?.data ?? []).map((item) => ({

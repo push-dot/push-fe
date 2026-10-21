@@ -24,7 +24,7 @@ import {
   guestApplyAction,
 } from './constants'
 import GuestApplyDialog from './guest-apply-dialog'
-import { postingActionMode } from './posting-mode'
+import { postingActionMode } from '../../entities/posting'
 import { shareLink } from './share-link'
 import { postingsUnbookmark, postingsBookmark } from '../../shared/api/operations'
 

@@ -1,17 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
 import { NavLink } from 'react-router-dom'
 
+import { useMyCompany } from '../entities/company'
 import { brandOf } from '../shared/lib/format'
 import { useSession } from '../shared/auth/use-session'
 import { PLAN_NAME, ROLE_NAME } from '../shared/model/employer-plan'
 import { NAV } from './constants'
-import { companiesMe } from '../shared/api/operations'
 
 
 const EmployerChip = () => {
   const session = useSession()
   const companyId = session?.user.companyId
-  const company = useQuery({ queryKey: ['company', 'me'], queryFn: () => companiesMe(), enabled: Boolean(companyId) })
+  const company = useMyCompany({ enabled: Boolean(companyId) })
   const name = company.data?.name || session?.user.displayName || ''
   const plan = company.data?.plan
   const role = company.data?.role ?? session?.user.companyRole

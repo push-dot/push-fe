@@ -1,5 +1,5 @@
 import { ApiError, type EmployerPlan } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -29,7 +29,9 @@ import {
 import { PLAN_NAME } from '../../shared/model/employer-plan'
 import MySide from '../my/my-side'
 import PlanCard from './plan-card'
-import { billingCompanyStatus, companiesMe, billingCheckout, billingTopup } from '../../shared/api/operations'
+import { useCompanyBilling } from '../../entities/billing'
+import { useMyCompany } from '../../entities/company'
+import { billingCheckout, billingTopup } from '../../shared/api/operations'
 
 
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404
@@ -42,10 +44,8 @@ const PlansPage = () => {
   const [actionError, setActionError] = useState<string | null>(null)
   const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
   const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
-  const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => billingCompanyStatus() })
-  const company = useQuery({
-    queryKey: ['company', 'me'],
-    queryFn: () => companiesMe(),
+  const billing = useCompanyBilling()
+  const company = useMyCompany({
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
   })
   const openLocal = async (url: string) => {

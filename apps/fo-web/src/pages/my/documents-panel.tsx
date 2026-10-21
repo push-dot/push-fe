@@ -1,24 +1,13 @@
 import type { Source } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
-import { listSources, rememberSource } from '../../shared/api/sources'
-import Toast, { useToast } from '../../shared/ui/toast'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
+
+import { useDocuments } from '../../entities/profile'
+import { rememberSource } from '../../shared/api/sources'
+import Toast, { useToast } from '../../shared/ui/toast'
 import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
 import { resumeFileError } from './resume-file'
-import { meProfile, sourcesGet, sourcesUpload } from '../../shared/api/operations'
-
-
-const loadDocuments = async () => {
-  const [uploaded, profile] = await Promise.all([listSources(), meProfile()])
-  if (!profile.resumeSourceId || uploaded.some((item) => item.id === profile.resumeSourceId)) return uploaded
-  try {
-    const resume = await sourcesGet(profile.resumeSourceId)
-    return [resume, ...uploaded]
-  } catch {
-    return uploaded
-  }
-}
+import { sourcesUpload } from '../../shared/api/operations'
 
 const fileSize = (size: number) => (size >= 1048576 ? `${(size / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(size / 1024))}KB`)
 
@@ -32,7 +21,7 @@ const DocumentsPanel = () => {
   const queryClient = useQueryClient()
   const { message, show } = useToast()
   const inputRef = useRef<HTMLInputElement>(null)
-  const query = useQuery({ queryKey: ['documents'], queryFn: loadDocuments })
+  const query = useDocuments()
   const upload = useMutation({
     mutationFn: async (file: File) => {
       const form = new FormData()

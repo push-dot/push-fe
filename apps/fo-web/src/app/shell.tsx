@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
@@ -9,7 +8,8 @@ import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
 import EmployerChip from './employer-chip'
 import { EMPLOYER_LINKS, topEndLinks } from './shell-links'
-import { meWebNotifications, meOffers } from '../shared/api/operations'
+import { useNotifications } from '../entities/notification'
+import { useOffers } from '../entities/offer'
 
 
 const MAIN_NAV = [
@@ -40,16 +40,9 @@ const Shell = () => {
   const employer = session?.user.accountType === 'EMPLOYER'
   const chatScreen = !auth && location.pathname.startsWith('/employer/chat')
   const end = topEndLinks(Boolean(session))
-  const notes = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => meWebNotifications(),
-    enabled: Boolean(session) && !auth,
-  })
-  const received = useQuery({
-    queryKey: ['offers', 'received'],
-    queryFn: () => meOffers('received'),
-    enabled: Boolean(session) && !auth,
-  })
+  const live = Boolean(session) && !auth
+  const notes = useNotifications(live)
+  const received = useOffers('received', live)
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   return (

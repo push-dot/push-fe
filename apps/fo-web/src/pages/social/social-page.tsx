@@ -1,5 +1,4 @@
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -9,19 +8,14 @@ import ComposerSheet from './composer-sheet'
 import { composerPrompt } from './composer-prompt'
 import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE } from './constants'
 import PostCard from './post-card'
-import { postsList } from '../../shared/api/operations'
+import { usePostPages } from '../../entities/post'
 
 
 const SocialPage = () => {
   const session = useSession()
   const [category, setCategory] = useState<PostCategory | null>(null)
   const [composing, setComposing] = useState(false)
-  const listQuery = useInfiniteQuery({
-    queryKey: ['posts', category],
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => postsList(category, { cursor: pageParam, limit: POST_PAGE_SIZE }),
-    getNextPageParam: (last) => (last.page.hasMore ? (last.page.nextCursor ?? undefined) : undefined),
-  })
+  const listQuery = usePostPages(category, POST_PAGE_SIZE)
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const popular = [...items].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3)
   const name = session?.user.displayName ?? ''

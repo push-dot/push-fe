@@ -1,4 +1,4 @@
-const MICRO_PER_CREDIT = 1000
+import { MICRO_PER_CREDIT } from './constants'
 
 export const creditCount = (micro: number) => Math.round(micro / MICRO_PER_CREDIT)
 

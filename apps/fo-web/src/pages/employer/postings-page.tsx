@@ -1,15 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { AI_POSTING, FILTER_ALL, NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_LOADING, POSTINGS_TITLE, STATUS_CLOSED, STATUS_OPEN } from './constants'
 import PostingRow from './posting-row'
-import { postingsMine } from '../../shared/api/operations'
+import { useMyPostings } from '../../entities/posting'
 
 
 const PostingsPage = () => {
   const [filter, setFilter] = useState<'all' | 'open' | 'closed'>('all')
-  const postings = useQuery({ queryKey: ['company-postings'], queryFn: () => postingsMine() })
+  const postings = useMyPostings()
   if (postings.isError) {
     return (
       <main className="page">

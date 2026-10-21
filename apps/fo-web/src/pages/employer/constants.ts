@@ -1,4 +1,4 @@
-import { creditCount, creditText } from './credit-count'
+import { creditCount, creditText } from '../../entities/billing'
 
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8

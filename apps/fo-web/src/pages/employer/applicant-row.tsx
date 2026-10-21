@@ -1,6 +1,6 @@
 import type { ApplicantSummary } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { employerStageLabel } from './stage-label'
+import { employerStageLabel } from '../../entities/application'
 
 const appliedLabel = (iso: string) => {
   const [, month, day] = iso.slice(0, 10).split('-')

@@ -12,7 +12,7 @@ import BrowserPosting from './browser-posting'
 import PostingActions from './posting-actions'
 import Section from '../../shared/ui/section'
 import Status from '../../shared/ui/status'
-import { postingsGet } from '../../shared/api/operations'
+import { postingsGet } from '../../entities/posting'
 
 
 const PostingPage = () => {

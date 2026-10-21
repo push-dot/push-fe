@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -20,8 +20,8 @@ import {
   OFFER_PUBLIC_NOTE,
   OFFER_SEND,
 } from './constants'
-import { offerStatusLabel } from './offer-status'
-import { meOffers, meOffer, meOfferMessages, meAcceptOffer, meDeclineOffer, meSendOfferMessage } from '../../shared/api/operations'
+import { offerStatusLabel, useOffer, useOfferMessages, useOffers } from '../../entities/offer'
+import { meAcceptOffer, meDeclineOffer, meSendOfferMessage } from '../../shared/api/operations'
 
 
 const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
@@ -32,14 +32,10 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
   const { message, show } = useToast()
   const [reply, setReply] = useState('')
   const [draft, setDraft] = useState('')
-  const received = useQuery({ queryKey: ['offers', 'received'], queryFn: () => meOffers('received') })
-  const sent = useQuery({ queryKey: ['offers', 'sent'], queryFn: () => meOffers('sent') })
-  const offerQuery = useQuery({ queryKey: ['offer', selectedId], queryFn: () => meOffer(selectedId ?? ''), enabled: Boolean(selectedId) })
-  const messagesQuery = useQuery({
-    queryKey: ['offer-messages', selectedId],
-    queryFn: () => meOfferMessages(selectedId ?? ''),
-    enabled: Boolean(selectedId),
-  })
+  const received = useOffers('received')
+  const sent = useOffers('sent')
+  const offerQuery = useOffer(selectedId)
+  const messagesQuery = useOfferMessages(selectedId)
   const items = (box === 'sent' ? sent.data?.data : received.data?.data) ?? []
   const empty = box === 'sent' ? OFFER_EMPTY_SENT : OFFER_EMPTY_RECEIVED
   const refresh = async () => {

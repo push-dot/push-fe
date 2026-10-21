@@ -1,20 +1,20 @@
 import { POST_CATEGORIES } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { compactCount, relativeTime } from '../../shared/lib/format'
-import { authorLabel } from './author-label'
+import { authorLabel, usePost, usePostComments } from '../../entities/post'
 import CommentItem from './comment-item'
 import { COMMENT_MAX, COMMENT_PLACEHOLDER, EMPLOYER_BADGE } from './constants'
-import { postsGet, postsComments, postsComment } from '../../shared/api/operations'
+import { postsComment } from '../../shared/api/operations'
 
 
 const PostPage = () => {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
-  const postQuery = useQuery({ queryKey: ['post', id], queryFn: () => postsGet(id) })
-  const commentsQuery = useQuery({ queryKey: ['comments', id], queryFn: () => postsComments(id) })
+  const postQuery = usePost(id)
+  const commentsQuery = usePostComments(id)
   const [body, setBody] = useState('')
   const [parentId, setParentId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)

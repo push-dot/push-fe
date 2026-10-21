@@ -1,5 +1,5 @@
 import { ApiError, type CompanyMember } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -29,7 +29,9 @@ import {
 } from './constants'
 import { inviteHint } from './invite-hint'
 import MemberRow from './member-row'
-import { companiesMe, companiesMembers, companiesInvite, companiesRemoveMember, companiesTransferAdmin } from '../../shared/api/operations'
+import { useMyCompany } from '../../entities/company'
+import { useCompanyMembers } from '../../entities/member'
+import { companiesInvite, companiesRemoveMember, companiesTransferAdmin } from '../../shared/api/operations'
 
 
 const MembersPage = () => {
@@ -39,8 +41,8 @@ const MembersPage = () => {
   const [email, setEmail] = useState('')
   const [inviting, setInviting] = useState(false)
   const [seatError, setSeatError] = useState<string | null>(null)
-  const companyQuery = useQuery({ queryKey: ['company', 'me'], queryFn: () => companiesMe() })
-  const membersQuery = useQuery({ queryKey: ['company', 'members'], queryFn: () => companiesMembers() })
+  const companyQuery = useMyCompany()
+  const membersQuery = useCompanyMembers()
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['company', 'me'] })
     await queryClient.invalidateQueries({ queryKey: ['company', 'members'] })

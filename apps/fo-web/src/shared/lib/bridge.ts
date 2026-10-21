@@ -13,21 +13,27 @@ declare global {
   }
 }
 
-export const pushEnv = (): PushEnv => (window.__PUSH__ ??= {})
+export const pushEnv = (): PushEnv => {
+  if (typeof window === 'undefined') return {}
+  return (window.__PUSH__ ??= {})
+}
 
-export const isWebView = () => !!window.ReactNativeWebView
+export const isWebView = () => typeof window !== 'undefined' && !!window.ReactNativeWebView
 
 let mockLatched = false
 
 export const isMock = () => {
   if (mockLatched) return true
+  if (typeof window === 'undefined') return false
   mockLatched = !!pushEnv().mock || new URLSearchParams(location.search).has('mock')
   return mockLatched
 }
 
-window.addEventListener('push:token', (e) => {
-  pushEnv().token = (e as CustomEvent<{ token?: string | null }>).detail?.token
-})
+if (typeof window !== 'undefined') {
+  window.addEventListener('push:token', (e) => {
+    pushEnv().token = (e as CustomEvent<{ token?: string | null }>).detail?.token
+  })
+}
 
 export const send = (message: BridgeMessage) => {
   if (message.type === 'title') document.title = message.title

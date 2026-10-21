@@ -1,12 +1,13 @@
 import { ApiError, type Settings } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
-import { meSettings, meConsents, meUpdateSettings, meUpdateConsents, meDeleteAccount } from '../../shared/api/operations'
+import { useConsents, useSettings } from '../../entities/session'
+import { meUpdateSettings, meUpdateConsents, meDeleteAccount } from '../../shared/api/operations'
 import {
   CAREER_VISIBILITY,
   CONSENT_COPY,
@@ -27,8 +28,8 @@ const SettingsPage = () => {
   const session = useSession()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const settingsQuery = useQuery({ queryKey: ['settings'], queryFn: () => meSettings() })
-  const consentQuery = useQuery({ queryKey: ['consents'], queryFn: () => meConsents() })
+  const settingsQuery = useSettings()
+  const consentQuery = useConsents()
   const [confirming, setConfirming] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const saveSettings = useMutation({

@@ -1,18 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 
 import PostingCard from '../jobs/posting-card'
+import { useApplications } from '../../entities/application'
+import { useBookmarks, usePostingList } from '../../entities/posting'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { HOME_SECTIONS, HOME_SHORTCUTS, OPEN_APPLICATION_STAGES } from './constants'
-import { postingsList, meBookmarks, applicationsList } from '../../shared/api/operations'
 
 
 const HomeSection = ({ sort, title }: { sort: 'latest' | 'deadline' | 'popular'; title: string }) => {
-  const query = useQuery({
-    queryKey: ['postings', { sort }],
-    queryFn: () => postingsList({ sort }),
-  })
+  const query = usePostingList(sort)
   const items = query.data?.data ?? []
   if (!query.data || items.length === 0) return null
   return (
@@ -64,8 +61,8 @@ const ShortcutArt = ({ name }: { name: string }) => {
 const HomePage = () => {
   const session = useSession()
   const navigate = useNavigate()
-  const bookmarks = useQuery({ queryKey: ['bookmarks'], queryFn: () => meBookmarks(), enabled: Boolean(session) })
-  const applications = useQuery({ queryKey: ['applications'], queryFn: () => applicationsList(), enabled: Boolean(session) })
+  const bookmarks = useBookmarks(Boolean(session))
+  const applications = useApplications(Boolean(session))
   const hintFor = (key: string, hint: string) => {
     if (!session) return hint
     if (key === 'bookmarks' && bookmarks.data) return `저장한 공고 ${bookmarks.data.data.length}개`

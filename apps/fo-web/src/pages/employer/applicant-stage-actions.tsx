@@ -1,7 +1,7 @@
 import type { EmployerStage } from '@push/api-client'
 import { EMPLOYER_STAGE_ACTIONS, stageChangeBlocked, type ApplicationStage } from '../../shared/model/applicant-stage'
 import { STAGE_APPLIED } from './constants'
-import { employerStageLabel } from './stage-label'
+import { employerStageLabel } from '../../entities/application'
 
 const ApplicantStageActions = ({
   stage,

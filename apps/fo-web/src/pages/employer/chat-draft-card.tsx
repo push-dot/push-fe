@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { PostingDraft } from '../../shared/model/employer-chat'
 import { DRAFT_BADGE, DRAFT_POSTING } from './constants'
-import { textFromConditions } from './posting-draft'
+import { textFromConditions } from '../../entities/posting'
 
 const lines = (value: string) => value.split('\n').map((line) => line.trim()).filter(Boolean)
 

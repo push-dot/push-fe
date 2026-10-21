@@ -1,5 +1,5 @@
 import type { Comment } from '@push/api-client'
-import { authorLabel } from './author-label'
+import { authorLabel } from '../../entities/post'
 import { EMPLOYER_BADGE } from './constants'
 
 const CommentItem = ({ comment, onReply }: { comment: Comment; onReply: (id: string) => void }) => (

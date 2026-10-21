@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyConfirmLabel, guestApplyAction } from './constants'
-import { postingActionMode } from './posting-mode'
+import { postingActionMode } from '../../entities/posting'
 
 describe('apply label', () => {
   it('names the selected document count', () => {

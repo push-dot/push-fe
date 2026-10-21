@@ -6,7 +6,7 @@ import {
   type JobCategory,
   type PostingDetail,
 } from '@push/api-client'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
@@ -34,8 +34,9 @@ import {
   SAVE_POSTING,
 } from './constants'
 import { editorFailure } from './editor-failure'
-import { conditionsFromText, draftFields, listFromLines } from './posting-draft'
-import { companiesMe, postingsGet, postingsUpdate, postingsCreate, postingsClose } from '../../shared/api/operations'
+import { useMyCompany } from '../../entities/company'
+import { conditionsFromText, draftFields, listFromLines, useEmployerPosting } from '../../entities/posting'
+import { postingsUpdate, postingsCreate, postingsClose } from '../../shared/api/operations'
 
 
 type EditorForm = {
@@ -114,16 +115,8 @@ const PostingEditorPage = () => {
   const revisionRef = useRef(0)
   const formRef = useRef(form)
   formRef.current = form
-  const company = useQuery({
-    queryKey: ['company', 'me'],
-    queryFn: () => companiesMe(),
-    enabled: Boolean(session?.user.companyId),
-  })
-  const detail = useQuery({
-    queryKey: ['employer-posting', id],
-    queryFn: () => postingsGet(id ?? ''),
-    enabled: Boolean(id),
-  })
+  const company = useMyCompany({ enabled: Boolean(session?.user.companyId) })
+  const detail = useEmployerPosting(id)
   useEffect(() => {
     if (!id || !detail.data || detail.data.id !== id || readyFor === id) return
     setForm(formFromDetail(detail.data))

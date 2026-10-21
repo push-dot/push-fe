@@ -6,7 +6,7 @@ import { brandOf, initials, periodLabel, roleLabel } from '../../shared/lib/form
 import { useDetail } from '../../shared/lib/use-detail'
 import BrowserProfile from './browser-profile'
 import Status from '../../shared/ui/status'
-import { profilesGet } from '../../shared/api/operations'
+import { profilesGet } from '../../entities/profile'
 
 
 const ProfilePage = () => {

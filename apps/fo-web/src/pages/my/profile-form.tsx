@@ -1,11 +1,12 @@
 import { CAREER_STATUSES, type Profile } from '@push/api-client'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { assetUrl } from '../../shared/api/client'
 import { brandOf, initials, periodLabel } from '../../shared/lib/format'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { PROFILE_SAVED } from './constants'
-import { meProfile, meUpdateProfile } from '../../shared/api/operations'
+import { useMyProfile } from '../../entities/profile'
+import { meUpdateProfile } from '../../shared/api/operations'
 
 
 type CareerDraft = { company: string; role: string; startedOn: string; endedOn: string; description: string }
@@ -33,7 +34,7 @@ const toDraft = (profile: Profile): Draft => ({
 const ProfileForm = () => {
   const queryClient = useQueryClient()
   const { message, show } = useToast()
-  const query = useQuery({ queryKey: ['me', 'profile'], queryFn: () => meProfile() })
+  const query = useMyProfile()
   const [draft, setDraft] = useState<Draft | null>(null)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
