@@ -1,14 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Platform, Pressable, ScrollView, View, type TextInputInstance } from 'react-native'
-import { api } from '@/shared/infrastructure'
 import { useColors, useShadow } from '../../theme'
 import { Glass, Icon, Text } from '@/shared/components'
 import { pickChatAttachment } from './api/files'
-import { chatApi } from './api/client'
+import { useMentionGroups } from './api/hooks'
 import { Composer } from './composer'
 import { FileTag } from './items'
-import { filterMentions, insertMention, mentionQuery, type MentionGroup, type MentionItem } from './mentions'
+import { filterMentions, insertMention, mentionQuery, type MentionItem } from './mentions'
 import { Appear } from './motion'
 import { Mark } from './components'
 import { QUICK_STARTS, type QuickStart } from './quick-starts'
@@ -79,30 +77,6 @@ export const ComposerArea = ({ placeholder, onSend, working, onStop, onShortcut,
         onClearAttachment={() => setAttachment(undefined)}
       />
     </View>
-  )
-}
-
-const useMentionGroups = (): MentionGroup[] => {
-  const bookmarks = useQuery({ queryKey: ['me', 'bookmarks', 'mention'], queryFn: () => api.me.bookmarks({ limit: 20 }) })
-  const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs })
-  const links = useQuery({ queryKey: ['me', 'links'], queryFn: () => api.me.links(undefined, { limit: 50 }) })
-  return useMemo(
-    () => [
-      {
-        title: '북마크 공고',
-        items: (bookmarks.data?.data ?? []).map((p) => ({ id: p.id, kind: 'job' as const, title: p.title, sub: `${p.company} · ${p.location}`, tag: p.company.slice(0, 1) })),
-      },
-      {
-        title: '마이 › 서류',
-        items: (docs.data ?? []).map((d) => ({ id: d.id, kind: 'doc' as const, title: d.fileName, sub: d.aiMade ? 'AI로 만듦' : `${Math.round(d.size / 1000)}KB`, tag: d.fileName.split('.').pop()!.toUpperCase() })),
-      },
-      {
-        title: '내 링크',
-        items: (links.data?.data ?? []).map((l) => ({ id: l.id, kind: 'link' as const, title: l.title, sub: l.url.replace(/^https?:\/\//, '') })),
-      },
-      { title: '바로가기', items: QUICK_STARTS.map((q) => ({ id: q.key, kind: 'shortcut' as const, title: q.label, sub: '' })) },
-    ],
-    [bookmarks.data, docs.data, links.data],
   )
 }
 

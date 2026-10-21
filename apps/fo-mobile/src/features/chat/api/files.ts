@@ -1,3 +1,4 @@
+import { Linking } from 'react-native'
 import { openBrowser, pickDocument } from '../../../shared/infrastructure'
 
 export const CHAT_ATTACHMENT_TYPES = [
@@ -18,3 +19,5 @@ export const pickChatDoc = () =>
   pickDocument({ type: CHAT_DOC_TYPES, copyToCacheDirectory: true })
 
 export const openExternal = (url: string) => openBrowser(url)
+
+export const openLink = (url: string) => Linking.openURL(url)

@@ -1,12 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
 import type { Posting } from '@push/api-client'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
-import { api } from '@/shared/infrastructure'
 import { BottomSheet, Button, Chip, Icon, Text } from '@/shared/components'
 import { brandOf, careerLabel } from '@/shared/utility'
-import { useStartChat } from './api/hooks'
+import { useChatBookmarks, useStartChat } from './api/hooks'
 import { Mark, Note, PageModal } from './components'
 
 // Same company colour as JobCard so a company looks the same across screens.
@@ -19,7 +17,7 @@ export const BookmarksModal = ({ visible, onClose, onDone }: { visible: boolean;
   const start = useStartChat()
   const [filter, setFilter] = useState<'all' | 'soon' | 'notApplied'>('all')
   const [picked, setPicked] = useState<Posting | null>(null)
-  const q = useQuery({ queryKey: ['me', 'bookmarks', 'chat'], queryFn: () => api.me.bookmarks({ limit: 100 }), enabled: visible })
+  const q = useChatBookmarks(visible)
   const all = q.data?.data ?? []
   const lists = { all, soon: all.filter(soon), notApplied: all.filter((p) => !p.applied) }
   const go = (fn: () => void) => (setPicked(null), onDone(), fn())

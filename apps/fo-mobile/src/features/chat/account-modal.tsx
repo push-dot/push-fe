@@ -1,14 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Settings, Tone } from '@push/api-client'
+import type { Tone } from '@push/api-client'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Pressable, View } from 'react-native'
-import { api } from '@/shared/infrastructure'
 import { fontFor, useColors } from '../../theme'
 import { Badge, BottomSheet, Button, GlassButton, Icon, SegmentedControl, SettingsGroup, SettingsRow, Switch, Text } from '@/shared/components'
-import { openExternal } from './api/files'
-import { chatApi, type Account } from './api/client'
-import { useMe } from './use-me'
+import { type Account } from './api/client'
+import { useChatAccount, useChatDocs, useCheckoutUltra, useMe, useMySettings, useUpdateChatSettings } from './api/hooks'
 import { Appear } from './motion'
 import { Mark, Note, PageModal, Pick } from './components'
 import { usePrefs } from './store'
@@ -35,12 +32,8 @@ type Picker = { title: string; options: string[]; value: number; onPick: (i: num
 export const AccountModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
   const [page, setPage] = useState<'account' | 'plan'>('account')
   const close = () => (setPage('account'), onClose())
-  const account = useQuery({ queryKey: ['chat', 'account'], queryFn: chatApi.account, enabled: visible })
-  const checkout = useMutation({
-    mutationFn: () => chatApi.checkout('ULTRA'),
-    onSuccess: ({ url }) => void openExternal(url),
-    onError: () => Alert.alert('결제 화면을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
+  const account = useChatAccount(visible)
+  const checkout = useCheckoutUltra()
   const plan = page === 'plan' && account.data
   // One modal for both pages: 요금제 navigates inside the sheet instead of stacking another.
   return (
@@ -64,17 +57,12 @@ export const AccountModal = ({ visible, onClose }: { visible: boolean; onClose: 
 
 const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; account?: Account; onPlan: () => void; onClose: () => void }) => {
   const c = useColors()
-  const qc = useQueryClient()
   const me = useMe()
   const prefs = usePrefs()
   const [picker, setPicker] = useState<Picker>(null)
-  const settings = useQuery({ queryKey: ['me', 'settings'], queryFn: api.me.settings, enabled: visible })
-  const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs, enabled: visible })
-  const save = useMutation({
-    mutationFn: (patch: Partial<Settings>) => api.me.updateSettings(patch),
-    onSuccess: (s) => qc.setQueryData(['me', 'settings'], s),
-    onError: () => Alert.alert('바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
+  const settings = useMySettings(visible)
+  const docs = useChatDocs(visible)
+  const save = useUpdateChatSettings()
   const toMy = () => (onClose(), router.navigate('/my'))
   const tone = TONES.find((t) => t.key === settings.data?.defaultTone)
   const days = settings.data?.chatRetentionDays

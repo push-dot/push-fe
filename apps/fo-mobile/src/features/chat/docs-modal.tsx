@@ -1,8 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Pressable, Share, View } from 'react-native'
+import { Pressable, Share, View } from 'react-native'
 import { GlassButton, Icon, Text } from '@/shared/components'
-import { pickChatDoc } from './api/files'
-import { chatApi, type ChatDoc } from './api/client'
+import { type ChatDoc } from './api/client'
+import { useChatDocs, useUploadChatDoc } from './api/hooks'
 import { FileTag } from './items'
 import { Note, PageModal } from './components'
 import { ago } from './utility'
@@ -12,19 +11,8 @@ const meta = (d: ChatDoc) => (d.aiMade ? `AI로 만듦 · ${ago(d.createdAt)}` :
 
 /** 내 서류 modal (ChatDocs): same list as 마이 › 서류, + uploads. */
 export const DocsModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
-  const qc = useQueryClient()
-  const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs, enabled: visible })
-  const upload = useMutation({
-    mutationFn: async () => {
-      const r = await pickChatDoc()
-      const f = r.canceled ? null : r.assets[0]
-      if (!f) return
-      if ((f.size ?? 0) > 20_000_000) throw new Error('too big')
-      await chatApi.addDoc(f)
-    },
-    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ['chat', 'docs'] }), qc.invalidateQueries({ queryKey: ['me', 'sources'] })]),
-    onError: (e) => Alert.alert('올리지 못했어요', e.message === 'too big' ? '20MB까지 올릴 수 있어요.' : '잠시 뒤에 다시 해 주세요.'),
-  })
+  const docs = useChatDocs(visible)
+  const upload = useUploadChatDoc()
   return (
     <PageModal visible={visible} onClose={onClose} title="내 서류" right={<GlassButton actions={[{ icon: 'plus', label: '서류 올리기', onPress: () => upload.mutate() }]} />}>
       {docs.data?.map((d) => (

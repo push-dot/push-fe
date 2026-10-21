@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native'
@@ -6,12 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors } from '../../theme'
 import { Badge, GlassButton, Icon, Text, type IconName } from '@/shared/components'
 import { AccountModal } from './account-modal'
-import { chatApi, type ConversationRow } from './api/client'
+import { type ConversationRow } from './api/client'
+import { useChatAccount, useMe, useRecentConversations } from './api/hooks'
 import { BookmarksModal } from './bookmarks-modal'
 import { DocsModal } from './docs-modal'
 import { LinksModal } from './links-modal'
 import { SPRING, useReduceMotion } from './motion'
-import { useMe } from './use-me'
 import { Mark } from './components'
 import { ago } from './utility'
 
@@ -29,8 +28,8 @@ export const ChatDrawer = ({ visible, onClose, currentId }: { visible: boolean; 
   const x = useState(() => new Animated.Value(0))[0]
   const [sheet, setSheet] = useState<Sheet>(null)
   const me = useMe()
-  const account = useQuery({ queryKey: ['chat', 'account'], queryFn: chatApi.account, enabled: visible })
-  const recent = useQuery({ queryKey: ['conversations', 'recent'], queryFn: () => chatApi.conversations({ limit: 4 }), enabled: visible })
+  const account = useChatAccount(visible)
+  const recent = useRecentConversations(visible)
 
   useEffect(() => {
     if (visible) {

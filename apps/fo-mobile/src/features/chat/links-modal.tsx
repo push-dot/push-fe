@@ -1,12 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { LinkKind, UserLink } from '@push/api-client'
 import { useState } from 'react'
-import { Alert, Linking, Pressable, ScrollView, Share, View } from 'react-native'
+import { Alert, Pressable, ScrollView, Share, View } from 'react-native'
 import { useColors } from '../../theme'
 import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Switch, Text, TextField, type BadgeTone, type IconName } from '@/shared/components'
-import { api } from '@/shared/infrastructure'
+import { openLink } from './api/files'
 import { kindOf } from './links'
-import { useStartChat } from './api/hooks'
+import { useAddLink, useDeleteLink, useMyLinks, useStartChat } from './api/hooks'
 import { GroupTitle, Note, PageModal } from './components'
 
 const KINDS: { key: LinkKind; label: string }[] = [
@@ -46,23 +45,18 @@ const statusOf = (l: UserLink): { label: string; tone: BadgeTone } =>
 
 /** 내 링크 modal (MyLinks / MyLinksEmpty / MyLinkMenu / MyLinkAdd). */
 export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onClose: () => void; onUse: () => void }) => {
-  const qc = useQueryClient()
   const start = useStartChat()
   const [kind, setKind] = useState<LinkKind | null>(null)
   const [menu, setMenu] = useState<UserLink | null>(null)
   const [adding, setAdding] = useState<LinkKind | 'auto' | null>(null)
-  const q = useQuery({ queryKey: ['me', 'links'], queryFn: () => api.me.links(undefined, { limit: 100 }), enabled: visible })
+  const q = useMyLinks(visible)
   const all = q.data?.data ?? []
   const shown = kind ? all.filter((l) => l.kind === kind) : all
-  const remove = useMutation({
-    mutationFn: (id: string) => api.me.deleteLink(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
-    onError: () => Alert.alert('지우지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
+  const remove = useDeleteLink()
 
   const act = (l: UserLink, what: 'open' | 'copy' | 'use' | 'delete') => {
     setMenu(null)
-    if (what === 'open') void Linking.openURL(l.url)
+    if (what === 'open') void openLink(l.url)
     // shortcut: no clipboard module installed; the share sheet has 복사. Swap for expo-clipboard when added.
     if (what === 'copy') void Share.share({ message: l.url })
     if (what === 'use') {
@@ -183,7 +177,6 @@ const Empty = ({ onAdd }: { onAdd: (k: LinkKind | 'auto') => void }) => {
 
 const AddLinkSheet = ({ open, onClose }: { open: LinkKind | 'auto' | null; onClose: () => void }) => {
   const c = useColors()
-  const qc = useQueryClient()
   const [url, setUrl] = useState('')
   const [picked, setPicked] = useState<LinkKind | null>(null)
   const [aiRead, setAiRead] = useState(true)
@@ -192,18 +185,14 @@ const AddLinkSheet = ({ open, onClose }: { open: LinkKind | 'auto' | null; onClo
   const full = /^https?:\/\//.test(url.trim()) ? url.trim() : `https://${url.trim()}`
   const valid = /^https?:\/\/[^\s@/]+\.[^\s@]+$/.test(full)
   const close = () => (setUrl(''), setPicked(null), onClose())
-  const add = useMutation({
-    mutationFn: () => api.me.addLink({ url: full, kind: kind ?? undefined, aiRead }),
-    onSuccess: () => (void qc.invalidateQueries({ queryKey: ['me', 'links'] }), close()),
-    onError: () => Alert.alert('추가하지 못했어요', '링크 주소를 확인해 주세요.'),
-  })
+  const add = useAddLink(close)
   return (
     <BottomSheet
       visible={!!open}
       onClose={close}
       title="링크 추가"
       description="링크를 붙여넣으면 종류를 알아서 골라요."
-      action={{ label: '추가하기', onPress: () => add.mutate(), disabled: !valid || add.isPending }}
+      action={{ label: '추가하기', onPress: () => add.mutate({ url: full, kind: kind ?? undefined, aiRead }), disabled: !valid || add.isPending }}
     >
       <TextField icon="link" placeholder="https://" value={url} onChangeText={setUrl} autoCapitalize="none" autoCorrect={false} keyboardType="url" autoFocus accessibilityLabel="링크 주소" />
       <View style={{ gap: 8 }}>

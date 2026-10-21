@@ -1,11 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors } from '../../theme'
 import { Badge, BottomSheet, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
-import { chatApi, type QsItem } from './api/client'
+import { type QsItem } from './api/client'
 import { FileTag } from './items'
-import { useStartChat } from './api/hooks'
+import { useChatDocs, useQuickStart, useStartChat } from './api/hooks'
 import { Mark, Pick } from './components'
 import { CALENDAR_TASKS, type QuickStart } from './quick-starts'
 
@@ -17,8 +16,8 @@ export const QuickStartSheet = ({ qs, onClose }: { qs: QuickStart | null; onClos
 const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   const c = useColors()
   const start = useStartChat()
-  const q = useQuery({ queryKey: ['chat', 'quick-start', qs.key], queryFn: () => chatApi.quickStart(qs.key) })
-  const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs, enabled: !!qs.docLabel })
+  const q = useQuickStart(qs.key)
+  const docs = useChatDocs(!!qs.docLabel)
   const d = q.data
   const [seg, setSeg] = useState(0)
   const [sel, setSel] = useState<string[]>([])
