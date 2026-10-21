@@ -1,5 +1,5 @@
 import { stageBadge, type Application, type Offer, type Posting, type Profile } from '@push/api-client'
-import { dday, givenName, stageTone, timeAgo, tintOf } from '../my/lib'
+import { dday, givenName, stageTone, timeAgo, tintOf } from '@/features/my'
 import type { QsData, QsItem } from './api'
 
 /** Real lists a quick-start sheet can be built from. */

@@ -27,7 +27,7 @@ import {
   TopBar,
 } from '@/shared/components'
 import { careerLabel } from '@/shared/utility'
-import { clock, dday, monthDay, offerBadge } from './lib'
+import { clock, dday, monthDay, offerBadge } from './utility'
 import { counterpart } from './OffersScreen'
 import { Avatar, Logo } from './parts'
 

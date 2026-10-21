@@ -7,7 +7,7 @@ import type { Source } from '@push/api-client'
 import { useColors } from '../../theme'
 import { BottomSheet, Button, Icon, Text, type IconName } from '@/shared/components'
 import { myApi } from './api'
-import { fileKind, fileSize, monthDay } from './lib'
+import { fileKind, fileSize, monthDay } from './utility'
 import { ListTitle, Row, useToast, Toast } from './parts'
 
 const MAX_BYTES = 20 * 1024 * 1024

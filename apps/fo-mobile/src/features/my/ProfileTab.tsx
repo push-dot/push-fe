@@ -6,7 +6,7 @@ import { CAREER_STATUSES, JOB_CATEGORIES } from '@push/api-client'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { Badge, Button, Icon, Text } from '@/shared/components'
-import { careerPeriod, tenureLabel } from './lib'
+import { careerPeriod, tenureLabel } from './utility'
 import { Avatar } from './parts'
 
 export type ProfileSection = 'basic' | 'intro' | 'career' | 'skills'

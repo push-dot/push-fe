@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native'
 import { useColors, type Colors } from '../../theme'
 import { BottomSheet, Chip, GlassButton, Text, TextField } from '@/shared/components'
 import { myApi, type CalendarEvent, type CalendarEventType } from './api'
-import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from './lib'
+import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from './utility'
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']
 // Colour per event type (feature-spec 8: 면접 · 마감 · 후속 연락 · 커피챗 · 직접 추가).

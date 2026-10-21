@@ -9,7 +9,7 @@ import { useColors } from '../../theme'
 import { Badge, BottomSheet, Button, GlassButton, Icon, Text, TopBar } from '@/shared/components'
 import { myApi, type ResumeDraft } from './api'
 import { DocMenu, FileTile } from './DocsTab'
-import { fileSize, monthDay, overwriteWarning, tenureLabel } from './lib'
+import { fileSize, monthDay, overwriteWarning, tenureLabel } from './utility'
 import { useMyProfile } from './ProfileTab'
 
 type Part = 'basic' | 'intro' | 'career' | 'skills'

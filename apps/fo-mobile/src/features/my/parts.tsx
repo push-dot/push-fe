@@ -7,7 +7,7 @@ import { api } from '@/shared/infrastructure'
 import { assetUrl } from '@/shared/utility'
 import { radius, useColors } from '../../theme'
 import { Glass, GlassButton, Icon, Text, TopBar } from '@/shared/components'
-import { givenName, tintOf } from './lib'
+import { givenName, tintOf } from './utility'
 
 /** Circle avatar with the given name on a colour, or the photo. */
 export function Avatar({

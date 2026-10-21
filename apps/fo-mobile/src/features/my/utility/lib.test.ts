@@ -10,7 +10,7 @@ import {
   parseYm,
   stageTone,
   timeAgo,
-} from '../lib'
+} from './index'
 
 describe('my lib', () => {
   it('formats file sizes and career periods', () => {

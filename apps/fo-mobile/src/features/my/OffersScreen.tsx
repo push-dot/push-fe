@@ -6,7 +6,7 @@ import type { Offer, UserRef } from '@push/api-client'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { Badge, SegmentedControl, Text, TopBar } from '@/shared/components'
-import { offerBadge, timeAgo } from './lib'
+import { offerBadge, timeAgo } from './utility'
 import { Avatar, Empty, Row } from './parts'
 
 type Box = 'received' | 'sent'

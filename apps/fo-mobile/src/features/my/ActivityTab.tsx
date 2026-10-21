@@ -8,7 +8,7 @@ import { useColors } from '../../theme'
 import { Badge, Chip, Icon, SegmentedControl, Text } from '@/shared/components'
 import { careerLabel } from '@/shared/utility'
 import { CalendarView } from './CalendarView'
-import { monthDay, stageTone, timeAgo } from './lib'
+import { monthDay, stageTone, timeAgo } from './utility'
 import { Avatar, Empty, ListTitle, Logo, Row } from './parts'
 
 export type ActivitySub = 'applications' | 'calendar' | 'bookmarks' | 'follows' | 'posts'
