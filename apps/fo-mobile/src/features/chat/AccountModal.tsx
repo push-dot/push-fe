@@ -32,7 +32,7 @@ const RETENTION = [7, 30, 90, 365]
 type Picker = { title: string; options: string[]; value: number; onPick: (i: number) => void } | null
 
 /** 계정 modal (ChatAccount) with the 요금제 page inside it (PlanUpgrade). */
-export function AccountModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export const AccountModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
   const [page, setPage] = useState<'account' | 'plan'>('account')
   const close = () => (setPage('account'), onClose())
   const account = useQuery({ queryKey: ['chat', 'account'], queryFn: chatApi.account, enabled: visible })
@@ -62,7 +62,7 @@ export function AccountModal({ visible, onClose }: { visible: boolean; onClose: 
   )
 }
 
-function AccountPage({ visible, account, onPlan, onClose }: { visible: boolean; account?: Account; onPlan: () => void; onClose: () => void }) {
+const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; account?: Account; onPlan: () => void; onClose: () => void }) => {
   const c = useColors()
   const qc = useQueryClient()
   const me = useMe()
@@ -172,7 +172,7 @@ const PLANS = [
 
 const won = (n: number) => (n ? `${n.toLocaleString()}원` : '무료')
 
-function PlanPage({ account }: { account: Account }) {
+const PlanPage = ({ account }: { account: Account }) => {
   const c = useColors()
   const [period, setPeriod] = useState<'month' | 'year'>('year')
   const price = (m: number) => (period === 'year' ? Math.round((m * 0.8) / 100) * 100 : m)

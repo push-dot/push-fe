@@ -20,7 +20,7 @@ export type ComposerProps = {
 }
 
 /** Text line on top (17px), control row below: + 첨부 · @ 언급 … mic · send/stop. Shared by both platforms. */
-export function ComposerBody({ inputRef, ...p }: ComposerProps) {
+export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
   const c = useColors()
   const hasText = p.value.trim().length > 0
   const round = { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' } as const

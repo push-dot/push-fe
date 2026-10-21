@@ -10,11 +10,11 @@ import { Mark, Pick } from './components'
 import { CALENDAR_TASKS, type QuickStart } from './quickStarts'
 
 /** Ingredient sheet for one quick start (Qs*.html). Collects what the task needs, then starts the conversation. */
-export function QuickStartSheet({ qs, onClose }: { qs: QuickStart | null; onClose: () => void }) {
+export const QuickStartSheet = ({ qs, onClose }: { qs: QuickStart | null; onClose: () => void }) => {
   return qs ? <Sheet key={qs.key} qs={qs} onClose={onClose} /> : null
 }
 
-function Sheet({ qs, onClose }: { qs: QuickStart; onClose: () => void }) {
+const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   const c = useColors()
   const start = useStartChat()
   const q = useQuery({ queryKey: ['chat', 'quick-start', qs.key], queryFn: () => chatApi.quickStart(qs.key) })
@@ -199,7 +199,7 @@ function Sheet({ qs, onClose }: { qs: QuickStart; onClose: () => void }) {
   )
 }
 
-function ItemRow({ item, layout, on, onPress }: { item: QsItem; layout: string; on: boolean; onPress?: () => void }) {
+const ItemRow = ({ item, layout, on, onPress }: { item: QsItem; layout: string; on: boolean; onPress?: () => void }) => {
   const status = layout === 'status'
   const content = (
     <View style={{ flexDirection: 'row', alignItems: item.body ? 'flex-start' : 'center', gap: 12, minHeight: 58, paddingVertical: item.body ? 10 : 0 }}>
@@ -260,7 +260,7 @@ function ItemRow({ item, layout, on, onPress }: { item: QsItem; layout: string; 
   )
 }
 
-function OptionCard({ item, on, grid, onPress }: { item: QsItem; on: boolean; grid?: boolean; onPress: () => void }) {
+const OptionCard = ({ item, on, grid, onPress }: { item: QsItem; on: boolean; grid?: boolean; onPress: () => void }) => {
   const c = useColors()
   return (
     <Pressable
@@ -299,7 +299,7 @@ function OptionCard({ item, on, grid, onPress }: { item: QsItem; on: boolean; gr
   )
 }
 
-function Calendar({ items, connected, task, setTask }: { items: QsItem[]; connected: boolean; task: number; setTask: (n: number) => void }) {
+const Calendar = ({ items, connected, task, setTask }: { items: QsItem[]; connected: boolean; task: number; setTask: (n: number) => void }) => {
   const c = useColors()
   return (
     <>

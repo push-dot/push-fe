@@ -28,7 +28,7 @@ type Props = {
 }
 
 /** Composer + @ 언급 popover + attachment. Same on the first screen and in conversations. */
-export function ComposerArea({ placeholder, onSend, working, onStop, onShortcut, onTyping, above, inputRef }: Props) {
+export const ComposerArea = ({ placeholder, onSend, working, onStop, onShortcut, onTyping, above, inputRef }: Props) => {
   const [text, setText] = useState('')
   const [attachment, setAttachment] = useState<string>()
   const own = useRef<TextInputInstance>(null)
@@ -82,7 +82,7 @@ export function ComposerArea({ placeholder, onSend, working, onStop, onShortcut,
   )
 }
 
-function useMentionGroups(): MentionGroup[] {
+const useMentionGroups = (): MentionGroup[] => {
   const bookmarks = useQuery({ queryKey: ['me', 'bookmarks', 'mention'], queryFn: () => api.me.bookmarks({ limit: 20 }) })
   const docs = useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs })
   const links = useQuery({ queryKey: ['me', 'links'], queryFn: () => api.me.links(undefined, { limit: 50 }) })
@@ -106,7 +106,7 @@ function useMentionGroups(): MentionGroup[] {
   )
 }
 
-function MentionPopover({ query, onPick }: { query: string; onPick: (m: MentionItem) => void }) {
+const MentionPopover = ({ query, onPick }: { query: string; onPick: (m: MentionItem) => void }) => {
   const c = useColors()
   const shadow = useShadow()
   const groups = filterMentions(useMentionGroups(), query)

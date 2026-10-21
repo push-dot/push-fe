@@ -45,7 +45,7 @@ const statusOf = (l: UserLink): { label: string; tone: BadgeTone } =>
       : { label: KINDS.find((k) => k.key === l.kind)!.label, tone: 'grey' }
 
 /** 내 링크 modal (MyLinks / MyLinksEmpty / MyLinkMenu / MyLinkAdd). */
-export function LinksModal({ visible, onClose, onUse }: { visible: boolean; onClose: () => void; onUse: () => void }) {
+export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onClose: () => void; onUse: () => void }) => {
   const qc = useQueryClient()
   const start = useStartChat()
   const [kind, setKind] = useState<LinkKind | null>(null)
@@ -130,7 +130,7 @@ export function LinksModal({ visible, onClose, onUse }: { visible: boolean; onCl
   )
 }
 
-function LinkRow({ link, onMore }: { link: UserLink; onMore: () => void }) {
+const LinkRow = ({ link, onMore }: { link: UserLink; onMore: () => void }) => {
   const tile = TILE[link.kind]
   const s = statusOf(link)
   return (
@@ -160,7 +160,7 @@ function LinkRow({ link, onMore }: { link: UserLink; onMore: () => void }) {
   )
 }
 
-function Empty({ onAdd }: { onAdd: (k: LinkKind | 'auto') => void }) {
+const Empty = ({ onAdd }: { onAdd: (k: LinkKind | 'auto') => void }) => {
   const c = useColors()
   return (
     <View style={{ alignItems: 'center', gap: 10, paddingTop: 80, paddingHorizontal: 32 }}>
@@ -181,7 +181,7 @@ function Empty({ onAdd }: { onAdd: (k: LinkKind | 'auto') => void }) {
   )
 }
 
-function AddLinkSheet({ open, onClose }: { open: LinkKind | 'auto' | null; onClose: () => void }) {
+const AddLinkSheet = ({ open, onClose }: { open: LinkKind | 'auto' | null; onClose: () => void }) => {
   const c = useColors()
   const qc = useQueryClient()
   const [url, setUrl] = useState('')

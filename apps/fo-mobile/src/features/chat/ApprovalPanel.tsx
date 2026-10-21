@@ -18,7 +18,7 @@ type Props = {
 const isSay = (c: Choice) => c.label === '직접 말하기' || c.hint === '직접 말하기'
 
 /** Replaces the composer until answered (design_system ApprovalPanel). */
-export function ApprovalPanel({ approval, onAnswer, onSay }: Props) {
+export const ApprovalPanel = ({ approval, onAnswer, onSay }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
@@ -162,7 +162,7 @@ const Sub = ({ label }: { label: string }) => (
   </Text>
 )
 
-function ChoiceRow({ n, choice, on, square, onPress }: { n?: number; choice: Choice; on: boolean; square: boolean; onPress: () => void }) {
+const ChoiceRow = ({ n, choice, on, square, onPress }: { n?: number; choice: Choice; on: boolean; square: boolean; onPress: () => void }) => {
   const c = useColors()
   const two = !!choice.desc
   return (
@@ -222,7 +222,7 @@ function ChoiceRow({ n, choice, on, square, onPress }: { n?: number; choice: Cho
   )
 }
 
-function MiniChip({ label, on, onPress }: { label: string; on?: boolean; onPress: () => void }) {
+const MiniChip = ({ label, on, onPress }: { label: string; on?: boolean; onPress: () => void }) => {
   const c = useColors()
   return (
     <Pressable
@@ -240,7 +240,7 @@ function MiniChip({ label, on, onPress }: { label: string; on?: boolean; onPress
 }
 
 /** Tiny page preview per template (ChatPh4Design). */
-function Template({ label, recommended, on, variant, onPress }: { label: string; recommended?: boolean; on: boolean; variant: number; onPress: () => void }) {
+const Template = ({ label, recommended, on, variant, onPress }: { label: string; recommended?: boolean; on: boolean; variant: number; onPress: () => void }) => {
   const c = useColors()
   const line = (w: string | number, key: number) => <View key={key} style={{ height: 4, width: w as number, borderRadius: 2, backgroundColor: c.fill2 }} />
   return (

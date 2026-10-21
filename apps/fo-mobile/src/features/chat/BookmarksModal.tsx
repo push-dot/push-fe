@@ -15,7 +15,7 @@ export const logoColor = brandOf
 const soon = (p: Posting) => !!p.deadline && new Date(p.deadline).getTime() - Date.now() < 7 * 86_400_000
 
 /** 북마크한 공고 modal (ChatBookmarks). Tapping a job offers its detail or a conversation tailored to it. */
-export function BookmarksModal({ visible, onClose, onDone }: { visible: boolean; onClose: () => void; onDone: () => void }) {
+export const BookmarksModal = ({ visible, onClose, onDone }: { visible: boolean; onClose: () => void; onDone: () => void }) => {
   const start = useStartChat()
   const [filter, setFilter] = useState<'all' | 'soon' | 'notApplied'>('all')
   const [picked, setPicked] = useState<Posting | null>(null)

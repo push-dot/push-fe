@@ -21,7 +21,7 @@ export const statusBadge = (s: ConversationRow['status']) =>
   s === 'NEEDS_APPROVAL' ? <Badge label="확인 필요" tone="orange" /> : s === 'RUNNING' ? <Badge label="작업 중" tone="ac" /> : null
 
 /** Full-width slide bar over the tab bar (ChatDrawer). `currentId` is set inside a conversation. */
-export function ChatDrawer({ visible, onClose, currentId }: { visible: boolean; onClose: () => void; currentId?: string }) {
+export const ChatDrawer = ({ visible, onClose, currentId }: { visible: boolean; onClose: () => void; currentId?: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()

@@ -12,7 +12,7 @@ type Props = { verbs: string[]; startedAt: number; onStop: () => void }
  * ✻ 맞춰보는 중… 14초 [중지]. Glass pill above the composer on iOS, flat on Android.
  * shortcut: the 2s gradient shimmer is an opacity pulse (no masked-text dependency); swap when one lands.
  */
-export function StatusRow({ verbs, startedAt, onStop }: Props) {
+export const StatusRow = ({ verbs, startedAt, onStop }: Props) => {
   const c = useColors()
   const [now, setNow] = useState(() => Date.now())
   const [i, setI] = useState(0)

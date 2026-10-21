@@ -9,7 +9,7 @@ import type { ChatItem, ToolState } from './types'
 type Of<K extends ChatItem['type']> = Extract<ChatItem, { type: K }>
 
 /** Renders **bold** spans inside a Text. */
-export function Rich({ text, ...rest }: { text: string } & React.ComponentProps<typeof Text>) {
+export const Rich = ({ text, ...rest }: { text: string } & React.ComponentProps<typeof Text>) => {
   const parts = text.split(/\*\*(.+?)\*\*/g)
   return (
     <Text {...rest}>
@@ -30,7 +30,7 @@ const Dot = ({ color, size = 8, top = 8 }: { color: string; size?: number; top?:
   <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, marginTop: top }} />
 )
 
-function UserBubble({ item }: { item: Of<'user'> }) {
+const UserBubble = ({ item }: { item: Of<'user'> }) => {
   const c = useColors()
   return (
     <Appear kind="bubble" style={{ alignSelf: 'flex-end', maxWidth: '82%' }}>
@@ -51,7 +51,7 @@ function UserBubble({ item }: { item: Of<'user'> }) {
   )
 }
 
-function AgentText({ item }: { item: Of<'agentText'> }) {
+const AgentText = ({ item }: { item: Of<'agentText'> }) => {
   const c = useColors()
   return (
     <Appear style={{ flexDirection: 'row', gap: 10 }}>
@@ -76,7 +76,7 @@ const Elbow = () => {
   return <View style={{ width: 10, height: 10, marginTop: 2, borderLeftWidth: 1.5, borderBottomWidth: 1.5, borderColor: c.t4, borderBottomLeftRadius: 3 }} />
 }
 
-export function ToolLine({ item }: { item: Of<'tool'> }) {
+export const ToolLine = ({ item }: { item: Of<'tool'> }) => {
   const c = useColors()
   const [open, setOpen] = useState(false)
   const blink = usePulse(item.state === 'run')
@@ -146,7 +146,7 @@ export function ToolLine({ item }: { item: Of<'tool'> }) {
   )
 }
 
-function TodoRow({ item }: { item: Of<'todo'>['items'][number] }) {
+const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
   const c = useColors()
   const done = item.state === 'done'
   const now = item.state === 'now'
@@ -183,7 +183,7 @@ const Card = ({ children, gap = 7 }: { children: React.ReactNode; gap?: number }
   return <Appear style={{ gap, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, backgroundColor: c.bg2 }}>{children}</Appear>
 }
 
-function TodoList({ item }: { item: Of<'todo'> }) {
+const TodoList = ({ item }: { item: Of<'todo'> }) => {
   const done = item.items.filter((i) => i.state === 'done').length
   return (
     <Card>
@@ -202,7 +202,7 @@ function TodoList({ item }: { item: Of<'todo'> }) {
   )
 }
 
-function Plan({ item }: { item: Of<'plan'> }) {
+const Plan = ({ item }: { item: Of<'plan'> }) => {
   return (
     <Card gap={10}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -235,7 +235,7 @@ function Plan({ item }: { item: Of<'plan'> }) {
   )
 }
 
-function Diff({ item }: { item: Of<'diff'> }) {
+const Diff = ({ item }: { item: Of<'diff'> }) => {
   const c = useColors()
   return (
     <View style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: c.bg2 }}>
@@ -272,7 +272,7 @@ function Diff({ item }: { item: Of<'diff'> }) {
 }
 
 /** Bar that grows from the left (900ms) to `pct`. */
-function Bar({ pct, low, height = 8, delay = 150 }: { pct: number; low?: boolean; height?: number; delay?: number }) {
+const Bar = ({ pct, low, height = 8, delay = 150 }: { pct: number; low?: boolean; height?: number; delay?: number }) => {
   const c = useColors()
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(reduce ? 1 : 0))[0]
@@ -298,7 +298,7 @@ const stars = (score: number) => {
   return '★'.repeat(n) + '☆'.repeat(5 - n)
 }
 
-function FitCard({ item }: { item: Of<'fit'> }) {
+const FitCard = ({ item }: { item: Of<'fit'> }) => {
   const c = useColors()
   const big = { fontSize: 22, lineHeight: 28, ...fontFor('800'), fontVariant: ['tabular-nums' as const] }
   return (
@@ -363,7 +363,7 @@ function FitCard({ item }: { item: Of<'fit'> }) {
 }
 
 /** File tag: 40×48 page with the type at the bottom (PDF red, others violet). */
-export function FileTag({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: number }) {
+export const FileTag = ({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: number }) => {
   const c = useColors()
   const pdf = tag === 'PDF'
   return (
@@ -375,7 +375,7 @@ export function FileTag({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: 
   )
 }
 
-function FileCard({ item }: { item: Of<'file'> }) {
+const FileCard = ({ item }: { item: Of<'file'> }) => {
   const c = useColors()
   const share = () => void Share.share({ message: item.name, title: item.name })
   const body = (
@@ -415,7 +415,7 @@ function FileCard({ item }: { item: Of<'file'> }) {
   )
 }
 
-function Paper({ item }: { item: Of<'paper'> }) {
+const Paper = ({ item }: { item: Of<'paper'> }) => {
   const c = useColors()
   const caret = usePulse(true, 1000, 0)
   const [first, ...rest] = item.lines
@@ -444,7 +444,7 @@ function Paper({ item }: { item: Of<'paper'> }) {
   )
 }
 
-export function Glyph({ still, size = 17, color }: { still?: boolean; size?: number; color?: string }) {
+export const Glyph = ({ still, size = 17, color }: { still?: boolean; size?: number; color?: string }) => {
   const c = useColors()
   const reduce = useReduceMotion()
   const frames = ['·', '✢', '✳', '✶', '✻', '✽']
@@ -463,7 +463,7 @@ export function Glyph({ still, size = 17, color }: { still?: boolean; size?: num
 }
 
 /** Renders one transcript item. Completion actions get callbacks from the screen. */
-export function Item({ item, onAction }: { item: ChatItem; onAction: (text: string) => void }) {
+export const Item = ({ item, onAction }: { item: ChatItem; onAction: (text: string) => void }) => {
   const c = useColors()
   switch (item.type) {
     case 'user':
@@ -522,7 +522,7 @@ export function Item({ item, onAction }: { item: ChatItem; onAction: (text: stri
 }
 
 /** Dashed "대기 중" chip for messages sent while the agent works. */
-export function Queued({ text }: { text: string }) {
+export const Queued = ({ text }: { text: string }) => {
   const c = useColors()
   return (
     <Appear
