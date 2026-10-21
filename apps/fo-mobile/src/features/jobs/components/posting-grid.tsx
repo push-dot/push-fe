@@ -2,16 +2,17 @@ import { router } from 'expo-router'
 import type { ReactElement } from 'react'
 import { ActivityIndicator, FlatList, useWindowDimensions, View } from 'react-native'
 import type { PostingFilters } from '@push/api-client'
-import { JobCard, Text } from '@/shared/components'
-import { usePostingPages, useToggleBookmark } from './queries'
+import { JobCard, Text } from '../../../shared/components'
+import { usePostingPages, useToggleBookmark } from '../api/hooks'
 
 type Props = {
   filters: PostingFilters
   header?: ReactElement
 }
 
-/** 2-column infinite grid of JobCards (169 wide on a 390 screen), shared by 채용공고 and 섹션 전체보기. */
-export function PostingGrid({ filters, header }: Props) {
+const Gap = () => <View style={{ height: 22 }} />
+
+const PostingGrid = ({ filters, header }: Props) => {
   const { width } = useWindowDimensions()
   const cardWidth = Math.floor((width - 40 - 12) / 2)
   const q = usePostingPages(filters)
@@ -48,7 +49,4 @@ export function PostingGrid({ filters, header }: Props) {
   )
 }
 
-const Gap = () => <View style={{ height: 22 }} />
-
-/** Total of the grid's first page, sharing its cache entry. */
-export const useGridTotal = (filters: PostingFilters) => usePostingPages(filters).data?.pages[0]?.page.total
+export default PostingGrid

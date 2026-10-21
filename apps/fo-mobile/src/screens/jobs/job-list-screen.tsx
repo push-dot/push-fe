@@ -1,16 +1,23 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
-import { useColors } from '../../theme'
+import {
+  EMPTY,
+  FILTER_KEYS,
+  FilterSheet,
+  PostingGrid,
+  chipText,
+  formatCount,
+  isEmpty,
+  toQuery,
+  useGridTotal,
+  type FilterKey,
+  type Filters,
+} from '@/features/jobs'
 import { Chip, GlassButton, Icon, Text, TopBar } from '@/shared/components'
-import { FilterSheet } from './FilterSheet'
-import { EMPTY, chipText, formatCount, isEmpty, toQuery, type FilterKey, type Filters } from './filters'
-import { PostingGrid, useGridTotal } from './PostingGrid'
+import { useColors } from '@/theme'
 
-const KEYS: FilterKey[] = ['category', 'skills', 'careerYears', 'location', 'employmentType']
-
-/** 채용공고 · 전체 목록: filter chips → sheets, "공고 N개 · 최신순", 2-column infinite grid. */
-export function JobListScreen() {
+const JobListScreen = () => {
   const c = useColors()
   const [filters, setFilters] = useState<Filters>(EMPTY)
   const [open, setOpen] = useState<FilterKey | null>(null)
@@ -21,7 +28,7 @@ export function JobListScreen() {
     <View style={{ backgroundColor: c.bg }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20, paddingTop: 4 }}>
         <Chip label="전체" on={isEmpty(filters)} onPress={() => setFilters(EMPTY)} />
-        {KEYS.map((k) => (
+        {FILTER_KEYS.map((k) => (
           <Chip key={k} label={chipText(k, filters)} menu on={filters[k].length > 0} onPress={() => setOpen(k)} />
         ))}
       </ScrollView>
@@ -29,7 +36,6 @@ export function JobListScreen() {
         <Text v="c1" weight="600" color="t3">
           {total === undefined ? ' ' : `공고 ${formatCount(total)}개`}
         </Text>
-        {/* Only one order exists for now (feature-spec 3.3), so this is a label, not a menu. */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <Text v="c1" weight="600" color="t2">
             최신순
@@ -60,3 +66,5 @@ export function JobListScreen() {
     </View>
   )
 }
+
+export default JobListScreen

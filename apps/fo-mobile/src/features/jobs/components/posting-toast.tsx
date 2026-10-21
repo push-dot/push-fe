@@ -1,10 +1,9 @@
 import { useEffect } from 'react'
 import { Platform, View } from 'react-native'
-import { useColors } from '../../theme'
-import { Glass, Icon, Text } from '@/shared/components'
+import { Glass, Icon, Text } from '../../../shared/components'
+import { useColors } from '../../../theme'
 
-/** Success toast (Applied board). iOS glass, Android flat t1. Auto-hides after 3s. */
-export function Toast({ text, bottom, onHide }: { text: string; bottom: number; onHide: () => void }) {
+const PostingToast = ({ text, bottom, onHide }: { text: string; bottom: number; onHide: () => void }) => {
   const c = useColors()
   useEffect(() => {
     const t = setTimeout(onHide, 3000)
@@ -22,12 +21,10 @@ export function Toast({ text, bottom, onHide }: { text: string; bottom: number; 
     </View>
   )
   return (
-    <View
-      accessibilityLiveRegion="polite"
-      accessibilityRole="alert"
-      style={{ position: 'absolute', left: 20, right: 20, bottom, zIndex: 8 }}
-    >
+    <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={{ position: 'absolute', left: 20, right: 20, bottom, zIndex: 8 }}>
       {ios ? <Glass style={{ borderRadius: 18 }}>{row}</Glass> : <View style={{ borderRadius: 18, backgroundColor: c.t1 }}>{row}</View>}
     </View>
   )
 }
+
+export default PostingToast

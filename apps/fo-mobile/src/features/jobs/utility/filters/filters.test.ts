@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY, chipText, toQuery, toggleRegion } from '../filters'
+import { EMPTY, chipText, toQuery, toggleRegion } from './filters'
 
 describe('jobs filters', () => {
   it('labels chips in sheet order', () => {
