@@ -1,0 +1,272 @@
+[
+ {
+  "file": "WebLogin.dc.html",
+  "label": "Artboard 1 of 90: 웹 · 로그인 · 개인",
+  "width": 1440,
+  "height": 980
+ },
+ {
+  "file": "WebLoginBiz.dc.html",
+  "label": "Artboard 2 of 90: 웹 · 로그인 · 기업",
+  "width": 1440,
+  "height": 980
+ },
+ {
+  "file": "WebSignup.dc.html",
+  "label": "Artboard 3 of 90: 웹 · 이메일 가입 · 참고 데이터 동의",
+  "width": 1440,
+  "height": 1060
+ },
+ {
+  "file": "WebSignupTaken.dc.html",
+  "label": "Artboard 4 of 90: 웹 · 기업 가입 · 이미 쓰인 이메일",
+  "width": 1440,
+  "height": 1060
+ },
+ {
+  "file": "WebVerifyMail.dc.html",
+  "label": "Artboard 5 of 90: 웹 · 인증 메일 보냄",
+  "width": 1440,
+  "height": 980
+ },
+ {
+  "file": "WebBizVerify.dc.html",
+  "label": "Artboard 6 of 90: 웹 · 사업자 확인 · 확인 중",
+  "width": 1440,
+  "height": 1080
+ },
+ {
+  "file": "WebBizVerifyFail.dc.html",
+  "label": "Artboard 7 of 90: 웹 · 사업자 확인 · 실패",
+  "width": 1440,
+  "height": 1080
+ },
+ {
+  "file": "WebBizVerifyDone.dc.html",
+  "label": "Artboard 8 of 90: 웹 · 사업자 확인 · 완료",
+  "width": 1440,
+  "height": 980
+ },
+ {
+  "file": "WebInvite.dc.html",
+  "label": "Artboard 9 of 90: 웹 · 담당자 초대 수락",
+  "width": 1440,
+  "height": 980
+ },
+ {
+  "file": "WebHome.dc.html",
+  "label": "Artboard 10 of 90: 웹 · 개인 · 홈",
+  "width": 1440,
+  "height": 1383
+ },
+ {
+  "file": "WebNotif.dc.html",
+  "label": "Artboard 11 of 90: 웹 · 개인 · 알림함",
+  "width": 1440,
+  "height": 1383
+ },
+ {
+  "file": "WebJobs.dc.html",
+  "label": "Artboard 12 of 90: 웹 · 채용공고 (비로그인) · 경력 필터",
+  "width": 1440,
+  "height": 1345
+ },
+ {
+  "file": "WebSearch.dc.html",
+  "label": "Artboard 13 of 90: 웹 · 통합 검색 결과",
+  "width": 1440,
+  "height": 1078
+ },
+ {
+  "file": "WebJobDetail.dc.html",
+  "label": "Artboard 14 of 90: 웹 · 채용공고 상세 (적합도 없음)",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebJobGuest.dc.html",
+  "label": "Artboard 15 of 90: 웹 · 채용공고 상세 · 비로그인 지원",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebApply.dc.html",
+  "label": "Artboard 16 of 90: 웹 · 지원하기 · 서류 고르기",
+  "width": 1440,
+  "height": 1645
+ },
+ {
+  "file": "WebApplied.dc.html",
+  "label": "Artboard 17 of 90: 웹 · 지원 완료",
+  "width": 1440,
+  "height": 1645
+ },
+ {
+  "file": "WebHub.dc.html",
+  "label": "Artboard 18 of 90: 웹 · 허브",
+  "width": 1440,
+  "height": 956
+ },
+ {
+  "file": "WebProfile.dc.html",
+  "label": "Artboard 19 of 90: 웹 · 허브 프로필 상세",
+  "width": 1440,
+  "height": 952
+ },
+ {
+  "file": "WebOffer.dc.html",
+  "label": "Artboard 20 of 90: 웹 · 제안하기",
+  "width": 1440,
+  "height": 952
+ },
+ {
+  "file": "WebSocial.dc.html",
+  "label": "Artboard 21 of 90: 웹 · 소셜",
+  "width": 1440,
+  "height": 1277
+ },
+ {
+  "file": "WebPost.dc.html",
+  "label": "Artboard 22 of 90: 웹 · 게시물 상세",
+  "width": 1440,
+  "height": 1263
+ },
+ {
+  "file": "WebMyProfile.dc.html",
+  "label": "Artboard 23 of 90: 웹 · 마이 · 프로필",
+  "width": 1440,
+  "height": 1006
+ },
+ {
+  "file": "WebMyDocs.dc.html",
+  "label": "Artboard 24 of 90: 웹 · 마이 · 서류 (업로드만)",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebMyLinks.dc.html",
+  "label": "Artboard 25 of 90: 웹 · 마이 · 내 링크",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebMyApply.dc.html",
+  "label": "Artboard 26 of 90: 웹 · 마이 · 지원활동 (적합도 점수만)",
+  "width": 1440,
+  "height": 900
+ },
+ {
+  "file": "WebMyCalendar.dc.html",
+  "label": "Artboard 27 of 90: 웹 · 마이 · 캘린더",
+  "width": 1440,
+  "height": 965
+ },
+ {
+  "file": "WebInbox.dc.html",
+  "label": "Artboard 28 of 90: 웹 · 제안함 · 1:1 메시지",
+  "width": 1440,
+  "height": 900
+ },
+ {
+  "file": "WebSettings.dc.html",
+  "label": "Artboard 29 of 90: 웹 · 설정",
+  "width": 1440,
+  "height": 1558
+ },
+ {
+  "file": "WebBizJob.dc.html",
+  "label": "Artboard 30 of 90: 웹 · 기업 · 채용공고 상세 · 참고해서 만들기",
+  "width": 1440,
+  "height": 1645
+ },
+ {
+  "file": "WebBizAiGen.dc.html",
+  "label": "Artboard 31 of 90: 웹 · 기업 AI · 공고 생성 (회사 검색 · 브레인스토밍)",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizAiDraft.dc.html",
+  "label": "Artboard 32 of 90: 웹 · 기업 AI · 공고 초안",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizAiReview.dc.html",
+  "label": "Artboard 33 of 90: 웹 · 기업 AI · 서류 검토",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizAiInterview.dc.html",
+  "label": "Artboard 34 of 90: 웹 · 기업 AI · 면접 질문 (Pro)",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizAiLocked.dc.html",
+  "label": "Artboard 35 of 90: 웹 · 기업 AI · Basic 잠금",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizAiPdf.dc.html",
+  "label": "Artboard 36 of 90: 웹 · 기업 AI · 외부 PDF (Ultra)",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizPostings.dc.html",
+  "label": "Artboard 37 of 90: 웹 · 기업 · 공고 관리",
+  "width": 1440,
+  "height": 900
+ },
+ {
+  "file": "WebBizPostEdit.dc.html",
+  "label": "Artboard 38 of 90: 웹 · 기업 · 공고 편집",
+  "width": 1440,
+  "height": 1172
+ },
+ {
+  "file": "WebBizApplicants.dc.html",
+  "label": "Artboard 39 of 90: 웹 · 기업 · 지원자 목록",
+  "width": 1440,
+  "height": 924
+ },
+ {
+  "file": "WebBizApplicant.dc.html",
+  "label": "Artboard 40 of 90: 웹 · 기업 · 지원자 서류 · 단계 변경",
+  "width": 1440,
+  "height": 1073
+ },
+ {
+  "file": "WebBizCompany.dc.html",
+  "label": "Artboard 41 of 90: 웹 · 기업 마이 · 회사 정보",
+  "width": 1440,
+  "height": 900
+ },
+ {
+  "file": "WebBizPlan.dc.html",
+  "label": "Artboard 42 of 90: 웹 · 기업 마이 · 요금제 · 사용량",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizMembers.dc.html",
+  "label": "Artboard 43 of 90: 웹 · 기업 마이 · 담당자 관리",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizInvite.dc.html",
+  "label": "Artboard 44 of 90: 웹 · 기업 마이 · 담당자 초대",
+  "width": null,
+  "height": null
+ },
+ {
+  "file": "WebBizSocial.dc.html",
+  "label": "Artboard 45 of 90: 웹 · 기업 · 소셜 (기업 배지)",
+  "width": null,
+  "height": null
+ }
+]
