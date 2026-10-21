@@ -72,8 +72,11 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
     setApplyOpen(true)
   }
   const share = async () => {
+    const url = window.location.href
     const toast = await shareLink({
-      url: window.location.href,
+      url,
+      finePointer: window.matchMedia('(pointer: fine)').matches,
+      canShare: typeof navigator.canShare === 'function' ? (data) => navigator.canShare(data) : undefined,
       share: typeof navigator.share === 'function' ? (data) => navigator.share(data) : undefined,
       copy: copyUrl,
     })

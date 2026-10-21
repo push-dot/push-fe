@@ -21,6 +21,35 @@ describe('shareLink', () => {
     expect(toast).toBe(LINK_COPIED_TOAST)
   })
 
+  it('copies and toasts when this url cannot be shared', async () => {
+    const copy = vi.fn(async () => {})
+    const share = vi.fn(async () => {})
+    const toast = await shareLink({
+      url: 'http://localhost:5175/postings/p2',
+      canShare: () => false,
+      share,
+      copy,
+    })
+    expect(share).not.toHaveBeenCalled()
+    expect(copy).toHaveBeenCalledWith('http://localhost:5175/postings/p2')
+    expect(toast).toBe(LINK_COPIED_TOAST)
+  })
+
+  it('copies and toasts on a desktop pointer even when share would succeed', async () => {
+    const copy = vi.fn(async () => {})
+    const share = vi.fn(async () => {})
+    const toast = await shareLink({
+      url: 'http://localhost:5175/postings/p2',
+      finePointer: true,
+      canShare: () => true,
+      share,
+      copy,
+    })
+    expect(share).not.toHaveBeenCalled()
+    expect(copy).toHaveBeenCalledWith('http://localhost:5175/postings/p2')
+    expect(toast).toBe(LINK_COPIED_TOAST)
+  })
+
   it('leaves the toast unused when the system share sheet accepts the url', async () => {
     const copy = vi.fn(async () => {})
     const share = vi.fn(async () => {})
