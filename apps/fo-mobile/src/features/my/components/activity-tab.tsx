@@ -1,17 +1,28 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
-import { POST_CATEGORIES, stageBadge, type Posting, type Profile } from '@push/api-client'
-import { api } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
+import { POST_CATEGORIES, stageBadge, type Profile } from '@push/api-client'
 import { Badge, Chip, Icon, SegmentedControl, Text } from '@/shared/components'
 import { careerLabel } from '@/shared/utility'
-import { CalendarView } from './CalendarView'
-import { monthDay, stageTone, timeAgo } from './utility'
-import { Avatar, Empty, ListTitle, Logo, Row } from './components'
+import { useColors } from '../../../theme'
+import {
+  useFollowToggle,
+  useMyApplications,
+  useMyBookmarks,
+  useMyCommentedPosts,
+  useMyFollowers,
+  useMyFollows,
+  useMyPosts,
+} from '../api/hooks'
+import type { ActivitySub } from '../types'
+import { monthDay, stageTone, timeAgo } from '../utility'
+import Avatar from './avatar'
+import CalendarView from './calendar-view'
+import Empty from './empty'
+import ListTitle from './list-title'
+import Logo from './logo'
+import Row from './row'
 
-export type ActivitySub = 'applications' | 'calendar' | 'bookmarks' | 'follows' | 'posts'
 const SUBS: { key: ActivitySub; label: string }[] = [
   { key: 'applications', label: '지원활동' },
   { key: 'calendar', label: '캘린더' },
@@ -19,16 +30,11 @@ const SUBS: { key: ActivitySub; label: string }[] = [
   { key: 'follows', label: '팔로우' },
   { key: 'posts', label: '게시글' },
 ]
-// shortcut: lists load the first 50 items; switch to useInfiniteQuery if people keep more than that.
-const FIRST = { limit: 50 }
 
 const Loading = () => <ActivityIndicator style={{ marginTop: 40 }} />
 
-function Applications() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['applications', 'my-list'],
-    queryFn: () => api.applications.list(FIRST),
-  })
+const Applications = () => {
+  const { data, isLoading } = useMyApplications()
   if (isLoading) return <Loading />
   const list = data?.data ?? []
   return (
@@ -57,17 +63,10 @@ function Applications() {
   )
 }
 
-function Bookmarks() {
+const Bookmarks = () => {
   const c = useColors()
-  const qc = useQueryClient()
-  const { data, isLoading } = useQuery({
-    queryKey: ['me', 'bookmarks', 'my-list'],
-    queryFn: () => api.me.bookmarks(FIRST),
-  })
-  const unbookmark = useMutation({
-    mutationFn: (p: Posting) => api.postings.unbookmark(p.id),
-    onSettled: () => qc.invalidateQueries({ queryKey: ['me', 'bookmarks'] }),
-  })
+  const { query, unbookmark } = useMyBookmarks()
+  const { data, isLoading } = query
   if (isLoading) return <Loading />
   const list = (data?.data ?? []).filter(
     (p) => !(unbookmark.isPending && unbookmark.variables?.id === p.id),
@@ -117,15 +116,10 @@ function Bookmarks() {
   )
 }
 
-function PersonRow({ p }: { p: Profile }) {
+const PersonRow = ({ p }: { p: Profile }) => {
   const c = useColors()
   const [following, setFollowing] = useState(!!p.following)
-  const toggle = useMutation({
-    mutationFn: (next: boolean) =>
-      next ? api.profiles.follow(p.userId) : api.profiles.unfollow(p.userId),
-    onMutate: (next) => setFollowing(next),
-    onError: (_e, next) => setFollowing(!next),
-  })
+  const toggle = useFollowToggle(p.userId, setFollowing)
   return (
     <Row label={p.displayName} onPress={() => router.push(`/profiles/${p.userId}`)}>
       <Avatar name={p.displayName} url={p.avatarUrl} />
@@ -158,13 +152,10 @@ function PersonRow({ p }: { p: Profile }) {
   )
 }
 
-function Follows() {
+const Follows = () => {
   const [tab, setTab] = useState<'following' | 'followers'>('following')
-  const following = useQuery({ queryKey: ['me', 'follows'], queryFn: () => api.me.follows(FIRST) })
-  const followers = useQuery({
-    queryKey: ['me', 'followers'],
-    queryFn: () => api.me.followers(FIRST),
-  })
+  const following = useMyFollows()
+  const followers = useMyFollowers()
   const q = tab === 'following' ? following : followers
   const n = (r: typeof following) => r.data?.page.total ?? r.data?.data.length ?? 0
   return (
@@ -196,14 +187,11 @@ function Follows() {
   )
 }
 
-function Posts() {
+const Posts = () => {
   const c = useColors()
   const [tab, setTab] = useState<'mine' | 'commented'>('mine')
-  const mine = useQuery({ queryKey: ['me', 'posts'], queryFn: () => api.me.posts(FIRST) })
-  const commented = useQuery({
-    queryKey: ['me', 'commented-posts'],
-    queryFn: () => api.me.commentedPosts(FIRST),
-  })
+  const mine = useMyPosts()
+  const commented = useMyCommentedPosts()
   const q = tab === 'mine' ? mine : commented
   const n = (r: typeof mine) => r.data?.page.total ?? r.data?.data.length ?? 0
   return (
@@ -259,8 +247,7 @@ function Posts() {
   )
 }
 
-/** 마이 › 내 활동: chip row + the chosen list. */
-export function ActivityTab({ sub, onSub }: { sub: ActivitySub; onSub: (s: ActivitySub) => void }) {
+const ActivityTab = ({ sub, onSub }: { sub: ActivitySub; onSub: (s: ActivitySub) => void }) => {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <ScrollView
@@ -280,3 +267,5 @@ export function ActivityTab({ sub, onSub }: { sub: ActivitySub; onSub: (s: Activ
     </ScrollView>
   )
 }
+
+export default ActivityTab

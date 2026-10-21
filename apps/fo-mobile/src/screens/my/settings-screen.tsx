@@ -1,10 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, View } from 'react-native'
-import type { Settings, Tone } from '@push/api-client'
-import { api, deleteAccount, signOut } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
+import type { Settings } from '@push/api-client'
+import {
+  Avatar,
+  CONTACT,
+  deleteAccountSession,
+  LANGS,
+  LOGIN_LABEL,
+  RETENTION,
+  signOutSession,
+  TONES,
+  useMyProfile,
+  useSettings,
+  VISIBILITY,
+} from '@/features/my'
 import {
   BottomSheet,
   Glass,
@@ -15,63 +25,9 @@ import {
   Text,
   TopBar,
 } from '@/shared/components'
-import { Avatar } from './components'
-import { useMyProfile } from './ProfileTab'
+import { useColors } from '@/theme'
 
-const TONES: { key: Tone; label: string }[] = [
-  { key: 'as_is', label: '그대로' },
-  { key: 'professional', label: '전문적인' },
-  { key: 'confident', label: '자신감 있는' },
-  { key: 'concise', label: '간결한' },
-  { key: 'technical', label: '기술 중심' },
-  { key: 'friendly', label: '친근한' },
-]
-// shortcut: plan limits (FREE 7일 · PRO 30일 · ULTRA 무제한) aren't exposed yet, so every option is offered and push-be
-// rejects the ones over the plan; 0 here is push-be's null (무제한).
-const RETENTION = [7, 30, 90, 0].map((d) => ({ key: d, label: d ? `${d}일` : '무제한' }))
-const CONTACT: { key: Settings['contactVisibility']; label: string }[] = [
-  { key: 'accepted', label: '제안 수락한 사람만' },
-  { key: 'everyone', label: '모두에게' },
-]
-const VISIBILITY: {
-  key: Settings['careerStatusVisibility']
-  label: string
-  sub: (followers: number) => string
-}[] = [
-  { key: 'everyone', label: '모두에게', sub: () => 'Push를 쓰는 모든 사람' },
-  { key: 'followers', label: '팔로워에게만', sub: (n) => `나를 팔로우한 사람 ${n}명` },
-  { key: 'private', label: '나만 보기', sub: () => '허브 목록과 필터에서도 빠져요' },
-]
-const LANGS: { key: Settings['locale']; label: string }[] = [
-  { key: 'ko', label: '한국어' },
-  { key: 'en', label: 'English' },
-]
-// shortcut: Session has no login provider yet; show it from the session once push-be returns it.
-const LOGIN_LABEL = 'Google 계정으로 로그인'
-
-/** Settings query + optimistic PATCH that rolls back on failure. */
-const useSettings = () => {
-  const qc = useQueryClient()
-  const key = ['me', 'settings']
-  const q = useQuery({ queryKey: key, queryFn: api.me.settings })
-  const m = useMutation({
-    mutationFn: (patch: Partial<Settings>) => api.me.updateSettings(patch),
-    onMutate: async (patch) => {
-      await qc.cancelQueries({ queryKey: key })
-      const prev = qc.getQueryData<Settings>(key)
-      if (prev) qc.setQueryData(key, { ...prev, ...patch })
-      return prev
-    },
-    onError: (_e, _p, prev) => {
-      if (prev) qc.setQueryData(key, prev)
-      Alert.alert('설정을 바꾸지 못했어요', '잠시 뒤에 다시 시도해 주세요.')
-    },
-    onSuccess: (s) => qc.setQueryData(key, s),
-  })
-  return { s: q.data, set: m.mutate }
-}
-
-function Pick<K extends string | number>({
+const Pick = <K extends string | number,>({
   title,
   items,
   value,
@@ -85,7 +41,7 @@ function Pick<K extends string | number>({
   onPick: (k: K) => void
   visible: boolean
   onClose: () => void
-}) {
+}) => {
   const c = useColors()
   return (
     <BottomSheet visible={visible} onClose={onClose} title={title}>
@@ -125,14 +81,13 @@ function Pick<K extends string | number>({
   )
 }
 
-/** 언어 select pill with its pop-up menu (SettingsLanguage board). */
-function LanguageSelect({
+const LanguageSelect = ({
   value,
   onPick,
 }: {
   value: Settings['locale']
   onPick: (l: Settings['locale']) => void
-}) {
+}) => {
   const c = useColors()
   const [at, setAt] = useState<{ top: number; right: number } | null>(null)
   return (
@@ -140,7 +95,6 @@ function LanguageSelect({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`언어 선택, ${LANGS.find((l) => l.key === value)?.label}`}
-        // Anchor the menu 8px under the 34px pill.
         onPress={(e) =>
           setAt({ top: e.nativeEvent.pageY - e.nativeEvent.locationY + 42, right: 24 })
         }
@@ -206,7 +160,7 @@ function LanguageSelect({
   )
 }
 
-function Screen({ title, children }: { title: string; children: ReactNode }) {
+const Screen = ({ title, children }: { title: string; children: ReactNode }) => {
   const c = useColors()
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
@@ -220,8 +174,7 @@ function Screen({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-/** 설정: 계정 · 일반 · 알림 · 허브 공개 · AI 채팅 · 기타. Switches apply immediately. */
-export function SettingsScreen() {
+const SettingsScreen = () => {
   const { s, set } = useSettings()
   const { data: me } = useMyProfile()
   const [sheet, setSheet] = useState<'contact' | 'tone' | 'retention' | null>(null)
@@ -238,7 +191,7 @@ export function SettingsScreen() {
   const logout = () =>
     Alert.alert('로그아웃할까요?', undefined, [
       { text: '취소', style: 'cancel' },
-      { text: '로그아웃', style: 'destructive', onPress: () => void signOut() },
+      { text: '로그아웃', style: 'destructive', onPress: () => void signOutSession() },
     ])
   const withdraw = () =>
     Alert.alert(
@@ -250,7 +203,7 @@ export function SettingsScreen() {
           text: '탈퇴',
           style: 'destructive',
           onPress: () =>
-            void deleteAccount().catch(() => Alert.alert('탈퇴하지 못했어요', '잠시 후 다시 시도해 주세요.')),
+            void deleteAccountSession().catch(() => Alert.alert('탈퇴하지 못했어요', '잠시 후 다시 시도해 주세요.')),
         },
       ],
     )
@@ -372,72 +325,4 @@ export function SettingsScreen() {
   )
 }
 
-/** 설정 › 커리어 상태 공개 범위 + 현재 회사 사람에게 숨기기. */
-export function SettingsVisibilityScreen() {
-  const { s, set } = useSettings()
-  const { data: me } = useMyProfile()
-  const company = me?.careers.find((c) => !c.endedOn)?.company ?? '지금 다니는 회사'
-  if (!s) {
-    return (
-      <Screen title="커리어 상태">
-        <ActivityIndicator style={{ marginTop: 40 }} />
-      </Screen>
-    )
-  }
-  return (
-    <Screen title="커리어 상태">
-      <View style={{ gap: 0 }}>
-        <Text v="b2" color="t3" style={{ paddingHorizontal: 4, paddingBottom: 14 }}>
-          ‘이직/구직중’ 같은 커리어 상태를 누가 볼 수 있는지 정해요.
-        </Text>
-        <SettingsGroup
-          note={
-            s.hideFromCurrentCompany
-              ? '지금 다니는 회사 사람에게는 커리어 상태가 보이지 않아요.'
-              : undefined
-          }
-        >
-          {VISIBILITY.map((v) => {
-            const on = s.careerStatusVisibility === v.key
-            return (
-              <Pressable
-                key={v.key}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: on }}
-                onPress={() => set({ careerStatusVisibility: v.key })}
-                style={{
-                  minHeight: 64,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  paddingVertical: 8,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text v="b1">{v.label}</Text>
-                  <Text v="c1" color="t3">
-                    {v.sub(me?.followerCount ?? 0)}
-                  </Text>
-                </View>
-                {on ? <Icon name="check" size={20} color="acText" /> : null}
-              </Pressable>
-            )
-          })}
-        </SettingsGroup>
-      </View>
-      <SettingsGroup title="회사 숨기기">
-        <SettingsRow
-          label={`${company} 사람에게 숨기기`}
-          sub="같은 회사 이메일로 가입한 사람"
-          right={
-            <Switch
-              label={`${company} 사람에게 숨기기`}
-              value={s.hideFromCurrentCompany}
-              onValueChange={(v) => set({ hideFromCurrentCompany: v })}
-            />
-          }
-        />
-      </SettingsGroup>
-    </Screen>
-  )
-}
+export default SettingsScreen

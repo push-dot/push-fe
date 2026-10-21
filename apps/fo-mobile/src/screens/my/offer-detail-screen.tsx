@@ -1,6 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -13,8 +12,19 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { Offer } from '@push/api-client'
-import { api } from '@/shared/infrastructure'
-import { fontFor, radius, useColors } from '../../theme'
+import {
+  Avatar,
+  clock,
+  counterpart,
+  dday,
+  Logo,
+  monthDay,
+  offerBadge,
+  useOffer,
+  useOfferDecision,
+  useOfferMessages,
+  useOfferPosting,
+} from '@/features/my'
 import {
   Badge,
   BottomSheet,
@@ -27,29 +37,14 @@ import {
   TopBar,
 } from '@/shared/components'
 import { careerLabel } from '@/shared/utility'
-import { clock, dday, monthDay, offerBadge } from './utility'
-import { counterpart } from './OffersScreen'
-import { Avatar, Logo } from './components'
+import { fontFor, radius, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
 
-function Thread({ offer, meId }: { offer: Offer; meId: string }) {
+const Thread = ({ offer, meId }: { offer: Offer; meId: string }) => {
   const c = useColors()
-  const qc = useQueryClient()
   const [text, setText] = useState('')
-  const key = ['me', 'offer', offer.id, 'messages']
-  const { data } = useQuery({
-    queryKey: key,
-    queryFn: () => api.me.offerMessages(offer.id, { limit: 100 }),
-  })
-  const send = useMutation({
-    mutationFn: (body: string) => api.me.sendOfferMessage(offer.id, body),
-    onSuccess: () => {
-      setText('')
-      void qc.invalidateQueries({ queryKey: key })
-    },
-    onError: () => Alert.alert('메시지를 보내지 못했어요', '잠시 뒤에 다시 보내 주세요.'),
-  })
+  const { data, send } = useOfferMessages(offer.id, () => setText(''))
   const canSend = !!text.trim() && !send.isPending
   return (
     <View style={{ gap: 10 }}>
@@ -130,45 +125,18 @@ function Thread({ offer, meId }: { offer: Offer; meId: string }) {
   )
 }
 
-/** 제안 상세: sender, message, 함께 보낸 공고, AI 맞추기 card; 거절 / 수락하고 답장하기; 1:1 메시지 after accept. */
-export function OfferDetailScreen({ id, box = 'received' }: { id: string; box?: Box }) {
+const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) => {
   const c = useColors()
-  const qc = useQueryClient()
   const insets = useSafeAreaInsets()
   const [replying, setReplying] = useState(false)
   const [reply, setReply] = useState('')
-  const { data: o, isLoading } = useQuery({
-    queryKey: ['me', 'offer', id],
-    queryFn: () => api.me.offer(id),
+  const { data: o, isLoading } = useOffer(id)
+  const { accept, decline } = useOfferDecision(id, reply, () => {
+    setReplying(false)
+    setReply('')
   })
-
-  // Opening marks the offer read on the server; refresh lists and the inbox badge.
-  useEffect(() => {
-    if (o) void qc.invalidateQueries({ queryKey: ['me', 'offers'] })
-  }, [o?.id, qc]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const done = (next: Offer) => {
-    qc.setQueryData(['me', 'offer', id], next)
-    void qc.invalidateQueries({ queryKey: ['me', 'offers'] })
-    void qc.invalidateQueries({ queryKey: ['me', 'offer', id, 'messages'] })
-  }
-  const accept = useMutation({
-    mutationFn: () => api.me.acceptOffer(id, reply.trim() || undefined),
-    onSuccess: (next) => {
-      setReplying(false)
-      setReply('')
-      done(next)
-    },
-    onError: () => Alert.alert('수락하지 못했어요', '잠시 뒤에 다시 시도해 주세요.'),
-  })
-  const decline = useMutation({ mutationFn: () => api.me.declineOffer(id), onSuccess: done })
-  // The offer only carries a posting stub; the detail (shared cache with the posting screen) fills 지역 · 경력 · 마감.
   const postingId = o?.posting?.id
-  const { data: full } = useQuery({
-    queryKey: ['postings', 'detail', postingId],
-    queryFn: () => api.postings.get(postingId!),
-    enabled: !!postingId,
-  })
+  const { data: full } = useOfferPosting(postingId)
 
   if (isLoading || !o) {
     return (
@@ -347,3 +315,5 @@ export function OfferDetailScreen({ id, box = 'received' }: { id: string; box?: 
     </KeyboardAvoidingView>
   )
 }
+
+export default OfferDetailScreen

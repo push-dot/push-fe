@@ -1,17 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, ScrollView, Share, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, Share, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { JOB_CATEGORIES, type Profile } from '@push/api-client'
-import { api } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
+import {
+  DocMenu,
+  FileTile,
+  fileSize,
+  monthDay,
+  overwriteWarning,
+  tenureLabel,
+  useApplyResumeProfile,
+  useMyProfile,
+  useResumeDraft,
+  useSource,
+  type ResumeDraft,
+} from '@/features/my'
 import { Badge, BottomSheet, Button, GlassButton, Icon, Text, TopBar } from '@/shared/components'
-import { myApi } from './api/client'
-import type { ResumeDraft } from './types'
-import { DocMenu, FileTile } from './DocsTab'
-import { fileSize, monthDay, overwriteWarning, tenureLabel } from './utility'
-import { useMyProfile } from './ProfileTab'
+import { useColors } from '@/theme'
 
 type Part = 'basic' | 'intro' | 'career' | 'skills'
 const PARTS: { key: Part; label: string }[] = [
@@ -50,8 +56,7 @@ const patchFor = (picked: Part[], d: ResumeDraft['profile']): Partial<Profile> =
   ...(picked.includes('skills') ? { skills: d.skills } : {}),
 })
 
-/** 내 프로필로 전환: pick which sections of the 서류 replace the hub profile. */
-function ToProfileSheet({
+const ToProfileSheet = ({
   draft,
   visible,
   onClose,
@@ -59,21 +64,11 @@ function ToProfileSheet({
   draft: ResumeDraft['profile']
   visible: boolean
   onClose: () => void
-}) {
+}) => {
   const c = useColors()
-  const qc = useQueryClient()
   const { data: current } = useMyProfile()
   const [picked, setPicked] = useState<Part[]>(['basic', 'intro', 'career'])
-  const apply = useMutation({
-    mutationFn: () => api.me.updateProfile(patchFor(picked, draft)),
-    onSuccess: (p) => {
-      qc.setQueryData(['me', 'profile'], p)
-      onClose()
-      router.navigate({ pathname: '/my', params: { tab: 'profile' } })
-    },
-    onError: () => Alert.alert('프로필에 반영하지 못했어요', '잠시 뒤에 다시 반영해 주세요.'),
-  })
-  // Warn only about sections that already have content and will be replaced (기본 정보 is always set).
+  const apply = useApplyResumeProfile(onClose)
   const filled: Record<Part, boolean> = {
     basic: false,
     intro: !!current?.intro,
@@ -94,7 +89,7 @@ function ToProfileSheet({
       description="고른 항목만 허브 프로필에 반영돼요. 반영한 뒤에도 섹션별로 고칠 수 있어요."
       action={{
         label: apply.isPending ? '반영하는 중' : `${picked.length}개 항목 반영하기`,
-        onPress: () => apply.mutate(),
+        onPress: () => apply.mutate(patchFor(picked, draft)),
         disabled: !picked.length || apply.isPending,
       }}
     >
@@ -159,8 +154,7 @@ function ToProfileSheet({
   )
 }
 
-/** A4-like preview of what was read from the 서류. */
-function Paper({ d }: { d: ResumeDraft }) {
+const Paper = ({ d }: { d: ResumeDraft }) => {
   const c = useColors()
   const p = d.profile
   const head = (t: string) => (
@@ -230,17 +224,13 @@ function Paper({ d }: { d: ResumeDraft }) {
   )
 }
 
-/** 서류 보기: preview, 쪽수, 공유, 더 보기, AI로 고치기, 내 프로필로 전환. */
-export function DocViewerScreen({ id }: { id: string }) {
+const DocViewerScreen = ({ id }: { id: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [sheet, setSheet] = useState(false)
   const [menu, setMenu] = useState(false)
-  const doc = useQuery({ queryKey: ['me', 'sources', id], queryFn: () => api.sources.get(id) })
-  const draft = useQuery({
-    queryKey: ['me', 'sources', id, 'draft'],
-    queryFn: () => myApi.resumeDraft(id),
-  })
+  const doc = useSource(id)
+  const draft = useResumeDraft(id)
   const s = doc.data
   const d = draft.data
 
@@ -333,3 +323,5 @@ export function DocViewerScreen({ id }: { id: string }) {
     </View>
   )
 }
+
+export default DocViewerScreen

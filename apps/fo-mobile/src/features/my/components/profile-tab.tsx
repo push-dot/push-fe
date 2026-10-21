@@ -1,20 +1,17 @@
-import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import type { ReactNode } from 'react'
 import { ActivityIndicator, Pressable, View } from 'react-native'
 import { CAREER_STATUSES, JOB_CATEGORIES } from '@push/api-client'
-import { api } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
 import { Badge, Button, Icon, Text } from '@/shared/components'
-import { careerPeriod, tenureLabel } from './utility'
-import { Avatar } from './components'
+import { useColors } from '../../../theme'
+import { useMyProfile } from '../api/hooks'
+import type { ProfileSection } from '../types'
+import { careerPeriod, tenureLabel } from '../utility'
+import Avatar from './avatar'
 
-export type ProfileSection = 'basic' | 'intro' | 'career' | 'skills'
 const edit = (s: ProfileSection) => router.push(`/edit-profile/${s}`)
 
-export const useMyProfile = () => useQuery({ queryKey: ['me', 'profile'], queryFn: api.me.profile })
-
-function Section({
+const Section = ({
   title,
   onEdit,
   gap,
@@ -24,7 +21,7 @@ function Section({
   onEdit: () => void
   gap: number
   children: ReactNode
-}) {
+}) => {
   return (
     <View style={{ paddingHorizontal: 20, gap }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -46,8 +43,7 @@ function Section({
   )
 }
 
-/** 마이 › 프로필: the hub profile as others see it, with an edit button per section. */
-export function ProfileTab() {
+const ProfileTab = () => {
   const c = useColors()
   const { data: p, isLoading } = useMyProfile()
   if (isLoading || !p) return <ActivityIndicator style={{ marginTop: 60 }} />
@@ -150,3 +146,5 @@ export function ProfileTab() {
     </View>
   )
 }
+
+export default ProfileTab

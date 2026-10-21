@@ -1,92 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import * as DocumentPicker from 'expo-document-picker'
 import { router } from 'expo-router'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native'
 import type { Source } from '@push/api-client'
-import { useColors } from '../../theme'
 import { BottomSheet, Button, Icon, Text, type IconName } from '@/shared/components'
-import { myApi } from './api/client'
-import { fileKind, fileSize, monthDay } from './utility'
-import { ListTitle, Row, Toast } from './components'
-import { useToast } from './hooks'
+import { useColors } from '../../../theme'
+import { pickResumeFile } from '../api/files'
+import { useSources, useUpload } from '../api/hooks'
+import { MAX_BYTES } from '../constants'
+import { useToast } from '../hooks'
+import { fileSize, monthDay } from '../utility'
+import DocMenu from './doc-menu'
+import FileTile from './file-tile'
+import ListTitle from './list-title'
+import Row from './row'
+import Toast from './toast'
 
-const MAX_BYTES = 20 * 1024 * 1024
-const DOC_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-]
 const openChat = () => router.push('/(tabs)/(chat)/chat')
 
-export const useSources = () =>
-  useQuery({ queryKey: ['me', 'sources'], queryFn: () => myApi.sources() })
-
-/** PDF/DOCX tile: red for PDF, violet for DOCX. */
-export function FileTile({ name, small }: { name: string; small?: boolean }) {
-  const c = useColors()
-  const pdf = fileKind(name) === 'PDF'
-  return (
-    <View
-      style={{
-        width: small ? 30 : 40,
-        height: small ? 36 : 48,
-        borderRadius: 8,
-        backgroundColor: pdf ? c.redSoft : c.acSoft,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        paddingBottom: small ? 4 : 6,
-      }}
-    >
-      <Text
-        weight="800"
-        style={{ fontSize: small ? 8 : 10, lineHeight: small ? 10 : 12, color: pdf ? c.red : c.ac }}
-      >
-        {fileKind(name)}
-      </Text>
-    </View>
-  )
-}
-
-type Upload = { name: string; size: number; progress: number }
-
-/** Upload with a progress estimate: fetch has no upload progress, so it eases toward 90% until the response. */
-const useUpload = (onDone: () => void) => {
-  const qc = useQueryClient()
-  const [upload, setUpload] = useState<Upload | null>(null)
-  const cancelled = useRef(false)
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null)
-  useEffect(() => () => clearInterval(timer.current ?? undefined), [])
-
-  const start = async (file: DocumentPicker.DocumentPickerAsset) => {
-    const size = file.size ?? 0
-    cancelled.current = false
-    setUpload({ name: file.name, size, progress: 0.05 })
-    timer.current = setInterval(
-      () => setUpload((u) => u && { ...u, progress: u.progress + (0.9 - u.progress) * 0.12 }),
-      200,
-    )
-    try {
-      const s = await myApi.upload(file)
-      if (cancelled.current) await myApi.remove(s.id).catch(() => undefined)
-      else onDone()
-    } catch {
-      if (!cancelled.current)
-        Alert.alert('파일을 올리지 못했어요', '네트워크를 확인하고 다시 올려 주세요.')
-    } finally {
-      clearInterval(timer.current ?? undefined)
-      setUpload(null)
-      void qc.invalidateQueries({ queryKey: ['me', 'sources'] })
-    }
-  }
-  const cancel = () => {
-    cancelled.current = true
-    clearInterval(timer.current ?? undefined)
-    setUpload(null)
-  }
-  return { upload, start, cancel }
-}
-
-function PickRow({
+const PickRow = ({
   icon,
   title,
   sub,
@@ -98,7 +29,7 @@ function PickRow({
   sub: string
   tone: 'ac' | 'green'
   onPress: () => void
-}) {
+}) => {
   const c = useColors()
   return (
     <Pressable
@@ -131,56 +62,7 @@ function PickRow({
   )
 }
 
-/** 서류 더 보기 sheet: 보기 · 삭제. */
-export function DocMenu({
-  doc,
-  onClose,
-  onDeleted,
-  viewing,
-}: {
-  doc: Source | null
-  onClose: () => void
-  onDeleted?: () => void
-  viewing?: boolean
-}) {
-  const qc = useQueryClient()
-  const remove = useMutation({
-    mutationFn: (id: string) => myApi.remove(id),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['me', 'sources'] })
-      onClose()
-      onDeleted?.()
-    },
-  })
-  return (
-    <BottomSheet visible={!!doc} onClose={onClose} title={doc?.fileName}>
-      {viewing ? null : (
-        <Button
-          label="서류 보기"
-          variant="secondary"
-          onPress={() => {
-            onClose()
-            router.push(`/docs/${doc!.id}`)
-          }}
-        />
-      )}
-      <Button
-        label={remove.isPending ? '삭제하는 중' : '서류 삭제하기'}
-        variant="secondary"
-        disabled={remove.isPending}
-        onPress={() =>
-          Alert.alert('이 서류를 삭제할까요?', '삭제하면 되돌릴 수 없어요.', [
-            { text: '취소', style: 'cancel' },
-            { text: '삭제하기', style: 'destructive', onPress: () => remove.mutate(doc!.id) },
-          ])
-        }
-      />
-    </BottomSheet>
-  )
-}
-
-/** 마이 › 서류: 내 서류 list, 서류 가져오기 sheet, upload progress and toast. */
-export function DocsTab() {
+const DocsTab = () => {
   const c = useColors()
   const { data, isLoading } = useSources()
   const toast = useToast()
@@ -190,12 +72,8 @@ export function DocsTab() {
 
   const pickFile = async (fromSheet = false) => {
     setPicking(false)
-    // iOS can't present the picker while the sheet's modal is still dismissing.
     if (fromSheet) await new Promise((r) => setTimeout(r, 400))
-    const res = await DocumentPicker.getDocumentAsync({
-      type: DOC_TYPES,
-      copyToCacheDirectory: true,
-    })
+    const res = await pickResumeFile()
     const file = res.canceled ? null : res.assets[0]
     if (!file) return
     if ((file.size ?? 0) > MAX_BYTES)
@@ -347,3 +225,5 @@ export function DocsTab() {
     </View>
   )
 }
+
+export default DocsTab

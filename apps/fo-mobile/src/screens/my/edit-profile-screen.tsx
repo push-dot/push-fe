@@ -1,5 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import {
@@ -21,16 +19,24 @@ import {
   type JobCategory,
   type Profile,
 } from '@push/api-client'
-import { searchHangul } from '@/shared/utility'
-import { api } from '@/shared/infrastructure'
-import { fontFor, radius, useColors } from '../../theme'
+import {
+  Avatar,
+  careerPeriod,
+  FieldLabel,
+  parseYm,
+  pickAvatarImage,
+  SheetHeader,
+  SKILL_CATALOG,
+  tenureLabel,
+  uploadAvatarImage,
+  useMyProfile,
+  useSaveProfile,
+  type ProfileSection,
+} from '@/features/my'
 import { BottomSheet, Button, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
-import { careerPeriod, parseYm, tenureLabel } from './utility'
-import { Avatar, FieldLabel, SheetHeader } from './components'
-import { useMyProfile, type ProfileSection } from './ProfileTab'
-import { SKILL_CATALOG } from './constants'
+import { searchHangul } from '@/shared/utility'
+import { fontFor, radius, useColors } from '@/theme'
 
-type Patch = Partial<Profile> & { avatarKey?: string }
 const TITLES: Record<ProfileSection, string> = {
   basic: '기본 정보',
   intro: '소개',
@@ -38,20 +44,7 @@ const TITLES: Record<ProfileSection, string> = {
   skills: '기술 스택',
 }
 
-const useSave = () => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (patch: Patch) => api.me.updateProfile(patch),
-    onSuccess: (p) => {
-      qc.setQueryData(['me', 'profile'], p)
-      router.back()
-    },
-    onError: () => Alert.alert('저장하지 못했어요', '잠시 뒤에 다시 저장해 주세요.'),
-  })
-}
-
-/** Plain input on bg, used inside bg2 cards and select fields. */
-function Input({
+const Input = ({
   value,
   onChangeText,
   label,
@@ -65,7 +58,7 @@ function Input({
   placeholder?: string
   multiline?: boolean
   keyboardType?: 'numbers-and-punctuation'
-}) {
+}) => {
   const c = useColors()
   return (
     <TextInput
@@ -93,8 +86,7 @@ function Input({
   )
 }
 
-/** Field-looking button that opens a picker sheet. */
-function SelectField({
+const SelectField = ({
   label,
   value,
   onPress,
@@ -102,7 +94,7 @@ function SelectField({
   label: string
   value: string
   onPress: () => void
-}) {
+}) => {
   const c = useColors()
   return (
     <View style={{ flex: 1, gap: 8 }}>
@@ -128,7 +120,7 @@ function SelectField({
   )
 }
 
-function PickSheet<K extends string | number>({
+const PickSheet = <K extends string | number,>({
   title,
   items,
   value,
@@ -142,7 +134,7 @@ function PickSheet<K extends string | number>({
   onPick: (k: K) => void
   onClose: () => void
   visible: boolean
-}) {
+}) => {
   const c = useColors()
   return (
     <BottomSheet visible={visible} onClose={onClose} title={title}>
@@ -181,9 +173,9 @@ const YEARS = Array.from({ length: 21 }, (_, n) => ({
   label: n === 20 ? '20년차 이상' : tenureLabel(n),
 }))
 
-function EditBasic({ p }: { p: Profile }) {
+const EditBasic = ({ p }: { p: Profile }) => {
   const c = useColors()
-  const save = useSave()
+  const save = useSaveProfile()
   const [name, setName] = useState(p.displayName)
   const [headline, setHeadline] = useState(p.headline)
   const [job, setJob] = useState<JobCategory | null>(p.jobCategory)
@@ -194,23 +186,12 @@ function EditBasic({ p }: { p: Profile }) {
   const [sheet, setSheet] = useState<'job' | 'years' | null>(null)
 
   const pickPhoto = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    })
+    const res = await pickAvatarImage()
     const a = res.canceled ? null : res.assets[0]
     if (!a) return
     setPhoto({ uri: a.uri })
-    const form = new FormData()
-    form.append('file', {
-      uri: a.uri,
-      name: a.fileName ?? 'avatar.jpg',
-      type: a.mimeType ?? 'image/jpeg',
-    } as unknown as Blob)
     try {
-      const { key } = await api.uploads.image(form)
+      const { key } = await uploadAvatarImage(a)
       setPhoto({ uri: a.uri, key })
     } catch {
       setPhoto(null)
@@ -350,8 +331,8 @@ function EditBasic({ p }: { p: Profile }) {
   )
 }
 
-function EditIntro({ p }: { p: Profile }) {
-  const save = useSave()
+const EditIntro = ({ p }: { p: Profile }) => {
+  const save = useSaveProfile()
   const [intro, setIntro] = useState(p.intro)
   return (
     <>
@@ -417,9 +398,9 @@ const toCareer = (d: CareerDraft): Career | null => {
   }
 }
 
-function EditCareer({ p }: { p: Profile }) {
+const EditCareer = ({ p }: { p: Profile }) => {
   const c = useColors()
-  const save = useSave()
+  const save = useSaveProfile()
   const [items, setItems] = useState<CareerDraft[]>(p.careers.map(toDraft))
   const [open, setOpen] = useState<number | null>(items.length ? 0 : null)
   const parsed = items.map(toCareer)
@@ -573,9 +554,9 @@ function EditCareer({ p }: { p: Profile }) {
   )
 }
 
-function EditSkills({ p }: { p: Profile }) {
+const EditSkills = ({ p }: { p: Profile }) => {
   const c = useColors()
-  const save = useSave()
+  const save = useSaveProfile()
   const [skills, setSkills] = useState(p.skills)
   const [q, setQ] = useState('')
   const has = (s: string) => skills.some((x) => x.toLowerCase() === s.toLowerCase())
@@ -694,8 +675,7 @@ function EditSkills({ p }: { p: Profile }) {
   )
 }
 
-/** Per-section profile edit sheet (기본 정보 · 소개 · 경력 · 기술 스택). Saves only that section. */
-export function EditProfileScreen({ section }: { section: ProfileSection }) {
+const EditProfileScreen = ({ section }: { section: ProfileSection }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const { data: p } = useMyProfile()
@@ -716,3 +696,5 @@ export function EditProfileScreen({ section }: { section: ProfileSection }) {
     </KeyboardAvoidingView>
   )
 }
+
+export default EditProfileScreen

@@ -1,12 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
-import { useColors } from '../../theme'
+import { ActivityTab, DocsTab, MyHeader, ProfileTab, type ActivitySub } from '@/features/my'
 import { SegmentedControl } from '@/shared/components'
-import { ActivityTab, type ActivitySub } from './ActivityTab'
-import { DocsTab } from './DocsTab'
-import { MyHeader } from './components'
-import { ProfileTab } from './ProfileTab'
+import { useColors } from '@/theme'
 
 type Tab = 'profile' | 'docs' | 'activity'
 const TABS: { key: Tab; label: string }[] = [
@@ -19,14 +16,12 @@ const asTab = (t?: string): Tab => (TABS.some((x) => x.key === t) ? (t as Tab) :
 const asSub = (s?: string): ActivitySub =>
   SUBS.includes(s as ActivitySub) ? (s as ActivitySub) : 'applications'
 
-/** 마이: 프로필 | 서류 | 내 활동. Other areas deep-link with `?tab=activity&sub=bookmarks`. */
-export function MyScreen() {
+const MyScreen = () => {
   const c = useColors()
   const params = useLocalSearchParams<{ tab?: string; sub?: string }>()
   const [tab, setTab] = useState<Tab>(asTab(params.tab))
   const [sub, setSub] = useState<ActivitySub>(asSub(params.sub))
 
-  // Apply new deep-link params (adjusting state during render, not in an effect).
   const [seen, setSeen] = useState(params)
   if (seen.tab !== params.tab || seen.sub !== params.sub) {
     setSeen(params)
@@ -34,7 +29,6 @@ export function MyScreen() {
     if (params.sub) setSub(asSub(params.sub))
   }
 
-  // Keep params in sync so a later deep link with the same values still applies.
   const pick = (t: Tab) => {
     setTab(t)
     router.setParams({ tab: t })
@@ -60,3 +54,5 @@ export function MyScreen() {
     </View>
   )
 }
+
+export default MyScreen

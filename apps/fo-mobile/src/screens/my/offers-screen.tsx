@@ -1,23 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
-import type { Offer, UserRef } from '@push/api-client'
-import { api } from '@/shared/infrastructure'
-import { useColors } from '../../theme'
+import type { Offer } from '@push/api-client'
+import { Avatar, counterpart, Empty, offerBadge, Row, timeAgo, useOffers } from '@/features/my'
 import { Badge, SegmentedControl, Text, TopBar } from '@/shared/components'
-import { offerBadge, timeAgo } from './utility'
-import { Avatar, Empty, Row } from './components'
+import { useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
-export type OfferPerson = UserRef & { affiliation?: string }
-/** The other person in an offer (sender for received, recipient for sent). */
-export const counterpart = (o: Offer, box: Box): OfferPerson =>
-  box === 'received' ? o.sender : o.recipient
-export const useOffers = (box: Box) =>
-  useQuery({ queryKey: ['me', 'offers', box], queryFn: () => api.me.offers(box, { limit: 50 }) })
 
-function OfferRow({ o, box }: { o: Offer; box: Box }) {
+const OfferRow = ({ o, box }: { o: Offer; box: Box }) => {
   const c = useColors()
   const who = counterpart(o, box)
   const unread = box === 'received' && !o.readAt
@@ -57,8 +48,7 @@ function OfferRow({ o, box }: { o: Offer; box: Box }) {
   )
 }
 
-/** 제안함: 받은 제안 / 보낸 제안. */
-export function OffersScreen() {
+const OffersScreen = () => {
   const c = useColors()
   const [box, setBox] = useState<Box>('received')
   const received = useOffers('received')
@@ -98,3 +88,5 @@ export function OffersScreen() {
     </View>
   )
 }
+
+export default OffersScreen

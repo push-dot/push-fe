@@ -1,14 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
-import { useColors, type Colors } from '../../theme'
 import { BottomSheet, Chip, GlassButton, Text, TextField } from '@/shared/components'
-import { myApi } from './api/client'
-import type { CalendarEvent, CalendarEventType } from './types'
-import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from './utility'
+import { useColors, type Colors } from '../../../theme'
+import { useAddCalendarEvent, useCalendarEvents } from '../api/hooks'
+import type { CalendarEvent, CalendarEventType } from '../types'
+import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from '../utility'
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']
-// Colour per event type (feature-spec 8: 면접 · 마감 · 후속 연락 · 커피챗 · 직접 추가).
 const TYPES: { key: CalendarEventType; label: string; color: keyof Colors }[] = [
   { key: 'INTERVIEW', label: '면접', color: 'ac' },
   { key: 'DEADLINE', label: '마감', color: 'red' },
@@ -24,22 +22,12 @@ const subline = (e: CalendarEvent) => {
   return [dur, e.notes].filter(Boolean).join(' · ')
 }
 
-function AddEvent({ day, visible, onClose }: { day: Date; visible: boolean; onClose: () => void }) {
-  const qc = useQueryClient()
+const AddEvent = ({ day, visible, onClose }: { day: Date; visible: boolean; onClose: () => void }) => {
   const [title, setTitle] = useState('')
   const [type, setType] = useState<CalendarEventType>('CUSTOM')
-  const add = useMutation({
-    mutationFn: () =>
-      myApi.addEvent({
-        type,
-        title: title.trim(),
-        startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9).toISOString(),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['calendar'] })
-      setTitle('')
-      onClose()
-    },
+  const add = useAddCalendarEvent(() => {
+    setTitle('')
+    onClose()
   })
   return (
     <BottomSheet
@@ -49,7 +37,12 @@ function AddEvent({ day, visible, onClose }: { day: Date; visible: boolean; onCl
       description={`${monthDay(day.toISOString())} 오전 9:00`}
       action={{
         label: '일정 추가하기',
-        onPress: () => add.mutate(),
+        onPress: () =>
+          add.mutate({
+            type,
+            title: title.trim(),
+            startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9).toISOString(),
+          }),
         disabled: !title.trim() || add.isPending,
       }}
     >
@@ -68,8 +61,7 @@ function AddEvent({ day, visible, onClose }: { day: Date; visible: boolean; onCl
   )
 }
 
-/** 내 활동 › 캘린더: month grid with type dots, the chosen day's events, Google 연결 상태, + 일정 추가. */
-export function CalendarView() {
+const CalendarView = () => {
   const c = useColors()
   const today = useMemo(() => new Date(), [])
   const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
@@ -79,10 +71,7 @@ export function CalendarView() {
   const cells = useMemo(() => monthGrid(month.getFullYear(), month.getMonth()), [month])
   const from = cells[0]!
   const to = new Date(cells[cells.length - 1]!.getTime() + 86_400_000)
-  const { data } = useQuery({
-    queryKey: ['calendar', from.toISOString()],
-    queryFn: () => myApi.calendar(from.toISOString(), to.toISOString()),
-  })
+  const { data } = useCalendarEvents(from.toISOString(), to.toISOString())
   const events = data?.data ?? []
   const onDay = (d: Date) => events.filter((e) => sameDay(new Date(e.startsAt), d))
   const dayEvents = onDay(selected).sort((a, b) => a.startsAt.localeCompare(b.startsAt))
@@ -265,3 +254,5 @@ export function CalendarView() {
     </View>
   )
 }
+
+export default CalendarView
