@@ -25,6 +25,7 @@ import type {
 import { sessionStore } from './shared/auth/session'
 import { searchHangul } from './shared/lib/hangul-search'
 import { assistantReply, type ChatIntent } from './shared/model/employer-chat'
+import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from './shared/model/constants'
 
 /** Fields the boards show but api-spec §4 doesn't define yet. */
 export type PostingView = PostingDetail & { industry?: string; preferred?: string[] }
@@ -1397,15 +1398,32 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
   return json(404, { error: { code: 'NOT_FOUND', message: `mock: ${pathname}` } })
 }
 
+const creditBalances = new Map<string, number>()
+
+const seededBalance = () => {
+  const kind = mockPersona()
+  if (kind === 'employer') return 3000000
+  if (kind === 'employer-pro') return 15000000
+  if (kind === 'employer-ultra') return 30000000
+  return 0
+}
+
+const asEmployerPlan = (value: unknown): 'BASIC' | 'PRO' | 'ULTRA' | null =>
+  value === 'BASIC' || value === 'PRO' || value === 'ULTRA' ? value : null
+
+const seatLimitFor = (plan: 'BASIC' | 'PRO' | 'ULTRA') =>
+  plan === 'ULTRA' ? SEAT_LIMIT_ULTRA : plan === 'PRO' ? SEAT_LIMIT_PRO : SEAT_LIMIT_NONE
+
+const localPlansUrl = (key: 'checkout' | 'topup', value: string) =>
+  `/employer/plans?${key}=${encodeURIComponent(value)}`
+
 const companyBillingStatus = (): CompanyBillingStatus => {
   const kind = mockPersona()
-  const balance =
-    kind === 'employer' ? 3000000 : kind === 'employer-pro' ? 15000000 : kind === 'employer-ultra' ? 30000000 : 0
-  const plan = kind === 'employer' ? 'BASIC' : kind === 'employer-pro' ? 'PRO' : kind === 'employer-ultra' ? 'ULTRA' : null
+  const personal = kind === 'personal' || kind === null
   return {
-    plan,
-    audience: kind === 'personal' || kind === null ? 'PERSONAL' : 'EMPLOYER',
-    balanceMicroCredits: balance,
+    plan: personal ? null : (companyMe()?.plan ?? null),
+    audience: personal ? 'PERSONAL' : 'EMPLOYER',
+    balanceMicroCredits: creditBalances.get(personaKey()) ?? seededBalance(),
     subscriptionStatus: 'active',
     periodEndsAt: null,
     reservedMicroCredits: 0,
@@ -1430,9 +1448,18 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
     const payload = await readJson(input, init)
     if (tail === '/billing/checkout') {
       const planId = typeof payload.planId === 'string' ? payload.planId : ''
-      return json(200, { data: { url: `https://example.test/checkout?plan=${planId}` } })
+      const plan = asEmployerPlan(planId)
+      const record = companyRecord()
+      if (plan && record) {
+        record.company.plan = plan
+        record.company.seats = { ...record.company.seats, limit: seatLimitFor(plan) }
+      }
+      return json(200, { data: { url: localPlansUrl('checkout', planId) } })
     }
-    return json(200, { data: { url: `https://example.test/topup?amount=${String(payload.amount ?? '')}` } })
+    const amount = Number(payload.amount ?? 0)
+    const nextBalance = (creditBalances.get(personaKey()) ?? seededBalance()) + (Number.isFinite(amount) ? amount * 1000 : 0)
+    creditBalances.set(personaKey(), nextBalance)
+    return json(200, { data: { url: localPlansUrl('topup', String(payload.amount ?? '')) } })
   }
   if (method === 'GET' && tail === '/billing') return json(200, { data: companyBillingStatus() })
   return null

@@ -1,10 +1,12 @@
 import { ApiError, type EmployerPlan } from '@push/api-client'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
+  checkoutTarget,
   showEmployerCheckout,
   topupReady,
 } from '../../shared/model/employer-plans'
@@ -19,6 +21,8 @@ import {
   PLANS_LOADING,
   PLANS_PERSONAL,
   PLANS_TITLE,
+  TOPUP_DONE,
+  planStarted,
   remainingCredits,
 } from './constants'
 import PlanCard from './plan-card'
@@ -26,18 +30,33 @@ import PlanCard from './plan-card'
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404
 
 const PlansPage = () => {
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const queryClient = useQueryClient()
   const [amountText, setAmountText] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
+  const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
+  const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
   const billing = useQuery({ queryKey: ['billing', 'company'], queryFn: () => api.billing.companyStatus() })
   const company = useQuery({
     queryKey: ['company', 'me'],
     queryFn: () => api.companies.me(),
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
   })
+  const openLocal = async (url: string) => {
+    await queryClient.invalidateQueries({ queryKey: ['billing', 'company'] })
+    await queryClient.invalidateQueries({ queryKey: ['company', 'me'] })
+    const target = checkoutTarget(url, window.location.href)
+    if (target.stay) {
+      navigate(target.href)
+      return
+    }
+    location.assign(target.href)
+  }
   const checkout = useMutation({
     mutationFn: (planId: EmployerPlan) => api.billing.checkout(planId),
     onSuccess: (result) => {
-      location.assign(result.url)
+      void openLocal(result.url)
     },
     onError: () => {
       setActionError(PLAN_ACTION_FAILED)
@@ -46,7 +65,7 @@ const PlansPage = () => {
   const topup = useMutation({
     mutationFn: (amount: number) => api.billing.topup(amount),
     onSuccess: (result) => {
-      location.assign(result.url)
+      void openLocal(result.url)
     },
     onError: () => {
       setActionError(PLAN_ACTION_FAILED)
@@ -92,6 +111,11 @@ const PlansPage = () => {
         <h1 className="h1">{PLANS_TITLE}</h1>
         {billing.data ? <p className="b1">{remainingCredits(billing.data.balanceMicroCredits)}</p> : null}
         <p className="b2 t2">{PLAN_RENEWAL}</p>
+        {notice ? (
+          <p className="b1" role="status">
+            {notice}
+          </p>
+        ) : null}
       </header>
       <ul className="plan-list stack">
         {EMPLOYER_PLAN_CARDS.map((card) => (

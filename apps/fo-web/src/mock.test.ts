@@ -235,9 +235,21 @@ describe('employer billing mock', () => {
     const checkout = await read<{ data: { url: string } }>(
       await postJson('http://localhost/api/v1/billing/checkout', { planId: 'PRO' }),
     )
-    expect(checkout.data.url).toBe('https://example.test/checkout?plan=PRO')
+    const checkoutUrl = new URL(checkout.data.url, 'http://localhost:5175/employer/plans?mock=1')
+    expect(checkoutUrl.origin).toBe('http://localhost:5175')
+    expect(checkoutUrl.pathname).toBe('/employer/plans')
+    expect(checkoutUrl.searchParams.get('checkout')).toBe('PRO')
+    const afterCheckout = await read<{ data: { plan: string } }>(await billing())
+    expect(afterCheckout.data.plan).toBe('PRO')
     const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 }))
-    expect(topup.data.url).toBe('https://example.test/topup?amount=3000')
+    const topupUrl = new URL(topup.data.url, 'http://localhost:5175/employer/plans?mock=1')
+    expect(topupUrl.origin).toBe('http://localhost:5175')
+    expect(topupUrl.pathname).toBe('/employer/plans')
+    expect(topupUrl.searchParams.get('topup')).toBe('3000')
+    const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
+    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(3000000)
+    expect(afterTopup.data.plan).toBe('PRO')
+    await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' })
 
     setMockPersona('employer-pro')
     const transferred = await mockFetch('http://localhost/api/v1/companies/me/members/u-member', {
@@ -274,7 +286,10 @@ describe('employer billing mock', () => {
     const firstPlan = await read<{ data: { url: string } }>(
       await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' }),
     )
-    expect(firstPlan.data.url).toBe('https://example.test/checkout?plan=BASIC')
+    const firstUrl = new URL(firstPlan.data.url, 'http://localhost:5175/employer/plans?mock=1')
+    expect(firstUrl.origin).toBe('http://localhost:5175')
+    expect(firstUrl.pathname).toBe('/employer/plans')
+    expect(firstUrl.searchParams.get('checkout')).toBe('BASIC')
   })
 
   it('returns an empty ledger', async () => {

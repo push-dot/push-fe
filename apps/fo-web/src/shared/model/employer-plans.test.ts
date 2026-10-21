@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, showEmployerCheckout, topupReady } from './employer-plans'
+import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutTarget, showEmployerCheckout, topupReady } from './employer-plans'
 
 const FORBIDDEN_MODEL_NAMES = ['Sonnet', 'Opus', 'Fable']
 
@@ -54,5 +54,27 @@ describe('showEmployerCheckout', () => {
   it('shows checkout for an employer audience and when audience is missing', () => {
     expect(showEmployerCheckout('EMPLOYER')).toBe(true)
     expect(showEmployerCheckout(undefined)).toBe(true)
+  })
+})
+
+describe('checkoutTarget', () => {
+  it('keeps a same-origin plans url on this site', () => {
+    expect(checkoutTarget('/employer/plans?checkout=PRO', 'http://localhost:5175/employer/plans?mock=1')).toEqual({
+      stay: true,
+      href: '/employer/plans?checkout=PRO',
+    })
+  })
+
+  it('keeps an absolute localhost plans url on this site', () => {
+    expect(
+      checkoutTarget('http://localhost:5175/employer/plans?checkout=ULTRA', 'http://localhost:5175/employer/plans?mock=1'),
+    ).toEqual({ stay: true, href: '/employer/plans?checkout=ULTRA' })
+  })
+
+  it('leaves the site only for a different host', () => {
+    expect(checkoutTarget('https://example.test/checkout?plan=PRO', 'http://localhost:5175/employer/plans?mock=1')).toEqual({
+      stay: false,
+      href: 'https://example.test/checkout?plan=PRO',
+    })
   })
 })

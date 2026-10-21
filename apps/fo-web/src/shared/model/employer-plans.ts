@@ -11,3 +11,10 @@ export const canChangeEmployerPlan = (role: 'ADMIN' | 'MEMBER' | undefined, comp
   role === 'ADMIN' || (companyMissing && role === undefined)
 
 export const topupReady = (amount: number): boolean => Number.isFinite(amount) && amount > 0
+
+export const checkoutTarget = (url: string, currentHref: string) => {
+  const next = new URL(url, currentHref)
+  const current = new URL(currentHref)
+  if (next.origin !== current.origin) return { stay: false as const, href: next.href }
+  return { stay: true as const, href: `${next.pathname}${next.search}` }
+}
