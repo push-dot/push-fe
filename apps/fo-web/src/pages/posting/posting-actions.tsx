@@ -15,10 +15,24 @@ import {
   BOOKMARK_LABEL,
   EMPLOYER_POSTING_CTA,
   EMPLOYER_VERIFY_PATH,
-  LINK_COPIED_TOAST,
   SHARE_LABEL,
 } from './constants'
 import { postingActionMode } from './posting-mode'
+import { shareLink } from './share-link'
+
+const copyUrl = async (url: string) => {
+  try {
+    await navigator.clipboard.writeText(url)
+  } catch {
+    const area = document.createElement('textarea')
+    area.value = url
+    area.setAttribute('readonly', '')
+    document.body.append(area)
+    area.select()
+    document.execCommand('copy')
+    area.remove()
+  }
+}
 
 const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (message: string) => void }) => {
   const session = useSession()
@@ -58,17 +72,12 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
     setApplyOpen(true)
   }
   const share = async () => {
-    const url = window.location.href
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ url })
-      } catch {
-        return
-      }
-      return
-    }
-    await navigator.clipboard.writeText(url)
-    onToast(LINK_COPIED_TOAST)
+    const toast = await shareLink({
+      url: window.location.href,
+      share: typeof navigator.share === 'function' ? (data) => navigator.share(data) : undefined,
+      copy: copyUrl,
+    })
+    if (toast) onToast(toast)
   }
   return (
     <>
