@@ -12,7 +12,8 @@ import { DocsModal } from './DocsModal'
 import { LinksModal } from './LinksModal'
 import { SPRING, useReduceMotion } from './motion'
 import { useMe } from './useMe'
-import { ago, Mark } from './parts'
+import { Mark } from './components'
+import { ago } from './utility'
 
 type Sheet = 'account' | 'docs' | 'links' | 'bookmarks' | null
 

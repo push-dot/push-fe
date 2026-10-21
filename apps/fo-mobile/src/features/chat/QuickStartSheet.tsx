@@ -5,7 +5,8 @@ import { useColors } from '../../theme'
 import { Badge, BottomSheet, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { chatApi, type QsItem } from './api/client'
 import { FileTag } from './Items'
-import { Mark, Pick, useStartChat } from './parts'
+import { useStartChat } from './api/hooks'
+import { Mark, Pick } from './components'
 import { CALENDAR_TASKS, type QuickStart } from './quickStarts'
 
 /** Ingredient sheet for one quick start (Qs*.html). Collects what the task needs, then starts the conversation. */

@@ -6,7 +6,8 @@ import { Pressable, ScrollView, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
 import { BottomSheet, Button, Chip, Icon, Text } from '@/shared/components'
 import { brandOf, careerLabel } from '@/shared/utility'
-import { Mark, Note, PageModal, useStartChat } from './parts'
+import { useStartChat } from './api/hooks'
+import { Mark, Note, PageModal } from './components'
 
 // Same company colour as JobCard so a company looks the same across screens.
 export const logoColor = brandOf

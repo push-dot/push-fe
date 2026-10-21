@@ -8,7 +8,7 @@ import { useColors } from '../../theme'
 import { GlassButton, Text, TextField, TopBar } from '@/shared/components'
 import { chatApi, type ConversationRow } from './api/client'
 import { statusBadge } from './Drawer'
-import { ago } from './parts'
+import { ago } from './utility'
 
 const dayStart = () => new Date(new Date().setHours(0, 0, 0, 0)).getTime()
 

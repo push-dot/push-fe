@@ -5,7 +5,7 @@ import { fontFor, useColors } from '../../theme'
 import { Glass, GlassButton, Icon3D, Text } from '@/shared/components'
 import { ComposerArea } from './ComposerArea'
 import { ChatDrawer } from './Drawer'
-import { useStartChat } from './parts'
+import { useStartChat } from './api/hooks'
 import { QuickStartSheet } from './QuickStartSheet'
 import { QUICK_STARTS, type QuickStart } from './quickStarts'
 

@@ -10,7 +10,7 @@ import { Composer } from './Composer'
 import { FileTag } from './Items'
 import { filterMentions, insertMention, mentionQuery, type MentionGroup, type MentionItem } from './mentions'
 import { Appear } from './motion'
-import { Mark } from './parts'
+import { Mark } from './components'
 import { QUICK_STARTS, type QuickStart } from './quickStarts'
 
 type Props = {

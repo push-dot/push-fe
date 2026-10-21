@@ -10,7 +10,7 @@ import { openExternal } from './api/files'
 import { chatApi, type Account } from './api/client'
 import { useMe } from './useMe'
 import { Appear } from './motion'
-import { Mark, Note, PageModal, Pick } from './parts'
+import { Mark, Note, PageModal, Pick } from './components'
 import { usePrefs } from './store'
 
 const TONES: { key: Tone; label: string }[] = [

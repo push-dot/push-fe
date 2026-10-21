@@ -6,7 +6,8 @@ import { useColors } from '../../theme'
 import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Switch, Text, TextField, type BadgeTone, type IconName } from '@/shared/components'
 import { api } from '@/shared/infrastructure'
 import { kindOf } from './links'
-import { GroupTitle, Note, PageModal, useStartChat } from './parts'
+import { useStartChat } from './api/hooks'
+import { GroupTitle, Note, PageModal } from './components'
 
 const KINDS: { key: LinkKind; label: string }[] = [
   { key: 'job', label: '공고' },

@@ -4,7 +4,8 @@ import { GlassButton, Icon, Text } from '@/shared/components'
 import { pickChatDoc } from './api/files'
 import { chatApi, type ChatDoc } from './api/client'
 import { FileTag } from './Items'
-import { ago, Note, PageModal } from './parts'
+import { Note, PageModal } from './components'
+import { ago } from './utility'
 
 const size = (b: number) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)}MB` : `${Math.round(b / 1000)}KB`)
 const meta = (d: ChatDoc) => (d.aiMade ? `AI로 만듦 · ${ago(d.createdAt)}` : `${size(d.size)} · ${ago(d.createdAt)}`)
