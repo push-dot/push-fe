@@ -21,8 +21,18 @@ const memoryStorage = (): StorageLike => {
 }
 
 const defaultStorage = (): StorageLike => {
-  if (typeof localStorage === 'undefined') return memoryStorage()
-  return localStorage
+  if (typeof localStorage === 'undefined' || typeof sessionStorage === 'undefined') return memoryStorage()
+  return storageForSession(mockDocument(), { local: localStorage, session: sessionStorage })
+}
+
+export const storageForSession = (mock: boolean, available: { local: StorageLike; session: StorageLike }) =>
+  mock ? available.session : available.local
+
+const mockDocument = () => {
+  if (typeof window === 'undefined') return false
+  const env = (window as Window & { __PUSH__?: { mock?: boolean } }).__PUSH__
+  if (env?.mock) return true
+  return new URLSearchParams(window.location.search).has('mock')
 }
 
 export const createSessionStore = (storage: StorageLike) => {

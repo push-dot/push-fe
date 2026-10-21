@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createSessionStore, type StorageLike } from './session'
+import { createSessionStore, storageForSession, type StorageLike } from './session'
 
 const memory = (): StorageLike => {
   const items = new Map<string, string>()
@@ -27,6 +27,35 @@ const sample = {
     companyRole: null,
   },
 }
+
+const employer = {
+  ...sample,
+  user: { ...sample.user, displayName: '모아페이', accountType: 'EMPLOYER' as const, companyId: 'co-1' },
+}
+
+describe('storageForSession', () => {
+  it('keeps each mock tab persona out of the shared local store', () => {
+    const shared = memory()
+    const personalTab = memory()
+    const employerTab = memory()
+    const personal = createSessionStore(storageForSession(true, { local: shared, session: personalTab }))
+    const employerStore = createSessionStore(storageForSession(true, { local: shared, session: employerTab }))
+    personal.save(sample)
+    employerStore.save(employer)
+    expect(personal.load()?.user.accountType).toBe('PERSONAL')
+    expect(employerStore.load()?.user.accountType).toBe('EMPLOYER')
+    expect(shared.getItem('push-web-session')).toBeNull()
+  })
+
+  it('keeps a real session in the shared local store', () => {
+    const shared = memory()
+    const tab = memory()
+    const store = createSessionStore(storageForSession(false, { local: shared, session: tab }))
+    store.save(sample)
+    expect(shared.getItem('push-web-session')).toBe(JSON.stringify(sample))
+    expect(tab.getItem('push-web-session')).toBeNull()
+  })
+})
 
 describe('createSessionStore', () => {
   it('saves the session under push-web-session and loads it back', () => {
