@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors, type Colors } from '../../theme'
 import { BottomSheet, Chip, GlassButton, Text, TextField } from '@/shared/components'
-import { myApi, type CalendarEvent, type CalendarEventType } from './api'
+import { myApi } from './api/client'
+import type { CalendarEvent, CalendarEventType } from './types'
 import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from './utility'
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']

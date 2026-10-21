@@ -11,7 +11,7 @@ import type {
   Source,
   UserRef,
 } from '@push/api-client'
-import type { CalendarEvent, ResumeDraft } from '../features/my/api'
+import type { CalendarEvent, ResumeDraft } from '../features/my/types'
 import { mock, page } from './server'
 
 const ME: UserRef = { id: 'me', displayName: '김서준', avatarUrl: null }

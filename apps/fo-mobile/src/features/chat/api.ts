@@ -1,6 +1,6 @@
 import { type Conversation, type DataEnvelope, type ListEnvelope } from '@push/api-client'
 import { api, http, API_MOCK } from '@/shared/infrastructure'
-import { myApi, type PickedFile } from '../my/api'
+import { myApi, type PickedFile } from '@/features/my'
 import { QS_NEEDS, quickStartFrom, type QsSources } from './quickStartData'
 import type { Step } from './types'
 

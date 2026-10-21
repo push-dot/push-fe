@@ -6,7 +6,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-nat
 import type { Source } from '@push/api-client'
 import { useColors } from '../../theme'
 import { BottomSheet, Button, Icon, Text, type IconName } from '@/shared/components'
-import { myApi } from './api'
+import { myApi } from './api/client'
 import { fileKind, fileSize, monthDay } from './utility'
 import { ListTitle, Row, useToast, Toast } from './parts'
 
