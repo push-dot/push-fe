@@ -1,16 +1,11 @@
 import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { fontFor, useColors } from '../../theme'
+import { fontFor, useColors } from '@/theme'
 import { Glass, GlassButton, Icon3D, Text } from '@/shared/components'
-import { ComposerArea } from './ComposerArea'
-import { ChatDrawer } from './Drawer'
-import { useStartChat } from './api/hooks'
-import { QuickStartSheet } from './QuickStartSheet'
-import { QUICK_STARTS, type QuickStart } from './quickStarts'
+import { ChatDrawer, ComposerArea, QUICK_STARTS, QuickStartSheet, useStartChat, type QuickStart } from '@/features/chat'
 
-/** AI 채팅 first screen (ChatHome): faint Push. mark, quick-start pills, composer. Tab bar stays. */
-export function ChatHomeScreen() {
+const ChatHomeScreen = () => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const start = useStartChat()
@@ -49,8 +44,7 @@ export function ChatHomeScreen() {
   )
 }
 
-/** 52px pill: 30px 3D icon + short verb phrase. Opens the ingredient sheet, never sends. */
-function QuickStartPill({ qs, onPress }: { qs: QuickStart; onPress: () => void }) {
+const QuickStartPill = ({ qs, onPress }: { qs: QuickStart; onPress: () => void }) => {
   const c = useColors()
   const inner = (
     <View style={{ height: 52, flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 12, paddingRight: 18 }}>
@@ -72,3 +66,5 @@ function QuickStartPill({ qs, onPress }: { qs: QuickStart; onPress: () => void }
     </Pressable>
   )
 }
+
+export default ChatHomeScreen

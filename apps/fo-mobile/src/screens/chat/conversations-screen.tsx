@@ -1,18 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchHangul } from '@/shared/utility'
-import { useColors } from '../../theme'
+import { useColors } from '@/theme'
 import { GlassButton, Text, TextField, TopBar } from '@/shared/components'
-import { chatApi, type ConversationRow } from './api/client'
-import { statusBadge } from './Drawer'
-import { ago } from './utility'
+import { ago, statusBadge, useConversationList, type ConversationRow } from '@/features/chat'
 
 const dayStart = () => new Date(new Date().setHours(0, 0, 0, 0)).getTime()
 
-/** Groups by 오늘 / 이번 주 / 이전 (last 7 days count as 이번 주). */
 const groups = (rows: ConversationRow[]) => {
   const today = dayStart()
   const week = today - 6 * 86_400_000
@@ -28,12 +24,11 @@ const groups = (rows: ConversationRow[]) => {
   return out.filter((g) => g.rows.length)
 }
 
-/** 전체 대화 목록 (ChatList): search, 오늘/이번 주, status badges and last progress line. */
-export function ConversationsScreen() {
+const ConversationsScreen = () => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [q, setQ] = useState('')
-  const list = useQuery({ queryKey: ['conversations', 'all'], queryFn: () => chatApi.conversations({ limit: 100 }) })
+  const list = useConversationList()
   const rows = searchHangul(list.data?.data ?? [], q, (r) => [r.title, r.lastLine ?? '']).map((x) => x.item)
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
@@ -85,3 +80,5 @@ export function ConversationsScreen() {
     </View>
   )
 }
+
+export default ConversationsScreen

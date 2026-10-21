@@ -1,39 +1,44 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Share, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { api } from '@/shared/infrastructure'
-import { useColors, useShadow } from '../../theme'
+import { useColors, useShadow } from '@/theme'
 import { BottomSheet, Glass, GlassButton, Icon, Text, TextField, type IconName } from '@/shared/components'
-import { chatApi } from './api/client'
-import { ApprovalPanel } from './ApprovalPanel'
-import { ComposerArea } from './ComposerArea'
-import { DocsModal } from './DocsModal'
-import { ChatDrawer } from './Drawer'
-import { Item, Queued } from './Items'
-import { Appear, useReduceMotion } from './motion'
-import { QuickStartSheet } from './QuickStartSheet'
-import type { QuickStart } from './quickStarts'
-import { answer, forget, hydrate, send, stop, useChat } from './store'
-import { StatusRow } from './StatusRow'
+import {
+  answer,
+  ApprovalPanel,
+  ChatDrawer,
+  ComposerArea,
+  DocsModal,
+  hydrate,
+  Item,
+  Queued,
+  Appear,
+  QuickStartSheet,
+  send,
+  StatusRow,
+  stop,
+  useArchiveConversation,
+  useChat,
+  useConversationList,
+  useReduceMotion,
+  useRenameConversation,
+  type QuickStart,
+} from '@/features/chat'
 
-/** AI 채팅 conversation (chat/[id], no tab bar): Claude Code-style transcript + composer or approval panel. */
-export function ConversationScreen({ id }: { id: string }) {
+const ConversationScreen = ({ id }: { id: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const reduce = useReduceMotion()
-  const qc = useQueryClient()
   const chat = useChat(id)
-  const list = useQuery({ queryKey: ['conversations', 'all'], queryFn: () => chatApi.conversations({ limit: 100 }) })
+  const list = useConversationList()
   const conv = list.data?.data.find((x) => x.id === id)
   const [drawer, setDrawer] = useState(false)
   const [more, setMore] = useState(false)
   const [docs, setDocs] = useState(false)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [qs, setQs] = useState<QuickStart | null>(null)
-  // "말로 하기" applies to one approval; a new approval resets it.
   const [sayingFor, setSayingFor] = useState<string>()
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
@@ -46,20 +51,8 @@ export function ConversationScreen({ id }: { id: string }) {
   }, [id])
   const saying = !!chat.approval && sayingFor === chat.approval.id
 
-  const rename = useMutation({
-    mutationFn: (title: string) => api.conversations.rename(id, conv!.revision, title),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['conversations'] }),
-    onError: () => Alert.alert('이름을 바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
-  const remove = useMutation({
-    mutationFn: () => api.conversations.archive(id, conv!.revision),
-    onSuccess: () => {
-      forget(id)
-      void qc.invalidateQueries({ queryKey: ['conversations'] })
-      router.dismissTo('/chat')
-    },
-    onError: () => Alert.alert('대화를 지우지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
+  const rename = useRenameConversation(id, conv?.revision)
+  const remove = useArchiveConversation(id, conv?.revision)
 
   const shareText = () =>
     chat.items
@@ -175,14 +168,13 @@ export function ConversationScreen({ id }: { id: string }) {
   )
 }
 
-function Header({ title, onDrawer, onNew, onMore }: { title: string; onDrawer: () => void; onNew: () => void; onMore: () => void }) {
+const Header = ({ title, onDrawer, onNew, onMore }: { title: string; onDrawer: () => void; onNew: () => void; onMore: () => void }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
   return (
     <View style={{ position: 'absolute', left: 0, right: 0, top: 0 }} pointerEvents="box-none">
       {ios ? (
-        // Content fades under the glass buttons instead of a hard bar.
         <LinearGradient colors={[c.bg, c.bg, `${c.bg}00`]} locations={[0, 0.6, 1]} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: insets.top + 76 }} pointerEvents="none" />
       ) : (
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, height: insets.top + 56, backgroundColor: c.bg }} />
@@ -203,8 +195,7 @@ function Header({ title, onDrawer, onNew, onMore }: { title: string; onDrawer: (
   )
 }
 
-/** ⋯ pop-up menu under the header capsule (ChatMore). */
-function MoreMenu({ visible, items, onClose }: { visible: boolean; items: { icon: IconName; label: string; danger?: boolean; onPress: () => void }[]; onClose: () => void }) {
+const MoreMenu = ({ visible, items, onClose }: { visible: boolean; items: { icon: IconName; label: string; danger?: boolean; onPress: () => void }[]; onClose: () => void }) => {
   const c = useColors()
   const shadow = useShadow()
   const insets = useSafeAreaInsets()
@@ -245,3 +236,5 @@ function MoreMenu({ visible, items, onClose }: { visible: boolean; items: { icon
     </Modal>
   )
 }
+
+export default ConversationScreen
