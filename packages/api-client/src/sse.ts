@@ -1,7 +1,6 @@
-const FRAME_SEPARATOR = /\r?\n\r?\n/
+import { FRAME_SEPARATOR } from './constants'
 
-/** Parses one SSE frame's `data:` lines as JSON. Malformed lines become an error event. */
-export function* parseFrame<T>(frame: string): Generator<T | { type: 'error'; error: { code: string; message: string } }> {
+export const parseFrame = function* <T>(frame: string): Generator<T | { type: 'error'; error: { code: string; message: string } }> {
   for (const line of frame.split(/\r?\n/)) {
     if (!line.startsWith('data:')) continue
     try {
@@ -12,8 +11,7 @@ export function* parseFrame<T>(frame: string): Generator<T | { type: 'error'; er
   }
 }
 
-/** Reads an SSE response body (web fetch or expo/fetch) into parsed events. */
-export async function* readEvents<T>(body: ReadableStream<Uint8Array>, signal?: AbortSignal) {
+export const readEvents = async function* <T>(body: ReadableStream<Uint8Array>, signal?: AbortSignal) {
   const reader = body.getReader()
   const onAbort = () => void reader.cancel()
   signal?.addEventListener('abort', onAbort)

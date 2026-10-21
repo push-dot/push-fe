@@ -72,7 +72,6 @@ export const createApi = (c: Client) => ({
   },
 
   me: {
-    /** Marks the account for deletion (30-day grace; logging in again restores it). */
     deleteAccount: () => c.delete<void>('me'),
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
@@ -136,9 +135,7 @@ export const createApi = (c: Client) => ({
     verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
   },
 
-  // Existing push-be APIs.
   sources: {
-    /** push-be requires a `kind` form field next to `file`; it is stored as-is. */
     upload: (form: FormData) => unwrap(c.post<DataEnvelope<Source>>('sources', { form })),
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
@@ -172,7 +169,6 @@ export const createApi = (c: Client) => ({
     ) => {
       await c.raw('POST', `conversations/${id}/messages`, { body })
     },
-    /** Streams a reply. Pass expo/fetch's fetch on React Native so `body` is a ReadableStream. */
     stream: async function* (
       id: string,
       body: { text: string; accessMode: 'SUGGEST' | 'CONFIRM_ACTIONS'; ai?: AiOptions; context?: { documentId?: string; evidenceIds?: string[] } },
