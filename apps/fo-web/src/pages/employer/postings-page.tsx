@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
-import { NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_LOADING, POSTINGS_TITLE } from './constants'
+import { AI_POSTING, FILTER_ALL, NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_LOADING, POSTINGS_TITLE, STATUS_CLOSED, STATUS_OPEN } from './constants'
 import PostingRow from './posting-row'
 
 const PostingsPage = () => {
+  const [filter, setFilter] = useState<'all' | 'open' | 'closed'>('all')
   const postings = useQuery({ queryKey: ['company-postings'], queryFn: () => api.postings.mine() })
   if (postings.isError) {
     return (
@@ -25,22 +27,56 @@ const PostingsPage = () => {
       </main>
     )
   }
+  const rows = postings.data.data
+  const open = rows.filter((item) => !item.closedAt)
+  const closed = rows.filter((item) => item.closedAt)
+  const visible = filter === 'open' ? open : filter === 'closed' ? closed : rows
   return (
     <main className="page">
-      <header className="head">
+      <header className="head biz-bar">
         <h1 className="h1">{POSTINGS_TITLE}</h1>
-        <Link className="pill" to="/employer/postings/new">
-          {NEW_POSTING}
-        </Link>
+        <span className="biz-actions">
+          <Link className="btn sec" to="/employer/chat/new">
+            {AI_POSTING}
+          </Link>
+          <Link className="btn pri" to="/employer/postings/new">
+            {NEW_POSTING}
+          </Link>
+        </span>
       </header>
-      {postings.data.data.length === 0 ? (
-        <p className="b2 t3 stack">{POSTINGS_EMPTY}</p>
+      <div className="chips">
+        {(
+          [
+            ['all', `${FILTER_ALL} ${rows.length}`],
+            ['open', `${STATUS_OPEN} ${open.length}`],
+            ['closed', `${STATUS_CLOSED} ${closed.length}`],
+          ] as const
+        ).map(([key, label]) => (
+          <button key={key} type="button" className="chip" aria-pressed={filter === key} onClick={() => setFilter(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {visible.length === 0 ? (
+        <p className="b2 t3">{POSTINGS_EMPTY}</p>
       ) : (
-        <ul className="activity-list stack">
-          {postings.data.data.map((posting) => (
-            <PostingRow key={posting.id} posting={posting} />
-          ))}
-        </ul>
+        <div className="biz-table-wrap">
+          <table className="biz-table">
+            <thead>
+              <tr>
+                <th>공고</th>
+                <th>상태</th>
+                <th>지원자</th>
+                <th>마감</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((posting) => (
+                <PostingRow key={posting.id} posting={posting} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   )

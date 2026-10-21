@@ -7,7 +7,8 @@ import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
-import { topEndLinks } from './shell-links'
+import EmployerChip from './employer-chip'
+import { EMPLOYER_LINKS, topEndLinks } from './shell-links'
 
 const MAIN_NAV = [
   { to: '/', label: NAV.home, end: true, lock: false },
@@ -35,6 +36,7 @@ const Shell = () => {
     setSearchDraft(queryText)
   }, [queryText])
   const employer = session?.user.accountType === 'EMPLOYER'
+  const chatScreen = !auth && location.pathname.startsWith('/employer/chat')
   const end = topEndLinks(Boolean(session))
   const notes = useQuery({
     queryKey: ['notifications'],
@@ -49,7 +51,7 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   return (
-    <div className={auth ? 'shell browser auth-shell' : 'shell browser'}>
+    <div className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}>
       {auth ? (
         <header className="auth-bar">
           <NavLink to="/" end className="auth-logo">
@@ -94,16 +96,18 @@ const Shell = () => {
                   ) : null}
                 </NavLink>
               ))}
-              {employer ? (
-                <>
-                  <NavLink to="/employer/postings" className={() => (navOn(location.pathname, '/employer/postings') ? 'on' : '')}>
-                    {NAV.postings}
-                  </NavLink>
-                  <NavLink to="/employer/chat" className={() => (navOn(location.pathname, '/employer/chat') ? 'on' : '')}>
-                    {NAV.chat}
-                  </NavLink>
-                </>
-              ) : null}
+              {employer
+                ? EMPLOYER_LINKS.map((link) => (
+                    <NavLink key={link.to} to={link.to} className={() => (navOn(location.pathname, link.to) ? 'on' : '')}>
+                      {link.to === '/employer/chat' ? (
+                        <svg className="ic spark" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M11 3c.6 4 2.7 6.1 6.7 6.7-4 .6-6.1 2.7-6.7 6.7-.6-4-2.7-6.1-6.7-6.7C8.3 9.1 10.4 7 11 3ZM18.5 14.5c.3 2 1.2 2.9 3 3.2-1.8.3-2.7 1.2-3 3.2-.3-2-1.2-2.9-3-3.2 1.8-.3 2.7-1.2 3-3.2Z" />
+                        </svg>
+                      ) : null}
+                      {link.label}
+                    </NavLink>
+                  ))
+                : null}
             </nav>
             {end.some((link) => link.to === '/search') ? (
               <form
@@ -148,7 +152,9 @@ const Shell = () => {
                   {offerCount > 0 ? <span className="nb">{offerCount}</span> : null}
                 </NavLink>
               ) : null}
-              {session ? (
+              {session && employer ? (
+                <EmployerChip />
+              ) : session ? (
                 <NavLink to="/me" className="me-chip" aria-label={NAV.my}>
                   <span className="av hd-av" style={{ background: brandOf(session.user.displayName) }}>
                     {initials(session.user.displayName)}
@@ -174,7 +180,7 @@ const Shell = () => {
       <div className="shell-main">
         <Outlet />
       </div>
-      {auth ? null : (
+      {auth || chatScreen ? null : (
         <footer className="ft">
           <div className="wrap">
             <span className="logo">

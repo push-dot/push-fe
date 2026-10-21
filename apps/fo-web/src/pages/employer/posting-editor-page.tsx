@@ -10,12 +10,14 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../../api'
+import { useSession } from '../../shared/auth/use-session'
 import {
   CLOSE_POSTING,
   CLOSED_STATE,
+  COMPANY_NAME_NOTE,
   CREATE_POSTING,
-  EDITOR_FAILED,
   EDITOR_LOADING,
+  EDITOR_TITLE,
   LABEL_CAREER_MIN,
   LABEL_DEADLINE,
   LABEL_DESCRIPTION,
@@ -26,10 +28,12 @@ import {
   LABEL_REQUIREMENTS,
   LABEL_TITLE,
   LABEL_WORK_CONDITIONS,
+  NEW_POSTING,
   POSTINGS_FAILED,
   POSTINGS_TITLE,
   SAVE_POSTING,
 } from './constants'
+import { editorFailure } from './editor-failure'
 import { conditionsFromText, draftFields, listFromLines } from './posting-draft'
 
 type EditorForm = {
@@ -93,6 +97,7 @@ const toInput = (form: EditorForm): CreatePostingInput => ({
 })
 
 const PostingEditorPage = () => {
+  const session = useSession()
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
@@ -107,6 +112,11 @@ const PostingEditorPage = () => {
   const revisionRef = useRef(0)
   const formRef = useRef(form)
   formRef.current = form
+  const company = useQuery({
+    queryKey: ['company', 'me'],
+    queryFn: () => api.companies.me(),
+    enabled: Boolean(session?.user.companyId),
+  })
   const detail = useQuery({
     queryKey: ['employer-posting', id],
     queryFn: () => api.postings.get(id ?? ''),
@@ -125,7 +135,7 @@ const PostingEditorPage = () => {
       return id ? api.postings.update(id, { ...body, expectedRevision: revisionRef.current }) : api.postings.create(body)
     },
     onSuccess: () => navigate('/employer/postings'),
-    onError: () => setError(EDITOR_FAILED),
+    onError: (error) => setError(editorFailure(error)),
   })
   const close = useMutation({
     mutationFn: () => api.postings.close(id ?? '', revisionRef.current),
@@ -134,7 +144,7 @@ const PostingEditorPage = () => {
       setClosedAt(posting.closedAt ?? new Date().toISOString())
       setError(null)
     },
-    onError: () => setError(EDITOR_FAILED),
+    onError: (error) => setError(editorFailure(error)),
   })
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -165,31 +175,31 @@ const PostingEditorPage = () => {
   return (
     <main className="page">
       <header className="head">
-        <h1 className="h1">{POSTINGS_TITLE}</h1>
+        <h1 className="h1">{id ? EDITOR_TITLE : NEW_POSTING}</h1>
       </header>
       {closedAt ? <p className="b1 stack">{CLOSED_STATE}</p> : null}
-      <form className="stack form" onSubmit={submit}>
-        <label className="field">
+      <form className="stack biz-form" onSubmit={submit}>
+        <label className="biz-field">
           {LABEL_TITLE}
           <input value={form.title} onChange={(event) => patch({ title: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_DESCRIPTION}
           <textarea rows={5} value={form.description} onChange={(event) => patch({ description: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_REQUIREMENTS}
           <textarea rows={4} value={form.requirements} onChange={(event) => patch({ requirements: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_PREFERRED}
           <textarea rows={4} value={form.preferred} onChange={(event) => patch({ preferred: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_WORK_CONDITIONS}
           <textarea rows={3} value={form.workConditions} onChange={(event) => patch({ workConditions: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_JOB_CATEGORY}
           <select value={form.jobCategory} onChange={(event) => patch({ jobCategory: event.target.value as JobCategory })}>
             {JOB_CATEGORIES.map((item) => (
@@ -199,15 +209,15 @@ const PostingEditorPage = () => {
             ))}
           </select>
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_CAREER_MIN}
           <input type="number" min={0} value={form.careerMin} onChange={(event) => patch({ careerMin: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_LOCATION}
           <input value={form.location} onChange={(event) => patch({ location: event.target.value })} />
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_EMPLOYMENT_TYPE}
           <select value={form.employmentType} onChange={(event) => patch({ employmentType: event.target.value as EmploymentType })}>
             {EMPLOYMENT_TYPES.map((item) => (
@@ -217,23 +227,32 @@ const PostingEditorPage = () => {
             ))}
           </select>
         </label>
-        <label className="field">
+        <label className="biz-field">
           {LABEL_DEADLINE}
           <input type="date" value={form.deadline} onChange={(event) => patch({ deadline: event.target.value })} />
         </label>
+        {company.data ? (
+          <p className="b2">
+            <span className="t3">회사명 </span>
+            {company.data.name}
+          </p>
+        ) : null}
+        <p className="c1 t3">{COMPANY_NAME_NOTE}</p>
         {error ? (
           <p className="auth-error" role="alert">
             {error}
           </p>
         ) : null}
-        <button type="submit" className="primary" disabled={form.title.trim().length === 0 || save.isPending}>
-          {id ? SAVE_POSTING : CREATE_POSTING}
-        </button>
-        {id ? (
-          <button type="button" className="primary" disabled={Boolean(closedAt) || close.isPending} onClick={() => close.mutate()}>
-            {CLOSE_POSTING}
+        <div className="biz-actions">
+          <button type="submit" className="btn pri" disabled={form.title.trim().length === 0 || save.isPending}>
+            {id ? SAVE_POSTING : CREATE_POSTING}
           </button>
-        ) : null}
+          {id ? (
+            <button type="button" className="btn sec" disabled={Boolean(closedAt) || close.isPending} onClick={() => close.mutate()}>
+              {CLOSE_POSTING}
+            </button>
+          ) : null}
+        </div>
       </form>
     </main>
   )

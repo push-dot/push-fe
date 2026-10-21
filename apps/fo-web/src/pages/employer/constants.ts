@@ -1,3 +1,5 @@
+import { creditCount, creditText } from './credit-count'
+
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
 
@@ -26,7 +28,7 @@ export const STEP_VERIFY = '사업자 확인'
 export const STEP_START = '시작하기'
 export const COMPANY_EXISTS_COPY = '이미 등록된 사업자번호예요. 초대 링크로 들어와 주세요.'
 
-export const MEMBERS_TITLE = '담당자'
+export const MEMBERS_TITLE = '담당자 관리'
 export const MEMBERS_LOADING = '담당자를 불러오고 있어요.'
 export const MEMBERS_FAILED = '담당자를 불러오지 못했어요.'
 export const COMPANY_MISSING = '사업자 인증이 필요해요'
@@ -50,12 +52,20 @@ export const INVITE_GOOGLE = 'Google로 수락하기'
 export const INVITE_EMAIL_ACCEPT = '이메일로 가입하고 수락하기'
 export const INVITE_LIMIT = '초대받은 이메일로만 들어올 수 있어요 · 7일 뒤 만료돼요'
 
-export const seatCount = (used: number, limit: number) => `담당자 ${used}/${limit}`
+export const seatCount = (used: number, limit: number, plan: string | null) =>
+  `담당자 ${used} / ${limit}명${plan ? ` · ${plan}` : ''} (관리자 제외)`
 
 export const inviteLimitCopy = (used: number, limit: number) => `담당자 ${used}/${limit}명까지 초대할 수 있어요`
 
-export const POSTINGS_TITLE = '내 공고'
-export const NEW_POSTING = '공고 등록'
+export const POSTINGS_TITLE = '공고 관리'
+export const NEW_POSTING = '새 공고'
+export const AI_POSTING = 'AI로 만들기'
+export const STATUS_OPEN = '게시 중'
+export const STATUS_CLOSED = '마감'
+export const FILTER_ALL = '전체'
+export const DEADLINE_OPEN = '상시'
+export const EDITOR_TITLE = '공고 편집'
+export const COMPANY_NAME_NOTE = '회사명은 사업자 확인에서 가져와요.'
 export const POSTINGS_EMPTY = '등록한 공고가 없어요'
 export const POSTINGS_LOADING = '공고를 불러오고 있어요'
 export const POSTINGS_FAILED = '공고를 불러오지 못했어요'
@@ -65,6 +75,11 @@ export const APPLICANTS_TITLE = '지원자'
 export const APPLICANTS_EMPTY = '지원자가 없어요'
 export const APPLICANTS_LOADING = '지원자를 불러오고 있어요'
 export const APPLICANTS_FAILED = '지원자를 불러오지 못했어요'
+export const APPLICANTS_NOTE = '단계를 바꾸면 지원자의 지원활동이 같이 바뀌고 알림이 가요.'
+export const STAGE_APPLIED = '지원함'
+export const stageNotice = (name: string) => (name ? `바꾸면 ${name} 님에게 “지원 상태 변경” 알림이 가요.` : '바꾸면 지원자에게 “지원 상태 변경” 알림이 가요.')
+export const AI_REVIEW = '기업 AI 서류 검토하기'
+export const AI_INTERVIEW = '면접 질문 만들기'
 export const APPLICANT_FILTER_ALL = '전체'
 export const APPLICANT_LOADING = '지원 내용을 불러오고 있어요'
 export const APPLICANT_FAILED = '지원 내용을 불러오지 못했어요'
@@ -105,7 +120,13 @@ export const APPLICANT_ATTACH = '지원자 첨부'
 export const APPLICANT_NONE = '선택 안 함'
 export const COMPOSER_LABEL = '메시지'
 export const SEND_MESSAGE = '보내기'
-export const DRAFT_POSTING = '이 내용으로 공고 등록'
+export const DRAFT_POSTING = '공고 편집에서 열기'
+export const DRAFT_BADGE = '초안'
+export const CHAT_NEW = '새 대화'
+export const CHAT_SHARED = '회사 대화 · 담당자 모두 볼 수 있어요'
+export const CHAT_TOPUP = '충전하기'
+export const COMPOSER_PLACEHOLDER = '메시지를 입력하세요'
+export const ATTACH_LABEL = '공고·지원자'
 export const CHAT_USER = '나'
 export const CHAT_ASSISTANT = '기업 AI'
 
@@ -113,6 +134,8 @@ export const PLANS_TITLE = '기업 요금제'
 export const PLANS_LOADING = '요금제를 불러오고 있어요'
 export const PLANS_PERSONAL = '기업 요금제는 기업 계정에서 구독해요'
 export const PLAN_CURRENT = '지금 쓰는 중'
+export const PLAN_NOW = '지금'
+export const PLAN_DEPTH = '사용량 ↑ · 더 깊이 분석'
 export const PLAN_RECOMMENDED = '추천'
 export const PLAN_SUBSCRIBE = '구독하기'
 export const PLAN_TOPUP = '충전'
@@ -123,4 +146,41 @@ export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요
 export const TOPUP_DONE = '크레딧을 충전했어요'
 export const planStarted = (name: string) => `${name} 구독을 시작했어요`
 
-export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${balanceMicroCredits}`
+export const PLAN_FEATURES = {
+  BASIC: [
+    { label: 'AI 공고 생성', on: true },
+    { label: 'AI 서류 검토', on: true },
+    { label: 'AI 면접 준비', on: false },
+    { label: '외부 PDF 검토', on: false },
+    { label: '담당자 초대', on: false },
+  ],
+  PRO: [
+    { label: 'AI 공고 생성', on: true },
+    { label: 'AI 서류 검토', on: true },
+    { label: 'AI 면접 준비', on: true },
+    { label: '외부 PDF 검토', on: false },
+    { label: '담당자 2명 초대', on: true },
+  ],
+  ULTRA: [
+    { label: 'AI 공고 생성', on: true },
+    { label: 'AI 서류 검토', on: true },
+    { label: 'AI 면접 준비', on: true },
+    { label: '외부 PDF 검토', on: true },
+    { label: '담당자 5명 초대', on: true },
+  ],
+} as const
+
+export const MEMBER_SELF = '나'
+export const MEMBERS_ADMIN_CAN = '관리자 · 결제, 요금제 변경, 담당자 초대·내보내기'
+export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 기업 AI 대화를 함께 써요'
+export const INVITE_DIALOG_TITLE = '담당자 초대'
+export const INVITE_CANCEL = '취소'
+export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`
+
+export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${creditText(creditCount(balanceMicroCredits))}`
+
+export const planSwitchLabel = (name: string, current: boolean, higher: boolean, hasPlan: boolean) => {
+  if (current) return PLAN_CURRENT
+  if (!hasPlan) return PLAN_SUBSCRIBE
+  return higher ? `${name}로 올리기` : `${name}로 바꾸기`
+}

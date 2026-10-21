@@ -1,5 +1,9 @@
 import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from './constants'
 
+export const PLAN_NAME = { BASIC: 'Basic', PRO: 'Pro', ULTRA: 'Ultra' } as const
+
+export const ROLE_NAME = { ADMIN: '관리자', MEMBER: '담당자' } as const
+
 export type EmployerPlanId = 'BASIC' | 'PRO' | 'ULTRA' | null
 
 export const canInterviewPrep = (plan: EmployerPlanId): boolean =>

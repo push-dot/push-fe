@@ -42,7 +42,7 @@ const PostPage = () => {
       <article className="stack post-detail">
         <span className="post-author">
           <span className="b2 w7">{authorLabel(post.author)}</span>
-          {post.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
+          {post.author.employer ? <span className="badge biz">{EMPLOYER_BADGE}</span> : null}
           <span className="c1 t3">{`${category} · ${relativeTime(post.createdAt)} · 조회 ${compactCount(post.viewCount)}`}</span>
         </span>
         <h1 className="h2">{post.title}</h1>

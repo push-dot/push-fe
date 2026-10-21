@@ -5,6 +5,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { api } from '../../api'
 import { isMock } from '../../bridge'
 import { pdfLocked, type ChatIntent } from '../../shared/model/employer-chat'
+import ChatApp from './chat-app'
 import ChatComposer from './chat-composer'
 import ChatLock from './chat-lock'
 import ChatMessage from './chat-message'
@@ -136,14 +137,16 @@ const ChatThreadPage = () => {
       setStreaming(null)
     }
   }
+  const referencePosting = routed.postingId ? postings.data?.data.find((item) => item.id === routed.postingId) : undefined
   return (
-    <main className="page">
+    <ChatApp activeId={id}>
       <header className="head">
-        <h1 className="h1">{title || CHAT_TITLE}</h1>
+        <h1 className="h3">{title || CHAT_TITLE}</h1>
       </header>
       {reference ? (
-        <div className="chips">
-          <span className="chip">{REFERENCE_POSTING}</span>
+        <div className="chat-ref">
+          <span className="badge green">{REFERENCE_POSTING}</span>
+          <span className="b2 w7">{referencePosting ? `${referencePosting.company} · ${referencePosting.title}` : title}</span>
         </div>
       ) : null}
       {gate === 'interview' ? <ChatLock message={INTERVIEW_LOCK} /> : null}
@@ -159,7 +162,7 @@ const ChatThreadPage = () => {
       ) : !messages.data ? (
         <p className="b2 t3 stack">{CHAT_LOADING}</p>
       ) : (
-        <ul className="activity-list stack">
+        <ul className="chat-log">
           {rows.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
@@ -185,7 +188,7 @@ const ChatThreadPage = () => {
         onFile={(file) => void attach(file)}
         onSubmit={(event) => void submit(event)}
       />
-    </main>
+    </ChatApp>
   )
 }
 

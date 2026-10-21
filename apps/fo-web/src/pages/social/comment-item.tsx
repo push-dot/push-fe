@@ -6,7 +6,7 @@ const CommentItem = ({ comment, onReply }: { comment: Comment; onReply: (id: str
   <li className="comment">
     <span className="post-author">
       <span className="b2 w7">{authorLabel(comment.author)}</span>
-      {comment.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
+      {comment.author.employer ? <span className="badge biz">{EMPLOYER_BADGE}</span> : null}
     </span>
     <p className="b2">{comment.body}</p>
     <button type="button" className="text-link" onClick={() => onReply(comment.id)}>

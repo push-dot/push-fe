@@ -1,21 +1,36 @@
-import { stageBadge, type ApplicantSummary } from '@push/api-client'
+import type { ApplicantSummary } from '@push/api-client'
 import { Link } from 'react-router-dom'
+import { employerStageLabel } from './stage-label'
 
 const appliedLabel = (iso: string) => {
-  const [year, month, day] = iso.slice(0, 10).split('-')
-  if (!year || !month || !day) return iso
-  return `${Number(year)}년 ${Number(month)}월 ${Number(day)}일`
+  const [, month, day] = iso.slice(0, 10).split('-')
+  if (!month || !day) return iso
+  return `${Number(month)}월 ${Number(day)}일`
 }
 
-const ApplicantRow = ({ postingId, applicant }: { postingId: string; applicant: ApplicantSummary }) => (
-  <li>
-    <Link className="bookmark-row" to={`/employer/postings/${postingId}/applicants/${applicant.applicationId}`}>
-      <strong className="b1">{applicant.applicant.displayName}</strong>
-      {applicant.applicant.headline ? <span className="b2 t2">{applicant.applicant.headline}</span> : null}
-      <span className="badge grey">{stageBadge(applicant.stage)}</span>
-      <span className="c1 t3">{appliedLabel(applicant.appliedAt)}</span>
-    </Link>
-  </li>
-)
+const stageClass = (label: string) => {
+  if (label === '서류 통과' || label === '합격') return 'badge green'
+  if (label === '면접') return 'badge ac'
+  if (label === '불합격') return 'badge grey'
+  return 'badge grey'
+}
+
+const ApplicantRow = ({ postingId, applicant }: { postingId: string; applicant: ApplicantSummary }) => {
+  const label = employerStageLabel(applicant.stage)
+  return (
+    <tr>
+      <td>
+        <Link to={`/employer/postings/${postingId}/applicants/${applicant.applicationId}`}>
+          <strong className="b1">{applicant.applicant.displayName}</strong>
+          {applicant.applicant.headline ? <span className="c1 t3">{applicant.applicant.headline}</span> : null}
+        </Link>
+      </td>
+      <td className="num">{appliedLabel(applicant.appliedAt)}</td>
+      <td>
+        <span className={stageClass(label)}>{label}</span>
+      </td>
+    </tr>
+  )
+}
 
 export default ApplicantRow

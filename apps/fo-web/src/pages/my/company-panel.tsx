@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
+import { brandOf } from '../../format'
 import { useSession } from '../../shared/auth/use-session'
-import { COMPANY_UNVERIFIED, PLAN_NONE } from './constants'
+import { formatBno } from '../employer/verify-input'
+import { COMPANY_LOCKED, COMPANY_NO_HUB, COMPANY_UNVERIFIED, COMPANY_VERIFIED, PLAN_NONE } from './constants'
 
 const CompanyPanel = () => {
   const session = useSession()
@@ -23,25 +25,30 @@ const CompanyPanel = () => {
   const company = query.data
   return (
     <section className="stack">
-      <h2 className="h3">회사 정보</h2>
+      <div className="box company-hero">
+        <span className="av biz-mark" style={{ background: brandOf(company.name) }}>
+          {[...company.name][0]}
+        </span>
+        <span>
+          <span className="h3">{company.name}</span>
+          <span className="c1 t3">{company.plan ?? PLAN_NONE}</span>
+        </span>
+      </div>
       <dl className="facts">
         <div>
-          <dt>상호</dt>
-          <dd>{company.name}</dd>
-        </div>
-        <div>
-          <dt>사업자번호</dt>
-          <dd>{company.bNo}</dd>
+          <dt>사업자등록번호</dt>
+          <dd>
+            {formatBno(company.bNo)}
+            {company.verifiedAt ? <span className="badge green">{COMPANY_VERIFIED}</span> : null}
+          </dd>
         </div>
         <div>
           <dt>요금제</dt>
           <dd>{company.plan ?? PLAN_NONE}</dd>
         </div>
       </dl>
-      <div className="link-row">
-        <Link to="/employer/members">담당자 관리</Link>
-        <Link to="/employer/plans">기업 요금제</Link>
-      </div>
+      <p className="c1 t3">{COMPANY_LOCKED}</p>
+      <p className="c1 t3">{COMPANY_NO_HUB}</p>
     </section>
   )
 }

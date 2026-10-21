@@ -18,6 +18,7 @@ import {
   BOOKMARK_LABEL,
   BOOKMARK_SAVED,
   EMPLOYER_POSTING_CTA,
+  EMPLOYER_POSTING_NOTE,
   EMPLOYER_VERIFY_PATH,
   SHARE_LABEL,
   guestApplyAction,
@@ -129,6 +130,9 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
                   : EMPLOYER_VERIFY_PATH
               }
             >
+              <svg className="ic spark" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M11 3c.6 4 2.7 6.1 6.7 6.7-4 .6-6.1 2.7-6.7 6.7-.6-4-2.7-6.1-6.7-6.7C8.3 9.1 10.4 7 11 3Z" />
+              </svg>
               {EMPLOYER_POSTING_CTA}
             </Link>
           ) : (
@@ -136,6 +140,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
               {mode === 'personal' && posting.applied ? APPLIED_LABEL : APPLY_LABEL}
             </button>
           )}
+          {mode === 'employer' ? <p className="c1 t3">{EMPLOYER_POSTING_NOTE}</p> : null}
           <div className="apply-row">
             <button type="button" className="btn sec" aria-pressed={posting.bookmarked} disabled={bookmark.isPending} onClick={onBookmark}>
               {posting.bookmarked ? BOOKMARK_SAVED : BOOKMARK_LABEL}

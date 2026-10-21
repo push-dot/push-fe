@@ -8,7 +8,7 @@ export const NAV = {
   hub: '허브',
   social: '소셜',
   my: '마이',
-  postings: '내 공고',
+  postings: '공고 관리',
   chat: '기업 AI',
   login: '로그인',
   search: '검색',

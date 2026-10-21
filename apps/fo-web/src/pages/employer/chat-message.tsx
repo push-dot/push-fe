@@ -8,11 +8,15 @@ const FENCE = /```posting-draft[ \t]*\r?\n[\s\S]*?```/g
 const ChatMessage = ({ message }: { message: Message }) => {
   const draft = parsePostingDraft(message.text)
   const text = message.text.replace(FENCE, '').trim()
+  const mine = message.role === 'USER'
   return (
-    <li className="activity-row">
-      <span className="c1 t3">{message.role === 'USER' ? CHAT_USER : CHAT_ASSISTANT}</span>
-      {text ? <p className="b1 post-body">{text}</p> : null}
+    <li className={mine ? 'chat-msg mine' : 'chat-msg'}>
+      <span className="c1 t3">{mine ? CHAT_USER : CHAT_ASSISTANT}</span>
+      {text ? <p className="b1">{text}</p> : null}
       {draft ? <ChatDraftCard draft={draft} /> : null}
+      {message.attachments.length > 0 ? (
+        <span className="c1 t3">{message.attachments.map((item) => item.title || item.id).join(' · ')}</span>
+      ) : null}
     </li>
   )
 }

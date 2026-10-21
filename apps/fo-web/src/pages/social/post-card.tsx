@@ -10,7 +10,7 @@ const PostCard = ({ post }: { post: Post }) => {
     <Link to={`/posts/${post.id}`} className="post-card">
       <span className="post-author">
         <span className="b2 w7">{authorLabel(post.author)}</span>
-        {post.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
+        {post.author.employer ? <span className="badge biz">{EMPLOYER_BADGE}</span> : null}
         <span className="c1 t3">{`${category} · ${relativeTime(post.createdAt)}`}</span>
       </span>
       <strong className="b1">{post.title}</strong>

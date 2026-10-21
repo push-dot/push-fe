@@ -26,7 +26,7 @@ const MyPage = () => {
         {links ? <LinksPanel /> : null}
         {!links && tab === '프로필' ? <ProfileForm /> : null}
         {!links && tab === '서류' ? <DocumentsPanel /> : null}
-        {!links && tab === '회사' ? <CompanyPanel /> : null}
+        {!links && tab === '회사 정보' ? <CompanyPanel /> : null}
         {!links && tab === '내 활동' ? <ActivityPanel chip={chip} /> : null}
       </div>
     </main>

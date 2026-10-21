@@ -6,7 +6,8 @@ import { api } from '../../api'
 import { brandOf, compactCount, initials } from '../../format'
 import { useSession } from '../../shared/auth/use-session'
 import ComposerSheet from './composer-sheet'
-import { COMPOSER_ACTION, COMPOSER_PROMPT, POPULAR_TITLE, POST_PAGE_SIZE } from './constants'
+import { composerPrompt } from './composer-prompt'
+import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE } from './constants'
 import PostCard from './post-card'
 
 const SocialPage = () => {
@@ -36,7 +37,7 @@ const SocialPage = () => {
           <span className="av" style={{ background: brandOf(name || 'Push') }}>
             {initials(name || '나')}
           </span>
-          <span className="t3">{COMPOSER_PROMPT}</span>
+          <span className="t3">{composerPrompt(session?.user.accountType === 'EMPLOYER', name)}</span>
           <span className="btn pri sm">{COMPOSER_ACTION}</span>
         </button>
         <div className="post-list">

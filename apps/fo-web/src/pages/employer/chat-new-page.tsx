@@ -3,9 +3,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
+import ChatApp from './chat-app'
 import ChatLock from './chat-lock'
 import { chatGateFrom, type ChatBlock } from './chat-gate'
-import { CHAT_CREATING, CHAT_FAILED, CHAT_TITLE, INTERVIEW_LOCK, PDF_LOCK, REFERENCE_POSTING, STARTER_POSTING, VERIFY_LINK } from './constants'
+import { CHAT_CREATING, CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, REFERENCE_POSTING, STARTER_POSTING, VERIFY_LINK } from './constants'
 
 const flights = new Map<string, Promise<Conversation>>()
 
@@ -41,10 +42,7 @@ const ChatNewPage = () => {
     )
   }, [navigate, postingId, queryClient])
   return (
-    <main className="page">
-      <header className="head">
-        <h1 className="h1">{CHAT_TITLE}</h1>
-      </header>
+    <ChatApp>
       {gate === 'verify' ? (
         <Link className="text-link stack" to="/employer/verify">
           {VERIFY_LINK}
@@ -58,11 +56,11 @@ const ChatNewPage = () => {
           {CHAT_FAILED}
         </p>
       ) : (
-        <p className="b2 t3 stack" aria-busy="true">
+        <p className="b2 t3" aria-busy="true">
           {CHAT_CREATING}
         </p>
       )}
-    </main>
+    </ChatApp>
   )
 }
 

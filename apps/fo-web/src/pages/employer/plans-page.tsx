@@ -14,8 +14,8 @@ import {
   PLAN_ACTION_FAILED,
   PLAN_ADMIN_ONLY,
   PLAN_AMOUNT,
-  PLAN_CURRENT,
-  PLAN_RECOMMENDED,
+  PLAN_DEPTH,
+  PLAN_FEATURES,
   PLAN_RENEWAL,
   PLAN_TOPUP,
   PLANS_LOADING,
@@ -23,8 +23,11 @@ import {
   PLANS_TITLE,
   TOPUP_DONE,
   planStarted,
+  planSwitchLabel,
   remainingCredits,
 } from './constants'
+import { PLAN_NAME } from '../../shared/model/employer-plan'
+import MySide from '../my/my-side'
 import PlanCard from './plan-card'
 
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404
@@ -76,18 +79,20 @@ const PlansPage = () => {
   const companyReady = company.isSuccess || company.isError
   if (!billingReady || (employerPlans && !companyReady)) {
     return (
-      <main className="page" aria-busy="true">
-        <p className="b2 t3 stack">{PLANS_LOADING}</p>
+      <main className="page my-layout" aria-busy="true">
+        <MySide />
+        <p className="b2 t3">{PLANS_LOADING}</p>
       </main>
     )
   }
   if (!employerPlans) {
     return (
-      <main className="page">
-        <header className="head">
+      <main className="page my-layout">
+        <MySide />
+        <div className="my-main">
           <h1 className="h1">{PLANS_TITLE}</h1>
-        </header>
-        <p className="b1 stack">{PLANS_PERSONAL}</p>
+          <p className="b1">{PLANS_PERSONAL}</p>
+        </div>
       </main>
     )
   }
@@ -105,11 +110,21 @@ const PlansPage = () => {
     setActionError(null)
     checkout.mutate(planId)
   }
+  const currentPlan = billing.data?.plan ?? null
+  const rank = { BASIC: 0, PRO: 1, ULTRA: 2 } as const
   return (
-    <main className="page">
+    <main className="page my-layout">
+      <MySide />
+      <div className="my-main">
       <header className="head">
         <h1 className="h1">{PLANS_TITLE}</h1>
-        {billing.data ? <p className="b1">{remainingCredits(billing.data.balanceMicroCredits)}</p> : null}
+        {billing.data ? (
+          <p className="b1">
+            {remainingCredits(billing.data.balanceMicroCredits)}
+            {currentPlan ? ` / ${EMPLOYER_PLAN_CARDS.find((card) => card.id === currentPlan)?.credits ?? ''}` : ''}
+            {` · ${PLAN_DEPTH}`}
+          </p>
+        ) : null}
         <p className="b2 t2">{PLAN_RENEWAL}</p>
         {notice ? (
           <p className="b1" role="status">
@@ -117,7 +132,7 @@ const PlansPage = () => {
           </p>
         ) : null}
       </header>
-      <ul className="plan-list stack">
+      <ul className="plan-grid">
         {EMPLOYER_PLAN_CARDS.map((card) => (
           <PlanCard
             key={card.id}
@@ -125,12 +140,11 @@ const PlansPage = () => {
             price={card.price}
             credits={card.credits}
             blurb={card.blurb}
-            badges={[
-              ...(card.id === billing.data?.plan ? [PLAN_CURRENT] : []),
-              ...(card.id === 'ULTRA' ? [PLAN_RECOMMENDED] : []),
-            ]}
+            features={PLAN_FEATURES[card.id]}
+            current={card.id === currentPlan}
+            action={planSwitchLabel(card.name, card.id === currentPlan, currentPlan ? rank[card.id] > rank[currentPlan] : false, currentPlan !== null)}
             pending={checkout.isPending}
-            onSubscribe={canManage ? () => subscribe(card.id) : undefined}
+            onSubscribe={canManage && card.id !== currentPlan ? () => subscribe(card.id) : undefined}
           />
         ))}
       </ul>
@@ -152,6 +166,8 @@ const PlansPage = () => {
       ) : company.data?.role === 'MEMBER' ? (
         <p className="b2 stack">{PLAN_ADMIN_ONLY}</p>
       ) : null}
+      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 기업 AI에만 적용돼요.`}</p> : null}
+      </div>
     </main>
   )
 }

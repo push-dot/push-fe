@@ -525,3 +525,91 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .source-list .check input{width:18px;height:18px;margin:0}
 .browser .source-list .check>span{min-width:0}
 .browser .source-list .check .b2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.browser .badge.biz{background:var(--t1);color:#fff;gap:3px}
+.browser .biz-mark{border-radius:12px}
+.browser .nav .spark{width:16px;height:16px;fill:currentColor;stroke:none}
+.browser .me-chip.biz{height:auto;min-height:44px}
+.browser .me-chip.biz .biz-mark{width:36px;height:36px;font-size:16px}
+.browser .biz-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:148px}
+.browser .biz-id span{display:block;max-width:148px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.browser.chat-screen .shell-main{display:flex;flex-direction:column;max-width:none;padding:0}
+.browser .chat-app-main{flex:1;display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 68px)}
+.browser .chat-side{display:flex;flex-direction:column;gap:12px;padding:20px 16px;border-right:1px solid var(--line);box-sizing:border-box;min-width:0}
+.browser .chat-side nav{display:flex;flex-direction:column;gap:4px}
+.browser .chat-link{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;text-decoration:none;color:inherit}
+.browser .chat-link.on{background:var(--fill)}
+.browser .chat-usage{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:16px}
+.browser .chat-usage-line{display:flex;justify-content:space-between;gap:8px}
+.browser .chat-meter{display:block;height:6px;border-radius:3px;background:var(--fill);overflow:hidden}
+.browser .chat-meter>span{display:block;height:100%;background:var(--ac)}
+.browser .chat-usage a{color:var(--acText);text-decoration:none}
+.browser .chat-thread{display:flex;flex-direction:column;gap:16px;min-width:0;padding:28px 32px 24px;box-sizing:border-box}
+.browser .chat-starters{display:flex;flex-wrap:wrap;gap:8px}
+.browser .chat-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.browser .chat-msg{display:flex;flex-direction:column;gap:6px;max-width:min(720px,100%)}
+.browser .chat-msg.mine{margin-left:auto;align-items:flex-end}
+.browser .chat-msg p{margin:0;padding:14px 16px;border-radius:18px;background:var(--fill)}
+.browser .chat-msg.mine p{background:var(--acSoft)}
+.browser .chat-ref{display:flex;align-items:center;gap:8px}
+.browser .chat-compose{display:flex;flex-direction:column;gap:10px;margin-top:auto}
+.browser .chat-compose textarea,.browser .chat-compose select{box-sizing:border-box;width:100%;border:0;border-radius:14px;background:var(--fill);color:var(--t1);font:inherit;font-size:16px}
+.browser .chat-compose textarea{min-height:72px;padding:14px 16px;resize:vertical}
+.browser .chat-compose select{height:40px;padding:0 12px}
+.browser .chat-compose-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.browser .chat-compose-row label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.browser .chat-compose-row .btn{margin-left:auto}
+.browser .draft-card,.browser .lock-card{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:20px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.browser .draft-card ul{margin:4px 0 0;padding-left:18px}
+.browser .lock-card{background:var(--bg2);box-shadow:none}
+.browser .biz-bar{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.browser .biz-actions{display:flex;gap:8px;flex-wrap:wrap}
+.browser .biz-table-wrap{overflow-x:auto}
+.browser .biz-table{width:100%;border-collapse:collapse}
+.browser .biz-table th{text-align:left;color:var(--t3);font-size:13px;font-weight:700;padding:10px 8px;border-bottom:1px solid var(--line)}
+.browser .biz-table td{padding:16px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.browser .biz-table td a{display:flex;flex-direction:column;gap:2px;color:inherit;text-decoration:none}
+.browser .biz-table td a.text-link{display:inline;color:var(--acText)}
+.browser .biz-form{display:flex;flex-direction:column;gap:16px;max-width:720px}
+.browser .biz-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:700;color:var(--t2)}
+.browser .biz-field input,.browser .biz-field textarea,.browser .biz-field select{box-sizing:border-box;width:100%;min-height:52px;padding:12px 16px;border:0;border-radius:14px;background:var(--fill);color:var(--t1);font:inherit;font-size:16px;font-weight:400}
+.browser .biz-field textarea{min-height:120px;resize:vertical}
+.browser .biz-split{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;align-items:start}
+.browser .stage-card{display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line)}
+.browser .stage-list{display:flex;flex-wrap:wrap;gap:8px}
+.browser .stage-list span,.browser .stage-list button{height:36px;padding:0 12px;border-radius:18px;background:var(--fill);color:var(--t2);font-size:14px;font-weight:700;display:inline-flex;align-items:center}
+.browser .stage-list .on,.browser .stage-list button[aria-pressed="true"]{background:var(--t1);color:#fff}
+.browser .stage-list button:disabled{opacity:.45}
+.browser .doc-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.browser .doc-row{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:20px;background:var(--bg2)}
+.browser .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none;margin:0;padding:0}
+.browser .plan-card{display:flex;flex-direction:column;gap:12px;padding:24px;border-radius:24px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.browser .plan-card.now{box-shadow:inset 0 0 0 2px var(--ac)}
+.browser .plan-card .btn{margin-top:auto}
+.browser .plan-features{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.browser .plan-features li{font-size:14px;line-height:20px;color:var(--t1)}
+.browser .plan-features .off{color:var(--t4)}
+.browser .company-hero{display:flex;align-items:center;gap:14px;padding:20px}
+.browser .company-hero .biz-mark{width:56px;height:56px;border-radius:18px;font-size:22px}
+.browser .company-hero>span:last-child{display:flex;flex-direction:column;gap:2px}
+.browser .facts{margin:0}
+.browser .facts div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.browser .facts dt{color:var(--t3)}
+.browser .facts dd{margin:0;display:flex;align-items:center;gap:8px;font-weight:700}
+.browser .member-list{list-style:none;margin:0;padding:0}
+.browser .member-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.browser .member-row .biz-mark{width:40px;height:40px;font-size:15px}
+.browser .member-copy{display:flex;flex-direction:column;min-width:0;flex:1}
+.browser .member-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.browser .member-actions{display:flex;gap:12px;margin-left:auto}
+.browser .perm{display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:16px;background:var(--bg2)}
+.browser .who .biz-mark{border-radius:14px}
+@media (max-width:1100px){
+.browser .plan-grid{grid-template-columns:1fr}
+.browser .biz-split{grid-template-columns:1fr}
+}
+@media (max-width:800px){
+.browser .chat-app-main{grid-template-columns:1fr;min-height:0}
+.browser .chat-side{border-right:0;border-bottom:1px solid var(--line)}
+.browser .chat-thread{padding:20px 16px}
+.browser .member-row{flex-wrap:wrap}
+}
