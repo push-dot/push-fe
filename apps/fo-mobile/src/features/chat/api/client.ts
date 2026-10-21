@@ -2,7 +2,7 @@ import { type Conversation, type DataEnvelope, type ListEnvelope } from '@push/a
 import { api, http, API_MOCK } from '@/shared/infrastructure'
 import { myApi } from '../../my/api/client'
 import type { PickedFile } from '../../my/types'
-import { QS_NEEDS, quickStartFrom, type QsSources } from '../quickStartData'
+import { QS_NEEDS, quickStartFrom, type QsSources } from '../quick-start-data'
 import type { Step } from '../types'
 
 /** Conversation plus the list badges (확인 필요 / 작업 중) and last progress line the design needs. */
@@ -37,7 +37,7 @@ export type QsItem = {
   selected?: boolean
 }
 
-/** Ingredients for one quick-start sheet; copy and layout live in quickStarts.ts. */
+/** Ingredients for one quick-start sheet; copy and layout live in quick-starts.ts. */
 export type QsData = {
   segments?: string[]
   items: QsItem[]

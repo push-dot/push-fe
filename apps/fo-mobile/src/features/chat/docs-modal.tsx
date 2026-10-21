@@ -3,7 +3,7 @@ import { Alert, Pressable, Share, View } from 'react-native'
 import { GlassButton, Icon, Text } from '@/shared/components'
 import { pickChatDoc } from './api/files'
 import { chatApi, type ChatDoc } from './api/client'
-import { FileTag } from './Items'
+import { FileTag } from './items'
 import { Note, PageModal } from './components'
 import { ago } from './utility'
 

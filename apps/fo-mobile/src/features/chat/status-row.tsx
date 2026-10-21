@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Animated, Platform, Pressable, View } from 'react-native'
 import { useColors } from '../../theme'
 import { Glass, Text } from '@/shared/components'
-import { Glyph } from './Items'
+import { Glyph } from './items'
 import { usePulse } from './motion'
 import { formatElapsed } from './reducer'
 

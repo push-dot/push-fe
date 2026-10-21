@@ -6,12 +6,12 @@ import { useColors, useShadow } from '../../theme'
 import { Glass, Icon, Text } from '@/shared/components'
 import { pickChatAttachment } from './api/files'
 import { chatApi } from './api/client'
-import { Composer } from './Composer'
-import { FileTag } from './Items'
+import { Composer } from './composer'
+import { FileTag } from './items'
 import { filterMentions, insertMention, mentionQuery, type MentionGroup, type MentionItem } from './mentions'
 import { Appear } from './motion'
 import { Mark } from './components'
-import { QUICK_STARTS, type QuickStart } from './quickStarts'
+import { QUICK_STARTS, type QuickStart } from './quick-starts'
 
 type Props = {
   placeholder: string
