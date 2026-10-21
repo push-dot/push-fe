@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Defs, RadialGradient, Rect, SvgXml, Stop } from 'react-native-svg'
-import { signIn } from '../../lib/auth'
-import { DEV_AUTH_TOKEN } from '../../lib/config'
-import { useSession } from '../../lib/session'
+import { signIn, DEV_AUTH_TOKEN, useSession } from '@/shared/infrastructure'
 import { radius, useColors } from '../../theme'
 import { Text } from '../../ui'
 
@@ -37,7 +35,6 @@ function ProviderButton({ label, logo, bg, fg, border, disabled, onPress }: { la
   )
 }
 
-/** 로그인 (SignIn board). OAuth logic stays in lib/auth. */
 export function SignInScreen() {
   const c = useColors()
   const insets = useSafeAreaInsets()

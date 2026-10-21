@@ -3,7 +3,7 @@ import type { Posting } from '@push/api-client'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { BottomSheet, Button, brandOf, careerLabel, Chip, Icon, Text } from '../../ui'
 import { Mark, Note, PageModal, useStartChat } from './parts'
 

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../lib/api'
-import { useSession } from '../../lib/session'
+import { api, useSession } from '@/shared/infrastructure'
 
 /** Me: name for the drawer and account modal (profile when available, session otherwise). */
 export function useMe() {

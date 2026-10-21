@@ -1,13 +1,12 @@
+import { createApi, createClient } from '@push/api-client'
 import { fetch as expoFetch } from 'expo/fetch'
 import * as Crypto from 'expo-crypto'
-import { createApi, createClient } from '@push/api-client'
+import { mockFetch } from '../../mock'
 import { API_BASE_URL, API_MOCK } from './config'
-import { mockFetch } from '../mock'
-import { useSession } from './session'
+import { useSession } from './session-store'
 
 let refreshing: Promise<boolean> | null = null
 
-// Single-flight refresh: concurrent 401s share one refresh call.
 const refresh = () => {
   refreshing ??= (async () => {
     const { session, set } = useSession.getState()
@@ -25,12 +24,10 @@ const refresh = () => {
   return refreshing
 }
 
-/** Shared ky-based client; screens with endpoints not yet in @push/api-client call it directly. */
 export const http = createClient({
   baseUrl: API_BASE_URL,
   getToken: () => useSession.getState().session?.accessToken,
   refresh,
-  // expo/fetch exposes a ReadableStream body, needed for chat SSE.
   fetch: API_MOCK ? mockFetch : (expoFetch as unknown as typeof fetch),
   uuid: () => Crypto.randomUUID(),
 })

@@ -3,8 +3,7 @@ import { router } from 'expo-router'
 import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, View } from 'react-native'
 import type { Settings, Tone } from '@push/api-client'
-import { api } from '../../lib/api'
-import { deleteAccount, signOut } from '../../lib/auth'
+import { api, deleteAccount, signOut } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import {
   BottomSheet,

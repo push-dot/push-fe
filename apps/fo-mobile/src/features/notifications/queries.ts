@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 
 // shortcut: first 50 only (no paging); the inbox is short-lived. Page it if users keep more.
 export const useNotifications = () =>

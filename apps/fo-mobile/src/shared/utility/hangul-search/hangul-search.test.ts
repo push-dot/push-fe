@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matchHangul, searchHangul } from '../hangul-search'
+import { matchHangul, searchHangul } from './hangul-search'
 
 describe('matchHangul', () => {
   it('matches choseong', () => {

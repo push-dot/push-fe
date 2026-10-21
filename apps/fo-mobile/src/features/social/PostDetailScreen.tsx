@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { fontFor, useColors } from '../../theme'
 import { Glass, Icon, Text, TopBar } from '../../ui'
 import { threadComments, timeAgo } from './lib'

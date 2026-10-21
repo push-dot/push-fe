@@ -13,7 +13,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { Offer } from '@push/api-client'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { fontFor, radius, useColors } from '../../theme'
 import {
   Badge,

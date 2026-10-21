@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CAREER_STATUSES, TENURES, type JobCategory } from '@push/api-client'
 import { useState, type ReactNode } from 'react'
 import { Pressable, View } from 'react-native'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { BottomSheet, Chip, Text } from '../../ui'
 import { EMPTY_SHEET, profileQuery, toggle, type SheetFilters } from './filters'
 

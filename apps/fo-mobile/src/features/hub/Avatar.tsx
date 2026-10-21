@@ -1,6 +1,6 @@
 import { Image } from 'expo-image'
 import { View } from 'react-native'
-import { assetUrl } from '../../lib/config'
+import { assetUrl } from '@/shared/utility'
 import { Text } from '../../ui'
 import { givenName } from './filters'
 

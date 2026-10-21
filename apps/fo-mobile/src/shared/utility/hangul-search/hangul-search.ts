@@ -1,13 +1,11 @@
 import { convertQwertyToHangul, disassemble, getChoseong } from 'es-hangul'
 
-// Rank per docs/feature-spec.md 0.1: exact → prefix → contains → choseong → jamo prefix → qwerty.
 export type MatchKind = 'exact' | 'prefix' | 'contains' | 'choseong' | 'jamo' | 'qwerty'
 export type Match = { kind: MatchKind; rank: number; start: number; end: number }
 
 const CHOSEONG_ONLY = /^[ㄱ-ㅎ]+$/
 const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '')
 
-/** Finds the query in text; start/end are character offsets in `text` for highlighting. */
 export const matchHangul = (text: string, rawQuery: string): Match | null => {
   const query = normalize(rawQuery)
   if (!query) return null
@@ -24,7 +22,6 @@ export const matchHangul = (text: string, rawQuery: string): Match | null => {
     if (hit) return { kind: 'choseong', rank: 3, ...hit }
   }
 
-  // Typing in progress, e.g. "백ㅇ" or "모앞" (the last syllable is still being composed).
   const hit = findBy(text, disassemble(query), (s) => disassemble(s))
   if (hit) return { kind: 'jamo', rank: 4, ...hit }
 
@@ -38,7 +35,6 @@ export const matchHangul = (text: string, rawQuery: string): Match | null => {
   return null
 }
 
-/** Slides over each character start so the match maps back to original offsets. */
 const findBy = (text: string, needle: string, project: (s: string) => string) => {
   const chars = Array.from(text)
   for (let i = 0; i < chars.length; i++) {
@@ -55,7 +51,6 @@ const findBy = (text: string, needle: string, project: (s: string) => string) =>
 
 const offset = (chars: string[], n: number) => chars.slice(0, n).join('').length
 
-/** Filters and orders items by best match; keeps original order within the same rank. */
 export const searchHangul = <T>(items: T[], query: string, fields: (item: T) => string[]) => {
   if (!query.trim()) return items.map((item) => ({ item, match: null as Match | null }))
   const out: { item: T; match: Match; index: number }[] = []

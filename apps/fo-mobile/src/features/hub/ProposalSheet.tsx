@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '@push/api-client'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { BottomSheet, Chip, Text, TextField } from '../../ui'
 import { Avatar } from './Avatar'
 

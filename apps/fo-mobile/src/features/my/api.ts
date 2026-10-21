@@ -4,8 +4,7 @@ import {
   type Profile,
   type Source,
 } from '@push/api-client'
-import { api, http } from '../../lib/api'
-import { API_MOCK } from '../../lib/config'
+import { api, http, API_MOCK } from '@/shared/infrastructure'
 
 export type CalendarEventType = 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'COFFEE_CHAT' | 'CUSTOM'
 /** The push-be calendar event fields the app reads. COFFEE_CHAT exists only in mock data (see addEvent). */

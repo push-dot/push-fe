@@ -1,15 +1,13 @@
-import * as WebBrowser from 'expo-web-browser'
-import { api } from './api'
+import { api } from './api-client'
+import { AUTH_REDIRECT_URI } from './constants'
 import { createPkce } from './pkce'
-import { useSession } from './session'
+import { openAuthSession } from './platform'
+import { useSession } from './session-store'
 
-const REDIRECT_URI = 'push://auth/callback'
-
-/** Google/GitHub OAuth with PKCE, returning to push://auth/callback (already allowed by push-be). */
 export const signIn = async (provider: 'google' | 'github') => {
   const { verifier, challenge } = await createPkce()
-  const { authorizationUrl } = await api.auth.start(provider, { codeChallenge: challenge, redirectUri: REDIRECT_URI })
-  const result = await WebBrowser.openAuthSessionAsync(authorizationUrl, REDIRECT_URI)
+  const { authorizationUrl } = await api.auth.start(provider, { codeChallenge: challenge, redirectUri: AUTH_REDIRECT_URI })
+  const result = await openAuthSession(authorizationUrl, AUTH_REDIRECT_URI)
   if (result.type !== 'success') return false
   const code = new URL(result.url).searchParams.get('code')
   if (!code) return false
@@ -17,7 +15,6 @@ export const signIn = async (provider: 'google' | 'github') => {
   return true
 }
 
-/** The server revokes every token, so only the local session needs clearing. */
 export const deleteAccount = async () => {
   await api.me.deleteAccount()
   await useSession.getState().set(null)

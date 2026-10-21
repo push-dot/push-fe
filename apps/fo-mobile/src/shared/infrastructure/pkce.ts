@@ -3,7 +3,6 @@ import * as Crypto from 'expo-crypto'
 const toBase64Url = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 
-/** RFC 7636 S256 verifier/challenge pair. */
 export const createPkce = async () => {
   const verifier = toBase64Url(Crypto.getRandomBytes(32))
   const digest = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, verifier, {

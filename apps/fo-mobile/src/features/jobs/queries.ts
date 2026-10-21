@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Posting, PostingFilters } from '@push/api-client'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 
 /** Cursor-paged postings for the 2-column grids (채용공고, 섹션 전체보기). */
 export const usePostingPages = (f: PostingFilters) =>

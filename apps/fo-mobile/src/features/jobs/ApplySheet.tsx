@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Platform, Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { BottomSheet, Glass, Icon, Text } from '../../ui'
 

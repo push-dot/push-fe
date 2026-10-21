@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Alert, Linking, Pressable, ScrollView, Share, View } from 'react-native'
 import { useColors } from '../../theme'
 import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Switch, Text, TextField, type BadgeTone, type IconName } from '../../ui'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { kindOf } from './links'
 import { GroupTitle, Note, PageModal, useStartChat } from './parts'
 

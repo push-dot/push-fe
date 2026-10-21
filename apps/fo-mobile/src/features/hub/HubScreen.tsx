@@ -3,7 +3,7 @@ import { HUB_CATEGORIES, type CareerStatus, type JobCategory, type Profile } fro
 import { router, type Href } from 'expo-router'
 import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, View, type ViewStyle } from 'react-native'
-import { api } from '../../lib/api'
+import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { Badge, Chip, Glass, Icon, Text, TopBar, type BadgeTone } from '../../ui'
 import { Avatar } from './Avatar'
