@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import { passwordError } from '../../shared/model/login-providers'
+import AuthPasswordField from './auth-password-field'
 import {
   EMAIL_LABEL,
   LOGIN_FAILED_COPY,
@@ -51,32 +52,27 @@ const ResetPage = () => {
 
   if (notice) {
     return (
-      <main className="auth">
-        <p className="auth-note">{notice}</p>
+      <main className="auth-card">
+        <p className="auth-mail-copy">{notice}</p>
       </main>
     )
   }
 
   if (token) {
     return (
-      <main className="auth">
-        <h1 className="h2">{RESET_CONFIRM_COPY}</h1>
-        <form onSubmit={(event) => void confirmReset(event)}>
-          <label className="field">
-            <span>{NEW_PASSWORD_LABEL}</span>
-            <input
-              type="password"
-              value={password}
-              autoComplete="new-password"
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          {error ? (
-            <p className="auth-error" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <button type="submit" className="primary" disabled={pending}>
+      <main className="auth-card">
+        <header className="auth-lead">
+          <h1>{RESET_CONFIRM_COPY}</h1>
+        </header>
+        <form className="auth-stack" onSubmit={(event) => void confirmReset(event)}>
+          <AuthPasswordField
+            label={NEW_PASSWORD_LABEL}
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            error={error}
+          />
+          <button type="submit" className="auth-btn pri" disabled={pending}>
             {RESET_CONFIRM_COPY}
           </button>
         </form>
@@ -85,20 +81,24 @@ const ResetPage = () => {
   }
 
   return (
-    <main className="auth">
-      <h1 className="h2">{RESET_CONFIRM_COPY}</h1>
-      <form onSubmit={(event) => void requestReset(event)}>
-        <label className="field">
-          <span>{EMAIL_LABEL}</span>
-          <input
-            type="email"
-            value={email}
-            autoComplete="email"
-            required
-            onChange={(event) => setEmail(event.target.value)}
-          />
+    <main className="auth-card">
+      <header className="auth-lead">
+        <h1>{RESET_CONFIRM_COPY}</h1>
+      </header>
+      <form className="auth-stack" onSubmit={(event) => void requestReset(event)}>
+        <label className="auth-block">
+          <span className="auth-label">{EMAIL_LABEL}</span>
+          <span className="auth-control">
+            <input
+              type="email"
+              value={email}
+              autoComplete="email"
+              required
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </span>
         </label>
-        <button type="submit" className="primary" disabled={pending}>
+        <button type="submit" className="auth-btn pri" disabled={pending}>
           {RESET_SEND_COPY}
         </button>
       </form>

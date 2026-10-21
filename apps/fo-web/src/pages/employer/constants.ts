@@ -1,14 +1,29 @@
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
 
-export const VERIFY_TITLE = '사업자 확인'
-export const LABEL_BNO = '사업자번호'
+export const VERIFY_TITLE = '사업자를 확인할게요'
+export const VERIFY_LEAD = '국세청 정보와 맞으면 바로 끝나요. 확인을 마쳐야 공고를 올리고 기업 AI를 쓸 수 있어요.'
+export const LABEL_BNO = '사업자등록번호'
 export const LABEL_PNM = '대표자명'
 export const LABEL_START = '개업일자'
 export const LABEL_BNM = '상호'
-export const VERIFY_SUBMIT = '사업자 인증'
-export const VERIFY_PENDING = '확인하고 있어요'
+export const LABEL_STATUS = '상태'
+export const LABEL_ROLE = '내 권한'
+export const VERIFY_NAME_HINT = '공고의 회사명으로 쓰여요'
+export const VERIFY_STATUS_NOTE = '계속사업자만 확인돼요. 휴업·폐업 상태면 가입할 수 없어요.'
+export const VERIFY_SUBMIT = '사업자 확인하기'
+export const VERIFY_PENDING = '국세청에서 확인하는 중…'
+export const VERIFY_MISMATCH = '국세청 정보와 맞지 않아요'
+export const VERIFY_MISMATCH_DETAIL = '대표자명과 개업일자를 사업자등록증과 똑같이 적어 주세요.'
 export const VERIFY_RETRY = '개업 직후라면 1–2일 뒤 다시 시도해 주세요'
+export const VERIFY_STATUS = '계속사업자'
+export const VERIFY_DONE_LEAD = '이제 공고를 올리고 기업 AI를 쓸 수 있어요.'
+export const VERIFY_DONE_ADMIN = '처음 확인한 분이 관리자가 돼요.'
+export const VERIFY_FIRST_POSTING = '첫 공고 올리기'
+export const VERIFY_AI_POSTING = '기업 AI로 공고 만들기'
+export const STEP_ACCOUNT = '계정 만들기'
+export const STEP_VERIFY = '사업자 확인'
+export const STEP_START = '시작하기'
 export const COMPANY_EXISTS_COPY = '이미 등록된 사업자번호예요. 초대 링크로 들어와 주세요.'
 
 export const MEMBERS_TITLE = '담당자'
@@ -27,6 +42,13 @@ export const INVITE_FAILED_SEND = '초대 메일을 보내지 못했어요.'
 export const REMOVE_MEMBER = '내보내기'
 export const TRANSFER_ADMIN = '관리자 넘기기'
 export const INVITE_ACCEPT_FAILED = '초대를 받지 못했어요. 링크를 다시 확인해 주세요.'
+export const INVITE_TITLE = '초대를 받았어요'
+export const INVITE_LEAD = '채용 담당자로 초대했어요.'
+export const INVITE_CAN = '들어가면 함께 쓸 수 있어요'
+export const INVITE_PERKS = ['공고와 지원자 관리', '기업 AI 대화 (회사가 함께 봐요)', '사업자 확인 없이 바로 시작'] as const
+export const INVITE_GOOGLE = 'Google로 수락하기'
+export const INVITE_EMAIL_ACCEPT = '이메일로 가입하고 수락하기'
+export const INVITE_LIMIT = '초대받은 이메일로만 들어올 수 있어요 · 7일 뒤 만료돼요'
 
 export const seatCount = (used: number, limit: number) => `담당자 ${used}/${limit}`
 

@@ -27,7 +27,15 @@ const VerifyPage = () => {
     void run()
   }, [navigate, token])
 
-  return <main className="auth">{message ? <p className="auth-error">{message}</p> : null}</main>
+  return (
+    <main className="auth-card" aria-busy={message ? undefined : true}>
+      {message ? (
+        <p className="auth-error" role="alert">
+          {message}
+        </p>
+      ) : null}
+    </main>
+  )
 }
 
 export default VerifyPage

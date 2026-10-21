@@ -7,7 +7,7 @@ const AccountTypeControl = ({
   value: AccountType
   onChange: (value: AccountType) => void
 }) => (
-  <div className="segment" role="group" aria-label="계정 유형">
+  <div className="auth-seg" role="group" aria-label="계정 유형">
     <button type="button" aria-pressed={value === 'PERSONAL'} onClick={() => onChange('PERSONAL')}>
       개인
     </button>

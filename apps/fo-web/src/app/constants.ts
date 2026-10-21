@@ -1,4 +1,6 @@
 export const BRAND = 'Push.'
+export const AUTH_BIZ = '기업'
+export const AUTH_LOGOUT = '로그아웃'
 
 export const NAV = {
   home: '홈',

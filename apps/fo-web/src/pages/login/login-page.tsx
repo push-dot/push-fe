@@ -1,24 +1,30 @@
 import { ApiError, type AccountType } from '@push/api-client'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import { isMock } from '../../bridge'
 import { mockSession } from '../../mock'
 import { createPkce, savePkceVerifier } from '../../shared/auth/pkce'
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
-import { loginProviders, type LoginProvider } from '../../shared/model/login-providers'
+import { loginProviders } from '../../shared/model/login-providers'
 import AccountTypeControl from './account-type-control'
+import AuthPasswordField from './auth-password-field'
+import AuthProviderButton from './auth-provider-button'
 import {
   BAD_CREDENTIALS_COPY,
   EMAIL_LABEL,
+  EMAIL_OR,
+  EMPLOYER_EMAIL_LABEL,
+  EMPLOYER_INVITE_NOTE,
   FORGOT_COPY,
+  LOGIN_EMPLOYER_LEAD,
+  LOGIN_EMPLOYER_TITLE,
   LOGIN_FAILED_COPY,
+  LOGIN_PERSONAL_LEAD,
+  LOGIN_PERSONAL_TITLE,
   LOGIN_SUBMIT_COPY,
   PASSWORD_LABEL,
-  PROVIDER_LABEL,
-  RESET_SEND_COPY,
-  RESET_SENT_COPY,
   SIGNUP_LINK_COPY,
   VERIFY_MAIL_COPY,
 } from './constants'
@@ -27,14 +33,16 @@ const CALLBACK_PATH = '/auth/callback'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const [accountType, setAccountType] = useState<AccountType>('PERSONAL')
-  const [mode, setMode] = useState<'providers' | 'email' | 'reset'>('providers')
+  const [params] = useSearchParams()
+  const [accountType, setAccountType] = useState<AccountType>(
+    params.get('accountType') === 'EMPLOYER' ? 'EMPLOYER' : 'PERSONAL',
+  )
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const redirected = useRef(false)
+  const employer = accountType === 'EMPLOYER'
 
   useEffect(() => {
     if (redirected.current) return
@@ -48,14 +56,10 @@ const LoginPage = () => {
     navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
   }
 
-  const continueWith = async (provider: LoginProvider) => {
+  const continueWith = async (provider: 'google' | 'github') => {
     setError(null)
-    if (provider === 'email') {
-      setMode('email')
-      return
-    }
     if (isMock()) {
-      const session = mockSession(accountType === 'EMPLOYER' ? 'employer' : 'personal')
+      const session = mockSession(employer ? 'employer' : 'personal')
       sessionStore.save(session)
       leave(session)
       return
@@ -99,96 +103,67 @@ const LoginPage = () => {
     }
   }
 
-  const submitReset = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setPending(true)
-    await api.auth.requestPasswordReset(email).catch(() => undefined)
-    setNotice(RESET_SENT_COPY)
-    setPending(false)
-  }
-
   return (
-    <main className="auth">
-      <h1 className="h2">{LOGIN_SUBMIT_COPY}</h1>
+    <main className="auth-card">
+      <header className="auth-lead">
+        <h1>{employer ? LOGIN_EMPLOYER_TITLE : LOGIN_PERSONAL_TITLE}</h1>
+        <p>{employer ? LOGIN_EMPLOYER_LEAD : LOGIN_PERSONAL_LEAD}</p>
+      </header>
       <AccountTypeControl value={accountType} onChange={setAccountType} />
-      {notice ? <p className="auth-note">{notice}</p> : null}
-      {error ? (
-        <p className="auth-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {mode === 'providers' ? (
-        <div className="auth-actions">
-          {loginProviders(accountType).map((provider) => (
-            <button
+      <div className="auth-providers">
+        {loginProviders(accountType).map((provider) =>
+          provider === 'email' ? null : (
+            <AuthProviderButton
               key={provider}
-              type="button"
-              className="provider"
+              provider={provider}
               disabled={pending}
               onClick={() => void continueWith(provider)}
-            >
-              {PROVIDER_LABEL[provider]}
-            </button>
-          ))}
+            />
+          ),
+        )}
+      </div>
+      <div className="auth-or">
+        <span className="auth-rule" />
+        {EMAIL_OR}
+        <span className="auth-rule" />
+      </div>
+      <form className="auth-stack" onSubmit={(event) => void submitLogin(event)}>
+        <div className="auth-fields">
+          <span className="auth-control">
+            <input
+              type="email"
+              value={email}
+              autoComplete="email"
+              placeholder={employer ? EMPLOYER_EMAIL_LABEL : EMAIL_LABEL}
+              aria-label={employer ? EMPLOYER_EMAIL_LABEL : EMAIL_LABEL}
+              required
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </span>
+          <AuthPasswordField
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+            placeholder={PASSWORD_LABEL}
+          />
         </div>
-      ) : null}
-      {mode === 'email' ? (
-        <form onSubmit={(event) => void submitLogin(event)}>
-          <label className="field">
-            <span>{EMAIL_LABEL}</span>
-            <input
-              type="email"
-              value={email}
-              autoComplete="email"
-              required
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            <span>{PASSWORD_LABEL}</span>
-            <input
-              type="password"
-              value={password}
-              autoComplete="current-password"
-              required
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="primary" disabled={pending}>
-            {LOGIN_SUBMIT_COPY}
-          </button>
-          <div className="auth-links">
-            <Link to={`/signup?accountType=${accountType}`}>{SIGNUP_LINK_COPY}</Link>
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => {
-                setMode('reset')
-                setError(null)
-              }}
-            >
-              {FORGOT_COPY}
-            </button>
-          </div>
-        </form>
-      ) : null}
-      {mode === 'reset' && !notice ? (
-        <form onSubmit={(event) => void submitReset(event)}>
-          <label className="field">
-            <span>{EMAIL_LABEL}</span>
-            <input
-              type="email"
-              value={email}
-              autoComplete="email"
-              required
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="primary" disabled={pending}>
-            {RESET_SEND_COPY}
-          </button>
-        </form>
-      ) : null}
+        {error ? (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className="auth-btn pri" disabled={pending}>
+          {LOGIN_SUBMIT_COPY}
+        </button>
+      </form>
+      <p className="auth-switch">
+        <Link to={`/signup?accountType=${accountType}`}>{SIGNUP_LINK_COPY}</Link>
+        <span>·</span>
+        <Link className="quiet" to="/auth/reset">
+          {FORGOT_COPY}
+        </Link>
+      </p>
+      {employer ? <p className="auth-aside">{EMPLOYER_INVITE_NOTE}</p> : null}
     </main>
   )
 }

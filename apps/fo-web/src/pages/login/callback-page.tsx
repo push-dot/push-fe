@@ -43,7 +43,15 @@ const CallbackPage = () => {
     void run()
   }, [code, navigate])
 
-  return <main className="auth">{message ? <p className="auth-error">{message}</p> : null}</main>
+  return (
+    <main className="auth-card">
+      {message ? (
+        <p className="auth-error" role="alert">
+          {message}
+        </p>
+      ) : null}
+    </main>
+  )
 }
 
 export default CallbackPage
