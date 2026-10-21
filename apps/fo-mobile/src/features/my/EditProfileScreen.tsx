@@ -24,7 +24,7 @@ import {
 import { searchHangul } from '@/shared/utility'
 import { api } from '@/shared/infrastructure'
 import { fontFor, radius, useColors } from '../../theme'
-import { BottomSheet, Button, Icon, SegmentedControl, Switch, Text, TextField } from '../../ui'
+import { BottomSheet, Button, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { careerPeriod, parseYm, tenureLabel } from './lib'
 import { Avatar, FieldLabel, SheetHeader } from './parts'
 import { useMyProfile, type ProfileSection } from './ProfileTab'

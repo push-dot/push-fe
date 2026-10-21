@@ -1,18 +1,16 @@
 import { Pressable, View } from 'react-native'
-import { radius, useColors } from '../theme'
-import { Text } from './Text'
+import { radius, useColors } from '../../theme'
+import Text from './text'
 
-/** 2–3 peer views; 44px pill track in fill, selected segment bg + t1 with a soft lift. */
-export function SegmentedControl<K extends string>({
+const SegmentedControl = <K extends string,>({
   items,
   value,
   onChange,
 }: {
   items: { key: K; label: string }[]
-  /** null = nothing picked yet. */
   value: K | null
   onChange: (k: K) => void
-}) {
+}) => {
   const c = useColors()
   return (
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', height: 44, padding: 4, borderRadius: radius.pill, backgroundColor: c.fill }}>
@@ -38,3 +36,5 @@ export function SegmentedControl<K extends string>({
     </View>
   )
 }
+
+export default SegmentedControl

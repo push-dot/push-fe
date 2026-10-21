@@ -1,5 +1,5 @@
 import { Text as RNText, type TextProps } from 'react-native'
-import { fontFor, type, useColors, type Colors, type TypeName } from '../theme'
+import { fontFor, type, useColors, type Colors, type TypeName } from '../../theme'
 
 type Props = TextProps & {
   v?: TypeName
@@ -7,8 +7,7 @@ type Props = TextProps & {
   weight?: '400' | '500' | '600' | '700' | '800'
 }
 
-/** Design-system text: `v` picks the type token (h1…c2), `color` a palette key. */
-export function Text({ v = 'b2', color = 't1', weight, style, ...rest }: Props) {
+const Text = ({ v = 'b2', color = 't1', weight, style, ...rest }: Props) => {
   const c = useColors()
   const t = type[v]
   return (
@@ -22,3 +21,5 @@ export function Text({ v = 'b2', color = 't1', weight, style, ...rest }: Props) 
     />
   )
 }
+
+export default Text

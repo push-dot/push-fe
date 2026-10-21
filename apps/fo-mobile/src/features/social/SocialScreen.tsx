@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, ScrollView, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { Button, Chip, GlassButton, Icon, Text, TopBar } from '../../ui'
+import { Button, Chip, GlassButton, Icon, Text, TopBar } from '@/shared/components'
 import { AuthorRow, Band, ImageGrid } from './parts'
 
 export const openPost = (id: string) => router.push({ pathname: '/posts/[id]', params: { id } })

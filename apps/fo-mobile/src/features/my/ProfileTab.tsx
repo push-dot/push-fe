@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native'
 import { CAREER_STATUSES, JOB_CATEGORIES } from '@push/api-client'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { Badge, Button, Icon, Text } from '../../ui'
+import { Badge, Button, Icon, Text } from '@/shared/components'
 import { careerPeriod, tenureLabel } from './lib'
 import { Avatar } from './parts'
 

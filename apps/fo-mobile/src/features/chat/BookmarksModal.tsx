@@ -4,7 +4,8 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
-import { BottomSheet, Button, brandOf, careerLabel, Chip, Icon, Text } from '../../ui'
+import { BottomSheet, Button, Chip, Icon, Text } from '@/shared/components'
+import { brandOf, careerLabel } from '@/shared/utility'
 import { Mark, Note, PageModal, useStartChat } from './parts'
 
 // Same company colour as JobCard so a company looks the same across screens.

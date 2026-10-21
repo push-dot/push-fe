@@ -4,7 +4,7 @@ import { Platform, Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { BottomSheet, Glass, Icon, Text } from '../../ui'
+import { BottomSheet, Glass, Icon, Text } from '@/shared/components'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
 import { API_BASE_URL, API_MOCK, WEB_BASE_URL, useSession } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { Button, Text } from '../../ui'
+import { Button, Text } from '@/shared/components'
 
 type Props = {
   /** fo-web path, e.g. `/postings/p1` */

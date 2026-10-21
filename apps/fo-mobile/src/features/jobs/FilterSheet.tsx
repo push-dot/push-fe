@@ -5,7 +5,7 @@ import { CAREER_YEARS, EMPLOYMENT_TYPES, JOB_CATEGORIES } from '@push/api-client
 import { api } from '@/shared/infrastructure'
 import { searchHangul } from '@/shared/utility'
 import { radius, useColors } from '../../theme'
-import { BottomSheet, Chip, Icon, Text, TextField } from '../../ui'
+import { BottomSheet, Chip, Icon, Text, TextField } from '@/shared/components'
 import { EMPTY, SIDOS, formatCount, sidoOf, toQuery, toggle, toggleRegion, type FilterKey, type Filters } from './filters'
 
 const TITLES: Record<FilterKey, string> = {

@@ -3,7 +3,7 @@ import { ApiError } from '@push/api-client'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
-import { BottomSheet, Chip, Text, TextField } from '../../ui'
+import { BottomSheet, Chip, Text, TextField } from '@/shared/components'
 import { Avatar } from './Avatar'
 
 type Props = {

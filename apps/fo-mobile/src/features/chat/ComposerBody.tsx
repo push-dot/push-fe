@@ -1,7 +1,7 @@
 import type { Ref } from 'react'
 import { Pressable, TextInput, View, type TextInputInstance } from 'react-native'
 import { fontFor, useColors } from '../../theme'
-import { Icon, Text } from '../../ui'
+import { Icon, Text } from '@/shared/components'
 
 export type ComposerProps = {
   value: string

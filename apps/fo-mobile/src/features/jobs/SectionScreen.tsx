@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { View } from 'react-native'
 import { useColors } from '../../theme'
-import { Text, TopBar } from '../../ui'
+import { Text, TopBar } from '@/shared/components'
 import { PostingGrid } from './PostingGrid'
 
 export type SectionKind = 'latest' | 'deadline' | 'popular'

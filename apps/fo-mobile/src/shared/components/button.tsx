@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native'
-import { radius, useColors } from '../theme'
-import { Glass } from './Glass'
-import { Icon } from './Icon'
+import { radius, useColors } from '../../theme'
+import Glass from './glass'
+import Icon from './icon'
 import type { IconName } from './icon-data'
-import { Text } from './Text'
+import Text from './text'
 
 type Props = {
   label: string
@@ -16,8 +16,7 @@ type Props = {
   style?: StyleProp<ViewStyle>
 }
 
-/** Primary (ac, 56px) or secondary (fill; glass on iOS). Disabled = 45% opacity with a finished-fact label. */
-export function Button({ label, onPress, variant = 'primary', size = 'lg', icon, disabled, style }: Props) {
+const Button = ({ label, onPress, variant = 'primary', size = 'lg', icon, disabled, style }: Props) => {
   const c = useColors()
   const sm = size === 'sm'
   const fg = variant === 'primary' ? '#FFFFFF' : c.t1
@@ -59,3 +58,5 @@ export function Button({ label, onPress, variant = 'primary', size = 'lg', icon,
     </Pressable>
   )
 }
+
+export default Button

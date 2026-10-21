@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, Share, View } from 'react-native'
 import { fontFor, useColors, type Colors } from '../../theme'
-import { Badge, Button, Glass, Icon, Text } from '../../ui'
+import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
 import { formatElapsed } from './reducer'
 import { Appear, usePop, usePulse, useReduceMotion } from './motion'
 import type { ChatItem, ToolState } from './types'

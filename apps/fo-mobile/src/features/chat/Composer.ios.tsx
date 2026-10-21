@@ -1,4 +1,4 @@
-import { Glass } from '../../ui'
+import { Glass } from '@/shared/components'
 import { ComposerBody, type ComposerProps } from './ComposerBody'
 
 /** iOS: Liquid Glass box, 28px radius. */

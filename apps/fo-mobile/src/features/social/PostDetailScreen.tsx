@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/shared/infrastructure'
 import { fontFor, useColors } from '../../theme'
-import { Glass, Icon, Text, TopBar } from '../../ui'
+import { Glass, Icon, Text, TopBar } from '@/shared/components'
 import { threadComments, timeAgo } from './lib'
 import { AuthorRow, Avatar, Band, ImageGrid } from './parts'
 

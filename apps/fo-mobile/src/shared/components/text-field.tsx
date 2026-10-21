@@ -1,14 +1,12 @@
 import { TextInput, View, type TextInputProps } from 'react-native'
-import { fontFor, radius, useColors } from '../theme'
-import { Icon } from './Icon'
+import { fontFor, radius, useColors } from '../../theme'
+import Icon from './icon'
 import type { IconName } from './icon-data'
-import { Text } from './Text'
+import Text from './text'
 
 type Props = TextInputProps & { icon?: IconName; label?: string; max?: number }
 
-/** Filled input: fill bg, radius-md, 56px, 16px text (never smaller). Multi-line adds label + counter. */
-// React 19: `ref` arrives as a regular prop via TextInputProps.
-export function TextField({ icon, label, max, multiline, value, style, ...rest }: Props) {
+const TextField = ({ icon, label, max, multiline, value, style, ...rest }: Props) => {
   const c = useColors()
   return (
     <View style={{ borderRadius: radius.md, backgroundColor: c.fill, paddingHorizontal: 16, paddingVertical: multiline ? 14 : 0, minHeight: 56, justifyContent: 'center' }}>
@@ -36,3 +34,5 @@ export function TextField({ icon, label, max, multiline, value, style, ...rest }
     </View>
   )
 }
+
+export default TextField

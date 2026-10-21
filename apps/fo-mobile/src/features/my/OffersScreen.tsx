@@ -5,7 +5,7 @@ import { ActivityIndicator, ScrollView, View } from 'react-native'
 import type { Offer, UserRef } from '@push/api-client'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { Badge, SegmentedControl, Text, TopBar } from '../../ui'
+import { Badge, SegmentedControl, Text, TopBar } from '@/shared/components'
 import { offerBadge, timeAgo } from './lib'
 import { Avatar, Empty, Row } from './parts'
 

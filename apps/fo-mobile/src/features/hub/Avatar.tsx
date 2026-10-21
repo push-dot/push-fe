@@ -1,7 +1,7 @@
 import { Image } from 'expo-image'
 import { View } from 'react-native'
 import { assetUrl } from '@/shared/utility'
-import { Text } from '../../ui'
+import { Text } from '@/shared/components'
 import { givenName } from './filters'
 
 // Board avatar fills; no theme token exists for per-person colors.

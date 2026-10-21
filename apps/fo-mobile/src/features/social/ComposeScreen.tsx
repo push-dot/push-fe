@@ -8,7 +8,7 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/shared/infrastructure'
 import { fontFor, useColors } from '../../theme'
-import { BottomSheet, Button, Glass, GlassButton, Icon, SettingsGroup, SettingsRow, Text } from '../../ui'
+import { BottomSheet, Button, Glass, GlassButton, Icon, SettingsGroup, SettingsRow, Text } from '@/shared/components'
 import { categoryLabel } from './parts'
 
 const MAX_IMAGES = 4

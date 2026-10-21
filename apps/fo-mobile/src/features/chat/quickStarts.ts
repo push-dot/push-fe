@@ -1,4 +1,4 @@
-import type { Icon3DName } from '../../ui'
+import type { Icon3DName } from '@/shared/components'
 import type { QsItem } from './api'
 
 export type QsLayout = 'link' | 'match' | 'pick' | 'deadline' | 'status' | 'calendar' | 'cards' | 'reply'

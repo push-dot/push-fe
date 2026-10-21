@@ -2,17 +2,10 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'expo-image'
 import { Pressable, View } from 'react-native'
 import type { Posting } from '@push/api-client'
-import { assetUrl } from '@/shared/utility'
-import { radius } from '../theme'
-import { Icon } from './Icon'
-import { Text } from './Text'
-
-// Placeholder photo: brand-colour gradient + company initial (design JobCard guide).
-const BRAND = ['#1F3A8A', '#0E7A5F', '#7A2E8C', '#B4501E', '#1B6E8F', '#5B4CF0', '#8C2F39']
-export const brandOf = (company: string) => BRAND[[...company].reduce((a, ch) => a + ch.charCodeAt(0), 0) % BRAND.length]!
-
-export const careerLabel = (p: Pick<Posting, 'careerMin' | 'careerMax'>) =>
-  p.careerMin === 0 && !p.careerMax ? '신입' : p.careerMax ? `${p.careerMin}–${p.careerMax}년` : `${p.careerMin}년+`
+import { radius } from '../../theme'
+import { assetUrl, brandOf, careerLabel } from '../utility'
+import Icon from './icon'
+import Text from './text'
 
 type Props = {
   posting: Posting
@@ -21,8 +14,7 @@ type Props = {
   onBookmark?: () => void
 }
 
-/** Photo-first job card: no box, no D-day, no fit score. 200×136 on home rows, 169 wide in grids. */
-export function JobCard({ posting: p, width = 200, onPress, onBookmark }: Props) {
+const JobCard = ({ posting: p, width = 200, onPress, onBookmark }: Props) => {
   const brand = brandOf(p.company)
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${p.company} ${p.title}`} onPress={onPress} style={{ width, gap: 10 }}>
@@ -63,3 +55,5 @@ export function JobCard({ posting: p, width = 200, onPress, onBookmark }: Props)
     </Pressable>
   )
 }
+
+export default JobCard

@@ -1,4 +1,4 @@
-import type { BadgeTone } from '../../ui'
+import type { BadgeTone } from '@/shared/components'
 
 // Transcript model (feature-spec 15.2). Items render in order; control events change run state.
 

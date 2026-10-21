@@ -1,30 +1,23 @@
 import type { ReactNode } from 'react'
 import { Modal, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useColors } from '../theme'
-import { Button } from './Button'
-import { Glass } from './Glass'
-import { Icon } from './Icon'
-import { Text } from './Text'
+import { useColors } from '../../theme'
+import Button from './button'
+import Glass from './glass'
+import Icon from './icon'
+import Text from './text'
 
 type Props = {
   visible: boolean
   onClose: () => void
-  /** A question the person answers ("어떤 공고와 비교할까요?"). */
   title?: string
   description?: string
   children: ReactNode
-  /** Names the result ("부족한 점 찾기"), never "확인". Omit for lists that act on tap. */
   action?: { label: string; onPress: () => void; disabled?: boolean }
-  /** Whole-flow sheets (계정 → 요금제) open near full height. */
   full?: boolean
 }
 
-/**
- * Every choice/filter/picker opens here. iOS: floating glass sheet inset 8px, 40px corners.
- * Android: full-width bg sheet with 28px top corners.
- */
-export function BottomSheet({ visible, onClose, title, description, children, action, full }: Props) {
+const BottomSheet = ({ visible, onClose, title, description, children, action, full }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
@@ -85,3 +78,5 @@ export function BottomSheet({ visible, onClose, title, description, children, ac
     </Modal>
   )
 }
+
+export default BottomSheet

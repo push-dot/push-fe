@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors, type Colors } from '../../theme'
-import { BottomSheet, Chip, GlassButton, Text, TextField } from '../../ui'
+import { BottomSheet, Chip, GlassButton, Text, TextField } from '@/shared/components'
 import { myApi, type CalendarEvent, type CalendarEventType } from './api'
 import { clock, dayTitle, dday, monthDay, monthGrid, sameDay } from './lib'
 

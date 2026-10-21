@@ -14,7 +14,7 @@ import {
   Switch,
   Text,
   TopBar,
-} from '../../ui'
+} from '@/shared/components'
 import { Avatar } from './parts'
 import { useMyProfile } from './ProfileTab'
 

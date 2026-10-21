@@ -6,7 +6,7 @@ import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Sh
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/shared/infrastructure'
 import { useColors, useShadow } from '../../theme'
-import { BottomSheet, Glass, GlassButton, Icon, Text, TextField, type IconName } from '../../ui'
+import { BottomSheet, Glass, GlassButton, Icon, Text, TextField, type IconName } from '@/shared/components'
 import { chatApi } from './api'
 import { ApprovalPanel } from './ApprovalPanel'
 import { ComposerArea } from './ComposerArea'

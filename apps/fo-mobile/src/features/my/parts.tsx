@@ -6,7 +6,7 @@ import { AccessibilityInfo, Platform, Pressable, View } from 'react-native'
 import { api } from '@/shared/infrastructure'
 import { assetUrl } from '@/shared/utility'
 import { radius, useColors } from '../../theme'
-import { Glass, GlassButton, Icon, Text, TopBar } from '../../ui'
+import { Glass, GlassButton, Icon, Text, TopBar } from '@/shared/components'
 import { givenName, tintOf } from './lib'
 
 /** Circle avatar with the given name on a colour, or the photo. */

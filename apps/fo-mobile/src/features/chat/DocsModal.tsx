@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as DocumentPicker from 'expo-document-picker'
 import { Alert, Pressable, Share, View } from 'react-native'
-import { GlassButton, Icon, Text } from '../../ui'
+import { GlassButton, Icon, Text } from '@/shared/components'
 import { chatApi, type ChatDoc } from './api'
 import { FileTag } from './Items'
 import { ago, Note, PageModal } from './parts'

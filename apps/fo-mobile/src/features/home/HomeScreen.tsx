@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, View } from 'react-
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { api, API_MOCK } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { GlassButton, Icon, Icon3D, JobCard, Text, TopBar, Wordmark, type Icon3DName } from '../../ui'
+import { GlassButton, Icon, Icon3D, JobCard, Text, TopBar, Wordmark, type Icon3DName } from '@/shared/components'
 import { useToggleBookmark } from '../jobs/queries'
 import { SECTIONS, type SectionKind } from '../jobs/SectionScreen'
 import { useUnreadCount } from '../notifications/queries'

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Defs, RadialGradient, Rect, SvgXml, Stop } from 'react-native-svg'
 import { signIn, DEV_AUTH_TOKEN, useSession } from '@/shared/infrastructure'
 import { radius, useColors } from '../../theme'
-import { Text } from '../../ui'
+import { Text } from '@/shared/components'
 
 const devToken = __DEV__ ? DEV_AUTH_TOKEN : undefined
 

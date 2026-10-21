@@ -2,7 +2,7 @@ import { router, type Href } from 'expo-router'
 import { ActivityIndicator, Pressable, SectionList, View } from 'react-native'
 import type { AppNotification, NotificationType } from '@push/api-client'
 import { useColors, type Colors } from '../../theme'
-import { Button, Icon, Text, TopBar, type IconName } from '../../ui'
+import { Button, Icon, Text, TopBar, type IconName } from '@/shared/components'
 import { groupLabel, timeLabel } from './format'
 import { useNotifications, useReadNotifications } from './queries'
 

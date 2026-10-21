@@ -19,14 +19,14 @@ import {
   Badge,
   BottomSheet,
   Button,
-  careerLabel,
   Chip,
   Glass,
   Icon,
   Text,
   TextField,
   TopBar,
-} from '../../ui'
+} from '@/shared/components'
+import { careerLabel } from '@/shared/utility'
 import { clock, dday, monthDay, offerBadge } from './lib'
 import { counterpart } from './OffersScreen'
 import { Avatar, Logo } from './parts'

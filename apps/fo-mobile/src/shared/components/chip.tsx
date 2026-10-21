@@ -1,23 +1,19 @@
 import { Platform, Pressable, View } from 'react-native'
-import { radius, useColors } from '../theme'
-import { Glass } from './Glass'
-import { Icon } from './Icon'
-import { Text } from './Text'
+import { radius, useColors } from '../../theme'
+import Glass from './glass'
+import Icon from './icon'
+import Text from './text'
 
 type Props = {
   label: string
   on?: boolean
   onPress?: () => void
-  /** Opens a sheet: trailing 14px chevron. */
   menu?: boolean
-  /** Multi-select: leading check when on. */
   check?: boolean
-  /** Removable tag: trailing 12px x. */
   removable?: boolean
 }
 
-/** 34px pill. Idle = fill (glass on iOS), on = inverted t1/bg (not violet). */
-export function Chip({ label, on, onPress, menu, check, removable }: Props) {
+const Chip = ({ label, on, onPress, menu, check, removable }: Props) => {
   const c = useColors()
   const fg = on ? c.bg : c.t2
   const inner = (
@@ -44,3 +40,5 @@ export function Chip({ label, on, onPress, menu, check, removable }: Props) {
     </Pressable>
   )
 }
+
+export default Chip

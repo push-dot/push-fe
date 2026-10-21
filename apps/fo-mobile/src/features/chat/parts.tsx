@@ -5,7 +5,7 @@ import { Alert, Modal, Platform, Pressable, ScrollView, View } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { GlassButton, Icon, Text } from '../../ui'
+import { GlassButton, Icon, Text } from '@/shared/components'
 import { send } from './store'
 
 /** Company logo (rounded square) or person avatar (circle) with an initial on a brand color. */

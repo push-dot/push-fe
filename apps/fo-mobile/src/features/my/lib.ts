@@ -1,5 +1,5 @@
 import type { ApplicationStage, Career, Offer } from '@push/api-client'
-import type { BadgeTone } from '../../ui'
+import type { BadgeTone } from '@/shared/components'
 
 const MIN = 60_000
 const HOUR = 60 * MIN

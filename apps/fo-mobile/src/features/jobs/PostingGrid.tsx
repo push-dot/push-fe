@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import type { ReactElement } from 'react'
 import { ActivityIndicator, FlatList, useWindowDimensions, View } from 'react-native'
 import type { PostingFilters } from '@push/api-client'
-import { JobCard, Text } from '../../ui'
+import { JobCard, Text } from '@/shared/components'
 import { usePostingPages, useToggleBookmark } from './queries'
 
 type Props = {

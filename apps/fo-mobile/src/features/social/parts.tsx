@@ -4,7 +4,7 @@ import { Image } from 'expo-image'
 import { View } from 'react-native'
 import { assetUrl } from '@/shared/utility'
 import { fontFor, useColors } from '../../theme'
-import { Text } from '../../ui'
+import { Text } from '@/shared/components'
 import { givenName, timeAgo } from './lib'
 
 // Per-person avatar colors from the boards (no theme tokens exist for these).

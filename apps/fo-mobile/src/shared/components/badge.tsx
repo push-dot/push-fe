@@ -1,11 +1,10 @@
 import { View } from 'react-native'
-import { radius, useColors } from '../theme'
-import { Text } from './Text'
+import { radius, useColors } from '../../theme'
+import Text from './text'
 
 export type BadgeTone = 'ac' | 'grey' | 'red' | 'green' | 'orange'
 
-/** 22px status label; one or two words, at most two per row. */
-export function Badge({ label, tone = 'grey' }: { label: string; tone?: BadgeTone }) {
+const Badge = ({ label, tone = 'grey' }: { label: string; tone?: BadgeTone }) => {
   const c = useColors()
   const map = {
     ac: [c.acSoft, c.acText],
@@ -23,3 +22,5 @@ export function Badge({ label, tone = 'grey' }: { label: string; tone?: BadgeTon
     </View>
   )
 }
+
+export default Badge

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Platform, View } from 'react-native'
 import { useColors } from '../../theme'
-import { Glass, Icon, Text } from '../../ui'
+import { Glass, Icon, Text } from '@/shared/components'
 
 /** Success toast (Applied board). iOS glass, Android flat t1. Auto-hides after 3s. */
 export function Toast({ text, bottom, onHide }: { text: string; bottom: number; onHide: () => void }) {
