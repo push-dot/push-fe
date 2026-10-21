@@ -1,1 +1,0 @@
-export { DetailWebView } from './DetailWebView'

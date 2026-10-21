@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Profile } from '@push/api-client'
-import { appliedCount, careerLine, EMPTY_SHEET, filterSummary, givenName, matchesSheet, profileQuery, tenureOf } from '../filters'
+import { appliedCount, careerLine, EMPTY_SHEET, filterSummary, givenName, matchesSheet, profileQuery, tenureOf } from './filters'
 
 describe('hub filters', () => {
   it('buckets tenure years', () => {

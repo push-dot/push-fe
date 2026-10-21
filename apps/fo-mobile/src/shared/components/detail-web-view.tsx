@@ -1,32 +1,28 @@
 import { router, type Href } from 'expo-router'
-import * as WebBrowser from 'expo-web-browser'
 import { useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
-import { API_BASE_URL, API_MOCK, WEB_BASE_URL, useSession } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
-import { Button, Text } from '@/shared/components'
+import { API_BASE_URL, API_MOCK, WEB_BASE_URL, openBrowser, useSession } from '../infrastructure'
+import Button from './button'
+import Text from './text'
 
 type Props = {
-  /** fo-web path, e.g. `/postings/p1` */
   path: string
   onTitle?: (title: string) => void
 }
 
-/** fo-web page with the app ↔ web bridge (feature-spec 14). */
-export function DetailWebView({ path, onTitle }: Props) {
+const DetailWebView = ({ path, onTitle }: Props) => {
   const c = useColors()
   const ref = useRef<WebView<object>>(null)
   const token = useSession((s) => s.session?.accessToken ?? null)
   const [failed, setFailed] = useState(false)
-  // Captured once: WebView only reads injectedJavaScriptBeforeContentLoaded on load; later tokens go through push:token.
   const [boot] = useState(() => `window.__PUSH__=${JSON.stringify({ token, apiBaseUrl: API_BASE_URL, mock: API_MOCK })};true;`)
 
   useEffect(() => {
     ref.current?.injectJavaScript(`window.dispatchEvent(new CustomEvent('push:token',{detail:{token:${JSON.stringify(token)}}}));true;`)
   }, [token])
 
-  // Web content is untrusted input: accept only known message shapes and safe targets.
   const onMessage = (e: WebViewMessageEvent) => {
     let m: { type?: string; title?: unknown; path?: unknown; url?: unknown; status?: unknown }
     try {
@@ -35,14 +31,13 @@ export function DetailWebView({ path, onTitle }: Props) {
       return
     }
     if (m.type === 'title' && typeof m.title === 'string') onTitle?.(m.title)
-    else if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path as Href) // dynamic path from web; validated above
-    else if (m.type === 'external' && typeof m.url === 'string' && /^https?:\/\//.test(m.url)) void WebBrowser.openBrowserAsync(m.url)
+    else if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path as Href)
+    else if (m.type === 'external' && typeof m.url === 'string' && /^https?:\/\//.test(m.url)) void openBrowser(m.url)
     else if (m.type === 'error') setFailed(true)
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      {/* <object>: the default P=undefined makes WebViewProps & undefined = never under strict null checks. */}
       <WebView<object>
         ref={ref}
         source={{ uri: `${WEB_BASE_URL}${path}${API_MOCK ? '?mock=1' : ''}` }}
@@ -73,3 +68,5 @@ export function DetailWebView({ path, onTitle }: Props) {
     </View>
   )
 }
+
+export default DetailWebView

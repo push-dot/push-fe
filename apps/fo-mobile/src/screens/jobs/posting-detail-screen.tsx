@@ -2,9 +2,8 @@ import { router } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Platform, Share, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { DetailWebView } from '@/features/detail'
 import { ApplySheet, PostingToast, postingShareMessage, usePosting, useToggleBookmark } from '@/features/jobs'
-import { Button, GlassButton, TopBar } from '@/shared/components'
+import { Button, DetailWebView, GlassButton, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const PostingDetailScreen = ({ id }: { id: string }) => {

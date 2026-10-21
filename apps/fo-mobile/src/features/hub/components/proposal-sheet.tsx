@@ -1,46 +1,30 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError } from '@push/api-client'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
-import { api } from '@/shared/infrastructure'
-import { BottomSheet, Chip, Text, TextField } from '@/shared/components'
-import { Avatar } from './Avatar'
+import { BottomSheet, Chip, Text, TextField } from '../../../shared/components'
+import { useOfferBookmarks, useSendOffer } from '../api/hooks'
+import { PROPOSAL_MAX } from '../constants'
+import Avatar from './avatar'
 
 type Props = {
   userId: string
   name: string
-  /** "개발 · 4년차 · 이직/구직중" */
   subtitle: string
   visible: boolean
   onClose: () => void
   onSent?: () => void
 }
 
-const MAX = 500
-
-/** 제안하기 glass sheet (feature-spec 10). One offer per profile; a repeat returns 409. */
-export function ProposalSheet({ userId, name, subtitle, visible, onClose, onSent }: Props) {
-  const qc = useQueryClient()
+const ProposalSheet = ({ userId, name, subtitle, visible, onClose, onSent }: Props) => {
   const [message, setMessage] = useState('')
   const [postingId, setPostingId] = useState<string>()
   const [error, setError] = useState<string | null>(null)
-
-  // 함께 보낼 공고 is optional: offer from the user's bookmarks, hide the row when there are none.
-  const bookmarks = useQuery({ queryKey: ['me', 'bookmarks', 'offer-pick'], queryFn: () => api.me.bookmarks({ limit: 10 }), enabled: visible })
-
-  const send = useMutation({
-    mutationFn: () => api.profiles.offer(userId, { message: message.trim(), postingId }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['profiles'] })
-      setMessage('')
-      setPostingId(undefined)
-      onSent?.()
-      onClose()
-    },
-    onError: (e) =>
-      setError(e instanceof ApiError && e.code === 'CONFLICT' ? '이미 제안을 보냈어요.' : '제안을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'),
-  })
-
+  const bookmarks = useOfferBookmarks(visible)
+  const send = useSendOffer(userId, message, postingId, () => {
+    setMessage('')
+    setPostingId(undefined)
+    onSent?.()
+    onClose()
+  }, setError)
   const postings = bookmarks.data?.data ?? []
 
   return (
@@ -65,7 +49,7 @@ export function ProposalSheet({ userId, name, subtitle, visible, onClose, onSent
         label="메시지"
         accessibilityLabel="메시지"
         multiline
-        max={MAX}
+        max={PROPOSAL_MAX}
         value={message}
         onChangeText={(t) => {
           setMessage(t)
@@ -102,3 +86,5 @@ export function ProposalSheet({ userId, name, subtitle, visible, onClose, onSent
     </BottomSheet>
   )
 }
+
+export default ProposalSheet
