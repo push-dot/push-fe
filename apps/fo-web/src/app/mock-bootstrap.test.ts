@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mockPersona, mockSession, setMockPersona } from '../mock'
+import { mockFetch, mockPersona, mockSession, setMockPersona } from '../mock'
 import { createSessionStore, type StorageLike } from '../shared/auth/session'
 import { gateAccount } from '../shared/auth/return-path'
 import { employerGate, needsLogin } from '../shared/model/access'
@@ -80,6 +80,25 @@ describe('applyMockSearch', () => {
     applyMockSearch('?as=personal', store)
     expect(store.load()?.user.accountType).toBe('EMPLOYER')
     expect(mockPersona()).toBe('personal')
+  })
+
+  it('loads the employer company that matches the session from the mock url', async () => {
+    const store = storeWith('personal')
+    applyMockSearch('?mock=1&as=employer', store)
+    const companyId = store.load()?.user.companyId
+    expect(companyId).toBe('co-1')
+    const response = await mockFetch('http://localhost/api/v1/companies/me')
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { data: { id: string; name: string } }
+    expect(body.data).toMatchObject({ id: companyId, name: '모아페이' })
+  })
+
+  it('clears the company id on a guest mock url so the company panel stays idle', async () => {
+    const store = storeWith('employer')
+    applyMockSearch('?mock=1', store)
+    expect(store.load()?.user.companyId ?? null).toBeNull()
+    const response = await mockFetch('http://localhost/api/v1/companies/me')
+    expect(response.status).toBe(404)
   })
 
   it('sends an unverified employer to verify and keeps the verify form off login', () => {
