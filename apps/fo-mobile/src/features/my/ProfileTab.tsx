@@ -7,7 +7,7 @@ import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { Badge, Button, Icon, Text } from '@/shared/components'
 import { careerPeriod, tenureLabel } from './utility'
-import { Avatar } from './parts'
+import { Avatar } from './components'
 
 export type ProfileSection = 'basic' | 'intro' | 'career' | 'skills'
 const edit = (s: ProfileSection) => router.push(`/edit-profile/${s}`)

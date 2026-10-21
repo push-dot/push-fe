@@ -26,9 +26,9 @@ import { api } from '@/shared/infrastructure'
 import { fontFor, radius, useColors } from '../../theme'
 import { BottomSheet, Button, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { careerPeriod, parseYm, tenureLabel } from './utility'
-import { Avatar, FieldLabel, SheetHeader } from './parts'
+import { Avatar, FieldLabel, SheetHeader } from './components'
 import { useMyProfile, type ProfileSection } from './ProfileTab'
-import { SKILL_CATALOG } from './skills'
+import { SKILL_CATALOG } from './constants'
 
 type Patch = Partial<Profile> & { avatarKey?: string }
 const TITLES: Record<ProfileSection, string> = {

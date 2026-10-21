@@ -5,7 +5,7 @@ import { useColors } from '../../theme'
 import { SegmentedControl } from '@/shared/components'
 import { ActivityTab, type ActivitySub } from './ActivityTab'
 import { DocsTab } from './DocsTab'
-import { MyHeader } from './parts'
+import { MyHeader } from './components'
 import { ProfileTab } from './ProfileTab'
 
 type Tab = 'profile' | 'docs' | 'activity'

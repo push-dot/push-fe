@@ -7,7 +7,7 @@ import { api } from '@/shared/infrastructure'
 import { useColors } from '../../theme'
 import { Badge, SegmentedControl, Text, TopBar } from '@/shared/components'
 import { offerBadge, timeAgo } from './utility'
-import { Avatar, Empty, Row } from './parts'
+import { Avatar, Empty, Row } from './components'
 
 type Box = 'received' | 'sent'
 export type OfferPerson = UserRef & { affiliation?: string }

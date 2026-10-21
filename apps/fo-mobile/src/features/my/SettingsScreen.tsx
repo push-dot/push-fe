@@ -15,7 +15,7 @@ import {
   Text,
   TopBar,
 } from '@/shared/components'
-import { Avatar } from './parts'
+import { Avatar } from './components'
 import { useMyProfile } from './ProfileTab'
 
 const TONES: { key: Tone; label: string }[] = [

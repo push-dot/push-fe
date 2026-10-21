@@ -29,7 +29,7 @@ import {
 import { careerLabel } from '@/shared/utility'
 import { clock, dday, monthDay, offerBadge } from './utility'
 import { counterpart } from './OffersScreen'
-import { Avatar, Logo } from './parts'
+import { Avatar, Logo } from './components'
 
 type Box = 'received' | 'sent'
 
