@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api, assetUrl } from '../../api'
-import { COMMENT_MAX } from './constants'
+import { authorLabel } from './author-label'
+import CommentItem from './comment-item'
+import { COMMENT_MAX, EMPLOYER_BADGE } from './constants'
 
 const postedAt = (iso: string) => {
   const date = new Date(iso)
@@ -36,13 +38,12 @@ const PostPage = () => {
   if (postQuery.isError) return <main className="page"><p className="b2 t3">글을 불러오지 못했어요.</p></main>
   if (!post) return <main className="page" aria-busy="true" />
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
-  const name = post.author.employer ? post.author.companyName : post.author.displayName
   return (
     <main className="page">
       <article className="stack post-detail">
         <span className="post-author">
-          <span className="b2 w7">{name}</span>
-          {post.author.employer ? <span className="badge grey">기업</span> : null}
+          <span className="b2 w7">{authorLabel(post.author)}</span>
+          {post.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
           <span className="c1 t3">{category}</span>
         </span>
         <h1 className="h2">{post.title}</h1>
@@ -61,13 +62,7 @@ const PostPage = () => {
         {comments.length === 0 ? <p className="b2 t3">아직 댓글이 없어요.</p> : null}
         <ul className="comment-list">
           {comments.map((comment) => (
-            <li key={comment.id} className="comment">
-              <span className="b2 w7">{comment.author.displayName}</span>
-              <p className="b2">{comment.body}</p>
-              <button type="button" className="text-link" onClick={() => setParentId(comment.id)}>
-                답글
-              </button>
-            </li>
+            <CommentItem key={comment.id} comment={comment} onReply={setParentId} />
           ))}
         </ul>
         <label className="field">

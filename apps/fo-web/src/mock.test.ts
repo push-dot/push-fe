@@ -39,6 +39,23 @@ describe('employer applicant stage mock', () => {
   })
 })
 
+describe('employer comment author', () => {
+  it('labels an employer comment with the company and a personal comment with the member', async () => {
+    setMockPersona('employer')
+    const employerComment = await read<{ data: { author: { displayName: string; employer?: boolean; companyName?: string | null } } }>(
+      await postJson('http://localhost/api/v1/posts/post-emp/comments', { body: '합류를 기다려요' }),
+    )
+    expect(employerComment.data.author).toMatchObject({ displayName: '모아페이', employer: true, companyName: '모아페이' })
+
+    setMockPersona('personal')
+    const personalComment = await read<{ data: { author: { displayName: string; employer?: boolean } } }>(
+      await postJson('http://localhost/api/v1/posts/post-1/comments', { body: '응원해요' }),
+    )
+    expect(personalComment.data.author).toMatchObject({ displayName: '김서준' })
+    expect(personalComment.data.author.employer).toBeUndefined()
+  })
+})
+
 describe('posting list filters', () => {
   it('keeps dev and design postings when those job categories are selected', async () => {
     setMockPersona('personal')

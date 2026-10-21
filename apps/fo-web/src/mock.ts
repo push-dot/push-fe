@@ -980,9 +980,16 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     }
     if (method === 'POST') {
       const payload = await readJson(input, init)
+      const company = companyMe()
+      const author: Comment['author'] =
+        employerPersona() && company
+          ? { id: 'u1', displayName: company.name, avatarUrl: null, employer: true, companyName: company.name }
+          : employerPersona()
+            ? { id: 'u1', displayName: '새 담당자', avatarUrl: null, employer: true, companyName: null }
+            : { id: 'u1', displayName: '김서준', avatarUrl: null }
       const comment: Comment = {
         id: `c-${Date.now()}`,
-        author: { id: 'u1', displayName: '김서준', avatarUrl: null },
+        author,
         body: String(payload.body ?? ''),
         parentId: typeof payload.parentId === 'string' ? payload.parentId : null,
         createdAt: new Date().toISOString(),

@@ -84,6 +84,7 @@ export type ProfileFilters = PageParams & {
 }
 
 export type UserRef = { id: string; displayName: string; avatarUrl?: string | null }
+export type SocialAuthor = UserRef & { employer?: boolean; companyName?: string | null }
 
 export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
 /** Offers embed a posting stub; fetch postings/:id for the rest. */
@@ -102,7 +103,7 @@ export type OfferMessage = { id: string; offerId: string; sender: UserRef; body:
 
 export type Post = {
   id: string
-  author: UserRef & { employer?: boolean; companyName?: string | null }
+  author: SocialAuthor
   category: PostCategory
   title: string
   body: string
@@ -112,7 +113,7 @@ export type Post = {
   createdAt: string
 }
 // shortcut: push-be has no comment threads (parentId is dropped, replies come back as top-level); keep until it adds them.
-export type Comment = { id: string; author: UserRef; body: string; parentId?: string | null; createdAt: string }
+export type Comment = { id: string; author: SocialAuthor; body: string; parentId?: string | null; createdAt: string }
 
 export type LinkKind = 'job' | 'github' | 'portfolio' | 'blog' | 'other'
 export type UserLink = {

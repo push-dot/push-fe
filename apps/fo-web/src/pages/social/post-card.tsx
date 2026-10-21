@@ -1,5 +1,7 @@
 import { POST_CATEGORIES, type Post } from '@push/api-client'
 import { Link } from 'react-router-dom'
+import { authorLabel } from './author-label'
+import { EMPLOYER_BADGE } from './constants'
 
 const postedAt = (iso: string) => {
   const date = new Date(iso)
@@ -8,12 +10,11 @@ const postedAt = (iso: string) => {
 
 const PostCard = ({ post }: { post: Post }) => {
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
-  const name = post.author.employer ? post.author.companyName : post.author.displayName
   return (
     <Link to={`/posts/${post.id}`} className="post-card">
       <span className="post-author">
-        <span className="b2 w7">{name}</span>
-        {post.author.employer ? <span className="badge grey">기업</span> : null}
+        <span className="b2 w7">{authorLabel(post.author)}</span>
+        {post.author.employer ? <span className="badge grey">{EMPLOYER_BADGE}</span> : null}
         <span className="c1 t3">{category}</span>
       </span>
       <strong className="b1">{post.title}</strong>
