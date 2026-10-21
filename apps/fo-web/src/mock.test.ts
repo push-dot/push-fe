@@ -768,6 +768,8 @@ describe('mock route coverage', () => {
         const body = await read<{ data: { url: string } }>(response)
         expect(typeof body.data.url).toBe('string')
         expect(body.data.url.length).toBeGreaterThan(0)
+        const restored = await postJson(api('/billing/checkout'), { planId: 'BASIC' })
+        expect(restored.status).toBe(200)
       },
     },
     {
