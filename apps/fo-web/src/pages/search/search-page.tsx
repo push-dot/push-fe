@@ -9,7 +9,7 @@ import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { matchHangul } from '../../shared/lib/hangul-search'
 import { SEARCH_EMPTY, SEARCH_LOGIN_COPY, SEARCH_TABS, TRENDING_SEARCHES, TRENDING_TITLE, type SearchType } from './constants'
-import { clearRecentSearches, readRecentSearches, saveRecentSearch } from './recent-searches'
+import { clearRecentSearches, readRecentSearches, saveRecentSearch } from '../../features/recent-searches'
 import { searchCatalog } from '../../shared/api/operations'
 
 

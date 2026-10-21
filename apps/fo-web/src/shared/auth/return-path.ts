@@ -1,4 +1,5 @@
 import type { Session } from '@push/api-client'
+import { browserSessionStorage } from '../lib/storage'
 import { employerGate } from '../model/access'
 import { sanitizeReturnTo } from '../model/return-to'
 import { AUTH_ENTRY_PATHS, RETURN_TO_KEY } from './constants'
@@ -6,12 +7,13 @@ import { AUTH_ENTRY_PATHS, RETURN_TO_KEY } from './constants'
 const authEntries = new Set<string>(AUTH_ENTRY_PATHS)
 
 export const saveReturnTo = (value: string) => {
-  sessionStorage.setItem(RETURN_TO_KEY, sanitizeReturnTo(value))
+  browserSessionStorage()?.setItem(RETURN_TO_KEY, sanitizeReturnTo(value))
 }
 
 export const takeReturnTo = () => {
-  const stored = sessionStorage.getItem(RETURN_TO_KEY)
-  sessionStorage.removeItem(RETURN_TO_KEY)
+  const storage = browserSessionStorage()
+  const stored = storage?.getItem(RETURN_TO_KEY) ?? null
+  storage?.removeItem(RETURN_TO_KEY)
   return sanitizeReturnTo(stored)
 }
 

@@ -1,4 +1,5 @@
 import type { Session } from '@push/api-client'
+import { browserLocalStorage, browserSessionStorage } from '../lib/storage'
 import { SESSION_STORAGE_KEY } from './constants'
 
 export type StorageLike = {
@@ -21,8 +22,10 @@ const memoryStorage = (): StorageLike => {
 }
 
 const defaultStorage = (): StorageLike => {
-  if (typeof localStorage === 'undefined' || typeof sessionStorage === 'undefined') return memoryStorage()
-  return storageForSession(mockDocument(), { local: localStorage, session: sessionStorage })
+  const local = browserLocalStorage()
+  const session = browserSessionStorage()
+  if (!local || !session) return memoryStorage()
+  return storageForSession(mockDocument(), { local, session })
 }
 
 export const storageForSession = (mock: boolean, available: { local: StorageLike; session: StorageLike }) =>

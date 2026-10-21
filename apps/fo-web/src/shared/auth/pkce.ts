@@ -1,3 +1,4 @@
+import { browserSessionStorage } from '../lib/storage'
 import { PKCE_VERIFIER_KEY } from './constants'
 
 const toBase64Url = (bytes: Uint8Array) => {
@@ -15,11 +16,12 @@ export const createPkce = async () => {
 }
 
 export const savePkceVerifier = (verifier: string) => {
-  sessionStorage.setItem(PKCE_VERIFIER_KEY, verifier)
+  browserSessionStorage()?.setItem(PKCE_VERIFIER_KEY, verifier)
 }
 
 export const takePkceVerifier = () => {
-  const verifier = sessionStorage.getItem(PKCE_VERIFIER_KEY)
-  sessionStorage.removeItem(PKCE_VERIFIER_KEY)
+  const storage = browserSessionStorage()
+  const verifier = storage?.getItem(PKCE_VERIFIER_KEY) ?? null
+  storage?.removeItem(PKCE_VERIFIER_KEY)
   return verifier
 }
