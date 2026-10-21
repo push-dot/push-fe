@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useSession } from '../shared/auth/use-session'
 import { BRAND, NAV } from './constants'
+import { topEndLinks } from './shell-links'
 
 const Shell = () => {
   const session = useSession()
@@ -37,22 +38,23 @@ const Shell = () => {
           ))}
         </nav>
         <div className="top-end">
-          {session ? (
-            <>
-              <NavLink to="/search" className="nav-link" aria-label={NAV.search}>
-                <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M20 20l-3.2-3.2" />
-                </svg>
-              </NavLink>
-              <NavLink to="/notifications" className="nav-link" aria-label={NAV.notifications}>
+          {topEndLinks(Boolean(session)).map((link) => (
+            <NavLink key={link.to} to={link.to} className="nav-link" aria-label={link.label}>
+              {link.to === '/notifications' ? (
                 <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 9a6 6 0 0 1 12 0c0 7 2 7 2 7H4s2 0 2-7" />
                   <path d="M10 19a2 2 0 0 0 4 0" />
                 </svg>
-              </NavLink>
-              <span className="account">{session.user.displayName}</span>
-            </>
+              ) : (
+                <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.2-3.2" />
+                </svg>
+              )}
+            </NavLink>
+          ))}
+          {session ? (
+            <span className="account">{session.user.displayName}</span>
           ) : (
             <NavLink to="/login" className="pill">
               {NAV.login}
