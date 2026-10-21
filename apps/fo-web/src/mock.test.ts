@@ -39,6 +39,32 @@ describe('employer applicant stage mock', () => {
   })
 })
 
+describe('posting list filters', () => {
+  it('keeps dev and design postings when those job categories are selected', async () => {
+    setMockPersona('personal')
+    const dev = (await (await mockFetch('http://localhost/api/v1/postings?category=dev&sort=latest&limit=4')).json()) as {
+      data: { company: string; jobCategory: string }[]
+      page: { total: number }
+    }
+    const design = (await (await mockFetch('http://localhost/api/v1/postings?category=design&sort=latest&limit=4')).json()) as {
+      data: { company: string; jobCategory: string }[]
+      page: { total: number }
+    }
+    const both = (await (await mockFetch('http://localhost/api/v1/postings?category=dev,design&sort=latest&limit=4')).json()) as {
+      data: { jobCategory: string }[]
+      page: { total: number }
+    }
+    expect(dev.page.total).toBeGreaterThan(0)
+    expect(dev.data.every((item) => item.jobCategory === 'dev')).toBe(true)
+    expect(dev.data.some((item) => item.company === '누리클라우드')).toBe(true)
+    expect(design.page.total).toBeGreaterThan(0)
+    expect(design.data.every((item) => item.jobCategory === 'design')).toBe(true)
+    expect(design.data.some((item) => item.company === '하루랩스')).toBe(true)
+    expect(both.page.total).toBe(dev.page.total + design.page.total)
+    expect(new Set(both.data.map((item) => item.jobCategory))).toEqual(new Set(['dev', 'design']))
+  })
+})
+
 describe('posting detail mock', () => {
   it('returns the listing whose id was requested', async () => {
     setMockPersona('personal')
