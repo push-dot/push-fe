@@ -56,6 +56,54 @@ describe('employer comment author', () => {
   })
 })
 
+describe('posting revision', () => {
+  it('rejects a stale expected revision on patch and close', async () => {
+    setMockPersona('employer')
+    const created = await read<{ data: { id: string; revision: number } }>(
+      await postJson('http://localhost/api/v1/postings', {
+        title: '개정 공고',
+        jobCategory: 'hr',
+        careerMin: 1,
+        location: '서울',
+        employmentType: 'full_time',
+        description: '일',
+      }),
+    )
+    const id = created.data.id
+    expect(created.data.revision).toBe(1)
+    const stale = await mockFetch(`http://localhost/api/v1/postings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: '먼저', expectedRevision: 0 }),
+    })
+    expect(stale.status).toBe(409)
+    expect(((await stale.json()) as { error: { code: string; details: { currentRevision: number } } }).error).toMatchObject({
+      code: 'REVISION_CONFLICT',
+      details: { currentRevision: 1 },
+    })
+    const saved = await mockFetch(`http://localhost/api/v1/postings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: '다음', expectedRevision: 1 }),
+    })
+    expect(saved.status).toBe(200)
+    expect(((await saved.json()) as { data: { revision: number; title: string } }).data).toMatchObject({ revision: 2, title: '다음' })
+    const closedStale = await mockFetch(`http://localhost/api/v1/postings/${id}/close`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expectedRevision: 1 }),
+    })
+    expect(closedStale.status).toBe(409)
+    const closed = await mockFetch(`http://localhost/api/v1/postings/${id}/close`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expectedRevision: 2 }),
+    })
+    expect(closed.status).toBe(200)
+    expect(((await closed.json()) as { data: { revision: number; closedAt: string | null } }).data.revision).toBe(3)
+  })
+})
+
 describe('posting list filters', () => {
   it('keeps dev and design postings when those job categories are selected', async () => {
     setMockPersona('personal')

@@ -453,6 +453,11 @@ const applyPostingPatch = (item: CompanyPosting, payload: Record<string, unknown
   item.revision += 1
 }
 
+const revisionConflict = (currentRevision: number) =>
+  json(409, {
+    error: { code: 'REVISION_CONFLICT', message: '공고가 이미 바뀌었어요', details: { currentRevision } },
+  })
+
 const ownedPostingResponse = (id: string) => {
   const owned = companyPostings.find((item) => item.id === id)
   if (!owned) return null
@@ -1278,6 +1283,8 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
     const id = decodeURIComponent(closeMatch[1] ?? '')
     const found = companyPostings.find((item) => item.id === id)
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
+    const payload = await readJson(input, init)
+    if (payload.expectedRevision !== found.revision) return revisionConflict(found.revision)
     found.closedAt = new Date().toISOString()
     found.revision += 1
     syncListing(found)
@@ -1288,7 +1295,9 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
     const id = decodeURIComponent(patchMatch[1] ?? '')
     const found = companyPostings.find((item) => item.id === id)
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
-    applyPostingPatch(found, await readJson(input, init))
+    const payload = await readJson(input, init)
+    if (payload.expectedRevision !== found.revision) return revisionConflict(found.revision)
+    applyPostingPatch(found, payload)
     syncListing(found)
     return json(200, { data: found })
   }
