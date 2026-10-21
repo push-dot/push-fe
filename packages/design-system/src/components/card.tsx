@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { card, cardGrid, cardMeta, cardTitle } from '../styles.css'
+import { card, cardMeta, cardTitle } from '../styles.css'
 
 export type CardProps = {
   title?: string
@@ -26,9 +26,4 @@ const Card = ({ title, meta, children, onClick }: CardProps) => {
   )
 }
 
-const CardGrid = ({ children }: { children: ReactNode }) => (
-  <div className={cardGrid}>{children}</div>
-)
-
-export { Card, CardGrid }
 export default Card

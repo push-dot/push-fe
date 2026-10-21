@@ -1,8 +1,8 @@
 import { Menu } from '@mantine/core'
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
-import type { MenuItemProps } from '@mantine/core'
-import { menuDropdown, menuItem, menuItemDanger } from '../styles.css'
+import type { CSSProperties, ReactNode } from 'react'
+import { menuDropdown } from '../styles.css'
 import { vars } from '../vars.css'
+import { CONTEXT_MENU_OFFSET } from './constants'
 
 export type ContextMenuProps = {
   x: number
@@ -21,14 +21,14 @@ const anchorStyle = (x: number, y: number): CSSProperties => ({
   pointerEvents: 'none',
 })
 
-export const ContextMenu = ({ x, y, onClose, children, opened = true }: ContextMenuProps) => (
+const ContextMenu = ({ x, y, onClose, children, opened = true }: ContextMenuProps) => (
   <Menu
     opened={opened}
     onChange={(next) => {
       if (!next) onClose()
     }}
     position="bottom-start"
-    offset={2}
+    offset={CONTEXT_MENU_OFFSET}
     zIndex={vars.z.overlay}
     classNames={{ dropdown: menuDropdown }}
   >
@@ -39,26 +39,4 @@ export const ContextMenu = ({ x, y, onClose, children, opened = true }: ContextM
   </Menu>
 )
 
-export type ContextMenuItemProps = MenuItemProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'color'> & {
-    icon?: ReactNode
-    danger?: boolean
-  }
-
-export const ContextMenuItem = ({
-  icon,
-  danger,
-  className,
-  children,
-  ...rest
-}: ContextMenuItemProps) => (
-  <Menu.Item
-    leftSection={icon}
-    className={[menuItem, danger ? menuItemDanger : '', className ?? '']
-      .filter(Boolean)
-      .join(' ')}
-    {...rest}
-  >
-    {children}
-  </Menu.Item>
-)
+export default ContextMenu

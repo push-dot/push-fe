@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Skeleton, SkeletonCardGrid, SkeletonRows } from './skeleton'
+import Skeleton from './skeleton'
+import SkeletonCardGrid from './skeleton-card-grid'
+import SkeletonRows from './skeleton-rows'
 
 const meta = {
   title: 'Components/Skeleton',
