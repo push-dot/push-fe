@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, JOB_CATEGORIES, workConditionLines } from '../labels'
+import { REJECTED_BADGE } from '../constants'
+import { absoluteUrl, JOB_CATEGORIES, stageBadge, workConditionLines } from '../labels'
 
 describe('labels', () => {
   it('uses push-be job category keys', () => {
@@ -21,5 +22,11 @@ describe('labels', () => {
     expect(absoluteUrl('/api/v1/uploads/images/a.png', base)).toBe('https://push.example/api/v1/uploads/images/a.png')
     expect(absoluteUrl('https://cdn.example/a.png', base)).toBe('https://cdn.example/a.png')
     expect(absoluteUrl(null, base)).toBeNull()
+  })
+
+  it('maps withdrawn onto the rejected badge until a cancel badge exists', () => {
+    const badge = stageBadge('WITHDRAWN')
+    expect(badge).toBe(stageBadge('REJECTED'))
+    expect(badge).toBe(REJECTED_BADGE)
   })
 })

@@ -13,6 +13,7 @@
   "dependencies": {
     "@push/api-client": "workspace:*",
     "@tanstack/react-query": "^5.103.1",
+    "es-hangul": "^2.4.0",
     "pretendard": "^1.3.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -1,27 +1,44 @@
 import type { Client } from './client'
 import { readEvents } from './sse'
 import { ApiError } from './errors'
+import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AiOptions, AppNotification, Application, BillingStatus, Comment, Conversation, DataEnvelope, LinkKind, ListEnvelope, Message,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
-  ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UserLink,
+  ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  WebNotification,
 } from './types'
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
 export const createApi = (c: Client) => ({
   auth: {
-    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string }) =>
+    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
       unwrap(c.get<DataEnvelope<{ authorizationUrl: string; state: string }>>(`auth/${provider}/start`, {
         query: { ...query, codeChallengeMethod: 'S256' },
       })),
     exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<Session>>('auth/exchange', { body })),
     refresh: (refreshToken: string) => unwrap(c.post<DataEnvelope<Session>>('auth/refresh', { body: { refreshToken } })),
     logout: (refreshToken: string) => c.post<void>('auth/logout', { body: { refreshToken } }),
+    me: () => unwrap(c.get<DataEnvelope<Me>>('auth/me')),
+    emailSignup: async (body: EmailSignupInput) => {
+      await c.raw('POST', 'auth/email/signup', { body })
+    },
+    emailVerify: (token: string) => unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token } })),
+    emailLogin: (email: string, password: string) =>
+      unwrap(c.post<DataEnvelope<Session>>('auth/email/login', { body: { email, password } })),
+    requestPasswordReset: async (email: string) => {
+      await c.raw('POST', 'auth/email/password-reset', { body: { email } })
+    },
+    confirmPasswordReset: (token: string, password: string) =>
+      c.post<void>('auth/email/password-reset/confirm', { body: { token, password } }),
   },
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
+    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
@@ -29,6 +46,26 @@ export const createApi = (c: Client) => ({
     unbookmark: (id: string) => c.delete<void>(`postings/${id}/bookmark`),
     apply: (id: string, documentIds: string[]) =>
       unwrap(c.post<DataEnvelope<Application>>(`postings/${id}/apply`, { body: { documentIds } })),
+    create: (body: CreatePostingInput) => unwrap(c.post<DataEnvelope<PostingDetail>>('postings', { body })),
+    update: (id: string, body: UpdatePostingInput) => unwrap(c.patch<DataEnvelope<PostingDetail>>(`postings/${id}`, { body })),
+    close: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<PostingDetail>>(`postings/${id}/close`, { body: { expectedRevision } })),
+    applicants: (id: string, query?: PageParams & { stage?: ApplicationStage }) =>
+      c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
+    applicant: (postingId: string, applicationId: string) =>
+      unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
+      unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
+    fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),
+  },
+
+  documents: {
+    generate: (id: string, body: GenerateDocumentInput) =>
+      unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
+  },
+
+  jobs: {
+    get: <R = unknown>(id: string) => unwrap(c.get<DataEnvelope<QueueJob<R>>>(`ai/jobs/${id}`)),
   },
 
   search: <T extends 'postings' | 'people' | 'posts'>(q: string, type: T, page: PageParams = {}) =>
@@ -46,7 +83,6 @@ export const createApi = (c: Client) => ({
   },
 
   me: {
-    /** Marks the account for deletion (30-day grace; logging in again restores it). */
     deleteAccount: () => c.delete<void>('me'),
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
@@ -71,6 +107,7 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<UserLink>>('me/links', { body })),
     deleteLink: (id: string) => c.delete<void>(`me/links/${id}`),
     notifications: (p: PageParams = {}) => c.get<ListEnvelope<AppNotification>>('me/notifications', { query: p }),
+    webNotifications: (p: PageParams = {}) => c.get<ListEnvelope<WebNotification>>('me/notifications', { query: p }),
     readNotifications: (ids: string[] | 'all') =>
       c.post<void>('me/notifications/read', { body: ids === 'all' ? { all: true } : { ids } }),
     registerDevice: (token: string, platform: 'ios' | 'android') =>
@@ -79,6 +116,9 @@ export const createApi = (c: Client) => ({
     settings: () => unwrap(c.get<DataEnvelope<Settings>>('me/settings')),
     updateSettings: (patch: Partial<Settings> & { defaultTone?: Tone }) =>
       unwrap(c.patch<DataEnvelope<Settings>>('me/settings', { body: patch })),
+    consents: () => unwrap(c.get<DataEnvelope<Consent>>('me/consents')),
+    updateConsents: (referenceData: boolean) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
   },
 
   posts: {
@@ -98,13 +138,16 @@ export const createApi = (c: Client) => ({
 
   billing: {
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
-    checkout: (planId: 'PRO' | 'ULTRA') => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
+    companyStatus: () => unwrap(c.get<DataEnvelope<CompanyBillingStatus>>('billing')),
+    checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
+    topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
+    portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
+    ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
+    verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
   },
 
-  // Existing push-be APIs.
   sources: {
-    /** push-be requires a `kind` form field next to `file`; it is stored as-is. */
-    upload: (form: FormData) => unwrap(c.post<DataEnvelope<Source>>('sources', { form })),
+    upload: (form: FormData) => unwrap(c.post<DataEnvelope<UploadedSource>>('sources', { form })),
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
   },
@@ -113,18 +156,40 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<Application>>('applications', { query: p }),
   },
   conversations: {
-    list: (p: PageParams = {}) => c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
+    list: (p: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' } = {}) =>
+      c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
     create: (title: string) => unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { title } })),
+    createEmployer: (body: { title: string; postingId?: string; applicationId?: string }) =>
+      unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { ...body, audience: 'EMPLOYER' } })),
+    attach: (id: string, form: FormData) =>
+      unwrap(c.post<DataEnvelope<ConversationAttachment>>(`conversations/${id}/attachments`, { form })),
     rename: (id: string, expectedRevision: number, title: string) =>
       unwrap(c.patch<DataEnvelope<Conversation>>(`conversations/${id}`, { body: { expectedRevision, title } })),
     archive: (id: string, expectedRevision: number) =>
       unwrap(c.post<DataEnvelope<Conversation>>(`conversations/${id}/archive`, { body: { expectedRevision } })),
     messages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<Message>>(`conversations/${id}/messages`, { query: p }),
-    /** Streams a reply. Pass expo/fetch's fetch on React Native so `body` is a ReadableStream. */
+    send: async (
+      id: string,
+      body: {
+        text: string
+        accessMode: AccessMode
+        intent?: ChatIntent
+        applicationId?: string
+      },
+    ) => {
+      await c.raw('POST', `conversations/${id}/messages`, { body })
+    },
     stream: async function* (
       id: string,
-      body: { text: string; accessMode: 'SUGGEST' | 'CONFIRM_ACTIONS'; ai?: AiOptions; context?: { documentId?: string; evidenceIds?: string[] } },
+      body: {
+        text: string
+        accessMode: AccessMode
+        ai?: AiOptions
+        intent?: ChatIntent
+        applicationId?: string
+        context?: { documentId?: string; evidenceIds?: string[] }
+      },
       signal?: AbortSignal,
     ): AsyncGenerator<StreamEvent> {
       const res = await c.raw('POST', `conversations/${id}/messages/stream`, {
@@ -135,6 +200,25 @@ export const createApi = (c: Client) => ({
       if (!res.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
       yield* readEvents<StreamEvent>(res.body, signal)
     },
+    resolveApproval: (id: string, approvalId: string, optionId: string) =>
+      unwrap(c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, { body: { optionId } })),
+    follow: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
+      let seq = after
+      for (;;) {
+        const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
+          query: { after: seq },
+          signal,
+          headers: { Accept: 'text/event-stream' },
+        })
+        if (res.status === 204 || !res.body) return
+        for await (const frame of readEvents<StreamEvent>(res.body, signal)) {
+          const event: StreamEvent = frame
+          if (event.seq !== undefined) seq = event.seq
+          yield event
+          if (TERMINAL_STREAM_EVENTS.includes(event.type)) return
+        }
+      }
+    },
     active: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
         query: { after },
@@ -144,6 +228,22 @@ export const createApi = (c: Client) => ({
       if (res.status === 204 || !res.body) return
       yield* readEvents<StreamEvent>(res.body, signal)
     },
+  },
+
+  companies: {
+    verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
+      unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
+    me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
+    removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
+    transferAdmin: (userId: string) =>
+      c.patch<void>(`companies/me/members/${userId}`, { body: { role: 'ADMIN' } }),
+  },
+
+  calendar: {
+    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
   },
 })
 

@@ -1,6 +1,7 @@
 export { createClient, type Client, type ClientConfig, type RequestOptions } from './client'
 export { createApi, type Api } from './endpoints'
-export { ApiError, type ApiErrorBody } from './errors'
+export { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
+export { isJobSettled, jobQuery } from './jobs'
 export { parseFrame, readEvents } from './sse'
 export * from './labels'
 export type * from './types'

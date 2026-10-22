@@ -7,7 +7,7 @@ export type DesignSystemProviderProps = {
   children: ReactNode
 }
 
-export const DesignSystemProvider = ({
+const DesignSystemProvider = ({
   colorScheme = 'light',
   children,
 }: DesignSystemProviderProps) => (
@@ -15,3 +15,5 @@ export const DesignSystemProvider = ({
     {children}
   </MantineProvider>
 )
+
+export default DesignSystemProvider

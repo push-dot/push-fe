@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Input, Select, Textarea } from './input'
+import Input from './input'
+import Select from './select'
+import Textarea from './textarea'
 
 const meta = {
   title: 'Components/Input',

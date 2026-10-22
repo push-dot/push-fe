@@ -1,7 +1,7 @@
 import type { Preview } from '@storybook/react-vite'
 import '@mantine/core/styles.css'
 import '../src/theme.css'
-import { DesignSystemProvider } from '../src/design-system-provider'
+import DesignSystemProvider from '../src/design-system-provider'
 
 const preview: Preview = {
   globalTypes: {
