@@ -1,8 +1,19 @@
 name: ci
 on:
   pull_request:
-    branches: [develop]
+  push:
+    branches: [develop, main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Checks run on every pull request (feature -> develop and release -> main)
+# and on pushes to develop and main, like push-be.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   check:
     runs-on: ubuntu-latest
