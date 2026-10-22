@@ -1,12 +1,12 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native'
-import type { Source } from '@push/api-client'
+import { isJobSettled, type Source, type UploadedSource } from '@push/api-client'
 import { BottomSheet, Button, Icon, Text, type IconName } from '@/shared/components'
 import { useColors } from '../../../theme'
 import { pickResumeFile } from '../api/files'
-import { useSources, useUpload } from '../api/hooks'
-import { MAX_BYTES } from '../constants'
+import { useIngestJob, useSources, useUpload } from '../api/hooks'
+import { INGEST_TEXT, MAX_BYTES } from '../constants'
 import { useToast } from '../hooks'
 import { fileSize, monthDay } from '../utility'
 import DocMenu from './doc-menu'
@@ -59,6 +59,40 @@ const PickRow = ({
       </View>
       <Icon name="chev" size={18} color="t4" />
     </Pressable>
+  )
+}
+
+const DocRow = ({ doc, onMenu }: { doc: UploadedSource; onMenu: () => void }) => {
+  const job = useIngestJob(doc.jobId).data
+  const reading = !!doc.jobId && (!job || !isJobSettled(job))
+  const failed = job?.status === 'FAILED' || job?.status === 'DEAD'
+  return (
+    <Row label={doc.fileName} onPress={() => router.push(`/docs/${doc.id}`)}>
+      <FileTile name={doc.fileName} reading={reading} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text v="b1" weight="700" numberOfLines={1}>
+          {doc.fileName}
+        </Text>
+        {reading || failed ? (
+          <Text v="c1" color={failed ? 'red' : 't3'}>
+            {failed ? INGEST_TEXT.failed : INGEST_TEXT.reading}
+          </Text>
+        ) : (
+          <Text v="c1" color="t3">
+            {fileSize(doc.size)}
+            {doc.createdAt ? ` · ${monthDay(doc.createdAt)}` : ''}
+          </Text>
+        )}
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="더 보기"
+        onPress={onMenu}
+        style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Icon name="more" size={20} color="t3" />
+      </Pressable>
+    </Row>
   )
 }
 
@@ -186,26 +220,7 @@ const DocsTab = () => {
           </Row>
         ) : null}
         {docs.map((d) => (
-          <Row key={d.id} label={d.fileName} onPress={() => router.push(`/docs/${d.id}`)}>
-            <FileTile name={d.fileName} />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text v="b1" weight="700" numberOfLines={1}>
-                {d.fileName}
-              </Text>
-              <Text v="c1" color="t3">
-                {fileSize(d.size)}
-                {d.createdAt ? ` · ${monthDay(d.createdAt)}` : ''}
-              </Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="더 보기"
-              onPress={() => setMenu(d)}
-              style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Icon name="more" size={20} color="t3" />
-            </Pressable>
-          </Row>
+          <DocRow key={d.id} doc={d} onMenu={() => setMenu(d)} />
         ))}
         <View style={{ paddingTop: 18, paddingHorizontal: 20 }}>
           <Button

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
-import type { Offer, Posting, Profile, Settings } from '@push/api-client'
+import { jobQuery, type Offer, type Posting, type Profile, type Settings } from '@push/api-client'
 import { api } from '../../../shared/infrastructure'
 import type { CalendarEvent, PickedFile } from '../types'
 import { myApi } from './client'
@@ -18,6 +18,8 @@ export const useMyProfile = () => useQuery({ queryKey: ['me', 'profile'], queryF
 
 export const useSources = () =>
   useQuery({ queryKey: ['me', 'sources'], queryFn: () => myApi.sources() })
+
+export const useIngestJob = (jobId: string | undefined) => useQuery(jobQuery(api.jobs, jobId))
 
 type Box = 'received' | 'sent'
 

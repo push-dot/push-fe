@@ -3,7 +3,7 @@ import { Text } from '@/shared/components'
 import { useColors } from '../../../theme'
 import { fileKind } from '../utility'
 
-const FileTile = ({ name, small }: { name: string; small?: boolean }) => {
+const FileTile = ({ name, small, reading }: { name: string; small?: boolean; reading?: boolean }) => {
   const c = useColors()
   const pdf = fileKind(name) === 'PDF'
   return (
@@ -16,6 +16,7 @@ const FileTile = ({ name, small }: { name: string; small?: boolean }) => {
         alignItems: 'center',
         justifyContent: 'flex-end',
         paddingBottom: small ? 4 : 6,
+        opacity: reading ? 0.5 : 1,
       }}
     >
       <Text

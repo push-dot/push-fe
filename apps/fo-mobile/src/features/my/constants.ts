@@ -98,3 +98,5 @@ export const LANGS: { key: Settings['locale']; label: string }[] = [
 ]
 // shortcut: Session has no login provider yet; show it from the session once push-be returns it.
 export const LOGIN_LABEL = 'Google 계정으로 로그인'
+
+export const INGEST_TEXT = { reading: '읽는 중', failed: '읽지 못했어요' } as const

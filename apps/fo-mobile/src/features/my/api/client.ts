@@ -2,6 +2,7 @@ import {
   type DataEnvelope,
   type ListEnvelope,
   type Source,
+  type UploadedSource,
 } from '@push/api-client'
 import { api, http, API_MOCK } from '../../../shared/infrastructure'
 import type { CalendarEvent, PickedFile, ResumeDraft } from '../types'
@@ -12,23 +13,28 @@ const c = http
 
 // shortcut: push-be has no GET sources list. Real mode shows the profile's resume source plus this session's
 // uploads (gone after restart); switch to the list endpoint once push-be ships it.
-const uploaded = new Set<string>()
+// Values are the ingest job ids so the list can show 읽는 중 until the server reads the file.
+const uploaded = new Map<string, string | undefined>()
+const withJob = (s: Source): UploadedSource => ({ ...s, jobId: uploaded.get(s.id) })
 
 export const myApi = {
-  sources: async (): Promise<ListEnvelope<Source>> => {
-    if (API_MOCK) return c.get<ListEnvelope<Source>>('sources')
+  sources: async (): Promise<ListEnvelope<UploadedSource>> => {
+    if (API_MOCK) {
+      const r = await c.get<ListEnvelope<Source>>('sources')
+      return { ...r, data: r.data.map(withJob) }
+    }
     const { resumeSourceId } = await api.me.profile()
-    const ids = [...uploaded]
+    const ids = [...uploaded.keys()]
     if (resumeSourceId && !uploaded.has(resumeSourceId)) ids.push(resumeSourceId)
     const found = await Promise.all(ids.map((id) => api.sources.get(id).catch(() => null)))
-    return { data: found.filter((s): s is Source => !!s), page: { nextCursor: null, hasMore: false } }
+    return { data: found.filter((s): s is Source => !!s).map(withJob), page: { nextCursor: null, hasMore: false } }
   },
   upload: async (file: PickedFile) => {
     const form = new FormData()
     form.append('kind', 'RESUME')
     form.append('file', { uri: file.uri, name: file.name, type: file.mimeType ?? 'application/pdf', size: file.size ?? 0 } as unknown as Blob)
     const s = await api.sources.upload(form)
-    uploaded.add(s.id)
+    uploaded.set(s.id, s.jobId)
     return s
   },
   remove: async (id: string) => {
