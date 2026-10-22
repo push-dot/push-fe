@@ -10,8 +10,7 @@ const upsert = (items: ChatItem[], item: ChatItem) => {
   return next
 }
 
-/** Applies one stream/script event to the transcript. Pure: timestamps come in on the event. */
-export function applyEvent(s: ChatState, e: ChatEvent): ChatState {
+export const applyEvent = (s: ChatState, e: ChatEvent): ChatState => {
   switch (e.type) {
     case 'start':
       return { ...s, runStartedAt: e.at, interrupted: false, approval: null, working: { verbs: ['생각하는 중…'], startedAt: e.at } }
@@ -60,7 +59,6 @@ export function applyEvent(s: ChatState, e: ChatEvent): ChatState {
   }
 }
 
-/** "1분 12초" / "14초" (StatusRow, "N분 N초 동안 작업했어요"). */
 export const formatElapsed = (seconds: number) => {
   const m = Math.floor(seconds / 60)
   const sec = seconds % 60

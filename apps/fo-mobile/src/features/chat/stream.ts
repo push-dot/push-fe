@@ -13,7 +13,7 @@ export const errorText = (code?: string) =>
  * the mock script. The gateway closes long streams early, so a stream that ends without done/error is resumed
  * from the last `seq` via stream/active until a resume brings nothing (204 = run finished).
  */
-export async function* fromStream(
+export const fromStream = async function* (
   first: AsyncIterable<StreamEvent>,
   resume: (after?: number) => AsyncIterable<StreamEvent>,
 ): AsyncGenerator<ChatEvent> {
