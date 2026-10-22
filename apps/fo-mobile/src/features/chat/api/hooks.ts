@@ -8,7 +8,7 @@ import { QUICK_STARTS } from '../quick-starts'
 import type { MentionGroup } from '../mentions'
 import { forget, pickAccessMode, send, usePrefs } from '../store'
 import { chatApi } from './client'
-import { openExternal, pickChatDoc } from './files'
+import { openArtifact, openExternal, pickChatDoc } from './files'
 
 export const useStartChat = () => {
   const qc = useQueryClient()
@@ -89,6 +89,12 @@ export const useChatAccount = (enabled: boolean) =>
 
 export const useRecentConversations = (enabled: boolean) =>
   useQuery({ queryKey: ['conversations', 'recent'], queryFn: () => chatApi.conversations({ limit: 4 }), enabled })
+
+export const useOpenArtifact = () =>
+  useMutation({
+    mutationFn: ({ url, name }: { url: string; name: string }) => openArtifact(url, name),
+    onError: () => Alert.alert('파일을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
+  })
 
 export const useCheckoutUltra = () =>
   useMutation({

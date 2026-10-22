@@ -1,5 +1,8 @@
+import { File, Paths } from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
 import { Linking } from 'react-native'
-import { API_BASE_URL, openBrowser, pickDocument } from '../../../shared/infrastructure'
+import { http, openBrowser, pickDocument } from '../../../shared/infrastructure'
+import { downloadArtifact } from './artifact-download'
 
 export const CHAT_ATTACHMENT_TYPES = [
   'application/pdf',
@@ -18,7 +21,17 @@ export const pickChatAttachment = () =>
 export const pickChatDoc = () =>
   pickDocument({ type: CHAT_DOC_TYPES, copyToCacheDirectory: true })
 
-export const artifactUrl = (path: string) => `${API_BASE_URL}${path}`
+const saveToCache = async (name: string, bytes: Uint8Array) => {
+  const file = new File(Paths.cache, name)
+  file.create({ overwrite: true })
+  await file.write(bytes)
+  return file.uri
+}
+
+export const openArtifact = async (downloadUrl: string, name: string) => {
+  const uri = await downloadArtifact({ get: (path) => http.raw('GET', path), save: saveToCache }, downloadUrl, name)
+  await Sharing.shareAsync(uri, { dialogTitle: name })
+}
 
 export const openExternal = (url: string) => openBrowser(url)
 
