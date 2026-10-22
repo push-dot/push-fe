@@ -25,3 +25,5 @@ export const DEFAULT_RETRY_AFTER_SEC = 5
 export const JOB_POLL_MS = 1500
 
 export const SETTLED_JOB_STATUSES = ['DONE', 'FAILED', 'DEAD', 'CANCELLED'] as const
+
+export const TERMINAL_STREAM_EVENTS: readonly string[] = ['done', 'error', 'cancelled']

@@ -1,6 +1,7 @@
 import type { Client } from './client'
 import { readEvents } from './sse'
 import { ApiError } from './errors'
+import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
@@ -201,6 +202,23 @@ export const createApi = (c: Client) => ({
     },
     resolveApproval: (id: string, approvalId: string, optionId: string) =>
       unwrap(c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, { body: { optionId } })),
+    follow: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
+      let seq = after
+      for (;;) {
+        const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
+          query: { after: seq },
+          signal,
+          headers: { Accept: 'text/event-stream' },
+        })
+        if (res.status === 204 || !res.body) return
+        for await (const frame of readEvents<StreamEvent>(res.body, signal)) {
+          const event: StreamEvent = frame
+          if (event.seq !== undefined) seq = event.seq
+          yield event
+          if (TERMINAL_STREAM_EVENTS.includes(event.type)) return
+        }
+      }
+    },
     active: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
         query: { after },

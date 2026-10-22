@@ -68,6 +68,22 @@ describe('harness endpoints', () => {
     await expect(run()).rejects.toMatchObject({ code: 'BUSINESS_NOT_VERIFIED', status: 403 })
   })
 
+  it('follows the active job from the last seq until a terminal event or 204', async () => {
+    const replies = [
+      new Response('retry: 400\n\n', { status: 200 }),
+      new Response('data: {"type":"token","text":"안","seq":4}\n\n', { status: 200 }),
+      new Response('data: {"type":"token","text":"녕","seq":5}\n\ndata: {"type":"done","operation":null,"seq":6}\n\n', { status: 200 }),
+    ]
+    const { api, hits } = harness(() => replies.shift() ?? new Response(null, { status: 204 }))
+    const out: StreamEvent[] = []
+    for await (const event of api.conversations.follow('c1', 3)) out.push(event)
+    expect(out.map((event) => event.seq)).toEqual([4, 5, 6])
+    expect(hits.map((hit) => new URL(hit.url).search)).toEqual(['?after=3', '?after=3', '?after=4'])
+    const idle = harness(() => new Response(null, { status: 204 }))
+    for await (const _ of idle.api.conversations.follow('c1')) void _
+    expect(idle.hits).toHaveLength(1)
+  })
+
   it('stores the access mode in settings', async () => {
     const { api, hits } = harness(() => json(200, { data: { aiAccessMode: 'ALWAYS_ASK' } }))
     await expect(api.me.updateSettings({ aiAccessMode: 'ALWAYS_ASK' })).resolves.toMatchObject({ aiAccessMode: 'ALWAYS_ASK' })
