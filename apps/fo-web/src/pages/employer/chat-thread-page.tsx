@@ -1,5 +1,5 @@
-import { ApiError, type Message } from '@push/api-client'
-import { useQueryClient } from '@tanstack/react-query'
+import type { AccessMode, Message, StreamEvent } from '@push/api-client'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 
@@ -8,9 +8,31 @@ import { pdfLocked, type ChatIntent } from '../../shared/model/employer-chat'
 import ChatApp from './chat-app'
 import ChatComposer from './chat-composer'
 import ChatLock from './chat-lock'
+import ChatApprovalCard from './chat-approval-card'
 import ChatMessage from './chat-message'
-import { chatGateFrom, chatRouteState, conversationsAttach, conversationsSend, conversationsStream, type ChatBlock } from '../../features/employer-chat'
+import ChatToolRow from './chat-tool-row'
 import {
+  answerApproval,
+  applyTurnEvent,
+  approvalFailureFrom,
+  chatGateFrom,
+  chatRouteState,
+  chatTurnDeps,
+  conversationsAttach,
+  conversationsSend,
+  DEFAULT_ACCESS_MODE,
+  EMPTY_TURN,
+  runTurn,
+  type ApprovalFailure,
+  type ChatBlock,
+  type ChatTurn,
+} from '../../features/employer-chat'
+import { meUpdateSettings } from '../../features/update-settings'
+import {
+  APPROVAL_FAILURE,
+  AWAITING_APPROVAL,
+  CHAT_BUSY,
+  CHAT_CREDITS,
   CHAT_FAILED,
   CHAT_LOADING,
   CHAT_TITLE,
@@ -22,6 +44,7 @@ import { useEmployerApplicants } from '../../entities/application'
 import { useEmployerPlan } from '../../entities/company'
 import { useEmployerConversations, useEmployerMessages } from '../../entities/conversation'
 import { useMyPostings } from '../../entities/posting'
+import { useSettings } from '../../entities/session'
 
 
 const bubble = (conversationId: string, role: Message['role'], text: string): Message => ({
@@ -45,8 +68,17 @@ const ChatThreadPage = () => {
   const [applicationId, setApplicationId] = useState('')
   const [gate, setGate] = useState<ChatBlock | null>(null)
   const [pending, setPending] = useState<string | null>(null)
-  const [streaming, setStreaming] = useState<string | null>(null)
+  const [turn, setTurn] = useState<ChatTurn | null>(null)
+  const [picked, setPicked] = useState<Record<string, string>>({})
+  const [answerFailure, setAnswerFailure] = useState<ApprovalFailure | null>(null)
   const [sending, setSending] = useState(false)
+  const settings = useSettings()
+  const [chosenMode, setChosenMode] = useState<AccessMode | null>(null)
+  const accessMode = chosenMode ?? settings.data?.aiAccessMode ?? DEFAULT_ACCESS_MODE
+  const saveMode = useMutation({
+    mutationFn: (mode: AccessMode) => meUpdateSettings({ aiAccessMode: mode }),
+    onSuccess: (next) => queryClient.setQueryData(['settings'], next),
+  })
   useEffect(() => {
     setIntent(routed.intent)
   }, [id, routed.intent])
@@ -67,15 +99,38 @@ const ChatThreadPage = () => {
   const reference = Boolean(routed.postingId) || title === REFERENCE_POSTING
   const rows = messages.data?.data ?? []
   const showPending = pending !== null && !rows.some((item) => item.role === 'USER' && item.text === pending)
-  const showStream = streaming !== null && !rows.some((item) => item.role === 'ASSISTANT' && item.text === streaming)
+  const streamed = turn?.text.trim() ?? ''
+  const showStream = streamed !== '' && !rows.some((item) => item.role === 'ASSISTANT' && item.text.trim() === streamed)
+  const waiting = turn?.awaiting === 'approval' && turn.items.some((item) => item.kind === 'approval' && !picked[item.id])
   const pdfDisabled = !settled || pdfLocked(plan)
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['employer-messages', id] })
   const payload = (value: string) => ({
     text: value,
-    accessMode: 'AUTO' as const,
+    accessMode,
     intent,
     applicationId: applicationId || undefined,
   })
+  const onEvent = (event: StreamEvent) => setTurn((current) => applyTurnEvent(current ?? EMPTY_TURN, event))
+  const pickMode = (mode: AccessMode) => {
+    setChosenMode(mode)
+    saveMode.mutate(mode)
+  }
+  const answer = async (approvalId: string, optionId: string) => {
+    if (sending || !id) return
+    setSending(true)
+    setAnswerFailure(null)
+    setPicked((current) => ({ ...current, [approvalId]: optionId }))
+    try {
+      await answerApproval(chatTurnDeps, id, approvalId, optionId, onEvent)
+    } catch (error) {
+      const failure = approvalFailureFrom(error)
+      setAnswerFailure(failure)
+      if (failure === 'failed') setPicked(({ [approvalId]: _, ...rest }) => rest)
+    } finally {
+      setSending(false)
+      await refresh()
+    }
+  }
   const attach = async (file: File) => {
     if (!id || pdfDisabled) return
     const form = new FormData()
@@ -100,37 +155,17 @@ const ChatThreadPage = () => {
         await refresh()
         return
       }
-      let next = ''
-      setStreaming('')
-      try {
-        for await (const chunk of conversationsStream(id, { text: value, accessMode: 'AUTO' })) {
-          if (chunk.type === 'token') {
-            next += chunk.text
-            setStreaming(next)
-          }
-          if (chunk.type === 'error') {
-            const details = chunk.error.details
-            throw new ApiError(
-              chunk.error.message,
-              chunk.error.code,
-              0,
-              details && typeof details === 'object' && !Array.isArray(details) ? (details as Record<string, unknown>) : null,
-            )
-          }
-        }
-        await refresh()
-      } catch {
-        setStreaming(null)
-        await conversationsSend(id, payload(value))
-        await refresh()
-      }
+      setTurn(EMPTY_TURN)
+      setPicked({})
+      setAnswerFailure(null)
+      await runTurn(chatTurnDeps, id, payload(value), onEvent)
+      await refresh()
     } catch (error) {
       setGate(chatGateFrom(error))
       setText(value)
     } finally {
       setSending(false)
       setPending(null)
-      setStreaming(null)
     }
   }
   const referencePosting = routed.postingId ? postings.data?.data.find((item) => item.id === routed.postingId) : undefined
@@ -163,9 +198,27 @@ const ChatThreadPage = () => {
             <ChatMessage key={message.id} message={message} />
           ))}
           {showPending && pending ? <ChatMessage key="pending" message={bubble(id, 'USER', pending)} /> : null}
-          {showStream && streaming !== null ? <ChatMessage key="streaming" message={bubble(id, 'ASSISTANT', streaming)} /> : null}
+          {(turn?.items ?? []).map((item) =>
+            item.kind === 'tool' ? (
+              <ChatToolRow key={item.key} tool={item} />
+            ) : (
+              <ChatApprovalCard key={item.id} approval={item} picked={picked[item.id]} busy={sending} onPick={(optionId) => void answer(item.id, optionId)} />
+            ),
+          )}
+          {showStream ? <ChatMessage key="streaming" message={bubble(id, 'ASSISTANT', streamed)} /> : null}
         </ul>
       )}
+      {waiting ? <p className="b2 t3 stack">{AWAITING_APPROVAL}</p> : null}
+      {answerFailure ? (
+        <p className="b1 stack" role="alert">
+          {APPROVAL_FAILURE[answerFailure]}
+        </p>
+      ) : null}
+      {gate === 'credits' || gate === 'busy' ? (
+        <p className="b1 stack" role="alert">
+          {gate === 'credits' ? CHAT_CREDITS : CHAT_BUSY}
+        </p>
+      ) : null}
       {gate === 'failed' ? (
         <p className="b1 stack" role="alert">
           {CHAT_FAILED}
@@ -179,6 +232,8 @@ const ChatThreadPage = () => {
         applicantName={applicantName}
         pdfDisabled={pdfDisabled}
         showPdfNote={gate === 'pdf' || (settled && pdfLocked(plan))}
+        accessMode={accessMode}
+        onAccessMode={pickMode}
         onText={setText}
         onApplication={setApplicationId}
         onFile={(file) => void attach(file)}

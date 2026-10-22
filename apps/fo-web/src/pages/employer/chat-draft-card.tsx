@@ -5,7 +5,7 @@ import { textFromConditions } from '../../entities/posting'
 
 const lines = (value: string) => value.split('\n').map((line) => line.trim()).filter(Boolean)
 
-const ChatDraftCard = ({ draft }: { draft: PostingDraft }) => {
+const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: string }) => {
   const groups = [
     ['하는 일', lines(draft.description)],
     ['자격 요건', draft.requirements],
@@ -30,7 +30,7 @@ const ChatDraftCard = ({ draft }: { draft: PostingDraft }) => {
           </div>
         ),
       )}
-      <Link className="btn pri" to="/employer/postings/new" state={draft}>
+      <Link className="btn pri" to={postingId ? `/employer/postings/${postingId}/edit` : '/employer/postings/new'} state={postingId ? undefined : draft}>
         {DRAFT_POSTING}
       </Link>
     </div>

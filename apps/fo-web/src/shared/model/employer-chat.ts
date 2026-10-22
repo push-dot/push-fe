@@ -37,22 +37,26 @@ const isStringArray = (value: unknown): value is string[] =>
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
+export const toPostingDraft = (value: unknown): PostingDraft | null => {
+  if (!isRecord(value)) return null
+  const preferred = value.preferred ?? []
+  if (typeof value.title !== 'string' || typeof value.description !== 'string') return null
+  if (!isStringArray(value.requirements) || !isStringArray(preferred)) return null
+  if (!isRecord(value.workConditions)) return null
+  return {
+    title: value.title,
+    description: value.description,
+    requirements: value.requirements,
+    preferred,
+    workConditions: value.workConditions,
+  }
+}
+
 export const parsePostingDraft = (text: string): PostingDraft | null => {
   const body = text.match(FENCE)?.[1]
   if (!body) return null
   try {
-    const parsed = JSON.parse(body) as unknown
-    if (!isRecord(parsed)) return null
-    if (typeof parsed.title !== 'string' || typeof parsed.description !== 'string') return null
-    if (!isStringArray(parsed.requirements) || !isStringArray(parsed.preferred)) return null
-    if (!isRecord(parsed.workConditions)) return null
-    return {
-      title: parsed.title,
-      description: parsed.description,
-      requirements: parsed.requirements,
-      preferred: parsed.preferred,
-      workConditions: parsed.workConditions,
-    }
+    return toPostingDraft(JSON.parse(body))
   } catch {
     return null
   }

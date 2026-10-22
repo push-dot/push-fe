@@ -1,3 +1,5 @@
+import type { AccessMode, ToolRunState } from '@push/api-client'
+import type { ApprovalFailure } from '../../features/employer-chat'
 import { creditCount, creditText } from '../../entities/billing'
 
 export const BNO_DIGITS = 10
@@ -124,6 +126,21 @@ export const COMPOSER_PLACEHOLDER = '메시지를 입력하세요'
 export const ATTACH_LABEL = '공고·지원자'
 export const CHAT_USER = '나'
 export const CHAT_ASSISTANT = '기업 AI'
+export const ACCESS_MODE_GROUP = 'AI 실행 방식'
+export const ACCESS_MODES = [
+  { value: 'ALWAYS_ASK', label: '항상 묻기', description: '바꾸기 전에 매번 물어봐요' },
+  { value: 'AUTO', label: '자동', description: '나만 바뀌는 일은 바로 하고, 다른 사람에게 닿는 일은 물어봐요' },
+  { value: 'BYPASS', label: '바로 실행', description: '묻지 않고 실행해요' },
+] as const satisfies readonly { value: AccessMode; label: string; description: string }[]
+export const TOOL_STATE_LABEL: Record<ToolRunState, string> = { run: '진행 중', wait: '확인 필요', ok: '완료', err: '실패' }
+export const AWAITING_APPROVAL = '확인을 기다리고 있어요'
+export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
+  resolved: '이미 답한 요청이에요',
+  expired: '확인 시간이 지났어요. 다시 요청해 주세요.',
+  failed: '답을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
+}
+export const CHAT_CREDITS = '크레딧이 모자라요. 충전하고 다시 보내 주세요.'
+export const CHAT_BUSY = '지금 요청이 많아요. 잠시 후 다시 보내 주세요.'
 
 export const PLANS_TITLE = '기업 요금제'
 export const PLANS_LOADING = '요금제를 불러오고 있어요'

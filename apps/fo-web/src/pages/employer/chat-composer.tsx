@@ -1,4 +1,6 @@
+import type { AccessMode } from '@push/api-client'
 import type { FormEvent } from 'react'
+import ChatModePicker from './chat-mode-picker'
 import { APPLICANT_NONE, ATTACH_LABEL, COMPOSER_LABEL, COMPOSER_PLACEHOLDER, PDF_ATTACH, PDF_LOCK, SEND_MESSAGE } from './constants'
 
 type Person = { applicationId: string; name: string }
@@ -11,6 +13,8 @@ type ChatComposerProps = {
   applicantName: string | null
   pdfDisabled: boolean
   showPdfNote: boolean
+  accessMode: AccessMode
+  onAccessMode: (mode: AccessMode) => void
   onText: (value: string) => void
   onApplication: (value: string) => void
   onFile: (file: File) => void
@@ -25,6 +29,8 @@ const ChatComposer = ({
   applicantName,
   pdfDisabled,
   showPdfNote,
+  accessMode,
+  onAccessMode,
   onText,
   onApplication,
   onFile,
@@ -32,6 +38,7 @@ const ChatComposer = ({
 }: ChatComposerProps) => (
   <form className="chat-compose" onSubmit={onSubmit}>
     <textarea rows={2} aria-label={COMPOSER_LABEL} placeholder={COMPOSER_PLACEHOLDER} value={text} onChange={(event) => onText(event.target.value)} />
+    <ChatModePicker value={accessMode} onChange={onAccessMode} />
     <div className="chat-compose-row">
       <label>
         <span className="c1 t3">{ATTACH_LABEL}</span>

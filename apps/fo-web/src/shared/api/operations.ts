@@ -55,6 +55,11 @@ export const conversationsSend = (...args: Parameters<Api['conversations']['send
 
 export const conversationsStream = (...args: Parameters<Api['conversations']['stream']>) => api.conversations.stream(...args)
 
+export const conversationsFollow = (...args: Parameters<Api['conversations']['follow']>) => api.conversations.follow(...args)
+
+export const conversationsResolveApproval = (...args: Parameters<Api['conversations']['resolveApproval']>) =>
+  api.conversations.resolveApproval(...args)
+
 export const meAcceptOffer = (...args: Parameters<Api['me']['acceptOffer']>) => api.me.acceptOffer(...args)
 
 export const meAddLink = (...args: Parameters<Api['me']['addLink']>) => api.me.addLink(...args)
