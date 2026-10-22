@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Input, Select } from './input'
 import Button from './button'
-import { Form, FormRow, FormSection } from './form'
+import Form from './form'
+import FormRow from './form-row'
+import FormSection from './form-section'
+import Input from './input'
+import Select from './select'
 
 const meta = {
   title: 'Components/Form',

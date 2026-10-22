@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import StatusChip from './status-chip'
-import { DataList, DataListRow } from './data-list'
+import DataList from './data-list'
+import DataListRow from './data-list-row'
 
 const meta = {
   title: 'Components/DataList',

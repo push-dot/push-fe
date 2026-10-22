@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { ContextMenu, ContextMenuItem } from './context-menu'
+import ContextMenu from './context-menu'
+import ContextMenuItem from './context-menu-item'
 
 const meta = {
   title: 'Components/ContextMenu',

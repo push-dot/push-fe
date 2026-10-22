@@ -1,5 +1,3 @@
-// Shapes follow what push-be actually serves (core-api routes/recruiting.ts, ai routers).
-
 export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: number }
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
@@ -29,18 +27,19 @@ export type Posting = {
   applied: boolean
   sourceUrl: string | null
   createdAt: string
+  revision?: number
+  closedAt?: string | null
 }
 
 export type PostingDetail = Posting & {
   description: string
   requirements: string[]
-  /** Free-form object (e.g. { 근무: '주 5일' }); render with workConditionLines. */
   workConditions: Record<string, unknown>
+  preferred?: string[]
 }
 
 export type PostingFilters = PageParams & {
   q?: string
-  /** latest (default) · deadline (마감 7일 이내, 임박순) · popular (이번 주 많이 본). push-be ignores it today (always latest). */
   sort?: 'latest' | 'deadline' | 'popular'
   category?: JobCategory[]
   skills?: string[]
@@ -56,7 +55,6 @@ export type Profile = {
   displayName: string
   avatarUrl: string | null
   headline: string
-  /** null until the user fills the profile. careerStatus is also null when hidden by careerStatusVisibility. */
   jobCategory: JobCategory | null
   tenureYears: number | null
   careerStatus: CareerStatus | null
@@ -74,16 +72,15 @@ export type Profile = {
 export type ProfileFilters = PageParams & {
   q?: string
   category?: JobCategory[]
-  /** push-be takes one tenure bucket and one status (no comma lists). */
   tenure?: Tenure
   status?: CareerStatus
   explore?: 'recommended' | 'offers'
 }
 
 export type UserRef = { id: string; displayName: string; avatarUrl?: string | null }
+export type SocialAuthor = UserRef & { employer?: boolean; companyName?: string | null }
 
 export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
-/** Offers embed a posting stub; fetch postings/:id for the rest. */
 export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'>
 export type Offer = {
   id: string
@@ -99,7 +96,7 @@ export type OfferMessage = { id: string; offerId: string; sender: UserRef; body:
 
 export type Post = {
   id: string
-  author: UserRef
+  author: SocialAuthor
   category: PostCategory
   title: string
   body: string
@@ -108,8 +105,7 @@ export type Post = {
   viewCount: number
   createdAt: string
 }
-// shortcut: push-be has no comment threads (parentId is dropped, replies come back as top-level); keep until it adds them.
-export type Comment = { id: string; author: UserRef; body: string; parentId?: string | null; createdAt: string }
+export type Comment = { id: string; author: SocialAuthor; body: string; parentId?: string | null; createdAt: string }
 
 export type LinkKind = 'job' | 'github' | 'portfolio' | 'blog' | 'other'
 export type UserLink = {
@@ -134,25 +130,31 @@ export type AppNotification = {
   createdAt: string
 }
 
+export type WebNotificationType = NotificationType | 'APPLICATION_STAGE'
+export type WebNotification = Omit<AppNotification, 'type' | 'target'> & {
+  type: WebNotificationType
+  target: AppNotification['target'] | { kind: 'activity'; id: string }
+}
+
 export type Settings = {
   notifyDeadline: boolean
   notifyOffer: boolean
   notifyComment: boolean
   notifyAiDone: boolean
+  notifyApplicationStage?: boolean
   locale: 'ko' | 'en'
   profilePublic: boolean
   careerStatusVisibility: 'everyone' | 'followers' | 'private'
   hideFromCurrentCompany: boolean
   contactVisibility: 'everyone' | 'followers' | 'accepted' | 'private'
   defaultTone: Tone
-  /** null = unlimited (ULTRA only). */
   chatRetentionDays: number | null
   allowAiReadMyFiles: boolean
+  aiAccessMode: AccessMode
 }
 
-// Existing APIs (implemented in push-be).
-/** createdAt is missing on the upload response, present on GET sources/:id. */
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
+export type UploadedSource = Source & { jobId?: string }
 
 export type ApplicationStage =
   | 'DISCOVERED' | 'PREPARING' | 'READY' | 'APPLIED' | 'SCREENING'
@@ -166,6 +168,7 @@ export type Application = {
   stage: ApplicationStage
   appliedAt: string | null
   createdAt: string
+  fitScore?: number | null
 }
 
 export type Conversation = {
@@ -195,11 +198,59 @@ export type AiOptions = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'
 }
 
-export type StreamEvent =
-  | { type: 'token'; text: string; seq?: number }
-  | { type: 'status'; text: string; seq?: number }
-  | { type: 'done'; operation: unknown; seq?: number }
-  | { type: 'error'; error: { code: string; message: string; details?: unknown }; seq?: number }
+export type AccessMode = 'ALWAYS_ASK' | 'AUTO' | 'BYPASS'
+export type ChatIntent = 'posting' | 'review' | 'interview' | 'general'
+export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
+export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
+export type StreamOption = { id: string; label: string }
+export type ApprovalKind = 'TOOL_ACTION' | 'DOCUMENT_EDIT'
+
+export type StreamEvent = (
+  | { type: 'token'; text: string }
+  | { type: 'status'; text: string }
+  | { type: 'done'; operation: unknown; awaiting?: 'approval' | 'choice' }
+  | { type: 'error'; error: { code: string; message: string; details?: unknown } }
+  | { type: 'cancelled' }
+  | { type: 'tool'; name: string; state: ToolRunState; summary: string; tier?: ToolTier; result?: Record<string, unknown> }
+  | {
+      type: 'approval'
+      id: string
+      kind: ApprovalKind
+      title: string
+      options: StreamOption[]
+      summary?: string
+      toolName?: string
+      args?: Record<string, unknown>
+      documentId?: string
+    }
+  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean }
+  | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
+  | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
+  | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
+  | { type: 'fit'; score: number; parts: { techStack: number; experienceLink: number; keyword: number }; topGap: string }
+) & { seq?: number }
+
+export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; jobId?: string }
+
+export type QueueJobStatus = 'QUEUED' | 'RUNNING' | 'RETRY' | 'DONE' | 'FAILED' | 'DEAD' | 'CANCELLED'
+export type QueueJob<R = unknown> = {
+  id: string
+  type: string
+  status: QueueJobStatus
+  progress: unknown
+  result: R | null
+  error: { code?: string; message?: string; details?: unknown } | null
+  createdAt: string
+  updatedAt: string
+}
+export type JobAccepted = { jobId: string }
+export type GenerateDocumentInput = { expectedRevision: number; evidenceIds?: string[] }
+
+export type AccountType = 'PERSONAL' | 'EMPLOYER'
+export type CompanyRole = 'ADMIN' | 'MEMBER'
+export type EmployerPlan = 'BASIC' | 'PRO' | 'ULTRA'
+export type BillingAudience = 'PERSONAL' | 'EMPLOYER'
+export type BillingSource = 'STRIPE' | 'APP_STORE' | 'GOOGLE_PLAY'
 
 export type BillingStatus = {
   subscriptionStatus: string
@@ -207,11 +258,126 @@ export type BillingStatus = {
   periodEndsAt: string | null
   balanceMicroCredits: number
   reservedMicroCredits: number
+  audience?: BillingAudience
+  source?: BillingSource
+}
+
+export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
+  plan: 'BASIC' | 'PRO' | 'ULTRA' | null
+  audience?: BillingAudience
 }
 
 export type Session = {
   accessToken: string
   refreshToken: string
   expiresIn: number
-  user: { id: string; displayName: string; locale: string }
+  user: {
+    id: string
+    displayName: string
+    locale: string
+    accountType?: AccountType
+    companyId?: string | null
+    companyRole?: CompanyRole | null
+  }
 }
+
+export type Me = {
+  id: string
+  displayName: string
+  locale: string
+  createdAt: string
+  accountType: AccountType
+  companyId: string | null
+  companyRole: CompanyRole | null
+}
+
+export type Company = {
+  id: string
+  bNo: string
+  name: string
+  plan: EmployerPlan | null
+  verifiedAt: string
+  role: CompanyRole
+  seats: { used: number; limit: number }
+}
+
+export type CompanyMember = { userId: string; email: string; role: CompanyRole; joinedAt: string }
+
+export type EmployerStage = 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
+
+export type ApplicantSummary = {
+  applicationId: string
+  applicant: { displayName: string; headline: string | null }
+  stage: ApplicationStage
+  appliedAt: string
+}
+
+export type ApplicantDetail = {
+  application: Application
+  documents: { id: string; title: string; content: string }[]
+}
+
+export type Consent = { referenceData: boolean; updatedAt: string | null }
+
+export type CreatePostingInput = {
+  title: string
+  jobCategory: JobCategory
+  careerMin: number
+  careerMax?: number | null
+  location: string
+  employmentType: EmploymentType
+  description: string
+  skills?: string[]
+  imageKey?: string
+  deadline?: string | null
+  requirements?: string[]
+  preferred?: string[]
+  workConditions?: Record<string, unknown>
+}
+
+export type UpdatePostingInput = Partial<CreatePostingInput> & { expectedRevision: number }
+
+export type LedgerEntry = {
+  type: 'PURCHASE' | 'REFUND'
+  amountMicroCredits: number
+  balanceAfter: number
+  createdAt: string
+}
+
+export type EmailSignupInput = {
+  email: string
+  password: string
+  accountType: AccountType
+  displayName: string
+  consentReference?: boolean
+}
+
+export type VerifyIapInput = {
+  platform: 'APP_STORE' | 'GOOGLE_PLAY'
+  productId: string
+  signedTransaction?: string
+  purchaseToken?: string
+}
+
+export type VerifyIapResult = {
+  plan: BillingStatus['plan']
+  periodEndsAt: string | null
+}
+
+export type CalendarEvent = {
+  id: string
+  revision: number
+  applicationId: string | null
+  type: 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'CUSTOM'
+  title: string
+  startsAt: string
+  endsAt: string
+  timeZone: string
+  source: 'LOCAL' | 'GOOGLE'
+  externalId: string | null
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ConversationAttachment = { id: string }

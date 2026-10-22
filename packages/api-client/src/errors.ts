@@ -18,3 +18,13 @@ export class ApiError extends Error {
     this.details = details
   }
 }
+
+export class QueueBusyError extends ApiError {
+  readonly retryAfterSec: number
+
+  constructor(message: string, retryAfterSec: number, details?: Record<string, unknown> | null) {
+    super(message, 'QUEUE_BUSY', 429, details)
+    this.name = 'QueueBusyError'
+    this.retryAfterSec = retryAfterSec
+  }
+}
