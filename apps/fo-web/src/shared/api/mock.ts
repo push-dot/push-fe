@@ -704,6 +704,7 @@ let settings: Settings = {
   defaultTone: 'as_is',
   chatRetentionDays: null,
   allowAiReadMyFiles: false,
+  aiAccessMode: 'AUTO',
 }
 
 let consent: Consent = { referenceData: false, updatedAt: null }

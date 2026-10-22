@@ -72,7 +72,7 @@ const ChatThreadPage = () => {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['employer-messages', id] })
   const payload = (value: string) => ({
     text: value,
-    accessMode: 'SUGGEST' as const,
+    accessMode: 'AUTO' as const,
     intent,
     applicationId: applicationId || undefined,
   })
@@ -103,7 +103,7 @@ const ChatThreadPage = () => {
       let next = ''
       setStreaming('')
       try {
-        for await (const chunk of conversationsStream(id, { text: value, accessMode: 'SUGGEST' })) {
+        for await (const chunk of conversationsStream(id, { text: value, accessMode: 'AUTO' })) {
           if (chunk.type === 'token') {
             next += chunk.text
             setStreaming(next)

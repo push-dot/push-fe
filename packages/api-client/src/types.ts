@@ -150,9 +150,11 @@ export type Settings = {
   defaultTone: Tone
   chatRetentionDays: number | null
   allowAiReadMyFiles: boolean
+  aiAccessMode: AccessMode
 }
 
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
+export type UploadedSource = Source & { jobId?: string }
 
 export type ApplicationStage =
   | 'DISCOVERED' | 'PREPARING' | 'READY' | 'APPLIED' | 'SCREENING'
@@ -196,11 +198,53 @@ export type AiOptions = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'
 }
 
-export type StreamEvent =
-  | { type: 'token'; text: string; seq?: number }
-  | { type: 'status'; text: string; seq?: number }
-  | { type: 'done'; operation: unknown; seq?: number }
-  | { type: 'error'; error: { code: string; message: string; details?: unknown }; seq?: number }
+export type AccessMode = 'ALWAYS_ASK' | 'AUTO' | 'BYPASS'
+export type ChatIntent = 'posting' | 'review' | 'interview' | 'general'
+export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
+export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
+export type StreamOption = { id: string; label: string }
+export type ApprovalKind = 'TOOL_ACTION' | 'DOCUMENT_EDIT'
+
+export type StreamEvent = (
+  | { type: 'token'; text: string }
+  | { type: 'status'; text: string }
+  | { type: 'done'; operation: unknown; awaiting?: 'approval' | 'choice' }
+  | { type: 'error'; error: { code: string; message: string; details?: unknown } }
+  | { type: 'cancelled' }
+  | { type: 'tool'; name: string; state: ToolRunState; summary: string; tier?: ToolTier; result?: Record<string, unknown> }
+  | {
+      type: 'approval'
+      id: string
+      kind: ApprovalKind
+      title: string
+      options: StreamOption[]
+      summary?: string
+      toolName?: string
+      args?: Record<string, unknown>
+      documentId?: string
+    }
+  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean }
+  | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
+  | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
+  | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
+  | { type: 'fit'; score: number; parts: { techStack: number; experienceLink: number; keyword: number }; topGap: string }
+) & { seq?: number }
+
+export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; jobId?: string }
+
+export type QueueJobStatus = 'QUEUED' | 'RUNNING' | 'RETRY' | 'DONE' | 'FAILED' | 'DEAD' | 'CANCELLED'
+export type QueueJob<R = unknown> = {
+  id: string
+  type: string
+  status: QueueJobStatus
+  progress: unknown
+  result: R | null
+  error: { code?: string; message?: string; details?: unknown } | null
+  createdAt: string
+  updatedAt: string
+}
+export type JobAccepted = { jobId: string }
+export type GenerateDocumentInput = { expectedRevision: number; evidenceIds?: string[] }
 
 export type AccountType = 'PERSONAL' | 'EMPLOYER'
 export type CompanyRole = 'ADMIN' | 'MEMBER'

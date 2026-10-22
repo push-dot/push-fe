@@ -2,7 +2,7 @@ import type { Client } from './client'
 import { readEvents } from './sse'
 import { ApiError } from './errors'
 import type {
-  AccountType, AiOptions, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
   Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
@@ -55,6 +55,16 @@ export const createApi = (c: Client) => ({
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
+    fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),
+  },
+
+  documents: {
+    generate: (id: string, body: GenerateDocumentInput) =>
+      unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
+  },
+
+  jobs: {
+    get: <R = unknown>(id: string) => unwrap(c.get<DataEnvelope<QueueJob<R>>>(`ai/jobs/${id}`)),
   },
 
   search: <T extends 'postings' | 'people' | 'posts'>(q: string, type: T, page: PageParams = {}) =>
@@ -136,7 +146,7 @@ export const createApi = (c: Client) => ({
   },
 
   sources: {
-    upload: (form: FormData) => unwrap(c.post<DataEnvelope<Source>>('sources', { form })),
+    upload: (form: FormData) => unwrap(c.post<DataEnvelope<UploadedSource>>('sources', { form })),
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
   },
@@ -162,8 +172,8 @@ export const createApi = (c: Client) => ({
       id: string,
       body: {
         text: string
-        accessMode: 'SUGGEST' | 'CONFIRM_ACTIONS'
-        intent?: 'posting' | 'review' | 'interview' | 'general'
+        accessMode: AccessMode
+        intent?: ChatIntent
         applicationId?: string
       },
     ) => {
@@ -171,7 +181,14 @@ export const createApi = (c: Client) => ({
     },
     stream: async function* (
       id: string,
-      body: { text: string; accessMode: 'SUGGEST' | 'CONFIRM_ACTIONS'; ai?: AiOptions; context?: { documentId?: string; evidenceIds?: string[] } },
+      body: {
+        text: string
+        accessMode: AccessMode
+        ai?: AiOptions
+        intent?: ChatIntent
+        applicationId?: string
+        context?: { documentId?: string; evidenceIds?: string[] }
+      },
       signal?: AbortSignal,
     ): AsyncGenerator<StreamEvent> {
       const res = await c.raw('POST', `conversations/${id}/messages/stream`, {
@@ -182,6 +199,8 @@ export const createApi = (c: Client) => ({
       if (!res.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
       yield* readEvents<StreamEvent>(res.body, signal)
     },
+    resolveApproval: (id: string, approvalId: string, optionId: string) =>
+      unwrap(c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, { body: { optionId } })),
     active: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
         query: { after },

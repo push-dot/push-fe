@@ -17,3 +17,11 @@ export const REQUEST_TIMEOUT_DISABLED = false
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key'
 
 export const FRAME_SEPARATOR = /\r?\n\r?\n/
+
+export const QUEUE_BUSY = 'QUEUE_BUSY'
+
+export const DEFAULT_RETRY_AFTER_SEC = 5
+
+export const JOB_POLL_MS = 1500
+
+export const SETTLED_JOB_STATUSES = ['DONE', 'FAILED', 'DEAD', 'CANCELLED'] as const

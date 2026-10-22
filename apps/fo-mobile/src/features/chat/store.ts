@@ -38,7 +38,7 @@ const scripted = async function* (input: RunInput, signal: AbortSignal): AsyncGe
 
 const streamed = (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> => {
   const id = input.conversationId
-  const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('CONFIRM_ACTIONS' as const) : ('SUGGEST' as const) }
+  const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('ALWAYS_ASK' as const) : ('AUTO' as const) }
   return fromStream(api.conversations.stream(id, body, signal), (after) => api.conversations.active(id, after, signal))
 }
 

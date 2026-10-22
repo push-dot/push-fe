@@ -1,12 +1,14 @@
 import ky, { HTTPError, type KyInstance } from 'ky'
 import {
+  DEFAULT_RETRY_AFTER_SEC,
   HTTP_UNAUTHORIZED,
+  QUEUE_BUSY,
   IDEMPOTENCY_KEY_HEADER,
   MULTI_VALUE_QUERY_SEPARATOR,
   REQUEST_TIMEOUT_DISABLED,
   RETRY_LIMIT,
 } from './constants'
-import { ApiError, type ApiErrorBody } from './errors'
+import { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
 
 type Query = Record<string, string | number | boolean | string[] | undefined | null>
 
@@ -101,11 +103,17 @@ export const createClient = (config: ClientConfig) => {
   }
 }
 
+const queueBusy = (body: ApiErrorBody, response: Response) => {
+  const seconds = Number(body.details?.retryAfterSec ?? response.headers.get('Retry-After'))
+  return new QueueBusyError(body.message, Number.isFinite(seconds) && seconds > 0 ? seconds : DEFAULT_RETRY_AFTER_SEC, body.details)
+}
+
 const toApiError = async (error: unknown): Promise<ApiError> => {
   if (error instanceof ApiError) return error
   if (error instanceof HTTPError) {
     try {
       const body = (await error.response.clone().json()) as { error?: ApiErrorBody }
+      if (body.error?.code === QUEUE_BUSY) return queueBusy(body.error, error.response)
       if (body.error) return new ApiError(body.error.message, body.error.code, error.response.status, body.error.details)
     } catch {
     }

@@ -473,6 +473,7 @@ let settings: Settings = {
   defaultTone: 'as_is',
   chatRetentionDays: 30,
   allowAiReadMyFiles: true,
+  aiAccessMode: 'AUTO',
 }
 mock('DELETE', 'me', () => null)
 mock('GET', 'me/settings', () => ({ data: settings }))
