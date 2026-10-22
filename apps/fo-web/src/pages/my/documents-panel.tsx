@@ -4,15 +4,8 @@ import { useRef } from 'react'
 import { useDocuments } from '../../entities/profile'
 import { resumeFileError, uploadResume } from '../../features/upload-resume'
 import Toast, { useToast } from '../../shared/ui/toast'
-import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_ORIGINAL, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
-
-const fileSize = (size: number) => (size >= 1048576 ? `${(size / 1048576).toFixed(1)}MB` : `${Math.max(1, Math.round(size / 1024))}KB`)
-
-const fileWhen = (iso?: string) => {
-  if (!iso) return null
-  const date = new Date(iso)
-  return `${date.getMonth() + 1}월 ${date.getDate()}일`
-}
+import DocumentFileRow from './document-file-row'
+import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
 
 const DocumentsPanel = () => {
   const queryClient = useQueryClient()
@@ -50,19 +43,9 @@ const DocumentsPanel = () => {
       {!query.isLoading && files.length === 0 ? <p className="b2 t3">{DOCUMENT_EMPTY}</p> : null}
       {files.length ? (
         <div className="box">
-          {files.map((file) => {
-            const ext = file.fileName.split('.').pop()?.toUpperCase() ?? 'FILE'
-            const when = fileWhen(file.createdAt)
-            return (
-              <div key={file.id} className="doc-file">
-                <span className={ext === 'PDF' ? 'badge red' : 'badge ac'}>{ext}</span>
-                <span className="doc-copy">
-                  <span className="b1 w7 cap">{file.fileName}</span>
-                  <span className="c1 t3">{[DOCUMENT_ORIGINAL, when, fileSize(file.size)].filter(Boolean).join(' · ')}</span>
-                </span>
-              </div>
-            )
-          })}
+          {files.map((file) => (
+            <DocumentFileRow key={file.id} file={file} />
+          ))}
         </div>
       ) : null}
       <label

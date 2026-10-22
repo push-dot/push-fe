@@ -24,6 +24,7 @@ export const ACTIVITY_CHIP_KEY = {
 export const DOCUMENT_EMPTY = '아직 등록한 서류가 없어요'
 export const DOCUMENT_ORIGINAL = '원본'
 export const DOCUMENT_UPLOADED = '이력서 파일을 올렸어요'
+export const DOCUMENT_INGEST = { reading: '읽는 중', failed: '읽지 못했어요' } as const
 export const APPLICATION_EMPTY = '아직 지원한 공고가 없어요'
 export const CALENDAR_EMPTY = '일정이 없어요'
 export const BOOKMARK_EMPTY = '북마크한 공고가 없어요'
