@@ -3,9 +3,10 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Pressable, View } from 'react-native'
 import { fontFor, useColors } from '../../theme'
-import { Badge, BottomSheet, Button, GlassButton, Icon, SegmentedControl, SettingsGroup, SettingsRow, Switch, Text } from '@/shared/components'
+import { Badge, BottomSheet, Button, GlassButton, Icon, SegmentedControl, SettingsGroup, SettingsRow, Text } from '@/shared/components'
 import { type Account } from './api/client'
-import { useChatAccount, useChatDocs, useCheckoutUltra, useMe, useMySettings, useUpdateChatSettings } from './api/hooks'
+import { useAccessMode, useChatAccount, useChatDocs, useCheckoutUltra, useMe, useMySettings, useUpdateChatSettings } from './api/hooks'
+import { ACCESS_MODE_TITLE, ACCESS_MODES } from './constants'
 import { Appear } from './motion'
 import { Mark, Note, PageModal, Pick } from './components'
 import { usePrefs } from './store'
@@ -63,6 +64,8 @@ const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; 
   const settings = useMySettings(visible)
   const docs = useChatDocs(visible)
   const save = useUpdateChatSettings()
+  const access = useAccessMode()
+  const mode = ACCESS_MODES.find((m) => m.key === access.mode)!
   const toMy = () => (onClose(), router.navigate('/my'))
   const tone = TONES.find((t) => t.key === settings.data?.defaultTone)
   const days = settings.data?.chatRetentionDays
@@ -123,7 +126,13 @@ const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; 
               setPicker({ title: '얼마나 꼼꼼히 할까요?', options: EFFORTS.map((e) => e.label), value: EFFORTS.indexOf(effort), onPick: (i) => usePrefs.setState({ effort: EFFORTS[i]!.key }) })
             }
           />
-          <SettingsRow label="바꾸기 전에 확인" right={<Switch label="바꾸기 전에 확인" value={prefs.confirm} onValueChange={(v) => usePrefs.setState({ confirm: v })} />} />
+          <SettingsRow
+            label={mode.label}
+            sub={mode.desc}
+            onPress={() =>
+              setPicker({ title: ACCESS_MODE_TITLE, options: ACCESS_MODES.map((m) => m.label), value: ACCESS_MODES.indexOf(mode), onPick: (i) => access.pick(ACCESS_MODES[i]!.key) })
+            }
+          />
           <SettingsRow
             label={days ? `대화 기록 ${days}일 보관` : '대화 기록 보관'}
             onPress={() =>

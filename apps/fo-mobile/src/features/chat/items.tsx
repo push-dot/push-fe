@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, Share, View } from 'react-native'
 import { fontFor, useColors, type Colors } from '../../theme'
 import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
+import { artifactUrl, openExternal } from './api/files'
 import { formatElapsed } from './reducer'
 import { Appear, usePop, usePulse, useReduceMotion } from './motion'
 import type { ChatItem, ToolState } from './types'
@@ -377,7 +378,9 @@ export const FileTag = ({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: 
 
 const FileCard = ({ item }: { item: Of<'file'> }) => {
   const c = useColors()
-  const share = () => void Share.share({ message: item.name, title: item.name })
+  const url = item.url ? artifactUrl(item.url) : undefined
+  const share = () => void Share.share({ message: url ?? item.name, title: item.name })
+  const preview = () => (url ? void openExternal(url) : share())
   const body = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
       <FileTag tag={item.tag ?? 'PDF'} />
@@ -396,7 +399,7 @@ const FileCard = ({ item }: { item: Of<'file'> }) => {
         ) : null}
       </View>
       {item.preview ? (
-        <Button label="미리보기" variant="secondary" size="sm" onPress={share} />
+        <Button label="미리보기" variant="secondary" size="sm" onPress={preview} />
       ) : item.progress === undefined || item.progress >= 1 ? (
         <Pressable accessibilityRole="button" accessibilityLabel="공유" onPress={share} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="share" size={22} color="t2" />

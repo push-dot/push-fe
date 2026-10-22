@@ -1,5 +1,5 @@
 import { Linking } from 'react-native'
-import { openBrowser, pickDocument } from '../../../shared/infrastructure'
+import { API_BASE_URL, openBrowser, pickDocument } from '../../../shared/infrastructure'
 
 export const CHAT_ATTACHMENT_TYPES = [
   'application/pdf',
@@ -17,6 +17,8 @@ export const pickChatAttachment = () =>
 
 export const pickChatDoc = () =>
   pickDocument({ type: CHAT_DOC_TYPES, copyToCacheDirectory: true })
+
+export const artifactUrl = (path: string) => `${API_BASE_URL}${path}`
 
 export const openExternal = (url: string) => openBrowser(url)
 

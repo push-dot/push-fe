@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { LinkKind, Settings } from '@push/api-client'
 import { router } from 'expo-router'
@@ -6,7 +6,7 @@ import { Alert } from 'react-native'
 import { api, useSession } from '../../../shared/infrastructure'
 import { QUICK_STARTS } from '../quick-starts'
 import type { MentionGroup } from '../mentions'
-import { forget, send } from '../store'
+import { forget, pickAccessMode, send, usePrefs } from '../store'
 import { chatApi } from './client'
 import { openExternal, pickChatDoc } from './files'
 
@@ -107,6 +107,21 @@ export const useUpdateChatSettings = () => {
     onSuccess: (s) => qc.setQueryData(['me', 'settings'], s),
     onError: () => Alert.alert('바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
+}
+
+export const useAccessMode = () => {
+  const qc = useQueryClient()
+  const server = useMySettings(true).data?.aiAccessMode
+  const mode = usePrefs((s) => s.accessMode)
+  useEffect(() => {
+    if (server) usePrefs.setState({ accessMode: server })
+  }, [server])
+  const save = useMutation({
+    mutationFn: pickAccessMode,
+    onSuccess: (s) => qc.setQueryData(['me', 'settings'], s),
+    onError: () => Alert.alert('바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
+  })
+  return { mode, pick: save.mutate }
 }
 
 export const useQuickStart = (key: string) =>

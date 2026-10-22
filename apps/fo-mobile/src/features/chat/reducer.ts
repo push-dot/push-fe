@@ -1,6 +1,6 @@
 import type { ChatEvent, ChatItem, ChatState } from './types'
 
-export const emptyChat: ChatState = { items: [], working: null, approval: null, queue: [], interrupted: false, runStartedAt: null }
+export const emptyChat: ChatState = { items: [], working: null, approval: null, awaiting: null, queue: [], interrupted: false, runStartedAt: null }
 
 const upsert = (items: ChatItem[], item: ChatItem) => {
   const i = items.findIndex((x) => x.id === item.id)
@@ -13,7 +13,7 @@ const upsert = (items: ChatItem[], item: ChatItem) => {
 export const applyEvent = (s: ChatState, e: ChatEvent): ChatState => {
   switch (e.type) {
     case 'start':
-      return { ...s, runStartedAt: e.at, interrupted: false, approval: null, working: { verbs: ['생각하는 중…'], startedAt: e.at } }
+      return { ...s, runStartedAt: e.at, interrupted: false, approval: null, awaiting: null, working: { verbs: ['생각하는 중…'], startedAt: e.at } }
     case 'status':
       return { ...s, working: { verbs: e.verbs, startedAt: s.working?.startedAt ?? s.runStartedAt ?? 0 } }
     case 'token': {
@@ -25,7 +25,7 @@ export const applyEvent = (s: ChatState, e: ChatEvent): ChatState => {
     case 'approval':
       return { ...s, working: null, approval: e.approval }
     case 'answer':
-      return { ...s, approval: null, items: [...s.items, { type: 'user', id: `ans-${s.items.length}`, text: e.text }] }
+      return { ...s, approval: null, awaiting: null, items: [...s.items, { type: 'user', id: `ans-${s.items.length}`, text: e.text }] }
     case 'queue':
       return { ...s, queue: [...s.queue, e.text] }
     case 'dequeue':
@@ -35,6 +35,7 @@ export const applyEvent = (s: ChatState, e: ChatEvent): ChatState => {
         ...s,
         working: null,
         approval: null,
+        awaiting: null,
         interrupted: true,
         runStartedAt: null,
         items: s.items.map((it) =>
@@ -49,8 +50,14 @@ export const applyEvent = (s: ChatState, e: ChatEvent): ChatState => {
         ...s,
         working: null,
         runStartedAt: null,
+        awaiting: e.awaiting ?? null,
         items: [...s.items, { type: 'worked', id: `worked-${s.items.length}`, seconds }],
       }
+    }
+    case 'tool': {
+      if (!e.name) return { ...s, items: upsert(s.items, e) }
+      const open = s.items.findLastIndex((x) => x.type === 'tool' && x.name === e.name && (x.state === 'run' || x.state === 'wait'))
+      return { ...s, items: upsert(s.items, { ...e, id: open < 0 ? `tool-${s.items.length}` : s.items[open]!.id }) }
     }
     case 'error':
       return { ...s, working: null, runStartedAt: null, items: upsert(s.items, e) }

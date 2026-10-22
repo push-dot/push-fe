@@ -3,7 +3,7 @@ import { Platform, Pressable, ScrollView, View, type TextInputInstance } from 'r
 import { useColors, useShadow } from '../../theme'
 import { Glass, Icon, Text } from '@/shared/components'
 import { pickChatAttachment } from './api/files'
-import { useMentionGroups } from './api/hooks'
+import { useAccessMode, useMentionGroups } from './api/hooks'
 import { Composer } from './composer'
 import { FileTag } from './items'
 import { filterMentions, insertMention, mentionQuery, type MentionItem } from './mentions'
@@ -32,6 +32,7 @@ export const ComposerArea = ({ placeholder, onSend, working, onStop, onShortcut,
   const own = useRef<TextInputInstance>(null)
   const ref = inputRef ?? own
   const query = mentionQuery(text)
+  const access = useAccessMode()
 
   const change = (t: string) => {
     setText(t)
@@ -75,6 +76,8 @@ export const ComposerArea = ({ placeholder, onSend, working, onStop, onShortcut,
         onMic={() => ref.current?.focus()}
         attachment={attachment}
         onClearAttachment={() => setAttachment(undefined)}
+        accessMode={access.mode}
+        onAccessMode={access.pick}
       />
     </View>
   )

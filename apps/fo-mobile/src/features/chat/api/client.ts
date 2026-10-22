@@ -50,6 +50,7 @@ export type RunInput = {
   conversationId: string
   text?: string
   answer?: { approvalId: string; choice: number }
+  resolve?: { approvalId: string; optionId: string }
   interrupted?: boolean
 }
 

@@ -1,7 +1,9 @@
+import type { AccessMode } from '@push/api-client'
 import type { Ref } from 'react'
 import { Pressable, TextInput, View, type TextInputInstance } from 'react-native'
 import { fontFor, useColors } from '../../theme'
 import { Icon, Text } from '@/shared/components'
+import { ModePicker } from './components'
 
 export type ComposerProps = {
   value: string
@@ -16,6 +18,8 @@ export type ComposerProps = {
   onMic: () => void
   attachment?: string
   onClearAttachment: () => void
+  accessMode: AccessMode
+  onAccessMode: (mode: AccessMode) => void
   inputRef?: Ref<TextInputInstance>
 }
 
@@ -65,6 +69,7 @@ export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
             언급
           </Text>
         </Pressable>
+        <ModePicker value={p.accessMode} onChange={p.onAccessMode} />
         <View style={{ flex: 1 }} />
         {p.working && !hasText ? (
           <Pressable

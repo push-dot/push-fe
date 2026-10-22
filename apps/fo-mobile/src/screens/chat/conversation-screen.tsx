@@ -8,6 +8,7 @@ import { BottomSheet, Glass, GlassButton, Icon, Text, TextField, type IconName }
 import {
   answer,
   ApprovalPanel,
+  AWAITING_TEXT,
   ChatDrawer,
   ComposerArea,
   DocsModal,
@@ -141,7 +142,15 @@ const ConversationScreen = ({ id }: { id: string }) => {
                 onStop={() => stop(id)}
                 onSend={(text, attachment) => send(id, text, attachment)}
                 onShortcut={setQs}
-                above={chat.working ? <StatusRow verbs={chat.working.verbs} startedAt={chat.working.startedAt} onStop={() => stop(id)} /> : null}
+                above={
+                  chat.working ? (
+                    <StatusRow verbs={chat.working.verbs} startedAt={chat.working.startedAt} onStop={() => stop(id)} />
+                  ) : chat.awaiting ? (
+                    <Text v="c1" weight="600" color="t3" style={{ paddingHorizontal: 8 }}>
+                      {AWAITING_TEXT[chat.awaiting]}
+                    </Text>
+                  ) : null
+                }
               />
             </View>
           )}

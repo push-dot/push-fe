@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import { ApiError } from '@push/api-client'
+import { ApiError, QueueBusyError, type AccessMode } from '@push/api-client'
 import { api, API_MOCK, hapticImpactLight, hapticNotify } from '@/shared/infrastructure'
 import { chatApi, type RunInput } from './api/client'
+import { DEFAULT_ACCESS_MODE } from './constants'
 import { applyEvent, emptyChat } from './reducer'
 import { errorText, fromStream } from './stream'
 import type { ChatEvent, ChatState } from './types'
@@ -10,8 +11,19 @@ import type { ChatEvent, ChatState } from './types'
 export const useChatStore = create<{ chats: Record<string, ChatState> }>(() => ({ chats: {} }))
 export const useChat = (id: string) => useChatStore((s) => s.chats[id] ?? emptyChat)
 
-// 계정 › 대화 settings that have no server field yet (shortcut: session-only until push-be adds them).
-export const usePrefs = create<{ effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'; confirm: boolean }>(() => ({ effort: 'MEDIUM', confirm: true }))
+// shortcut: effort has no server field yet, so it is session-only until push-be adds it.
+export const usePrefs = create<{ effort: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAX'; accessMode: AccessMode }>(() => ({ effort: 'MEDIUM', accessMode: DEFAULT_ACCESS_MODE }))
+
+export const pickAccessMode = async (mode: AccessMode) => {
+  const prev = usePrefs.getState().accessMode
+  usePrefs.setState({ accessMode: mode })
+  try {
+    return await api.me.updateSettings({ aiAccessMode: mode })
+  } catch (err) {
+    usePrefs.setState({ accessMode: prev })
+    throw err
+  }
+}
 
 const get = (id: string) => useChatStore.getState().chats[id] ?? emptyChat
 const runs = new Map<string, AbortController>()
@@ -38,8 +50,16 @@ const scripted = async function* (input: RunInput, signal: AbortSignal): AsyncGe
 
 const streamed = (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> => {
   const id = input.conversationId
-  const body = { text: input.text ?? '', accessMode: usePrefs.getState().confirm ? ('ALWAYS_ASK' as const) : ('AUTO' as const) }
-  return fromStream(api.conversations.stream(id, body, signal), (after) => api.conversations.active(id, after, signal))
+  const body = { text: input.text ?? '', accessMode: usePrefs.getState().accessMode }
+  return fromStream(api.conversations.stream(id, body, signal), (after) => api.conversations.follow(id, after, signal))
+}
+
+const resolved = async function* (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
+  const id = input.conversationId
+  const { approvalId, optionId } = input.resolve!
+  const r = await api.conversations.resolveApproval(id, approvalId, optionId)
+  if (!r.jobId) return
+  yield* fromStream(api.conversations.follow(id, undefined, signal), (after) => api.conversations.follow(id, after, signal))
 }
 
 const startRun = async (input: RunInput) => {
@@ -48,13 +68,14 @@ const startRun = async (input: RunInput) => {
   runs.set(id, ctrl)
   dispatch(id, { type: 'start', at: Date.now() })
   try {
-    for await (const e of (API_MOCK ? scripted : streamed)(input, ctrl.signal)) {
-      dispatch(id, e.type === 'done' ? { type: 'done', at: Date.now() } : e)
+    for await (const e of (input.resolve ? resolved : API_MOCK ? scripted : streamed)(input, ctrl.signal)) {
+      dispatch(id, e.type === 'done' ? { ...e, at: Date.now() } : e)
     }
     if (get(id).working) dispatch(id, { type: 'done', at: Date.now() })
   } catch (err) {
     if (ctrl.signal.aborted) return
-    dispatch(id, { type: 'error', id: `err-${Date.now()}`, text: errorText(err instanceof ApiError ? err.code : undefined) })
+    const text = errorText(err instanceof ApiError ? err.code : undefined, err instanceof QueueBusyError ? err.retryAfterSec : undefined)
+    dispatch(id, { type: 'error', id: `err-${Date.now()}`, text })
   } finally {
     if (runs.get(id) === ctrl) runs.delete(id)
   }
@@ -69,6 +90,11 @@ const startRun = async (input: RunInput) => {
 export const send = (id: string, text: string, attachment?: string) => {
   const s = get(id)
   if (s.working) return dispatch(id, { type: 'queue', text })
+  if (s.approval?.optionIds) {
+    // The server reads free text as the gate answer or as rejecting the pending approval.
+    dispatch(id, { type: 'answer', text })
+    return void startRun({ conversationId: id, text })
+  }
   if (s.approval) {
     // Talking instead of picking answers with the last ("직접 말하기") choice.
     const first = s.approval.sections.find((x) => x.kind === 'choices')
@@ -82,7 +108,13 @@ export const answer = (id: string, text: string, choice: number) => {
   const approval = get(id).approval
   if (!approval) return
   dispatch(id, { type: 'answer', text })
-  void startRun({ conversationId: id, text, answer: { approvalId: approval.id, choice } })
+  const optionId = approval.optionIds?.[choice]
+  if (approval.optionIds && !optionId) return void startRun({ conversationId: id, text })
+  void startRun(
+    optionId
+      ? { conversationId: id, text, resolve: { approvalId: approval.id, optionId } }
+      : { conversationId: id, text, answer: { approvalId: approval.id, choice } },
+  )
 }
 
 export const stop = (id: string) => {
