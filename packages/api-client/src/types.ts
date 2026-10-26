@@ -119,22 +119,19 @@ export type UserLink = {
   createdAt: string
 }
 
-export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE'
+export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE' | 'APPLICATION_STAGE'
 export type AppNotification = {
   id: string
   type: NotificationType
   title: string
   body: string
-  target: { kind: 'posting' | 'offer' | 'post' | 'conversation'; id: string }
+  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'calendar' | 'activity'; id: string }
   readAt: string | null
   createdAt: string
 }
 
-export type WebNotificationType = NotificationType | 'APPLICATION_STAGE'
-export type WebNotification = Omit<AppNotification, 'type' | 'target'> & {
-  type: WebNotificationType
-  target: AppNotification['target'] | { kind: 'activity'; id: string }
-}
+export type WebNotificationType = NotificationType
+export type WebNotification = AppNotification
 
 export type Settings = {
   notifyDeadline: boolean
