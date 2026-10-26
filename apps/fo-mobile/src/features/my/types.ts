@@ -27,4 +27,4 @@ export type ProfileSection = 'basic' | 'intro' | 'career' | 'skills'
 
 export type ActivitySub = 'applications' | 'calendar' | 'bookmarks' | 'follows' | 'posts'
 
-export type OfferPerson = UserRef & { affiliation?: string }
+export type OfferPerson = UserRef & { companyName?: string | null }

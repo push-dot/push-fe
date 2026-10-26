@@ -83,7 +83,7 @@ mock('POST', 'profiles/:userId/offer', ({ params, body }) => {
   if (offers.has(p.userId)) return { status: 409, body: { error: { code: 'CONFLICT', message: '이미 제안을 보냈어요.' } } }
   const offer: Offer = {
     id: `o-${p.userId}`,
-    sender: { id: 'me', displayName: '나' },
+    sender: { id: 'me', displayName: '나', avatarUrl: null, companyName: null, headline: '' },
     recipient: { id: p.userId, displayName: p.displayName },
     message,
     // shortcut: posting is not resolved in the mock; postings mock owns that data.

@@ -84,7 +84,7 @@ export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
 export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'>
 export type Offer = {
   id: string
-  sender: UserRef & { affiliation?: string }
+  sender: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
   recipient: UserRef
   message: string
   posting: OfferPosting | null
