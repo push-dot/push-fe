@@ -69,13 +69,16 @@ export const useMyBookmarks = () => {
   return { query, unbookmark }
 }
 
-export const useFollowToggle = (userId: string, setFollowing: (next: boolean) => void) =>
-  useMutation({
+export const useFollowToggle = (userId: string, setFollowing: (next: boolean) => void) => {
+  const qc = useQueryClient()
+  return useMutation({
     mutationFn: (next: boolean) =>
       next ? api.profiles.follow(userId) : api.profiles.unfollow(userId),
     onMutate: (next) => setFollowing(next),
     onError: (_e, next) => setFollowing(!next),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['me', 'follows'] }),
   })
+}
 
 export const useMyFollows = () =>
   useQuery({ queryKey: ['me', 'follows'], queryFn: () => api.me.follows(FIRST) })

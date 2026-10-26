@@ -4,6 +4,7 @@ import {
   dayTitle,
   dday,
   fileSize,
+  followState,
   monthGrid,
   offerBadge,
   overwriteWarning,
@@ -13,6 +14,17 @@ import {
 } from './index'
 
 describe('my lib', () => {
+  it('derives follow state only from what me/follows proves', () => {
+    const page = (ids: string[], hasMore: boolean) => ({
+      data: ids.map((userId) => ({ userId }) as never),
+      page: { nextCursor: null, hasMore },
+    })
+    expect(followState(undefined, 'a')).toBeUndefined()
+    expect(followState(page(['a'], true), 'a')).toBe(true)
+    expect(followState(page(['a'], false), 'b')).toBe(false)
+    expect(followState(page(['a'], true), 'b')).toBeUndefined()
+  })
+
   it('formats file sizes and career periods', () => {
     expect(fileSize(2_400_000)).toBe('2.4MB')
     expect(fileSize(640_000)).toBe('640KB')
