@@ -1,20 +1,28 @@
 import { useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { LinkKind, Settings } from '@push/api-client'
 import { router } from 'expo-router'
 import { Alert } from 'react-native'
-import { api, useSession } from '../../../shared/infrastructure'
-import { QUICK_STARTS } from '../quick-starts'
-import type { MentionGroup } from '../mentions'
-import { forget, pickAccessMode, send, usePrefs } from '../store'
-import { chatApi } from './client'
-import { openArtifact, openExternal, pickChatDoc } from './files'
+import { useMyLinks, useMySettings } from '@/features/my'
+import { openBrowser, pickDocument, saveToCache, shareFile, useSession } from '../../../shared/infrastructure'
+import { CHAT_DOC_OPTIONS, CHAT_DOCS_KEY, QUICK_STARTS } from '../constants'
+import { cacheName } from '../utils/cache-name'
+import type { MentionGroup } from '../utils/mentions'
+import { forget, pickAccessMode, send, usePrefs } from '../stores'
+import {
+  archiveConversation,
+  chatApi,
+  createConversation,
+  fetchArtifactBytes,
+  fetchMentionBookmarks,
+  fetchMyProfile,
+  renameConversation,
+} from './fetchers'
 
 export const useStartChat = () => {
   const qc = useQueryClient()
   return async (title: string, message: string, attachment?: string, replace?: boolean) => {
     try {
-      const conv = await api.conversations.create(title.slice(0, 300))
+      const conv = await createConversation(title.slice(0, 300))
       void qc.invalidateQueries({ queryKey: ['conversations'] })
       if (replace) router.replace(`/chat/${conv.id}`)
       else router.push(`/chat/${conv.id}`)
@@ -33,7 +41,7 @@ export const useRenameConversation = (id: string, revision: number | undefined) 
   return useMutation({
     mutationFn: (title: string) => {
       if (revision === undefined) throw new Error('missing conversation')
-      return api.conversations.rename(id, revision, title)
+      return renameConversation(id, revision, title)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conversations'] }),
     onError: () => Alert.alert('이름을 바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
@@ -45,7 +53,7 @@ export const useArchiveConversation = (id: string, revision: number | undefined)
   return useMutation({
     mutationFn: () => {
       if (revision === undefined) throw new Error('missing conversation')
-      return api.conversations.archive(id, revision)
+      return archiveConversation(id, revision)
     },
     onSuccess: () => {
       forget(id)
@@ -58,28 +66,25 @@ export const useArchiveConversation = (id: string, revision: number | undefined)
 
 export const useMe = () => {
   const session = useSession((s) => s.session)
-  const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: api.me.profile })
+  const profile = useQuery({ queryKey: ['me', 'profile'], queryFn: fetchMyProfile })
   const name = profile.data?.displayName ?? session?.user.displayName ?? '나'
   return { name, given: name.length > 2 ? name.slice(-2) : name, profile: profile.data }
 }
 
-export const useChatBookmarks = (enabled: boolean) =>
-  useQuery({ queryKey: ['me', 'bookmarks', 'chat'], queryFn: () => api.me.bookmarks({ limit: 100 }), enabled })
-
 export const useChatDocs = (enabled = true) =>
-  useQuery({ queryKey: ['chat', 'docs'], queryFn: chatApi.docs, enabled })
+  useQuery({ queryKey: CHAT_DOCS_KEY, queryFn: chatApi.docs, enabled })
 
 export const useUploadChatDoc = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async () => {
-      const r = await pickChatDoc()
+      const r = await pickDocument(CHAT_DOC_OPTIONS)
       const f = r.canceled ? null : r.assets[0]
       if (!f) return
       if ((f.size ?? 0) > 20_000_000) throw new Error('too big')
       await chatApi.addDoc(f)
     },
-    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ['chat', 'docs'] }), qc.invalidateQueries({ queryKey: ['me', 'sources'] })]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'sources'] }),
     onError: (e) => Alert.alert('올리지 못했어요', e.message === 'too big' ? '20MB까지 올릴 수 있어요.' : '잠시 뒤에 다시 해 주세요.'),
   })
 }
@@ -92,28 +97,19 @@ export const useRecentConversations = (enabled: boolean) =>
 
 export const useOpenArtifact = () =>
   useMutation({
-    mutationFn: ({ url, name }: { url: string; name: string }) => openArtifact(url, name),
+    mutationFn: async ({ url, name }: { url: string; name: string }) => {
+      const uri = await saveToCache(cacheName(name), await fetchArtifactBytes(url))
+      await shareFile(uri, name)
+    },
     onError: () => Alert.alert('파일을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
 
 export const useCheckoutUltra = () =>
   useMutation({
     mutationFn: () => chatApi.checkout('ULTRA'),
-    onSuccess: ({ url }) => void openExternal(url),
+    onSuccess: ({ url }) => void openBrowser(url),
     onError: () => Alert.alert('결제 화면을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
-
-export const useMySettings = (enabled: boolean) =>
-  useQuery({ queryKey: ['me', 'settings'], queryFn: api.me.settings, enabled })
-
-export const useUpdateChatSettings = () => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (patch: Partial<Settings>) => api.me.updateSettings(patch),
-    onSuccess: (s) => qc.setQueryData(['me', 'settings'], s),
-    onError: () => Alert.alert('바꾸지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
-}
 
 export const useAccessMode = () => {
   const qc = useQueryClient()
@@ -133,31 +129,10 @@ export const useAccessMode = () => {
 export const useQuickStart = (key: string) =>
   useQuery({ queryKey: ['chat', 'quick-start', key], queryFn: () => chatApi.quickStart(key) })
 
-export const useMyLinks = (enabled: boolean) =>
-  useQuery({ queryKey: ['me', 'links'], queryFn: () => api.me.links(undefined, { limit: 100 }), enabled })
-
-export const useDeleteLink = () => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) => api.me.deleteLink(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
-    onError: () => Alert.alert('지우지 못했어요', '잠시 뒤에 다시 해 주세요.'),
-  })
-}
-
-export const useAddLink = (onAdded: () => void) => {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: { url: string; kind?: LinkKind; aiRead: boolean }) => api.me.addLink(body),
-    onSuccess: () => (void qc.invalidateQueries({ queryKey: ['me', 'links'] }), onAdded()),
-    onError: () => Alert.alert('추가하지 못했어요', '링크 주소를 확인해 주세요.'),
-  })
-}
-
 export const useMentionGroups = (): MentionGroup[] => {
-  const bookmarks = useQuery({ queryKey: ['me', 'bookmarks', 'mention'], queryFn: () => api.me.bookmarks({ limit: 20 }) })
+  const bookmarks = useQuery({ queryKey: ['me', 'bookmarks', 'mention'], queryFn: fetchMentionBookmarks })
   const docs = useChatDocs()
-  const links = useQuery({ queryKey: ['me', 'links'], queryFn: () => api.me.links(undefined, { limit: 50 }) })
+  const links = useMyLinks(true)
   return useMemo(
     () => [
       {
