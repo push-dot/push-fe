@@ -1,4 +1,4 @@
-import { brandOf } from '../../shared/lib/format'
+import { brandOf } from '@push/shared'
 import { MEMBER_SELF, REMOVE_MEMBER, TRANSFER_ADMIN } from './constants'
 
 const MemberRow = ({

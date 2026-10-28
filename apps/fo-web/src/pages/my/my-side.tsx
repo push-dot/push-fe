@@ -1,10 +1,11 @@
+import { brandOf } from '@push/shared'
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
 
 import { NAV } from '../../app/constants'
 import { useMyCompany } from '../../entities/company'
 import { useOffers } from '../../entities/offer'
 import { useMyProfile } from '../../entities/profile'
-import { brandOf, initials, roleLabel } from '../../shared/lib/format'
+import { initials, roleLabel } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import { ROLE_NAME } from '../../shared/model/employer-plan'
 import {

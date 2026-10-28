@@ -1,7 +1,7 @@
+import { brandOf } from '@push/shared'
 import { NavLink } from 'react-router-dom'
 
 import { useMyCompany } from '../entities/company'
-import { brandOf } from '../shared/lib/format'
 import { useSession } from '../shared/auth/use-session'
 import { PLAN_NAME, ROLE_NAME } from '../shared/model/employer-plan'
 import { NAV } from './constants'
