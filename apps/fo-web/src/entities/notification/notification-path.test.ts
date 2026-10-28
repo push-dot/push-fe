@@ -17,6 +17,10 @@ describe('notificationPath', () => {
     ).toBe('/me?tab=activity&chip=applications')
   })
 
+  it('opens 캘린더 for a calendar reminder', () => {
+    expect(notificationPath({ type: 'DEADLINE', target: { kind: 'calendar', id: 'e1' } })).toBe('/me?tab=activity&chip=calendar')
+  })
+
   it('opens the posting, offer, or post named by the target', () => {
     expect(notificationPath({ type: 'DEADLINE', target: { kind: 'posting', id: 'p1' } })).toBe('/postings/p1')
     expect(notificationPath({ type: 'OFFER', target: { kind: 'offer', id: 'offer-1' } })).toBe('/offers/offer-1')

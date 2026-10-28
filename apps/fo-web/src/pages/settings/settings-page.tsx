@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
-import { useConsents, useSettings } from '../../entities/session'
+import { useAuthMe, useConsents, useSettings } from '../../entities/session'
 import { meDeleteAccount, meUpdateConsents, meUpdateSettings } from '../../features/update-settings'
 import {
   CAREER_VISIBILITY,
@@ -19,6 +19,7 @@ import {
   HIDE_COMPANY_LABEL,
   LOCALES,
   LOCALE_NOTE,
+  LOGIN_LABEL,
   NOTIFY_ROWS,
   SETTINGS_CHANNEL_NOTE,
   SETTINGS_LOAD_ERROR,
@@ -28,6 +29,7 @@ const SettingsPage = () => {
   const session = useSession()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const account = useAuthMe()
   const settingsQuery = useSettings()
   const consentQuery = useConsents()
   const [confirming, setConfirming] = useState(false)
@@ -68,6 +70,7 @@ const SettingsPage = () => {
     )
   }
   const patch = (next: Partial<Settings>) => saveSettings.mutate(next)
+  const login = LOGIN_LABEL[account.data?.provider ?? ''] ?? ''
   return (
     <main className="page settings my-layout">
       <MySide />
@@ -75,7 +78,11 @@ const SettingsPage = () => {
         <h1 className="h1">설정</h1>
         <section className="box">
           <div className="settings-row">
-            <span className="b1 w7">{session?.user.displayName}</span>
+            <span>
+              <span className="b1 w7">{session?.user.displayName}</span>
+              {account.data?.email ? <span className="c1 t3">{` · ${account.data.email}`}</span> : null}
+              {login ? <span className="c1 t3">{` · ${login}`}</span> : null}
+            </span>
           </div>
         </section>
         <section className="box">

@@ -72,8 +72,8 @@ export type Profile = {
 export type ProfileFilters = PageParams & {
   q?: string
   category?: JobCategory[]
-  tenure?: Tenure
-  status?: CareerStatus
+  tenure?: Tenure[]
+  status?: CareerStatus[]
   explore?: 'recommended' | 'offers'
 }
 
@@ -84,7 +84,7 @@ export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
 export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'>
 export type Offer = {
   id: string
-  sender: UserRef & { affiliation?: string }
+  sender: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
   recipient: UserRef
   message: string
   posting: OfferPosting | null
@@ -119,22 +119,19 @@ export type UserLink = {
   createdAt: string
 }
 
-export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE'
+export type NotificationType = 'DEADLINE' | 'OFFER' | 'COMMENT' | 'AI_DONE' | 'APPLICATION_STAGE'
 export type AppNotification = {
   id: string
   type: NotificationType
   title: string
   body: string
-  target: { kind: 'posting' | 'offer' | 'post' | 'conversation'; id: string }
+  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'calendar' | 'activity'; id: string }
   readAt: string | null
   createdAt: string
 }
 
-export type WebNotificationType = NotificationType | 'APPLICATION_STAGE'
-export type WebNotification = Omit<AppNotification, 'type' | 'target'> & {
-  type: WebNotificationType
-  target: AppNotification['target'] | { kind: 'activity'; id: string }
-}
+export type WebNotificationType = NotificationType
+export type WebNotification = AppNotification
 
 export type Settings = {
   notifyDeadline: boolean
@@ -151,10 +148,25 @@ export type Settings = {
   chatRetentionDays: number | null
   allowAiReadMyFiles: boolean
   aiAccessMode: AccessMode
+  defaultEffort: AiOptions['effort']
+  confirmBeforeEdit: boolean
 }
 
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
 export type UploadedSource = Source & { jobId?: string }
+export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> & {
+  pageCount: number | null
+  createdAt: string | null
+  origin: string
+}
+export type ProfileDraft = {
+  displayName: string
+  headline: string
+  tenureYears: number | null
+  intro: string
+  careers: { company: string; title: string; start: string; end: string }[]
+  skills: string[]
+}
 
 export type ApplicationStage =
   | 'DISCOVERED' | 'PREPARING' | 'READY' | 'APPLIED' | 'SCREENING'
@@ -257,6 +269,8 @@ export type BillingStatus = {
   periodEndsAt: string | null
   balanceMicroCredits: number
   reservedMicroCredits: number
+  monthlyMicroCredits: number
+  spentMicroCredits: number
   audience?: BillingAudience
   source?: BillingSource
 }
@@ -288,6 +302,8 @@ export type Me = {
   accountType: AccountType
   companyId: string | null
   companyRole: CompanyRole | null
+  email: string
+  provider: string
 }
 
 export type Company = {
@@ -367,7 +383,7 @@ export type CalendarEvent = {
   id: string
   revision: number
   applicationId: string | null
-  type: 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'CUSTOM'
+  type: 'INTERVIEW' | 'DEADLINE' | 'FOLLOW_UP' | 'CUSTOM' | 'COFFEE_CHAT'
   title: string
   startsAt: string
   endsAt: string

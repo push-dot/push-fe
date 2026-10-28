@@ -633,7 +633,7 @@ const commentThreads = new Map<string, Comment[]>([
 let receivedOffers: Offer[] = [
   {
     id: 'offer-1',
-    sender: { id: 'u-emp', displayName: '모아페이', avatarUrl: null, affiliation: '모아페이' },
+    sender: { id: 'u-emp', displayName: '모아페이', avatarUrl: null, companyName: '모아페이', headline: '채용 담당' },
     recipient: { id: 'u1', displayName: '김서준', avatarUrl: null },
     message: '백엔드 엔지니어로 함께하고 싶어요.',
     posting: { id: 'p1', company: '모아페이', title: '백엔드 엔지니어 (Kotlin·Spring)', imageUrl: null },
@@ -646,7 +646,7 @@ let receivedOffers: Offer[] = [
 let sentOffers: Offer[] = [
   {
     id: 'offer-2',
-    sender: { id: 'u1', displayName: '김서준', avatarUrl: null },
+    sender: { id: 'u1', displayName: '김서준', avatarUrl: null, companyName: null, headline: '' },
     recipient: { id: 'u2', displayName: '박민재', avatarUrl: null },
     message: '데이터 지표 이야기를 나누고 싶어요.',
     posting: null,
@@ -705,6 +705,8 @@ let settings: Settings = {
   chatRetentionDays: null,
   allowAiReadMyFiles: false,
   aiAccessMode: 'AUTO',
+  defaultEffort: 'MEDIUM',
+  confirmBeforeEdit: true,
 }
 
 let consent: Consent = { referenceData: false, updatedAt: null }
@@ -759,6 +761,16 @@ const seedSources: Source[] = [
 const uploadedSources: Source[] = []
 
 const allSources = () => [...uploadedSources, ...seedSources]
+
+const libraryItem = (source: Source) => ({
+  id: source.id,
+  fileName: source.fileName,
+  mimeType: source.mimeType,
+  size: source.size,
+  pageCount: null,
+  createdAt: source.createdAt ?? null,
+  origin: 'UPLOAD',
+})
 
 const employerPersona = () => {
   const kind = mockPersona()
@@ -928,7 +940,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const payload = await readJson(input, init)
     const created: Offer = {
       id: `offer-${Date.now()}`,
-      sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null },
+      sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null, companyName: null, headline: meProfile.headline },
       recipient: { id, displayName: profileById(id).displayName, avatarUrl: null },
       message: String(payload.message ?? ''),
       posting: null,
@@ -1441,6 +1453,8 @@ const companyBillingStatus = (): CompanyBillingStatus => {
     subscriptionStatus: 'active',
     periodEndsAt: null,
     reservedMicroCredits: 0,
+    monthlyMicroCredits: 0,
+    spentMicroCredits: 0,
   }
 }
 
@@ -1547,7 +1561,9 @@ export const mockFetch: typeof fetch = async (input, init) => {
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && /\/sources\/?$/.test(pathname)) {
-    return json(200, { data: allSources(), page: { nextCursor: null, hasMore: false } })
+    const kind = url.searchParams.get('kind')
+    const data = kind === 'AI' ? [] : allSources().map(libraryItem)
+    return json(200, { data, page: { nextCursor: null, hasMore: false } })
   }
   if (method === 'GET' && /\/postings\/[^/]+$/.test(pathname)) {
     const id = decodeURIComponent(pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? '')
@@ -1612,6 +1628,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
         accountType: user?.accountType ?? 'PERSONAL',
         companyId: record?.company.id ?? user?.companyId ?? null,
         companyRole: record?.company.role ?? user?.companyRole ?? null,
+        email: 'kim@push.app',
+        provider: 'email',
       },
     })
   }

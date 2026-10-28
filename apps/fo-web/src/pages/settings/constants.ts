@@ -27,6 +27,12 @@ export const HIDE_COMPANY_LABEL = '현재 회사 사람에게 숨기기'
 export const CONSENT_TITLE = '참고 데이터로 쓰기'
 export const SETTINGS_LOAD_ERROR = '설정을 불러오지 못했어요.'
 
+export const LOGIN_LABEL: Record<string, string> = {
+  google: 'Google 계정으로 로그인',
+  github: 'GitHub 계정으로 로그인',
+  email: '이메일로 로그인',
+}
+
 export const CAREER_VISIBILITY: { key: Settings['careerStatusVisibility']; label: string }[] = [
   { key: 'everyone', label: '모두에게' },
   { key: 'followers', label: '팔로워에게만' },

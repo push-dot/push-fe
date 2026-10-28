@@ -6,8 +6,8 @@ import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
-  Offer, OfferMessage, PageParams, Post, PostCategory, Posting, PostingDetail, PostingFilters, Profile,
-  ProfileFilters, Session, Settings, Source, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  Offer, OfferMessage, PageParams, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile,
+  ProfileFilters, Session, Settings, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
 
@@ -44,8 +44,8 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
     bookmark: (id: string) => c.post<void>(`postings/${id}/bookmark`),
     unbookmark: (id: string) => c.delete<void>(`postings/${id}/bookmark`),
-    apply: (id: string, documentIds: string[]) =>
-      unwrap(c.post<DataEnvelope<Application>>(`postings/${id}/apply`, { body: { documentIds } })),
+    apply: (id: string, documentIds: string[], sourceIds: string[] = []) =>
+      unwrap(c.post<DataEnvelope<Application>>(`postings/${id}/apply`, { body: { documentIds, sourceIds } })),
     create: (body: CreatePostingInput) => unwrap(c.post<DataEnvelope<PostingDetail>>('postings', { body })),
     update: (id: string, body: UpdatePostingInput) => unwrap(c.patch<DataEnvelope<PostingDetail>>(`postings/${id}`, { body })),
     close: (id: string, expectedRevision: number) =>
@@ -147,8 +147,10 @@ export const createApi = (c: Client) => ({
   },
 
   sources: {
+    list: (q: PageParams & { kind?: 'UPLOAD' | 'AI' } = {}) => c.get<ListEnvelope<SourceItem>>('sources', { query: q }),
     upload: (form: FormData) => unwrap(c.post<DataEnvelope<UploadedSource>>('sources', { form })),
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
+    profileDraft: (id: string) => unwrap(c.get<DataEnvelope<ProfileDraft>>(`sources/${id}/profile-draft`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
   },
   applications: {

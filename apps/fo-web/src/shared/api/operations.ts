@@ -148,6 +148,8 @@ export const profilesUnfollow = (...args: Parameters<Api['profiles']['unfollow']
 
 export const sourcesGet = (...args: Parameters<Api['sources']['get']>) => api.sources.get(...args)
 
+export const sourcesList = (...args: Parameters<Api['sources']['list']>) => api.sources.list(...args)
+
 export const sourcesUpload = (...args: Parameters<Api['sources']['upload']>) => api.sources.upload(...args)
 
 export const uploadsImage = (...args: Parameters<Api['uploads']['image']>) => api.uploads.image(...args)
