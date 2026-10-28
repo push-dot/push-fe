@@ -1,18 +1,17 @@
-import type { Source, UploadedSource } from '@push/api-client'
-import { isMock } from '../lib/bridge'
-import { apiBaseUrl } from './client'
-import { mockFetch } from './mock'
+import type { SourceItem, UploadedSource } from '@push/api-client'
+import { sourcesList } from './operations'
 
-const sessionSources: UploadedSource[] = []
+export type ListedSource = SourceItem & { jobId?: string }
+
+const SOURCE_LIST_LIMIT = 100
+
+const ingestJobs = new Map<string, string | undefined>()
 
 export const rememberSource = (source: UploadedSource) => {
-  sessionSources.unshift(source)
+  ingestJobs.set(source.id, source.jobId)
 }
 
-export const listSources = async (): Promise<UploadedSource[]> => {
-  if (!isMock()) return [...sessionSources]
-  const response = await mockFetch(`${apiBaseUrl.replace(/\/+$/, '')}/sources`)
-  if (!response.ok) return []
-  const body = (await response.json()) as { data?: Source[] }
-  return body.data ?? []
+export const listSources = async (kind?: 'UPLOAD' | 'AI'): Promise<ListedSource[]> => {
+  const page = await sourcesList({ kind, limit: SOURCE_LIST_LIMIT })
+  return page.data.map((item) => ({ ...item, jobId: ingestJobs.get(item.id) }))
 }

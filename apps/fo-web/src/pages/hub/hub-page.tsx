@@ -10,8 +10,8 @@ import { useProfileCount, useProfilePages } from '../../entities/profile'
 
 const filtersOf = (categories: JobCategory[], draft: HubDraft) => ({
   category: categories.length > 0 ? categories : undefined,
-  tenure: draft.tenure,
-  status: draft.status,
+  tenure: draft.tenure ? [draft.tenure] : undefined,
+  status: draft.status ? [draft.status] : undefined,
   explore: draft.explore,
 })
 

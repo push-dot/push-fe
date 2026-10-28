@@ -1,4 +1,4 @@
-import type { LinkKind, UploadedSource } from '@push/api-client'
+import type { LinkKind } from '@push/api-client'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { listSources } from '../../shared/api/sources'
 import {
@@ -7,7 +7,6 @@ import {
   meProfile as fetchMyProfile,
   profilesGet as fetchProfile,
   profilesList as fetchProfiles,
-  sourcesGet,
 } from '../../shared/api/operations'
 
 export const profilesGet = (...args: Parameters<typeof fetchProfile>) => fetchProfile(...args)
@@ -16,16 +15,7 @@ export const meProfile = (...args: Parameters<typeof fetchMyProfile>) => fetchMy
 export const meLinks = (...args: Parameters<typeof fetchLinks>) => fetchLinks(...args)
 export const meFollows = (...args: Parameters<typeof fetchFollows>) => fetchFollows(...args)
 
-export const loadDocuments = async (): Promise<UploadedSource[]> => {
-  const [uploaded, profile] = await Promise.all([listSources(), meProfile()])
-  if (!profile.resumeSourceId || uploaded.some((item) => item.id === profile.resumeSourceId)) return uploaded
-  try {
-    const resume = await sourcesGet(profile.resumeSourceId)
-    return [resume, ...uploaded]
-  } catch {
-    return uploaded
-  }
-}
+export const loadDocuments = () => listSources('UPLOAD')
 
 export const useMyProfile = (enabled = true) =>
   useQuery({ queryKey: ['me', 'profile'], queryFn: () => meProfile(), enabled })

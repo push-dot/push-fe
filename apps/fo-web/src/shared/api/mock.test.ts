@@ -293,6 +293,8 @@ describe('employer billing mock', () => {
       subscriptionStatus: 'active',
       periodEndsAt: null,
       reservedMicroCredits: 0,
+      monthlyMicroCredits: 0,
+      spentMicroCredits: 0,
     })
 
     setMockPersona('employer-pro')

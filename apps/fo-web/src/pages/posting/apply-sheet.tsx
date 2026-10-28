@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { useSources } from '../../entities/profile'
-import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_OPTIONAL, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
-import { postingsApply } from '../../features/apply-to-posting'
+import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_AI, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
+import { applySourceIds, postingsApply } from '../../features/apply-to-posting'
 
 
 const ApplySheet = ({
@@ -20,7 +20,10 @@ const ApplySheet = ({
   const [picked, setPicked] = useState<string[] | null>(null)
   const selected = picked ?? (sources.data?.[0] ? [sources.data[0].id] : [])
   const apply = useMutation({
-    mutationFn: () => postingsApply(postingId, selected),
+    mutationFn: () => {
+      const { documentIds, sourceIds } = applySourceIds(sources.data ?? [], selected)
+      return postingsApply(postingId, documentIds, sourceIds)
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['posting', postingId] })
       await queryClient.invalidateQueries({ queryKey: ['postings'] })
@@ -42,13 +45,13 @@ const ApplySheet = ({
           </button>
         </div>
         <ul className="source-list">
-          {(sources.data ?? []).map((source, index) => (
+          {(sources.data ?? []).map((source) => (
             <li key={source.id}>
               <label className="check">
                 <input type="checkbox" checked={selected.includes(source.id)} onChange={() => toggle(source.id)} />
                 <span>
                   <span className="b2">{source.fileName}</span>
-                  <span className="c1 t3">{index === 0 ? SOURCE_ORIGINAL : SOURCE_OPTIONAL}</span>
+                  <span className="c1 t3">{source.origin === 'AI' ? SOURCE_AI : SOURCE_ORIGINAL}</span>
                 </span>
               </label>
             </li>

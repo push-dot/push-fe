@@ -98,7 +98,7 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
                     <span className="b2 w7">{who.displayName}</span>
                     <span className="c1 t3">{relativeTime(item.createdAt)}</span>
                   </span>
-                  {box === 'received' && item.sender.affiliation ? <span className="c1 t3">{item.sender.affiliation}</span> : null}
+                  {box === 'received' && item.sender.companyName ? <span className="c1 t3">{item.sender.companyName}</span> : null}
                   <span className="b2 t2 cap">{item.message}</span>
                 </span>
                 <span className="badge grey">{offerStatusLabel(item.status, box)}</span>
@@ -118,7 +118,7 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
               <div className="thread-head">
                 <span>
                   <span className="h2">{person.displayName}</span>
-                  {threadBox === 'received' && offer.sender.affiliation ? <span className="c1 t3">{offer.sender.affiliation}</span> : null}
+                  {threadBox === 'received' && offer.sender.companyName ? <span className="c1 t3">{offer.sender.companyName}</span> : null}
                 </span>
                 <span className="badge grey">{offerStatusLabel(offer.status, threadBox)}</span>
               </div>
