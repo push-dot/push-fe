@@ -22,9 +22,6 @@ export const roleLabel = (category: JobCategory | null, years: number | null) =>
 
 export const initials = (name: string) => ([...name].length >= 3 ? [...name].slice(-2).join('') : name)
 
-const BRAND = ['#1F3A8A', '#0E7A5F', '#7A2E8C', '#B4501E', '#1B6E8F', '#5B4CF0', '#8C2F39']
-export const brandOf = (name: string) => BRAND[[...name].reduce((a, ch) => a + ch.charCodeAt(0), 0) % BRAND.length]!
-
 export const relativeTime = (iso: string, now = Date.now()) => {
   const delta = now - new Date(iso).getTime()
   const minute = Math.floor(delta / 60000)

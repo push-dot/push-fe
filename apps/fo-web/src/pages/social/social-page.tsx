@@ -1,8 +1,9 @@
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
+import { brandOf } from '@push/shared'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { brandOf, compactCount, initials } from '../../shared/lib/format'
+import { compactCount, initials } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import ComposerSheet from './composer-sheet'
 import { composerPrompt } from '../../features/compose-post'

@@ -1,8 +1,9 @@
+import { brandOf } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
-import { brandOf, clockLabel, initials, relativeTime } from '../../shared/lib/format'
+import { clockLabel, initials, relativeTime } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import Toast, { useToast } from '../../shared/ui/toast'
 import {
