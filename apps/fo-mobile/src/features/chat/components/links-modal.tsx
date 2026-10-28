@@ -1,9 +1,9 @@
 import type { LinkKind, UserLink } from '@push/api-client'
 import { useState } from 'react'
-import { Alert, Pressable, ScrollView, Share, View } from 'react-native'
+import { Alert, Pressable, ScrollView, View } from 'react-native'
 import { useColors } from '../../../theme'
 import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Switch, Text, TextField, type BadgeTone, type IconName } from '@/shared/components'
-import { openUrl } from '../../../shared/infrastructure'
+import { openUrl, shareMessage } from '../../../shared/infrastructure'
 import { kindOf } from '../utils/links'
 import { useAddLink, useDeleteLink, useMyLinks } from '@/features/my'
 import { useStartChat } from '../api/hooks'
@@ -61,7 +61,7 @@ export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onCl
     setMenu(null)
     if (what === 'open') void openUrl(l.url)
     // shortcut: no clipboard module installed; the share sheet has 복사. Swap for expo-clipboard when added.
-    if (what === 'copy') void Share.share({ message: l.url })
+    if (what === 'copy') void shareMessage({ message: l.url })
     if (what === 'use') {
       onUse()
       void start(l.title, l.kind === 'job' ? `${l.url} 공고에 맞춰 내 서류를 고쳐 주세요` : `${l.url} 내용을 근거로 써 주세요`)

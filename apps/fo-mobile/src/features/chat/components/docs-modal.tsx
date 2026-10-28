@@ -1,5 +1,6 @@
-import { Pressable, Share, View } from 'react-native'
+import { Pressable, View } from 'react-native'
 import { GlassButton, Icon, Text } from '@/shared/components'
+import { shareMessage } from '@/shared/infrastructure'
 import { type ChatDoc } from '../api/schemas'
 import { useChatDocs, useUploadChatDoc } from '../api/hooks'
 import { FileTag } from './items'
@@ -30,7 +31,7 @@ export const DocsModal = ({ visible, onClose }: { visible: boolean; onClose: () 
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${d.fileName} 공유`}
-            onPress={() => void Share.share({ message: d.fileName })}
+            onPress={() => void shareMessage({ message: d.fileName })}
             style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <Icon name="share" size={20} color="t3" />

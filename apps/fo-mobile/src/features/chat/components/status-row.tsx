@@ -3,7 +3,7 @@ import { Animated, Platform, Pressable, View } from 'react-native'
 import { useColors } from '../../../theme'
 import { Glass, Text } from '@/shared/components'
 import { Glyph } from './items'
-import { usePulse } from './motion'
+import { usePulse } from '../hooks'
 import { formatElapsed } from '../utils/reducer'
 
 type Props = { verbs: string[]; startedAt: number; onStop: () => void }

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Animated, Easing, Platform, Pressable, Share, View } from 'react-native'
+import { Animated, Easing, Platform, Pressable, View } from 'react-native'
 import { fontFor, useColors, type Colors } from '../../../theme'
 import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
+import { shareMessage } from '@/shared/infrastructure'
 import { useOpenArtifact } from '../api/hooks'
+import { usePop, usePulse, useReduceMotion } from '../hooks'
 import { formatElapsed } from '../utils/reducer'
-import { useReduceMotion } from '../hooks'
-import { Appear, usePop, usePulse } from './motion'
+import { Appear } from './motion'
 import type { ChatItem, ToolState } from '../types'
 
 type Of<K extends ChatItem['type']> = Extract<ChatItem, { type: K }>
@@ -380,7 +381,7 @@ export const FileTag = ({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: 
 const FileCard = ({ item }: { item: Of<'file'> }) => {
   const c = useColors()
   const open = useOpenArtifact()
-  const share = () => (item.url ? open.mutate({ url: item.url, name: item.name }) : void Share.share({ message: item.name, title: item.name }))
+  const share = () => (item.url ? open.mutate({ url: item.url, name: item.name }) : void shareMessage({ message: item.name, title: item.name }))
   const body = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
       <FileTag tag={item.tag ?? 'PDF'} />

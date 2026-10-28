@@ -1,4 +1,4 @@
-import { type DataEnvelope, type ListEnvelope } from '@push/api-client'
+import { type AccessMode, type DataEnvelope, type ListEnvelope } from '@push/api-client'
 import { api, http, API_MOCK } from '@/shared/infrastructure'
 import { myApi, type PickedFile } from '@/features/my'
 import { MICRO_CREDITS_PER_CREDIT } from '../constants'
@@ -64,3 +64,13 @@ export const fetchMentionBookmarks = () => api.me.bookmarks({ limit: 20 })
 
 export const fetchArtifactBytes = async (downloadUrl: string) =>
   new Uint8Array(await (await c.raw('GET', downloadUrl)).arrayBuffer())
+
+export const updateAiAccessMode = (mode: AccessMode) => api.me.updateSettings({ aiAccessMode: mode })
+
+export const streamConversation = api.conversations.stream
+
+export const followConversation = api.conversations.follow
+
+export const resolveConversationApproval = api.conversations.resolveApproval
+
+export const fetchConversationMessages = (id: string) => api.conversations.messages(id, { limit: 50 })

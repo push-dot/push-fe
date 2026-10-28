@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Animated, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native'
+import { Animated, Easing, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors } from '../../../theme'
 import { Badge, GlassButton, Icon, Text, type IconName } from '@/shared/components'
@@ -10,8 +10,8 @@ import { useChatAccount, useMe, useRecentConversations } from '../api/hooks'
 import { BookmarksModal } from './bookmarks-modal'
 import { DocsModal } from './docs-modal'
 import { LinksModal } from './links-modal'
+import { SPRING } from '../constants'
 import { useReduceMotion } from '../hooks'
-import { SPRING } from './motion'
 import Mark from './mark'
 import { ago } from '../utils'
 
@@ -35,7 +35,7 @@ export const ChatDrawer = ({ visible, onClose, currentId }: { visible: boolean; 
   useEffect(() => {
     if (visible) {
       x.setValue(0)
-      Animated.timing(x, { toValue: 1, duration: reduce ? 200 : 380, easing: SPRING, useNativeDriver: true }).start()
+      Animated.timing(x, { toValue: 1, duration: reduce ? 200 : 380, easing: Easing.bezier(...SPRING), useNativeDriver: true }).start()
     }
   }, [visible, x, reduce])
 

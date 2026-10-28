@@ -2,6 +2,10 @@ import type { AccessMode } from '@push/api-client'
 import type { Icon3DName } from '@/shared/components'
 import type { QsItem } from './api/schemas'
 
+// Motion values from feature-spec 15.4. Reduce Motion → fades only, no loops.
+export const SPRING = [0.2, 0.9, 0.25, 1] as const
+export const BUBBLE = [0.2, 0.9, 0.25, 1.15] as const
+
 export const ACCESS_MODES: { key: AccessMode; label: string; desc: string }[] = [
   { key: 'ALWAYS_ASK', label: '항상 묻기', desc: '바꾸기 전에 매번 물어봐요' },
   { key: 'AUTO', label: '자동', desc: '나만 바뀌는 일은 바로 하고, 다른 사람에게 닿는 일은 물어봐요' },
