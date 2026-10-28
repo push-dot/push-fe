@@ -21,8 +21,8 @@ import type {
   Source,
   WebNotification,
 } from '@push/api-client'
+import { searchHangul } from '@push/shared'
 import { sessionStore } from '../auth/session'
-import { searchHangul } from '../lib/hangul-search'
 import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from '../model/constants'
 import { assistantReply, type ChatIntent } from '../model/employer-chat'
 

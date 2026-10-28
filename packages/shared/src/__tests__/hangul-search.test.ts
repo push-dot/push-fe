@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matchHangul, searchHangul } from './hangul-search'
+import { matchHangul, searchHangul } from '../index'
 
 describe('matchHangul', () => {
   it('matches choseong', () => {
@@ -24,6 +24,26 @@ describe('matchHangul', () => {
   })
   it('ranks an exact match ahead of choseong', () => {
     expect(matchHangul('결제', '결제')!.rank).toBeLessThan(matchHangul('결제', 'ㄱㅈ')!.rank)
+  })
+  it('highlights the WebSearch span for 백엔드', () => {
+    const marked = (text: string) => {
+      const match = matchHangul(text, '백엔드')
+      return match ? text.slice(match.start, match.end) : null
+    }
+    expect(matchHangul('백엔드 엔지니어 (Kotlin·Spring)', '백엔드')).toMatchObject({ kind: 'prefix', start: 0, end: 3 })
+    expect(matchHangul('백엔드 개발자', '백엔드')).toMatchObject({ kind: 'prefix', start: 0, end: 3 })
+    expect(matchHangul('결제 시스템을 만드는 백엔드 개발자 · 5년', '백엔드')).toMatchObject({
+      kind: 'contains',
+      start: 12,
+      end: 15,
+    })
+    expect(matchHangul('백엔드 · 데이터 파이프라인 · 3년', '백엔드')).toMatchObject({ kind: 'prefix', start: 0, end: 3 })
+    expect(marked('백엔드 엔지니어 (Kotlin·Spring)')).toBe('백엔드')
+    expect(marked('백엔드 개발자')).toBe('백엔드')
+    expect(marked('결제 시스템을 만드는 백엔드 개발자 · 5년')).toBe('백엔드')
+    expect(marked('백엔드 · 데이터 파이프라인 · 3년')).toBe('백엔드')
+    expect(matchHangul('서버 개발자 (Go)', '백엔드')).toBeNull()
+    expect(matchHangul('물류 데이터 엔지니어', '백엔드')).toBeNull()
   })
 })
 
