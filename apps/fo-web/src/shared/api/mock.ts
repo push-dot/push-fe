@@ -1628,6 +1628,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
         accountType: user?.accountType ?? 'PERSONAL',
         companyId: record?.company.id ?? user?.companyId ?? null,
         companyRole: record?.company.role ?? user?.companyRole ?? null,
+        email: 'kim@push.app',
+        provider: 'email',
       },
     })
   }
