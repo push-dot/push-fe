@@ -10,9 +10,6 @@ export const dDay = (deadline: string | null, today = new Date()): string | null
   return diff < 0 ? '마감' : diff === 0 ? 'D-day' : `D-${diff}`
 }
 
-export const careerLabel = (min: number, max: number | null) =>
-  min === 0 && !max ? '신입' : max ? `경력 ${min}–${max}년` : `경력 ${min}년+`
-
 const ym = (iso: string) => `${Number(iso.slice(0, 4))}년 ${Number(iso.slice(5, 7))}월`
 
 export const periodLabel = (c: Pick<Career, 'startedOn' | 'endedOn'>) =>
