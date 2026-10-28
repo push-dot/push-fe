@@ -451,6 +451,8 @@ describe('employer api', () => {
       periodEndsAt: null,
       balanceMicroCredits: 0,
       reservedMicroCredits: 0,
+      monthlyMicroCredits: 0,
+      spentMicroCredits: 0,
     }
     const employerBilling: CompanyBillingStatus = {
       ...legacyBilling,
@@ -472,6 +474,8 @@ describe('employer api', () => {
       chatRetentionDays: null,
       allowAiReadMyFiles: false,
       aiAccessMode: 'AUTO',
+      defaultEffort: 'MEDIUM',
+      confirmBeforeEdit: true,
     }
     const application: Application = {
       id: 'a1',

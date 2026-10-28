@@ -705,6 +705,8 @@ let settings: Settings = {
   chatRetentionDays: null,
   allowAiReadMyFiles: false,
   aiAccessMode: 'AUTO',
+  defaultEffort: 'MEDIUM',
+  confirmBeforeEdit: true,
 }
 
 let consent: Consent = { referenceData: false, updatedAt: null }
@@ -1441,6 +1443,8 @@ const companyBillingStatus = (): CompanyBillingStatus => {
     subscriptionStatus: 'active',
     periodEndsAt: null,
     reservedMicroCredits: 0,
+    monthlyMicroCredits: 0,
+    spentMicroCredits: 0,
   }
 }
 

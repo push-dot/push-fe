@@ -476,6 +476,8 @@ let settings: Settings = {
   chatRetentionDays: 30,
   allowAiReadMyFiles: true,
   aiAccessMode: 'AUTO',
+  defaultEffort: 'MEDIUM',
+  confirmBeforeEdit: true,
 }
 mock('DELETE', 'me', () => null)
 mock('GET', 'me/settings', () => ({ data: settings }))

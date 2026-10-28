@@ -56,11 +56,10 @@ mock('GET', 'profiles', ({ query }) => {
   let list = profiles
   const cats = csv(query, 'category')
   if (cats.length) list = list.filter((p) => p.jobCategory && cats.includes(p.jobCategory))
-  // push-be takes a single tenure / status value.
-  const tenure = query.get('tenure')
-  if (tenure) list = list.filter((p) => p.tenureYears != null && tenureOf(p.tenureYears) === tenure)
-  const status = query.get('status')
-  if (status) list = list.filter((p) => p.careerStatus === status)
+  const tenures = csv(query, 'tenure')
+  if (tenures.length) list = list.filter((p) => p.tenureYears != null && tenures.includes(tenureOf(p.tenureYears)))
+  const statuses = csv(query, 'status')
+  if (statuses.length) list = list.filter((p) => p.careerStatus != null && statuses.includes(p.careerStatus))
   // shortcut: 추천 returns everyone (no "my 직군" in the mock); the real API matches the viewer's category.
   if (query.get('explore') === 'offers') list = list.filter((p) => offers.has(p.userId))
   const q = query.get('q') ?? ''
