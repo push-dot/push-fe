@@ -1,8 +1,9 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
+import { careerLabel } from '@push/shared'
 import { useParams } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { isWebView, send } from '../../shared/lib/bridge'
-import { brandOf, careerLabel, dDay } from '../../shared/lib/format'
+import { brandOf, dDay } from '../../shared/lib/format'
 import type { PostingView } from '../../shared/api/mock'
 import { showFitCard } from '../../shared/model/fit-card'
 import Toast, { useToast } from '../../shared/ui/toast'
@@ -22,6 +23,7 @@ const PostingPage = () => {
   if (!p) return <Status error={!!error} what="공고" />
   if (!isWebView()) return <BrowserPosting posting={p} message={toast.message} onToast={toast.show} />
   const dday = dDay(p.deadline)
+  const career = careerLabel(p)
   const duties = p.description.split('\n').map((s) => s.trim()).filter(Boolean)
   return (
     <main className="page">
@@ -42,7 +44,7 @@ const PostingPage = () => {
         <div className="badges">
           {dday ? <span className="badge red">{dday}</span> : null}
           <span className="badge grey">{p.location}</span>
-          <span className="badge grey">{careerLabel(p.careerMin, p.careerMax)}</span>
+          <span className="badge grey">{career === '신입' ? career : `경력 ${career}`}</span>
           <span className="badge grey">{EMPLOYMENT_TYPES.find((t) => t.key === p.employmentType)?.label}</span>
         </div>
       </header>

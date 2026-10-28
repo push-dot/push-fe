@@ -1,8 +1,9 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
+import { careerLabel } from '@push/shared'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { send } from '../../shared/lib/bridge'
-import { brandOf, careerLabel, dDay } from '../../shared/lib/format'
+import { brandOf, dDay } from '../../shared/lib/format'
 import type { PostingView } from '../../shared/api/mock'
 import Toast from '../../shared/ui/toast'
 import PostingActions from './posting-actions'
@@ -18,7 +19,8 @@ const longDate = (iso: string | null) => {
 const BrowserPosting = ({ posting, message, onToast }: { posting: PostingView; message: string | null; onToast: (text: string) => void }) => {
   const dday = dDay(posting.deadline)
   const duties = posting.description.split('\n').map((line) => line.trim()).filter(Boolean)
-  const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
+  const career = careerLabel(posting)
+const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
   const conditions = workConditionLines(posting.workConditions)
   const deadline = longDate(posting.deadline)
   return (
@@ -41,7 +43,7 @@ const BrowserPosting = ({ posting, message, onToast }: { posting: PostingView; m
             </div>
             <h1 className="h1">{posting.title}</h1>
             <p className="b1 t2">
-              {[posting.location, careerLabel(posting.careerMin, posting.careerMax), employment].filter(Boolean).join(' · ')}
+              {[posting.location, career === '신입' ? career : `경력 ${career}`, employment].filter(Boolean).join(' · ')}
               {dday ? (
                 <>
                   {' · '}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { careerLabel, dDay, initials, periodLabel, roleLabel } from './format'
+import { dDay, initials, periodLabel, roleLabel } from './format'
 
 describe('format', () => {
   const today = new Date(2026, 9, 20, 23, 30)
@@ -8,11 +8,6 @@ describe('format', () => {
     expect(dDay('2026-10-20', today)).toBe('D-day')
     expect(dDay('2026-10-19', today)).toBe('마감')
     expect(dDay(null, today)).toBeNull()
-  })
-  it('careerLabel', () => {
-    expect(careerLabel(4, 6)).toBe('경력 4–6년')
-    expect(careerLabel(0, null)).toBe('신입')
-    expect(careerLabel(7, null)).toBe('경력 7년+')
   })
   it('periodLabel / roleLabel / initials', () => {
     expect(periodLabel({ startedOn: '2023-03-01', endedOn: null })).toBe('2023년 3월 – 현재')

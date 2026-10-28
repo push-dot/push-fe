@@ -1,4 +1,5 @@
 import { stageBadge } from '@push/api-client'
+import { careerLabel } from '@push/shared'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -6,7 +7,6 @@ import { useApplications, useCalendar } from '../../entities/application'
 import { useMyPosts } from '../../entities/post'
 import { useFollows } from '../../entities/profile'
 import { useBookmarks } from '../../entities/posting'
-import { careerLabel } from '../../shared/lib/format'
 import { ACTIVITY_CHIP_KEY, APPLICATION_EMPTY, BOOKMARK_EMPTY, CALENDAR_EMPTY, FIT_NOTE, FOLLOW_EMPTY, POST_EMPTY } from './constants'
 
 
@@ -120,7 +120,7 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
                   <span className="c1 t3">{posting.company}</span>
                   <strong className="b1">{posting.title}</strong>
                   <span className="c1 t2">
-                    {posting.location} · {careerLabel(posting.careerMin, posting.careerMax)}
+                    {posting.location} · {careerLabel(posting)}
                   </span>
                 </Link>
               </li>
