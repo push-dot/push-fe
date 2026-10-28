@@ -3,8 +3,6 @@ import { api, http, API_MOCK } from '../../../shared/infrastructure'
 import type { CalendarEvent, MySource, PickedFile, ResumeDraft } from '../types'
 import { toResumeDraft } from '../utility'
 
-// shortcut: endpoints @push/api-client lacks go through the shared client directly; move them into
-// @push/api-client once push-be ships them.
 const c = http
 
 // Values are this session's ingest job ids so the list can show 읽는 중 until the server reads the file.
