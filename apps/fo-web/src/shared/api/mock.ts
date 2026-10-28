@@ -762,6 +762,16 @@ const uploadedSources: Source[] = []
 
 const allSources = () => [...uploadedSources, ...seedSources]
 
+const libraryItem = (source: Source) => ({
+  id: source.id,
+  fileName: source.fileName,
+  mimeType: source.mimeType,
+  size: source.size,
+  pageCount: null,
+  createdAt: source.createdAt ?? null,
+  origin: 'UPLOAD',
+})
+
 const employerPersona = () => {
   const kind = mockPersona()
   return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra' || kind === 'employer-new'
@@ -1551,7 +1561,9 @@ export const mockFetch: typeof fetch = async (input, init) => {
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && /\/sources\/?$/.test(pathname)) {
-    return json(200, { data: allSources(), page: { nextCursor: null, hasMore: false } })
+    const kind = url.searchParams.get('kind')
+    const data = kind === 'AI' ? [] : allSources().map(libraryItem)
+    return json(200, { data, page: { nextCursor: null, hasMore: false } })
   }
   if (method === 'GET' && /\/postings\/[^/]+$/.test(pathname)) {
     const id = decodeURIComponent(pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? '')
