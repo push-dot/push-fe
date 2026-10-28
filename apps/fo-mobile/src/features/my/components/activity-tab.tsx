@@ -2,8 +2,8 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES, stageBadge, type Profile } from '@push/api-client'
+import { careerLabel, monthDay } from '@push/shared'
 import { Badge, Chip, Icon, SegmentedControl, Text } from '@/shared/components'
-import { careerLabel } from '@/shared/utility'
 import { useColors } from '../../../theme'
 import {
   useFollowToggle,
@@ -15,7 +15,7 @@ import {
   useMyPosts,
 } from '../api/hooks'
 import type { ActivitySub } from '../types'
-import { followState, monthDay, stageTone, timeAgo } from '../utility'
+import { followState, stageTone, timeAgo } from '../utility'
 import Avatar from './avatar'
 import CalendarView from './calendar-view'
 import Empty from './empty'

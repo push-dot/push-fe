@@ -10,9 +10,6 @@ export const dDay = (deadline: string | null, today = new Date()): string | null
   return diff < 0 ? '마감' : diff === 0 ? 'D-day' : `D-${diff}`
 }
 
-export const careerLabel = (min: number, max: number | null) =>
-  min === 0 && !max ? '신입' : max ? `경력 ${min}–${max}년` : `경력 ${min}년+`
-
 const ym = (iso: string) => `${Number(iso.slice(0, 4))}년 ${Number(iso.slice(5, 7))}월`
 
 export const periodLabel = (c: Pick<Career, 'startedOn' | 'endedOn'>) =>
@@ -24,9 +21,6 @@ export const roleLabel = (category: JobCategory | null, years: number | null) =>
     .join(' · ')
 
 export const initials = (name: string) => ([...name].length >= 3 ? [...name].slice(-2).join('') : name)
-
-const BRAND = ['#1F3A8A', '#0E7A5F', '#7A2E8C', '#B4501E', '#1B6E8F', '#5B4CF0', '#8C2F39']
-export const brandOf = (name: string) => BRAND[[...name].reduce((a, ch) => a + ch.charCodeAt(0), 0) % BRAND.length]!
 
 export const relativeTime = (iso: string, now = Date.now()) => {
   const delta = now - new Date(iso).getTime()

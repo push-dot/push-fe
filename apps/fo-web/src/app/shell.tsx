@@ -1,7 +1,8 @@
+import { brandOf } from '@push/shared'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { brandOf, initials } from '../shared/lib/format'
+import { initials } from '../shared/lib/format'
 import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'

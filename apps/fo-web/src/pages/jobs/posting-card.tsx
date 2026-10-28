@@ -1,17 +1,12 @@
 import type { Posting } from '@push/api-client'
+import { brandOf, careerLabel } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
-import { brandOf, careerLabel } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { postingsBookmark, postingsUnbookmark } from '../../features/bookmark-posting'
 
-
-const shortCareer = (min: number, max: number | null) => {
-  const label = careerLabel(min, max)
-  return label.startsWith('경력 ') ? label.slice(3) : label
-}
 
 const PostingCard = ({ posting }: { posting: Posting }) => {
   const session = useSession()
@@ -57,7 +52,7 @@ const PostingCard = ({ posting }: { posting: Posting }) => {
         <span className="c1 t3 w6">{posting.company}</span>
         <span className="b1 w7 cap">{posting.title}</span>
         <span className="c1 t3">
-          {posting.location} · {shortCareer(posting.careerMin, posting.careerMax)}
+          {posting.location} · {careerLabel(posting)}
         </span>
       </Link>
     </article>

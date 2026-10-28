@@ -1,10 +1,10 @@
-import { EMPLOYMENT_TYPES } from '@push/api-client'
+import { brandOf, monthDay } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { isWebView } from '../../shared/lib/bridge'
-import { brandOf, careerLabel, dDay } from '../../shared/lib/format'
+import { dDay } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { canUseEmployerAi } from '../../shared/model/employer-plan'
@@ -41,13 +41,6 @@ const copyUrl = async (url: string) => {
     document.execCommand('copy')
     area.remove()
   }
-}
-
-const monthDay = (iso: string | null) => {
-  if (!iso) return null
-  const [, month, day] = iso.slice(0, 10).split('-').map(Number)
-  if (!month || !day) return null
-  return `${month}월 ${day}일`
 }
 
 const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (message: string) => void }) => {
@@ -104,7 +97,6 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
   }
   const dday = dDay(posting.deadline)
   const when = monthDay(posting.deadline)
-  const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
   return (
     <>
       <aside className="job-aside">
@@ -122,7 +114,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
               <span className="c1 t3 cap">{posting.title}</span>
             </span>
           </div>
-          <p className="b2 t2">{[when ? `${when} 마감` : null, dday, employment, careerLabel(posting.careerMin, posting.careerMax)].filter(Boolean).join(' · ')}</p>
+          <p className="b2 t2">{[when ? `${when} 마감` : null, dday].filter(Boolean).join(' · ')}</p>
           {mode === 'employer' ? (
             <Link
               className="btn pri lg block"

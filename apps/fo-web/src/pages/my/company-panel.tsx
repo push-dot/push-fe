@@ -1,7 +1,7 @@
+import { brandOf } from '@push/shared'
 import { Link } from 'react-router-dom'
 
 import { useMyCompany } from '../../entities/company'
-import { brandOf } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import { formatBno } from '../../features/verify-business'
 import { COMPANY_LOCKED, COMPANY_NO_HUB, COMPANY_UNVERIFIED, COMPANY_VERIFIED, PLAN_NONE } from './constants'

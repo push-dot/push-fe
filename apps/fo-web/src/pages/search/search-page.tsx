@@ -1,12 +1,12 @@
 import type { Post, Posting, Profile } from '@push/api-client'
+import { brandOf, careerLabel, matchHangul } from '@push/shared'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { isMock } from '../../shared/lib/bridge'
-import { brandOf, careerLabel, initials } from '../../shared/lib/format'
+import { initials } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
-import { matchHangul } from '../../shared/lib/hangul-search'
 import { SEARCH_EMPTY, SEARCH_LOGIN_COPY, SEARCH_TABS, TRENDING_SEARCHES, TRENDING_TITLE, type SearchType } from './constants'
 import { clearRecentSearches, readRecentSearches, saveRecentSearch } from '../../features/recent-searches'
 import { useSearchPeople, useSearchPostings, useSearchPosts } from '../../features/search-catalog'
@@ -95,7 +95,7 @@ const SearchPage = () => {
                   <Highlight text={posting.title} query={q} />
                 </strong>
                 <span className="c1 t3">
-                  {posting.location} · {careerLabel(posting.careerMin, posting.careerMax).replace(/^경력 /, '')}
+                  {posting.location} · {careerLabel(posting)}
                 </span>
               </span>
             </Link>

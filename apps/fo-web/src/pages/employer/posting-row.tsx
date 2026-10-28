@@ -1,6 +1,6 @@
 import { EMPLOYMENT_TYPES, type Posting } from '@push/api-client'
+import { careerLabel } from '@push/shared'
 import { Link } from 'react-router-dom'
-import { careerLabel } from '../../shared/lib/format'
 import { APPLICANTS_LINK, DEADLINE_OPEN, STATUS_CLOSED, STATUS_OPEN } from './constants'
 
 const deadlineLabel = (iso: string | null) => {
@@ -11,6 +11,7 @@ const deadlineLabel = (iso: string | null) => {
 }
 
 const PostingRow = ({ posting }: { posting: Posting }) => {
+  const career = careerLabel(posting)
   const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
   const closed = Boolean(posting.closedAt)
   return (
@@ -18,7 +19,7 @@ const PostingRow = ({ posting }: { posting: Posting }) => {
       <td>
         <Link to={`/employer/postings/${posting.id}/edit`}>
           <strong className="b1">{posting.title}</strong>
-          <span className="c1 t3">{[careerLabel(posting.careerMin, posting.careerMax), employment].filter(Boolean).join(' · ')}</span>
+          <span className="c1 t3">{[career === '신입' ? career : `경력 ${career}`, employment].filter(Boolean).join(' · ')}</span>
         </Link>
       </td>
       <td>

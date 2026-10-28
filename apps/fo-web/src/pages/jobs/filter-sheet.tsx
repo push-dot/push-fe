@@ -1,6 +1,6 @@
 import { CAREER_YEARS, EMPLOYMENT_TYPES, JOB_CATEGORIES } from '@push/api-client'
+import { searchHangul } from '@push/shared'
 import { useState } from 'react'
-import { searchHangul } from '../../shared/lib/hangul-search'
 import { FILTER_CHIPS, SKILL_OPTIONS, type FilterKey, type JobFilters } from './constants'
 
 const toggleValue = <T extends string>(list: T[], value: T): T[] =>
