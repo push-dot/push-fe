@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
-import { jobQuery, type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
-import { api } from '../../../shared/infrastructure'
+import { type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
 import type { CalendarEvent, PickedFile } from '../types'
 import {
   acceptOffer,
@@ -28,6 +27,7 @@ import {
   fetchSource,
   fetchUnreadOffers,
   followProfile,
+  ingestJobQuery,
   myApi,
   sendOfferMessage,
   unfollowProfile,
@@ -50,7 +50,7 @@ export const useAuthMe = () => useQuery({ queryKey: ['auth', 'me'], queryFn: fet
 export const useSources = () =>
   useQuery({ queryKey: ['me', 'sources'], queryFn: () => myApi.sources() })
 
-export const useIngestJob = (jobId: string | undefined) => useQuery(jobQuery(api.jobs, jobId))
+export const useIngestJob = (jobId: string | undefined) => useQuery(ingestJobQuery(jobId))
 
 type Box = 'received' | 'sent'
 

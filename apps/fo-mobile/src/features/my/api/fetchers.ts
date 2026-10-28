@@ -1,4 +1,4 @@
-import { type DataEnvelope, type ListEnvelope, type Posting } from '@push/api-client'
+import { jobQuery, type DataEnvelope, type ListEnvelope, type Posting } from '@push/api-client'
 import { api, deleteAccount, http, API_MOCK, signOut } from '../../../shared/infrastructure'
 import type { CalendarEvent, MySource, PickedFile, ResumeDraft } from '../types'
 import { toResumeDraft } from '../utils'
@@ -49,6 +49,8 @@ export const myApi = {
 }
 
 const FIRST = { limit: 50 }
+
+export const ingestJobQuery = (jobId: string | undefined) => jobQuery(api.jobs, jobId)
 
 export const fetchUnreadOffers = () => api.me.offers('received', { limit: 50 })
 
