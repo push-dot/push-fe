@@ -480,6 +480,19 @@ let settings: Settings = {
   confirmBeforeEdit: true,
 }
 mock('DELETE', 'me', () => null)
+mock('GET', 'auth/me', () => ({
+  data: {
+    id: 'me',
+    displayName: '김서준',
+    locale: 'ko',
+    createdAt: on(1, 5),
+    accountType: 'PERSONAL',
+    companyId: null,
+    companyRole: null,
+    email: 'seojun.kim@gmail.com',
+    provider: 'google',
+  },
+}))
 mock('GET', 'me/settings', () => ({ data: settings }))
 mock('PATCH', 'me/settings', ({ body }) => {
   settings = { ...settings, ...(body as Partial<Settings>) }

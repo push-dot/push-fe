@@ -16,6 +16,8 @@ export const useUnreadOffers = () =>
 
 export const useMyProfile = () => useQuery({ queryKey: ['me', 'profile'], queryFn: api.me.profile })
 
+export const useAuthMe = () => useQuery({ queryKey: ['auth', 'me'], queryFn: api.auth.me })
+
 export const useSources = () =>
   useQuery({ queryKey: ['me', 'sources'], queryFn: () => myApi.sources() })
 
