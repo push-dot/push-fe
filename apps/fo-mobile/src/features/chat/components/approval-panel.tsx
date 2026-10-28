@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Animated, Platform, Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { radius, useColors } from '../../theme'
+import { radius, useColors } from '../../../theme'
 import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
 import { FileTag } from './items'
-import { SPRING, useReduceMotion } from './motion'
-import type { Approval, ApprovalSection, Choice } from './types'
+import { useReduceMotion } from '../hooks'
+import { SPRING } from './motion'
+import type { Approval, ApprovalSection, Choice } from '../types'
 
 type Props = {
   approval: Approval

@@ -1,19 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { AccessibilityInfo, Animated, Easing, type StyleProp, type ViewStyle } from 'react-native'
+import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native'
+import { useReduceMotion } from '../hooks'
 
 // Motion values from feature-spec 15.4. Reduce Motion → fades only, no loops.
 export const SPRING = Easing.bezier(0.2, 0.9, 0.25, 1)
 export const BUBBLE = Easing.bezier(0.2, 0.9, 0.25, 1.15)
-
-export const useReduceMotion = () => {
-  const [on, setOn] = useState(false)
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setOn)
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setOn)
-    return () => sub.remove()
-  }, [])
-  return on
-}
 
 type AppearProps = {
   children: ReactNode

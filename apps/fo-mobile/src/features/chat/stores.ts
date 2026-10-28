@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { ApiError, QueueBusyError, type AccessMode } from '@push/api-client'
 import { api, API_MOCK, hapticImpactLight, hapticNotify } from '@/shared/infrastructure'
-import { chatApi, type RunInput } from './api/client'
+import { chatApi } from './api/fetchers'
+import type { RunInput } from './api/schemas'
 import { DEFAULT_ACCESS_MODE } from './constants'
-import { applyEvent, emptyChat } from './reducer'
-import { errorText, fromStream } from './stream'
+import { applyEvent, emptyChat } from './utils/reducer'
+import { errorText, fromStream } from './utils/stream'
 import type { ChatEvent, ChatState } from './types'
 
 // Runs live outside React so they keep going when the conversation screen closes (feature-spec 2).

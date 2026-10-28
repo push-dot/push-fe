@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, Share, View } from 'react-native'
-import { fontFor, useColors, type Colors } from '../../theme'
+import { fontFor, useColors, type Colors } from '../../../theme'
 import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
-import { useOpenArtifact } from './api/hooks'
-import { formatElapsed } from './reducer'
-import { Appear, usePop, usePulse, useReduceMotion } from './motion'
-import type { ChatItem, ToolState } from './types'
+import { useOpenArtifact } from '../api/hooks'
+import { formatElapsed } from '../utils/reducer'
+import { useReduceMotion } from '../hooks'
+import { Appear, usePop, usePulse } from './motion'
+import type { ChatItem, ToolState } from '../types'
 
 type Of<K extends ChatItem['type']> = Extract<ChatItem, { type: K }>
 
