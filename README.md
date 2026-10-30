@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/logo/push-app-icon-dark-tile.png" width="128" alt="Push 마스코트" />
-</p>
-
 <h1 align="center">Push FE</h1>
 
 <p align="center">
@@ -198,10 +194,7 @@ packages/
 docs/
   design/             Claude Design 시안
   plans/              구현 계획
-assets/logo/          마스코트. 다크 타일 PNG·SVG, 투명 마크 SVG
 ```
-
-투명 배경 마크는 `assets/logo/push-mark-dark-transparent.svg`와 `assets/logo/push-mark-white-transparent.svg`예요.
 
 ## 기여
 
