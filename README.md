@@ -14,7 +14,7 @@
 
 ---
 
-**push-fe**는 Push 클라이언트를 모아 둔 pnpm 워크스페이스예요. 이 문서는 `apps/fo-web`, `apps/fo-mobile`, `packages/api-client`, `packages/shared`를 다뤄요. `apps/fo-desktop`(Tauri)과 그 앱만 쓰는 `packages/design-system`은 여기 적지 않아요.
+**push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/shared`예요.
 
 화면 문구는 한국어이고, 시안 HTML은 `docs/design/`에 있어요. `docs/plans/`는 구현 계획이에요.
 
@@ -106,16 +106,14 @@ Expo 패키지를 더할 때는 앱 디렉터리에서 `npx expo install <packag
 
 Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요. npm 스크립트와 CI에는 연결되어 있지 않아요.
 
-### 워크스페이스 전체
+### 웹·모바일 함께
 
 ```bash
-pnpm typecheck    # turbo run typecheck
-pnpm lint         # lint 스크립트가 있는 패키지만
-pnpm test         # turbo run test (Vitest)
-pnpm check        # typecheck, lint, test, build
+pnpm --filter @push/fo-web --filter @push/fo-mobile --filter @push/api-client --filter @push/shared typecheck
+pnpm --filter @push/fo-web --filter @push/fo-mobile --filter @push/api-client --filter @push/shared test
+pnpm --filter @push/fo-mobile lint
+pnpm --filter @push/fo-web build
 ```
-
-루트 `dev`와 `build`의 turbo 필터는 `@push/fo-desktop`이에요. 웹과 모바일을 띄우거나 웹을 빌드할 때는 위의 `--filter` 명령을 써요.
 
 ## 환경 변수
 
@@ -174,25 +172,19 @@ Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 탭 다섯 개 밖에 검
 ## 테스트·CI
 
 ```bash
-pnpm typecheck
-pnpm lint
-pnpm test
 pnpm --filter @push/fo-web test
+pnpm --filter @push/fo-web typecheck
+pnpm --filter @push/fo-web build
 pnpm --filter @push/fo-mobile test
+pnpm --filter @push/fo-mobile lint
+pnpm --filter @push/fo-mobile typecheck
 pnpm --filter @push/api-client test
+pnpm --filter @push/api-client typecheck
 pnpm --filter @push/shared test
+pnpm --filter @push/shared typecheck
 ```
 
-`.github/workflows/ci.yml`은 PR과 `develop`·`main` push, `workflow_dispatch`에서 돌아요.
-
-| job | 명령 |
-| --- | --- |
-| `check` | `pnpm install --frozen-lockfile`, `turbo run typecheck lint test`, `pnpm run build` |
-| `e2e` | 데스크톱 Playwright. 이 문서의 앱 범위 밖이에요 |
-
-`check`의 `pnpm run build`는 루트 `build` 스크립트라 필터가 `@push/fo-desktop`이에요. 웹 프로덕션 빌드는 `pnpm --filter @push/fo-web build`예요.
-
-`.github/workflows/release.yml`은 태그 `v*`에서 데스크톱 설치 파일을 만들어요. 웹 호스팅이나 스토어 제출 워크플로는 이 저장소에 없어요.
+`.github/workflows/ci.yml`은 PR과 `develop`·`main` push, `workflow_dispatch`에서 `pnpm install --frozen-lockfile` 뒤에 `turbo run typecheck lint test`를 실행해요. 웹 프로덕션 빌드는 `pnpm --filter @push/fo-web build`예요. 웹 호스팅이나 스토어 제출 워크플로는 이 저장소에 없어요.
 
 ## 구조
 
