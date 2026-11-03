@@ -7,6 +7,7 @@ export {
   openBrowser,
   openAuthSession,
   openUrl,
+  openSystemSettings,
   pickDocument,
   pickImage,
   hapticImpactLight,
@@ -15,3 +16,4 @@ export {
   shareFile,
 } from './platform'
 export { shareMessage } from './platform'
+export { readNotificationPermission } from './notification-permission'
