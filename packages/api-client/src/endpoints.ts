@@ -5,11 +5,13 @@ import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
-  DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
-  Offer, OfferMessage, PageParams, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile,
-  ProfileFilters, Session, Settings, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
+  Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile,
+  ProfileFilters, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
+
+const bearer = (accessToken?: string) => (accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined)
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
@@ -19,7 +21,12 @@ export const createApi = (c: Client) => ({
       unwrap(c.get<DataEnvelope<{ authorizationUrl: string; state: string }>>(`auth/${provider}/start`, {
         query: { ...query, codeChallengeMethod: 'S256' },
       })),
-    exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<Session>>('auth/exchange', { body })),
+    exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<AuthResult>>('auth/exchange', { body })),
+    appleNative: (body: { identityToken: string; nonce: string }) =>
+      unwrap(c.post<DataEnvelope<AuthResult>>('auth/apple/native', { body })),
+    phoneSend: (phone: string) => unwrap(c.post<DataEnvelope<PhoneCodeSent>>('auth/phone/send', { body: { phone } })),
+    phoneVerify: (body: { phone: string; code: string; pendingToken?: string }) =>
+      unwrap(c.post<DataEnvelope<PhoneVerifyResult>>('auth/phone/verify', { body })),
     refresh: (refreshToken: string) => unwrap(c.post<DataEnvelope<Session>>('auth/refresh', { body: { refreshToken } })),
     logout: (refreshToken: string) => c.post<void>('auth/logout', { body: { refreshToken } }),
     me: () => unwrap(c.get<DataEnvelope<Me>>('auth/me')),
@@ -116,9 +123,11 @@ export const createApi = (c: Client) => ({
     settings: () => unwrap(c.get<DataEnvelope<Settings>>('me/settings')),
     updateSettings: (patch: Partial<Settings> & { defaultTone?: Tone }) =>
       unwrap(c.patch<DataEnvelope<Settings>>('me/settings', { body: patch })),
-    consents: () => unwrap(c.get<DataEnvelope<Consent>>('me/consents')),
+    consents: (accessToken?: string) => unwrap(c.get<DataEnvelope<Consent>>('me/consents', { headers: bearer(accessToken) })),
     updateConsents: (referenceData: boolean) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
+    updateTerms: (body: SignupTermsInput, accessToken?: string) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body, headers: bearer(accessToken) })),
   },
 
   posts: {

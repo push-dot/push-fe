@@ -28,6 +28,10 @@ const CallbackPage = () => {
     const run = async () => {
       try {
         const session = await authExchange({ code, codeVerifier: verifier })
+        if (!('accessToken' in session)) {
+          setMessage(LOGIN_FAILED_COPY)
+          return
+        }
         sessionStore.save(session)
         navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
       } catch (caught) {

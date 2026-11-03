@@ -280,6 +280,11 @@ export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
   audience?: BillingAudience
 }
 
+export type PendingAuth = { pendingToken: string; expiresIn: number }
+export type AuthResult = Session | PendingAuth
+export type PhoneCodeSent = { cooldownSeconds: number; expiresAt: string }
+export type PhoneVerifyResult = Session & { created: boolean; linked?: boolean; provider?: string }
+
 export type Session = {
   accessToken: string
   refreshToken: string
@@ -332,7 +337,22 @@ export type ApplicantDetail = {
   documents: { id: string; title: string; content: string }[]
 }
 
-export type Consent = { referenceData: boolean; updatedAt: string | null }
+export type ConsentTerms = {
+  version: string | null
+  age14At: string | null
+  serviceTermsAt: string | null
+  privacyAt: string | null
+  marketing: boolean
+  marketingAt: string | null
+}
+export type Consent = { referenceData: boolean; updatedAt: string | null; terms?: ConsentTerms }
+export type SignupTermsInput = {
+  age14: true
+  serviceTerms: true
+  privacy: true
+  marketing: boolean
+  termsVersion?: string
+}
 
 export type CreatePostingInput = {
   title: string
