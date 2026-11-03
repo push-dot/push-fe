@@ -210,7 +210,7 @@ export type AiOptions = {
 }
 
 export type AccessMode = 'ALWAYS_ASK' | 'AUTO' | 'BYPASS'
-export type ChatIntent = 'posting' | 'review' | 'interview' | 'general'
+export type ChatIntent = 'posting' | 'review' | 'interview' | 'general' | 'boost'
 export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
 export type StreamOption = { id: string; label: string }
@@ -234,7 +234,7 @@ export type StreamEvent = (
       args?: Record<string, unknown>
       documentId?: string
     }
-  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean }
+  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
   | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
   | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
