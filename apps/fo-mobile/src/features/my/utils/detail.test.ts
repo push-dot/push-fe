@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dayBreaks, eventWhen, fitTen, hubProfile, stageSteps } from './index'
+import { dayBreaks, eventWhen, fitTen, hubProfile, personLine, stageSteps } from './index'
 
 const doc = (...nodes: unknown[]) => ({ type: 'doc', content: nodes })
 const h = (text: string) => ({ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text }] })
@@ -78,5 +78,11 @@ describe('my detail rules', () => {
     expect(eventWhen(new Date(2026, 9, 21, 15).toISOString(), now)).toBe('내일 오후 3:00')
     expect(eventWhen(new Date(2026, 9, 20, 11, 30).toISOString(), now)).toBe('오늘 오전 11:30')
     expect(eventWhen(new Date(2026, 9, 23, 14).toISOString(), now)).toBe('10월 23일 오후 2:00')
+  })
+
+  it('names an offer person by company and headline', () => {
+    expect(personLine({ companyName: '모아페이', headline: '결제 플랫폼팀 채용 담당' })).toBe('모아페이 · 결제 플랫폼팀 채용 담당')
+    expect(personLine({ companyName: null, headline: '' })).toBe('')
+    expect(personLine({})).toBe('')
   })
 })

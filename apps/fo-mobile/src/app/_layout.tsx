@@ -32,6 +32,7 @@ const RootLayout = () => {
             <Stack.Screen name="search" />
             <Stack.Screen name="offers/index" />
             <Stack.Screen name="offers/[id]" />
+            <Stack.Screen name="offers/[id]/messages" />
             <Stack.Screen name="settings/index" />
             <Stack.Screen name="settings/visibility" />
             <Stack.Screen name="docs/[id]" />

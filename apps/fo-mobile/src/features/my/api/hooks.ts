@@ -319,7 +319,7 @@ export const useOfferPosting = (postingId: string | undefined) =>
     enabled: !!postingId,
   })
 
-export const useOfferMessages = (offerId: string, onSent: () => void) => {
+export const useOfferMessages = (offerId: string) => {
   const qc = useQueryClient()
   const key = ['me', 'offer', offerId, 'messages']
   const query = useQuery({
@@ -328,10 +328,7 @@ export const useOfferMessages = (offerId: string, onSent: () => void) => {
   })
   const send = useMutation({
     mutationFn: (body: string) => sendOfferMessage(offerId, body),
-    onSuccess: () => {
-      onSent()
-      void qc.invalidateQueries({ queryKey: key })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
   return { data: query.data, send }
 }
