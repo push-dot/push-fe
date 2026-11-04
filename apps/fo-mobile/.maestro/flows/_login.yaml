@@ -4,6 +4,7 @@ tags:
 ---
 - launchApp:
     clearState: true
+    clearKeychain: true
 - extendedWaitUntil:
     visible: "개발 토큰으로 들어가기"
     timeout: 60000
