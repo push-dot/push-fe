@@ -7,7 +7,9 @@ import { useOpenArtifact } from '../api/hooks'
 import { usePop, usePulse, useReduceMotion } from '../hooks'
 import { isUsageExhausted } from '../utils/usage'
 import { formatElapsed } from '../utils/reducer'
+import { resultButtons, resultChrome } from '../utils/result-card'
 import { Appear } from './motion'
+import Mark from './mark'
 import { UsageExhausted } from './usage-exhausted'
 import type { ChatItem, ToolState } from '../types'
 
@@ -367,26 +369,12 @@ const FitCard = ({ item }: { item: Of<'fit'> }) => {
   )
 }
 
-/** File tag: 40×48 page with the type at the bottom (PDF red, others violet). */
-export const FileTag = ({ tag, w = 40, h = 48 }: { tag: string; w?: number; h?: number }) => {
-  const c = useColors()
-  const pdf = tag === 'PDF'
-  return (
-    <View style={{ width: w, height: h, borderRadius: 8, backgroundColor: pdf ? c.redSoft : c.acSoft, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: h > 40 ? 6 : 4 }}>
-      <Text weight="800" style={{ fontSize: w > 32 ? 10 : 8, lineHeight: 12, color: pdf ? c.red : c.ac }}>
-        {tag}
-      </Text>
-    </View>
-  )
-}
-
 const FileCard = ({ item }: { item: Of<'file'> }) => {
   const c = useColors()
   const open = useOpenArtifact()
   const share = () => (item.url ? open.mutate({ url: item.url, name: item.name }) : void shareMessage({ message: item.name, title: item.name }))
   const body = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
-      <FileTag tag={item.tag ?? 'PDF'} />
       <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
         <Text v="b2" weight="700" numberOfLines={1}>
           {item.name}
@@ -417,6 +405,45 @@ const FileCard = ({ item }: { item: Of<'file'> }) => {
       ) : (
         <View style={{ borderRadius: 16, borderWidth: 1, borderColor: c.line }}>{body}</View>
       )}
+    </Appear>
+  )
+}
+
+const ResultCard = ({
+  item,
+  onApply,
+  onSecondary,
+  secondaryDisabled,
+}: {
+  item: Of<'result'>
+  onApply: () => void
+  onSecondary: () => void
+  secondaryDisabled?: boolean
+}) => {
+  const chrome = resultChrome(item)
+  const [primary, secondary] = resultButtons(item)
+  const c = useColors()
+  const share = () => void shareMessage({ message: item.title, title: item.title })
+  return (
+    <Appear style={{ gap: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {chrome.initials ? <Mark text={chrome.initials} color={c.ac} size={44} round /> : null}
+        <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+          <Text v="b1" weight="700" numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text v="c1" color="t3">
+            {item.meta}
+          </Text>
+        </View>
+        {chrome.share ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="공유" onPress={share} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="share" size={22} color="t2" />
+          </Pressable>
+        ) : null}
+      </View>
+      <Button label={primary} onPress={onApply} />
+      <Button label={secondary} variant="secondary" onPress={onSecondary} disabled={secondaryDisabled} />
     </Appear>
   )
 }
@@ -473,10 +500,14 @@ export const Item = ({
   item,
   onAction,
   onUsage,
+  onResult,
+  resultPending,
 }: {
   item: ChatItem
   onAction: (text: string) => void
   onUsage?: (action: 'plan' | 'credits') => void
+  onResult?: (item: Of<'result'>) => void
+  resultPending?: boolean
 }) => {
   const c = useColors()
   switch (item.type) {
@@ -507,12 +538,14 @@ export const Item = ({
       return <FileCard item={item} />
     case 'paper':
       return <Paper item={item} />
-    case 'actions':
+    case 'result':
       return (
-        <Appear style={{ gap: 8 }}>
-          <Button label={`${item.company}에 바로 지원하기`} onPress={() => onAction(`${item.company}에 바로 지원해 줘`)} />
-          <Button label="내 서류에 저장" variant="secondary" onPress={() => onAction('내 서류에 저장해 줘')} />
-        </Appear>
+        <ResultCard
+          item={item}
+          onApply={() => onAction(`${item.company}에 바로 지원해 줘`)}
+          onSecondary={() => onResult?.(item)}
+          secondaryDisabled={item.source === 'file' && resultPending}
+        />
       )
     case 'worked':
       return (

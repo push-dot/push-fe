@@ -28,7 +28,8 @@ describe('harness events', () => {
     const s = play(out)
     expect(s.items.map((i) => i.type)).toEqual(['tool', 'file', 'todo', 'diff', 'fit', 'worked'])
     expect(s.items[0]).toMatchObject({ action: '공고 읽기', state: 'err', error: '링크가 열리지 않아요' })
-    expect(s.items[1]).toMatchObject({ name: 'resume.pdf', tag: 'PDF', url: '/conversations/c/artifacts/resume.pdf' })
+    expect(s.items[1]).toMatchObject({ name: 'resume.pdf', url: '/conversations/c/artifacts/resume.pdf' })
+    expect(s.items[1]).not.toHaveProperty('tag')
     expect(s.items[2]).toMatchObject({ id: 'todo', items: [{ label: '공고 읽기', state: 'done' }, { label: '이력서 고치기', state: 'now' }] })
     expect(s.items[3]).toMatchObject({ lines: [{ n: 3, sign: '+', text: 'Kotlin' }, { sign: '', text: '...' }] })
     expect(s.items[4]).toMatchObject({
@@ -36,6 +37,31 @@ describe('harness events', () => {
       caption: 'Kafka 경험',
       rows: [{ label: '기술 스택', score: 8 }, { label: '경험 연관성', score: 6 }, { label: '키워드', score: 7 }],
     })
+  })
+
+  it('maps a result frame to the file or profile card', async () => {
+    const file = await map({
+      type: 'result',
+      source: 'file',
+      company: '모아페이',
+      title: '김서준_모아페이_백엔드.pdf',
+      meta: 'A4 1쪽 · 186KB · 내 서류에 자동 저장됨',
+      documentId: 'src-1',
+    })
+    const profile = await map({
+      type: 'result',
+      source: 'profile',
+      company: '모아페이',
+      title: '김서준 · 백엔드 엔지니어',
+      meta: 'Push 프로필 · 방금 수정',
+      documentId: 'd1',
+    })
+    expect(play(file).items).toMatchObject([
+      { type: 'result', source: 'file', title: '김서준_모아페이_백엔드.pdf', documentId: 'src-1' },
+    ])
+    expect(play(profile).items).toMatchObject([
+      { type: 'result', source: 'profile', title: '김서준 · 백엔드 엔지니어', meta: 'Push 프로필 · 방금 수정' },
+    ])
   })
 
   it('updates a running tool in place across two streams, keyed by tool name', async () => {

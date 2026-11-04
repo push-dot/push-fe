@@ -2,7 +2,7 @@ import type { LinkKind, UserLink } from '@push/api-client'
 import { useState } from 'react'
 import { Alert, Pressable, ScrollView, View } from 'react-native'
 import { useColors } from '../../../theme'
-import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Icon3D, Text, TextField, type BadgeTone, type IconName } from '@/shared/components'
+import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Icon3D, Text, TextField, type BadgeTone } from '@/shared/components'
 import { openUrl, shareMessage } from '../../../shared/infrastructure'
 import { kindOf } from '../utils/links'
 import { useAddLink, useDeleteLink, useMyLinks } from '@/features/my'
@@ -24,15 +24,6 @@ const GROUPS: { title: string; kinds: LinkKind[] }[] = [
   { title: '포트폴리오 · 블로그', kinds: ['portfolio', 'blog'] },
   { title: '기타', kinds: ['other'] },
 ]
-// Board tile colors per kind; no theme token covers brand tiles.
-const TILE: Record<LinkKind, { color: string; icon?: IconName }> = {
-  job: { color: '#1F3A8A', icon: 'brief' },
-  github: { color: '#24292F' },
-  portfolio: { color: '#5F3DC4', icon: 'folder' },
-  blog: { color: '#0C8599', icon: 'doc' },
-  other: { color: '#495057', icon: 'link' },
-}
-
 const bare = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '')
 
 const statusOf = (l: UserLink): { label: string; tone: BadgeTone } =>
@@ -146,19 +137,9 @@ export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onCl
 }
 
 const LinkRow = ({ link, onMore }: { link: UserLink; onMore: () => void }) => {
-  const tile = TILE[link.kind]
   const s = statusOf(link)
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64 }}>
-      <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: tile.color, alignItems: 'center', justifyContent: 'center' }}>
-        {tile.icon ? (
-          <Icon name={tile.icon} size={20} color="#FFFFFF" />
-        ) : (
-          <Text weight="800" style={{ color: '#FFFFFF', fontSize: 15 }}>
-            GH
-          </Text>
-        )}
-      </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text v="b1" weight="700" numberOfLines={1}>
           {link.title}

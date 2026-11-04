@@ -263,6 +263,7 @@ export type StreamEvent = (
     }
   | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string; multiple?: boolean }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
+  | { type: 'result'; source: 'file' | 'profile'; company: string; title: string; meta: string; documentId: string }
   | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
   | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
   | { type: 'fit'; score: number; parts: { techStack: number; experienceLink: number; keyword: number }; topGap: string }

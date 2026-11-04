@@ -28,10 +28,42 @@ describe('scripted runs (mock)', () => {
     s = applyEvent(s, { type: 'answer', text: '네, 반영해 주세요' })
     s = play(s, await run({ conversationId: 't1', text: '네', answer: { approvalId: 'tailor-apply', choice: 0 } }))
     // Continuation updates the same tool line instead of adding a new one.
-    expect(s.items.filter((i) => i.type === 'tool' && i.action === '이력서 수정')).toMatchObject([{ state: 'ok' }])
-    expect(s.items.some((i) => i.type === 'actions')).toBe(false)
+    expect(s.items.filter((i) => i.type === 'tool' && i.action === '프로필 수정')).toMatchObject([
+      { state: 'ok', target: '· Push 프로필 · 경력' },
+    ])
+    const todo = s.items.findLast((i) => i.type === 'todo')
+    expect(todo && todo.type === 'todo' ? todo.items.map((item) => item.label) : []).toEqual([
+      '프로필 읽기',
+      '공고 요건 정리',
+      '적합도 계산',
+      '경력 섹션 고치기',
+      '프로필에 저장',
+    ])
+    expect(s.items.find((i) => i.type === 'result')).toMatchObject({
+      source: 'profile',
+      company: '모아페이',
+      title: '김서준 · 백엔드 엔지니어',
+      meta: 'Push 프로필 · 방금 수정',
+      documentId: 'd1',
+    })
     expect(s.approval?.question).toBe('Push 프로필에 저장했어요. 결과를 확인할까요?')
+    expect(s.items.some((i) => i.type === 'worked')).toBe(true)
     expect(JSON.stringify(s.items)).not.toContain('PDF로')
+  }, 10_000)
+
+  it('an uploaded file ends on the file card and PDF로 만들기', async () => {
+    const s = play(emptyChat, await run({ conversationId: 'up1', text: '이 파일로 맞춰 주세요', attachment: '김서준_모아페이_백엔드.pdf' }))
+    expect(s.items.find((i) => i.type === 'tool' && i.action === '이력서 수정')).toMatchObject({ target: '· 올린 파일 · 경력' })
+    const todo = s.items.findLast((i) => i.type === 'todo')
+    expect(todo && todo.type === 'todo' ? todo.items.at(-1)?.label : '').toBe('PDF로 만들기')
+    expect(s.items.find((i) => i.type === 'result')).toMatchObject({
+      source: 'file',
+      company: '모아페이',
+      title: '김서준_모아페이_백엔드.pdf',
+      meta: 'A4 1쪽 · 186KB · 내 서류에 자동 저장됨',
+      documentId: 'src-upload',
+    })
+    expect(s.items.some((i) => i.type === 'worked')).toBe(true)
   }, 10_000)
 
   it('failing run ends in the 어떻게 할까요 choice', async () => {

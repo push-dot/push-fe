@@ -29,9 +29,9 @@ export type ChatItem =
       note?: string
     }
   /** `url` is relative to the API base (server artifacts). */
-  | { type: 'file'; id: string; name: string; meta?: string; tag?: string; progress?: number; preview?: boolean; url?: string }
+  | { type: 'file'; id: string; name: string; meta?: string; progress?: number; preview?: boolean; url?: string }
   | { type: 'paper'; id: string; label: string; heading: string; lines: string[] }
-  | { type: 'actions'; id: string; company: string }
+  | { type: 'result'; id: string; source: 'file' | 'profile'; company: string; title: string; meta: string; documentId: string }
   | { type: 'worked'; id: string; seconds: number }
   | { type: 'error'; id: string; text: string; code?: string }
 
