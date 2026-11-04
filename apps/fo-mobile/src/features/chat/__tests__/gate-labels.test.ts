@@ -94,4 +94,26 @@ describe('server gate labels', () => {
     expect(labels(saved!)).toEqual(['확인했어요', '그만하기'])
     expect(JSON.stringify(saved)).not.toContain('PDF로')
   })
+
+  it('keeps a multi choice as a checkbox card', async () => {
+    const [ev] = await map({
+      type: 'choice',
+      id: 'targets',
+      multiple: true,
+      title: '어떤 산출물을 만들까요?',
+      options: [
+        { id: 'resume', label: '이력서' },
+        { id: 'portfolio', label: '포트폴리오' },
+        { id: 'cover_letter', label: '자기소개서' },
+        { id: 'cancel', label: '그만하기' },
+      ],
+    } as StreamEvent)
+    expect(ev).toMatchObject({
+      type: 'approval',
+      approval: {
+        optionIds: ['resume', 'portfolio', 'cover_letter', 'cancel'],
+        sections: [{ kind: 'choices', multi: true, items: [{ label: '이력서' }, { label: '포트폴리오' }, { label: '자기소개서' }, { label: '그만하기' }] }],
+      },
+    })
+  })
 })

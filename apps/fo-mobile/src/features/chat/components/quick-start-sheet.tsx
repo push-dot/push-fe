@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors } from '../../../theme'
 import { Badge, BottomSheet, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
+import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
 import { FileTag } from './items'
 import { useChatDocs, useQuickStart, useStartChat } from '../api/hooks'
@@ -79,15 +80,12 @@ const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
                 <Text v="c1" weight="700" color="t3">
                   복사한 링크
                 </Text>
-                {/* shortcut: expo-clipboard is not installed, so this reads navigator.clipboard only. The field still takes a system paste. */}
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="붙여넣기"
                   hitSlop={8}
                   onPress={() => {
-                    const clip = globalThis.navigator?.clipboard
-                    if (!clip) return
-                    void clip.readText().then((text) => {
+                    void readClipboard().then((text) => {
                       if (text.trim()) setUrl(text.trim())
                     })
                   }}

@@ -30,6 +30,14 @@ describe('scripted runs (mock)', () => {
     expect(s.approval?.id).toBe('fail-choice')
   }, 10_000)
 
+  it('prevention asks for several categories', async () => {
+    let s = play(emptyChat, await run({ conversationId: 'p1', text: '이력서 만들어 주세요' }))
+    s = play(s, await run({ conversationId: 'p1', text: '경험', answer: { approvalId: 'ph0', choice: 1 } }))
+    s = play(s, await run({ conversationId: 'p1', text: '예방', answer: { approvalId: 'ph2x-approach', choice: 1 } }))
+    expect(s.approval?.id).toBe('ph2x-prevent')
+    expect(s.approval?.sections[0]).toMatchObject({ kind: 'choices', multi: true })
+  }, 10_000)
+
   it('talking after stop resumes with the added to-do', async () => {
     await run({ conversationId: 't3', text: '공고에 맞춰 고쳐 주세요' })
     const steps = await run({ conversationId: 't3', text: '자기소개서도 같이 써 줘', interrupted: true })

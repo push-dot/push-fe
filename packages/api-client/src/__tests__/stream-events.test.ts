@@ -52,6 +52,12 @@ describe('harness endpoints', () => {
     expect(hits[0]).toMatchObject({ method: 'POST', url: 'http://x/api/v1/conversations/c1/approvals/a1', body: '{"optionId":"approve"}' })
   })
 
+  it('sends every selected id when the card allows several', async () => {
+    const { api, hits } = harness(() => json(202, { data: { id: 'a1', status: 'APPROVED', optionId: 'resume', optionIds: ['resume', 'portfolio'], jobId: 'j1' } }))
+    await expect(api.conversations.resolveApproval('c1', 'a1', 'resume', ['resume', 'portfolio'])).resolves.toMatchObject({ optionIds: ['resume', 'portfolio'] })
+    expect(hits[0]).toMatchObject({ body: '{"optionId":"resume","optionIds":["resume","portfolio"]}' })
+  })
+
   it('sends the access mode and intent on the stream request', async () => {
     const { api, hits } = harness(() => new Response('data: {"type":"done","operation":null,"seq":1}\n\n', { status: 200 }))
     const out: StreamEvent[] = []

@@ -109,8 +109,10 @@ const streamed = (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEven
 
 const resolved = async function* (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> {
   const id = input.conversationId
-  const { approvalId, optionId } = input.resolve!
-  const r = await resolveConversationApproval(id, approvalId, optionId)
+  const { approvalId, optionId, optionIds } = input.resolve!
+  const r = optionIds?.length
+    ? await resolveConversationApproval(id, approvalId, optionId, optionIds)
+    : await resolveConversationApproval(id, approvalId, optionId)
   if (!r.jobId) return
   yield* fromStream(followConversation(id, undefined, signal), (after) => followConversation(id, after, signal))
 }
@@ -167,16 +169,21 @@ export const send = (id: string, text: string, attachment?: string, intent?: Cha
   void startRun({ conversationId: id, text, interrupted: s.interrupted, intent, context })
 }
 
-export const answer = (id: string, text: string, choice: number) => {
+export const answer = (id: string, text: string, choice: number | number[]) => {
   const approval = get(id).approval
   if (!approval) return
+  const picks = Array.isArray(choice) ? choice : [choice]
   dispatch(id, { type: 'answer', text })
-  const optionId = approval.optionIds?.[choice]
-  if (approval.optionIds && !optionId) return void startRun({ conversationId: id, text })
+  const ids = picks.flatMap((n) => {
+    const optionId = approval.optionIds?.[n]
+    return optionId ? [optionId] : []
+  })
+  if (approval.optionIds && !ids.length) return void startRun({ conversationId: id, text })
+  const optionId = ids[0]
   void startRun(
     optionId
-      ? { conversationId: id, text, resolve: { approvalId: approval.id, optionId } }
-      : { conversationId: id, text, answer: { approvalId: approval.id, choice } },
+      ? { conversationId: id, text, resolve: { approvalId: approval.id, optionId, ...(ids.length > 1 ? { optionIds: ids } : {}) } }
+      : { conversationId: id, text, answer: { approvalId: approval.id, choice: picks[0] ?? 0 } },
   )
 }
 

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors, useShadow } from '@/theme'
-import { BottomSheet, Glass, GlassButton, Icon, Text, TextField, Wordmark, type IconName } from '@/shared/components'
+import { BottomSheet, Glass, GlassButton, Icon, Mascot, Text, TextField, type IconName } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
 import {
   answer,
@@ -202,7 +202,7 @@ const Header = ({ onDrawer, onNew, onMore }: { onDrawer: () => void; onNew: () =
       <View style={{ marginTop: insets.top, height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: ios ? 12 : 8, gap: 8 }}>
         <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: onDrawer }]} />
         <View accessibilityRole="header" accessibilityLabel="Push" style={{ flex: 1, alignItems: 'center' }}>
-          <Wordmark size={20} />
+          <Mascot size={36} />
         </View>
         <GlassButton
           actions={[

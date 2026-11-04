@@ -2,6 +2,7 @@
 // Sample data follows the AI 채팅 artboards (김서준, 모아페이 …).
 import type { LinkKind, Message, UserLink } from '@push/api-client'
 import type { Approval, ChatDoc, ChatEvent, ChatItem, Choice, ConversationRow, QsData, RunInput, Step } from '@/features/chat'
+import { MULTI_PICK_FOOT, MULTI_PICK_SUBMIT } from '../features/chat/constants'
 import { kindOf } from '../features/chat/utils/links'
 import { mock, page } from './server'
 
@@ -312,8 +313,13 @@ const ph2xApproach: Step[] = [
 const ph2xLevel: Step[] = [
   ask(numbered('ph2x-level', '병목 강도를 어느 정도로 할까요?', ['가벼운 제약으로', '중간 제약으로', '강한 제약으로', '그만하기'])),
 ]
+const PREVENT = ['성능', '보안', '확장성', '안정성', '유지보수', '데이터 무결성', '그만하기']
 const ph2xPrevent: Step[] = [
-  ask(numbered('ph2x-prevent', '어떤 문제를 예방할까요?', ['성능', '보안', '확장성', '안정성', '유지보수', '데이터 무결성', '그만하기'])),
+  ask({
+    ...numbered('ph2x-prevent', '어떤 문제를 예방할까요?', PREVENT, MULTI_PICK_FOOT),
+    submit: MULTI_PICK_SUBMIT,
+    sections: [{ kind: 'choices', multi: true, selected: [], items: PREVENT.map((label) => ({ label })) }],
+  }),
 ]
 const ph2xBlueprints: Step[] = [
   s(200, status('기획하는 중…')),

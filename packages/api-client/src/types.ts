@@ -261,7 +261,7 @@ export type StreamEvent = (
       args?: Record<string, unknown>
       documentId?: string
     }
-  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string }
+  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string; multiple?: boolean }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
   | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
   | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
