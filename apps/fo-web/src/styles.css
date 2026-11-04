@@ -1,7 +1,3 @@
-/* Tokens and type classes copied from the Claude Design board CSS (.light / .dark). */
-:root{--bg:#FFFFFF;--bg2:#F4F5F7;--card:#FFFFFF;--fill:#F2F3F5;--fill2:#E9EBEE;--line:#EBEDF0;--t1:#16191D;--t2:#4B525C;--t3:#848C96;--t4:#B4BAC2;--ac:#5B4CF0;--acSoft:#EFEDFF;--acText:#4A3BDF;--acPress:#4A3BDF;--green:#0E9F55;--greenSoft:#E6F6EE;--red:#E5484D;--redSoft:#FDEEEE;--orange:#EB6A00;--orangeSoft:#FFF2E6;--scrim:rgba(0,0,0,.4);--shadow:0 8px 28px rgba(22,25,29,.10);--paper:#FFFFFF;color-scheme:light dark}
-@media (prefers-color-scheme:dark){:root{--bg:#0F1012;--bg2:#17181B;--card:#1C1E22;--fill:#24272C;--fill2:#2E3238;--line:#2A2D33;--t1:#F3F4F6;--t2:#C2C7CE;--t3:#8C939C;--t4:#5C636C;--ac:#7464FF;--acSoft:rgba(116,100,255,.18);--acText:#A69CFF;--acPress:#6555F0;--green:#3CCB7F;--greenSoft:rgba(60,203,127,.14);--red:#FF6B6F;--redSoft:rgba(255,107,111,.14);--orange:#FF9A3D;--orangeSoft:rgba(255,154,61,.14);--scrim:rgba(0,0,0,.6);--shadow:0 8px 28px rgba(0,0,0,.5);--paper:#24272C}}
-
 html,body{margin:0;background:var(--bg);color:var(--t1)}
 body{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.02em;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 h1,h2,p{margin:0}
@@ -9,14 +5,6 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .ic{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block;width:14px;height:14px;stroke-width:2}
 .num{font-variant-numeric:tabular-nums}
 
-/* type */
-.h1{font-size:26px;line-height:36px;font-weight:800;letter-spacing:-.03em}
-.h2{font-size:20px;line-height:28px;font-weight:700;letter-spacing:-.025em}
-.h3{font-size:17px;line-height:24px;font-weight:700}
-.b1{font-size:16px;line-height:24px}
-.b2{font-size:15px;line-height:22px}
-.c1{font-size:13px;line-height:18px}
-.c2{font-size:12px;line-height:16px}
 .t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.ac{color:var(--acText)}
 .w6{font-weight:600}.w7{font-weight:700}
 
@@ -230,7 +218,6 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
 .plan-card .primary{width:100%}
 
-.browser{--bg:#FFFFFF;--bg2:#F4F5F7;--card:#FFFFFF;--fill:#F2F3F5;--fill2:#E9EBEE;--line:#EBEDF0;--t1:#16191D;--t2:#4B525C;--t3:#6B737D;--t4:#A3AAB3;--ac:#5B4CF0;--acSoft:#EFEDFF;--acText:#4A3BDF;--green:#0E9F55;--greenSoft:#E6F6EE;--red:#E5484D;--redSoft:#FDEEEE;--orange:#D35F00;--orangeSoft:#FFF2E6;--pop:0 12px 40px rgba(16,24,40,.14),0 0 0 1px rgba(16,24,40,.05);color-scheme:light}
 .browser.auth-shell{display:flex;flex-direction:column;background:var(--bg2);color:var(--t1)}
 .browser.auth-shell .shell-main{max-width:none;width:100%;flex:1;display:flex;justify-content:center;padding:40px 24px 80px}
 .browser .auth-bar{display:flex;align-items:center;height:72px;padding:0 40px;background:var(--bg2)}
@@ -399,14 +386,14 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .jc .ph img,.browser .ph-hit img{width:100%;height:100%;object-fit:cover}
 .browser .ph-hit{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none}
 .browser .jc-copy{display:flex;flex-direction:column;gap:2px;min-width:0;color:inherit;text-decoration:none}
-.browser .jc .bm{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,.9);color:#16191D;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.16)}
+.browser .jc .bm{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:17px;background:rgba(255,255,255,.9);color:var(--t1);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.16)}
 .browser .jc .bm.on{color:var(--acText)}
 .browser .jc .bm.on .ic{fill:currentColor}
 .browser .jc .bm .ic{width:17px;height:17px}
 .browser .chip[aria-pressed="true"],.browser .chip[aria-selected="true"]{background:var(--t1);color:var(--bg)}
 .browser .jobs-meta{padding:0}
 .browser .sheet-scrim{align-items:center;padding:24px}
-.browser .sheet{width:min(440px,100%);border-radius:28px;box-shadow:var(--pop);max-height:min(80vh,720px)}
+.browser .sheet{width:min(440px,100%);border-radius:28px;box-shadow:var(--shadow);max-height:min(80vh,720px)}
 .browser .sheet-actions{display:flex;justify-content:flex-end;gap:8px}
 .browser .back{color:var(--t3);font-weight:600;text-decoration:none}
 .browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .inbox,.browser .social-layout{display:grid;gap:40px;align-items:start}
