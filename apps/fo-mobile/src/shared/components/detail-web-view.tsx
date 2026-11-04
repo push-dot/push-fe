@@ -1,6 +1,6 @@
 import { router, type Href } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import { View } from 'react-native'
+import { Platform, useWindowDimensions, View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
 import { useColors } from '../../theme'
 import { API_BASE_URL, API_MOCK, WEB_BASE_URL, openBrowser, useSession } from '../infrastructure'
@@ -17,11 +17,17 @@ const DetailWebView = ({ path, onTitle }: Props) => {
   const ref = useRef<WebView<object>>(null)
   const token = useSession((s) => s.session?.accessToken ?? null)
   const [failed, setFailed] = useState(false)
+  const zoom = Math.round(useWindowDimensions().fontScale * 100)
+  const applyZoom = Platform.OS === 'ios' ? `document.documentElement.style.webkitTextSizeAdjust='${zoom}%';true;` : undefined
   const [boot] = useState(() => `window.__PUSH__=${JSON.stringify({ token, apiBaseUrl: API_BASE_URL, mock: API_MOCK })};true;`)
 
   useEffect(() => {
     ref.current?.injectJavaScript(`window.dispatchEvent(new CustomEvent('push:token',{detail:{token:${JSON.stringify(token)}}}));true;`)
   }, [token])
+
+  useEffect(() => {
+    if (applyZoom) ref.current?.injectJavaScript(applyZoom)
+  }, [applyZoom])
 
   const onMessage = (e: WebViewMessageEvent) => {
     let m: { type?: string; title?: unknown; path?: unknown; url?: unknown; status?: unknown }
@@ -42,6 +48,8 @@ const DetailWebView = ({ path, onTitle }: Props) => {
         ref={ref}
         source={{ uri: `${WEB_BASE_URL}${path}${API_MOCK ? '?mock=1' : ''}` }}
         injectedJavaScriptBeforeContentLoaded={boot}
+        injectedJavaScript={applyZoom}
+        textZoom={zoom}
         onMessage={onMessage}
         onError={() => setFailed(true)}
         style={{ backgroundColor: c.bg }}
