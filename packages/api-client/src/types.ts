@@ -64,6 +64,8 @@ export type Profile = {
   careers: Career[]
   skills: string[]
   followerCount: number
+  followingCount?: number
+  postCount?: number
   resumeSourceId: string | null
   updatedAt: string
   following?: boolean
