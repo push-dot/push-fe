@@ -102,6 +102,7 @@ export const stageFlow = (stage: string) => {
 }
 
 export const INTERVIEW_PREP = 'Push 에이전트로 면접 준비'
+export const FIX_DOC = '이 서류를 고쳐 줘'
 export const CALENDAR_ADD = '일정 추가하기'
 export const OFFER_DECLINE = '거절'
 export const OFFER_FAIL = '잠시 뒤에 다시 보내 주세요.'

@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native'
 import { isJobSettled } from '@push/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { fileSize, monthDay } from '@push/shared'
@@ -15,7 +15,6 @@ import { PUSH_DOCS_TITLE, pushCardLines, pushSeeAll, RETRY_LABEL, SIZE_LIMIT, UP
 import DeleteDocSheet from './delete-doc-sheet'
 import DocMenu from './doc-menu'
 import ListTitle from './list-title'
-import PushDocView from './push-doc-view'
 import Row from './row'
 import Toast from './toast'
 
@@ -146,7 +145,6 @@ const DocsTab = () => {
   const undo = useUndoRemove()
   const [picking, setPicking] = useState(false)
   const [menu, setMenu] = useState<MySource | null>(null)
-  const [openId, setOpenId] = useState<string | null>(null)
   const { upload, start, cancel } = useUpload(() => toast.show('이력서 파일을 올렸어요'))
 
   const pickFile = async (fromSheet = false) => {
@@ -233,7 +231,7 @@ const DocsTab = () => {
           <>
             <ListTitle title={PUSH_DOCS_TITLE} count={pushDocs.length} top={26} />
             {preview.map((d) => (
-              <PushRow key={d.id} doc={d} onPress={() => setOpenId(d.id)} />
+              <PushRow key={d.id} doc={d} onPress={() => router.push(`/docs/push/${d.id}`)} />
             ))}
             <Pressable
               accessibilityRole="button"
@@ -300,9 +298,6 @@ const DocsTab = () => {
       {sheet}
       <DocMenu doc={menu} onClose={() => setMenu(null)} onDelete={() => menu && undo.ask(menu)} />
       <DeleteDocSheet undo={undo} />
-      <Modal visible={!!openId} animationType="slide" onRequestClose={() => setOpenId(null)}>
-        {openId ? <PushDocView id={openId} onClose={() => setOpenId(null)} /> : null}
-      </Modal>
       <Toast text={notice.text} action={notice.action} onHide={notice.hide} />
     </View>
   )

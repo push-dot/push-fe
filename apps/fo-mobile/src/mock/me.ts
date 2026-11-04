@@ -201,10 +201,31 @@ mock('GET', 'documents/:id', ({ params }) => {
     ? { data: doc }
     : { status: 404, body: { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } } }
 })
+const docText = (type: 'heading' | 'paragraph', text: string) => ({ type, content: [{ type: 'text', text }] })
+const hubContent = {
+  type: 'doc',
+  content: [
+    docText('heading', '헤드라인'),
+    docText('paragraph', '대규모 결제 트래픽을 견디는 서버를 만들어요'),
+    docText('heading', '소개'),
+    docText(
+      'paragraph',
+      '결제 승인과 정산 서버를 4년째 만들고 있어요. 트래픽이 몰려도 멈추지 않는 서버, 장애가 나도 돈이 새지 않는 구조를 설계하는 일을 잘해요.',
+    ),
+    docText('heading', '경력'),
+    docText(
+      'paragraph',
+      '모아페이 | 백엔드 엔지니어 | 2022-03-01 |  | 결제 승인 API를 다시 설계해 p95 응답 시간을 320ms에서 140ms로 줄이고, Kafka로 하루 280만 건을 처리했어요.',
+    ),
+    docText('paragraph', '하루랩스 | 서버 개발자 | 2021-01-01 | 2022-02-28'),
+    docText('heading', '기술 스택'),
+    docText('paragraph', 'Kotlin, Spring Boot, Kafka, MySQL, Redis'),
+  ],
+}
 mock('GET', 'documents/:id/versions', ({ params }) =>
   params.id
     ? {
-        data: [{ id: 'v1', blocks: [{ id: 'b1', text: '결제 승인 API를 설계해 p99 지연을 줄였어요.' }] }],
+        data: [{ id: 'v1', blocks: [{ id: 'b1', text: '결제 승인 API를 설계해 p99 지연을 줄였어요.' }], content: hubContent }],
         page: { nextCursor: null, hasMore: false },
       }
     : { data: [], page: { nextCursor: null, hasMore: false } },

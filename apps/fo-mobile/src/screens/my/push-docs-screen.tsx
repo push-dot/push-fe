@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
-import { PushDocView, pushCardLines, PUSH_DOCS_TITLE, Row, useDocuments, useMyApplications } from '@/features/my'
+import { pushCardLines, PUSH_DOCS_TITLE, Row, useDocuments, useMyApplications } from '@/features/my'
 import { Icon, Text, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 import type { HubDocument } from '@/features/my'
@@ -46,5 +46,3 @@ const PushDocsScreen = () => {
 }
 
 export default PushDocsScreen
-
-export const PushDocScreen = ({ id }: { id: string }) => <PushDocView id={id} />

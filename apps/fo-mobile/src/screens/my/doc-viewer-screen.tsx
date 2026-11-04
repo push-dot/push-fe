@@ -7,6 +7,7 @@ import { useStartChat } from '@/features/chat'
 import {
   DeleteDocSheet,
   DocMenu,
+  FIX_DOC,
   PREVIEW_HEADINGS,
   Toast,
   useConvertDocument,
@@ -117,8 +118,6 @@ const Paper = ({ d }: { d: ResumeDraft }) => {
   )
 }
 
-const FIX_UPLOADED_DOC = '이 서류를 고쳐 줘'
-
 const DocViewerScreen = ({ id }: { id: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
@@ -197,7 +196,7 @@ const DocViewerScreen = ({ id }: { id: string }) => {
           label="에이전트로 고치기"
           icon="spark"
           variant="secondary"
-          onPress={() => void start(FIX_UPLOADED_DOC, FIX_UPLOADED_DOC, undefined, undefined, undefined, { evidenceIds: [id] })}
+          onPress={() => void start(FIX_DOC, FIX_DOC, undefined, undefined, undefined, { evidenceIds: [id] })}
         />
         <Button
           label="내 프로필로 전환"
