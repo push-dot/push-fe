@@ -2,6 +2,7 @@ export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: nu
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
+export type SearchTrending = { terms: { term: string; count: number }[]; skills: { id: string; count: number }[] }
 
 export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sales' | 'hr' | 'ops'
 export type CareerYears = '0' | '1-3' | '4-6' | '7-9' | '10+'

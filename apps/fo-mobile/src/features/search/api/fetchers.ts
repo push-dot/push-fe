@@ -4,3 +4,5 @@ import type { SearchTab } from '../utils'
 
 export const fetchSearch = <T extends SearchTab>(q: string, type: T, cursor: string | undefined) =>
   api.search(q, type, { limit: SEARCH_PAGE_LIMIT, cursor })
+
+export const fetchTrending = () => api.searchTrending()

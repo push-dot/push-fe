@@ -4,7 +4,6 @@ import type { Post, Posting, Profile } from '@push/api-client'
 import { formatCount } from '@/features/jobs'
 import {
   PersonRow,
-  POPULAR_TERMS,
   PostingRow,
   PostRow,
   SEARCH_CLEAR_LABEL,
@@ -17,6 +16,7 @@ import {
   TABS,
   useRecentSearches,
   useSearch,
+  useTrending,
   type SearchTab,
 } from '@/features/search'
 import { Chip, Icon, Skeleton, SkeletonRows, StatusNote, Text } from '@/shared/components'
@@ -28,6 +28,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
   const [tab, setTab] = useState<SearchTab>(initialTab)
   const q = useDeferredValue(text.trim())
   const recent = useRecentSearches()
+  const popular = useTrending().data?.terms ?? []
   const results = { postings: useSearch(q, 'postings'), people: useSearch(q, 'people'), posts: useSearch(q, 'posts') }
   const active = results[tab]
   const items: (Posting | Profile | Post)[] = active.data?.pages.flatMap((p): (Posting | Profile | Post)[] => p.data) ?? []
@@ -75,11 +76,13 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
               ))}
             </>
           ) : null}
-          <Text v="h3" accessibilityRole="header" style={{ paddingHorizontal: 20, paddingTop: 22, paddingBottom: 12 }}>
-            지금 많이 찾는 검색어
-          </Text>
+          {popular.length ? (
+            <Text v="h3" accessibilityRole="header" style={{ paddingHorizontal: 20, paddingTop: 22, paddingBottom: 12 }}>
+              지금 많이 찾는 검색어
+            </Text>
+          ) : null}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, columnGap: 12 }}>
-            {POPULAR_TERMS.map((t, i) => (
+            {popular.map(({ term: t }, i) => (
               <Pressable
                 key={t}
                 accessibilityRole="button"

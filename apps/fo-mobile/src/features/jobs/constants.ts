@@ -17,7 +17,7 @@ export const FILTER_TITLES: Record<FilterKey, string> = {
   employmentType: '고용형태',
 }
 
-export const POPULAR_SKILLS = ['React', 'TypeScript', 'Python', 'Go', 'Kubernetes']
+export const POPULAR_SKILL_COUNT = 5
 
 // shortcut: fixed catalog for 기술 검색; switch to a skills endpoint once push-be has one.
 export const SKILL_CATALOG = [
