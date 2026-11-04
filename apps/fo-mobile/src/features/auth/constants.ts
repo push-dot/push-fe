@@ -12,6 +12,12 @@ export const GOOGLE_START = 'Google로 시작하기'
 export const APPLE_START = 'Apple로 시작하기'
 export const GITHUB_START = 'GitHub로 시작하기'
 export const PHONE_START = '휴대폰 번호로 시작하기'
+export const LOGO_LABEL = 'Push 로고'
+export const LOGO_SIZE = 148
+export const LOGO_TOP = 132
+export const LOGO_SIZE_COMPACT = 104
+export const LOGO_TOP_COMPACT = 48
+export const COMPACT_HEIGHT = 700
 
 export const PHONE_TITLE = '휴대폰 번호를 입력해 주세요'
 export const PHONE_BODY = '지원 결과와 면접 일정을 알려 드릴 번호예요.\n다른 사람에게는 보이지 않아요.'
