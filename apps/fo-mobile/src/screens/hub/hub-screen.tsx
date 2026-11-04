@@ -74,11 +74,7 @@ const HubScreen = () => {
         right={
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             {viewerId ? (
-              <Pressable accessibilityRole="button" onPress={() => router.push(`/profiles/${viewerId}` as Href)}>
-                <Text v="b2" weight="700" color="acText">
-                  내 프로필 보기
-                </Text>
-              </Pressable>
+              <Button label="내 프로필" variant="secondary" size="sm" onPress={() => router.push(`/profiles/${viewerId}` as Href)} />
             ) : null}
             <FilterButton count={appliedCount(sheet)} onPress={() => setFilterOpen(true)} />
           </View>

@@ -72,7 +72,7 @@ const SocialScreen = () => {
                 <Text v="b2" color="t3">
                   아직 올라온 글이 없어요
                 </Text>
-                <Button label="글쓰기" size="sm" onPress={() => router.push('/(tabs)/(social)/compose')} />
+                <Button label="글쓰기" variant="secondary" size="sm" onPress={() => router.push('/(tabs)/(social)/compose')} />
               </>
             )}
           </View>

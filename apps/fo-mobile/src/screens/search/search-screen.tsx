@@ -118,7 +118,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 }}>
                 <Text v="c1" weight="600" color="t3" numberOfLines={1} style={{ flex: 1 }}>
-                  ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}개
+                  ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}{TABS.find((t) => t.key === tab)!.unit}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                   <Text v="c1" weight="600" color="t2">

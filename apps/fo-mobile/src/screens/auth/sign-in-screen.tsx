@@ -78,7 +78,7 @@ const SignInScreen = () => {
           Push<Text weight="800" color="ac" style={{ fontSize: 44, lineHeight: 48 }}>.</Text>
         </Text>
         <Text v="h1" style={{ fontSize: 24, lineHeight: 33, textAlign: 'center' }}>
-          {'공고에 맞는 이력서,\n대화로 만들어요'}
+          {'AI와 함께 하는 커리어,\nPush에서 시작하기'}
         </Text>
         <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
           {'데스크톱 앱과 같은 계정으로 로그인하면\n대화와 서류가 그대로 이어져요.'}

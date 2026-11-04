@@ -53,7 +53,7 @@ const PostingDetailScreen = ({ id }: { id: string }) => {
         }}
       >
         <Button
-          label="AI로 맞추기"
+          label="에이전트로 맞추기"
           variant="secondary"
           icon={android ? 'spark' : undefined}
           onPress={() => router.push({ pathname: '/(tabs)/(chat)/chat', params: { postingId: id } })}
