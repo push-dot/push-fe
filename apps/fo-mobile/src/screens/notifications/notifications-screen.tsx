@@ -2,6 +2,7 @@ import { router } from 'expo-router'
 import { SectionList, View } from 'react-native'
 import type { AppNotification } from '@push/api-client'
 import {
+  EmptyBell,
   groupLabel,
   NOTIFICATION_EMPTY,
   NOTIFICATION_SETTINGS_LABEL,
@@ -64,11 +65,13 @@ const NotificationsScreen = () => {
               알림을 불러오지 못했어요. 잠시 후 다시 열어 주세요.
             </Text>
           ) : (
-            <StatusNote
-              lines={[NOTIFICATION_EMPTY]}
-              action={settingsVisible ? { label: NOTIFICATION_SETTINGS_LABEL, onPress: openNotificationSettings } : undefined}
-              style={{ marginTop: 40 }}
-            />
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <EmptyBell />
+              <StatusNote
+                lines={[NOTIFICATION_EMPTY]}
+                action={settingsVisible ? { label: NOTIFICATION_SETTINGS_LABEL, onPress: openNotificationSettings } : undefined}
+              />
+            </View>
           )
         }
       />
