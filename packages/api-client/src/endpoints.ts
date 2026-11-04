@@ -71,6 +71,8 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<ResumeDocument>>('documents', { query }),
     generate: (id: string, body: GenerateDocumentInput) =>
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
+    setBaseProfile: (id: string) =>
+      unwrap(c.post<DataEnvelope<{ documentId: string; profileUserId: string }>>(`documents/${id}/base-profile`, { body: {} })),
   },
 
   jobs: {

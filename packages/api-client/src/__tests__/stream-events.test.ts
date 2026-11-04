@@ -111,6 +111,12 @@ describe('queue jobs', () => {
     ])
   })
 
+  it('sets the base profile on documents/{id}/base-profile', async () => {
+    const { api, hits } = harness(() => json(200, { data: { documentId: 'd1', profileUserId: 'u1' } }))
+    await expect(api.documents.setBaseProfile('d1')).resolves.toEqual({ documentId: 'd1', profileUserId: 'u1' })
+    expect(hits[0]).toEqual({ method: 'POST', url: 'http://x/api/v1/documents/d1/base-profile', body: '{}' })
+  })
+
   it('throws QueueBusyError with the retry delay on 429 QUEUE_BUSY', async () => {
     const { api } = harness(() =>
       json(429, { error: { code: 'QUEUE_BUSY', message: 'queue is busy', details: { retryAfterSec: 12 } } }, { 'Retry-After': '12' }),

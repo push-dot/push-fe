@@ -204,7 +204,7 @@ mock('GET', 'documents/:id/versions', ({ params }) =>
       }
     : { data: [], page: { nextCursor: null, hasMore: false } },
 )
-mock('POST', 'documents/:id/profile/base', ({ params }) => {
+mock('POST', 'documents/:id/base-profile', ({ params }) => {
   const doc = documents.find((d) => d.id === params.id)
   if (!doc) return { status: 404, body: { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } } }
   profile = { ...profile, headline: doc.title.slice(0, 120), updatedAt: new Date().toISOString() }

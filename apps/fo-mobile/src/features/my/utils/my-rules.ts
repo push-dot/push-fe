@@ -1,4 +1,7 @@
 import type { Settings } from '@push/api-client'
+import { MAX_BYTES } from '../constants'
+
+const MB = 1024 * 1024
 
 const hasBatchim = (word: string) => {
   const code = word.charCodeAt(word.length - 1) - 0xac00
@@ -38,7 +41,7 @@ export const careerDeleteCopy = {
 
 export const SIZE_LIMIT = {
   title: '20MB까지 올릴 수 있어요',
-  body: '파일 크기를 줄여서 다시 올려 주세요.',
+  body: `파일은 ${MAX_BYTES / MB}MB까지 올릴 수 있어요. 크기를 줄여서 다시 올려 주세요.`,
   footnote: 'PDF, DOCX 파일을 20MB까지 올릴 수 있어요.',
 } as const
 
@@ -53,8 +56,7 @@ export const SET_BASE_COPY = {
   toast: '기본 프로필로 설정했어요.',
 } as const
 
-// shortcut: push-be has not named this route yet; change this one path when it lands.
-export const setBaseProfilePath = (id: string) => `documents/${id}/profile/base`
+export const setBaseProfilePath = (id: string) => `documents/${id}/base-profile`
 
 export const followSeeAll = (count: number) => `${count}명 전체 보기`
 export const followerSee = (count: number) => `팔로워 ${count}명 보기`
