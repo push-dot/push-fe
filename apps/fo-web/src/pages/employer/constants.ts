@@ -1,4 +1,4 @@
-import type { AccessMode, ToolRunState } from '@push/api-client'
+import { ApiError, QueueBusyError, type AccessMode, type ToolRunState } from '@push/api-client'
 import type { ApprovalFailure } from '../../features/employer-chat'
 import { creditCount, creditText } from '../../entities/billing'
 
@@ -141,6 +141,29 @@ export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
 }
 export const CHAT_CREDITS = '크레딧이 모자라요. 충전하고 다시 보내 주세요.'
 export const CHAT_BUSY = '지금 요청이 많아요. 잠시 후 다시 보내 주세요.'
+export const STREAM_ERROR_TEXT: Record<string, string> = {
+  NOT_CONFIGURED: '지금은 에이전트를 쓸 수 없어요. 잠시 뒤에 다시 해 주세요.',
+  QUEUE_BUSY: '지금 요청이 많아요. 잠시 뒤에 다시 보내 주세요.',
+  PLAN_REQUIRED: '요금제를 올리면 쓸 수 있어요.',
+  FEATURE_DISABLED: CHAT_CREDITS,
+  INSUFFICIENT_CREDITS: CHAT_CREDITS,
+}
+export const DEFAULT_STREAM_ERROR_TEXT = '작업을 이어가지 못했어요. 다시 보내 주세요.'
+
+const queueBusyText = (sec: number) => `지금 요청이 많아요. ${sec}초 뒤에 다시 보내 주세요.`
+
+const retryAfterSec = (error: ApiError) => {
+  if (error instanceof QueueBusyError) return error.retryAfterSec
+  const value = error.details?.retryAfterSec
+  return typeof value === 'number' ? value : undefined
+}
+
+export const streamErrorText = (error: unknown) => {
+  if (!(error instanceof ApiError)) return DEFAULT_STREAM_ERROR_TEXT
+  const sec = error.code === 'QUEUE_BUSY' ? retryAfterSec(error) : undefined
+  if (sec) return queueBusyText(sec)
+  return STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
+}
 
 export const PLANS_TITLE = '기업 요금제'
 export const PLANS_LOADING = '요금제를 불러오고 있어요'

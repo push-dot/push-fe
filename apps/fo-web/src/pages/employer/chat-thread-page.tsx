@@ -1,4 +1,4 @@
-import type { AccessMode, Message, StreamEvent } from '@push/api-client'
+import { ApiError, type AccessMode, type Message, type StreamEvent } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
@@ -32,12 +32,12 @@ import {
   APPROVAL_FAILURE,
   AWAITING_APPROVAL,
   CHAT_BUSY,
-  CHAT_CREDITS,
   CHAT_FAILED,
   CHAT_LOADING,
   CHAT_TITLE,
   INTERVIEW_LOCK,
   REFERENCE_POSTING,
+  streamErrorText,
   VERIFY_LINK,
 } from './constants'
 import { useEmployerApplicants } from '../../entities/application'
@@ -67,6 +67,7 @@ const ChatThreadPage = () => {
   const [text, setText] = useState('')
   const [applicationId, setApplicationId] = useState('')
   const [gate, setGate] = useState<ChatBlock | null>(null)
+  const [runAlert, setRunAlert] = useState<string | null>(null)
   const [pending, setPending] = useState<string | null>(null)
   const [turn, setTurn] = useState<ChatTurn | null>(null)
   const [picked, setPicked] = useState<Record<string, string>>({})
@@ -104,6 +105,19 @@ const ChatThreadPage = () => {
   const waiting = turn?.awaiting === 'approval' && turn.items.some((item) => item.kind === 'approval' && !picked[item.id])
   const pdfDisabled = !settled || pdfLocked(plan)
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['employer-messages', id] })
+  const noteRunError = (error: unknown) => {
+    const next = chatGateFrom(error)
+    setGate(next)
+    if (next === 'busy' && !(error instanceof ApiError && error.code === 'QUEUE_BUSY')) {
+      setRunAlert(CHAT_BUSY)
+      return
+    }
+    if (next === 'failed' || next === 'busy' || next === 'credits') {
+      setRunAlert(streamErrorText(error))
+      return
+    }
+    setRunAlert(null)
+  }
   const payload = (value: string) => ({
     text: value,
     accessMode,
@@ -138,7 +152,7 @@ const ChatThreadPage = () => {
     try {
       await conversationsAttach(id, form)
     } catch (error) {
-      setGate(chatGateFrom(error))
+      noteRunError(error)
     }
   }
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -147,6 +161,7 @@ const ChatThreadPage = () => {
     if (!value || sending || !id) return
     setSending(true)
     setGate(null)
+    setRunAlert(null)
     setText('')
     setPending(value)
     try {
@@ -161,7 +176,7 @@ const ChatThreadPage = () => {
       await runTurn(chatTurnDeps, id, payload(value), onEvent)
       await refresh()
     } catch (error) {
-      setGate(chatGateFrom(error))
+      noteRunError(error)
       setText(value)
     } finally {
       setSending(false)
@@ -214,14 +229,9 @@ const ChatThreadPage = () => {
           {APPROVAL_FAILURE[answerFailure]}
         </p>
       ) : null}
-      {gate === 'credits' || gate === 'busy' ? (
+      {runAlert ? (
         <p className="b1 stack" role="alert">
-          {gate === 'credits' ? CHAT_CREDITS : CHAT_BUSY}
-        </p>
-      ) : null}
-      {gate === 'failed' ? (
-        <p className="b1 stack" role="alert">
-          {CHAT_FAILED}
+          {runAlert}
         </p>
       ) : null}
       <ChatComposer
