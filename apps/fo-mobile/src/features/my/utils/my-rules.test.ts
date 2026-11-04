@@ -79,8 +79,8 @@ describe('my screen rules', () => {
   it('keeps the known size-limit sentences', () => {
     const mb = MAX_BYTES / (1024 * 1024)
     expect(SIZE_LIMIT).toEqual({
-      title: '20MB까지 올릴 수 있어요',
-      body: `파일은 ${mb}MB까지 올릴 수 있어요. 크기를 줄여서 다시 올려 주세요.`,
+      title: `${mb}MB까지 올릴 수 있어요`,
+      body: '크기를 줄여서 다시 올려 주세요.',
       footnote: 'PDF, DOCX 파일을 20MB까지 올릴 수 있어요.',
     })
     expect(mb).toBe(20)

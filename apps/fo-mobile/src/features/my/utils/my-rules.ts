@@ -40,8 +40,8 @@ export const careerDeleteCopy = {
 } as const
 
 export const SIZE_LIMIT = {
-  title: '20MB까지 올릴 수 있어요',
-  body: `파일은 ${MAX_BYTES / MB}MB까지 올릴 수 있어요. 크기를 줄여서 다시 올려 주세요.`,
+  title: `${MAX_BYTES / MB}MB까지 올릴 수 있어요`,
+  body: '크기를 줄여서 다시 올려 주세요.',
   footnote: 'PDF, DOCX 파일을 20MB까지 올릴 수 있어요.',
 } as const
 
