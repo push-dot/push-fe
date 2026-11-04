@@ -1,4 +1,4 @@
-import { CAREER_YEARS, chipLabel, EMPLOYMENT_TYPES, JOB_CATEGORIES, type CareerYears, type EmploymentType, type JobCategory } from '@push/api-client'
+import { CAREER_YEARS, chipLabel, EMPLOYMENT_TYPES, JOB_CATEGORIES, withDeadlineWindow, type CareerYears, type EmploymentType, type JobCategory } from '@push/api-client'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -38,17 +38,17 @@ const JobsPage = () => {
   )
   const [facet, setFacet] = useState<FilterKey | null>(null)
   const [draft, setDraft] = useState<JobFilters>(filters)
-  const listQuery = usePostingPages(['postings', params.toString()], { ...filters, sort, limit: JOB_PAGE_SIZE })
-  const countQuery = usePostingCount(['posting-count', sort, draft], { ...draft, sort, limit: 1 }, facet !== null)
+  const listQuery = usePostingPages(['postings', params.toString()], withDeadlineWindow({ ...filters, sort, limit: JOB_PAGE_SIZE }))
+  const countQuery = usePostingCount(['posting-count', sort, draft], withDeadlineWindow({ ...draft, sort, limit: 1 }), facet !== null)
   const locationQuery = usePostingLocations(
     ['posting-locations', sort, draft.category, draft.skills, draft.careerYears, draft.employmentType],
-    {
+    withDeadlineWindow({
       sort,
       category: draft.category,
       skills: draft.skills,
       careerYears: draft.careerYears,
       employmentType: draft.employmentType,
-    },
+    }),
     facet === 'location',
   )
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []

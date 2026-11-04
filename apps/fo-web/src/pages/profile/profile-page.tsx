@@ -1,20 +1,30 @@
 import { CAREER_STATUSES } from '@push/api-client'
 import { brandOf } from '@push/shared'
 import { useParams } from 'react-router-dom'
+import { useAuthMe } from '../../entities/session'
 import { assetUrl } from '../../shared/api/client'
-import { isWebView } from '../../shared/lib/bridge'
+import { isWebView, send } from '../../shared/lib/bridge'
 import { initials, periodLabel, roleLabel } from '../../shared/lib/format'
 import { useDetail } from '../../shared/lib/use-detail'
 import BrowserProfile from './browser-profile'
 import Status from '../../shared/ui/status'
 import { profilesGet } from '../../entities/profile'
 
+const PROFILE_EDITS = [
+  { section: 'basic', label: '기본 정보 편집' },
+  { section: 'intro', label: '소개 편집' },
+  { section: 'career', label: '경력 편집' },
+  { section: 'skills', label: '기술 스택 편집' },
+] as const
+
 
 const ProfilePage = () => {
   const { id = '' } = useParams()
+  const me = useAuthMe()
   const { data: p, error } = useDetail(['profile', id], () => profilesGet(id), (p) => p.displayName)
   if (!p) return <Status error={!!error} what="프로필" />
   if (!isWebView()) return <BrowserProfile profile={p} />
+  const mine = me.data?.id === p.userId
   const status = CAREER_STATUSES.find((s) => s.key === p.careerStatus)?.label
   return (
     <>
@@ -33,6 +43,15 @@ const ProfilePage = () => {
           {p.jobCategory || p.tenureYears != null ? <span className="badge grey">{roleLabel(p.jobCategory, p.tenureYears)}</span> : null}
           {status ? <span className={`badge ${p.careerStatus === 'seeking' ? 'ac' : 'grey'}`}>{status}</span> : null}
         </span>
+        {mine ? (
+          <span className="badges">
+            {PROFILE_EDITS.map((item) => (
+              <button key={item.section} type="button" className="btn sec sm" onClick={() => send({ type: 'open', path: `/(tabs)/(my)/edit-profile/${item.section}` })}>
+                {item.label}
+              </button>
+            ))}
+          </span>
+        ) : null}
       </header>
       {p.intro ? (
         <section className="section">

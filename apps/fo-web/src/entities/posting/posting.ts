@@ -1,3 +1,4 @@
+import { withDeadlineWindow } from '@push/api-client'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   meBookmarks as fetchBookmarks,
@@ -13,11 +14,13 @@ export const postingsLocations = (...args: Parameters<typeof fetchPostingLocatio
 export const postingsMine = (...args: Parameters<typeof fetchMyPostings>) => fetchMyPostings(...args)
 export const meBookmarks = (...args: Parameters<typeof fetchBookmarks>) => fetchBookmarks(...args)
 
-export const usePostingList = (sort: 'latest' | 'deadline' | 'popular') =>
-  useQuery({
-    queryKey: ['postings', { sort }],
-    queryFn: () => postingsList({ sort }),
+export const usePostingList = (sort: 'latest' | 'deadline' | 'popular') => {
+  const query = withDeadlineWindow({ sort })
+  return useQuery({
+    queryKey: ['postings', query],
+    queryFn: () => postingsList(query),
   })
+}
 
 export const useMyPostings = () => useQuery({ queryKey: ['company-postings'], queryFn: () => postingsMine() })
 

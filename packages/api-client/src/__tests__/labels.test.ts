@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { REJECTED_BADGE } from '../constants'
-import { absoluteUrl, JOB_CATEGORIES, stageBadge, workConditionLines } from '../labels'
+import { absoluteUrl, HUB_CATEGORIES, JOB_CATEGORIES, stageBadge, workConditionLines } from '../labels'
 
 describe('labels', () => {
   it('uses push-be job category keys', () => {
     expect(JOB_CATEGORIES.map((c) => c.key)).toEqual(['dev', 'data', 'design', 'plan', 'marketing', 'sales', 'hr', 'ops'])
+  })
+
+  it('puts 데이터 fifth on hub chips', () => {
+    expect(HUB_CATEGORIES.map((c) => c.label)).toEqual(['개발', '디자인', '기획', '마케팅', '데이터', '영업'])
   })
 
   it('flattens the workConditions object into rows', () => {

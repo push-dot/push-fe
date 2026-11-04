@@ -6,7 +6,7 @@ import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
-  Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile,
+  Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
@@ -67,6 +67,8 @@ export const createApi = (c: Client) => ({
   },
 
   documents: {
+    list: (query: PageParams & { applicationId?: string; kind?: string } = {}) =>
+      c.get<ListEnvelope<ResumeDocument>>('documents', { query }),
     generate: (id: string, body: GenerateDocumentInput) =>
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
   },

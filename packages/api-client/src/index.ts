@@ -2,6 +2,8 @@ export { createClient, type Client, type ClientConfig, type RequestOptions } fro
 export { createApi, type Api } from './endpoints'
 export { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
 export { isJobSettled, jobQuery } from './jobs'
+export { withDeadlineWindow } from './posting-query'
+export { JOB_POLL_MS } from './constants'
 export { parseFrame, readEvents } from './sse'
 export * from './labels'
 export type * from './types'

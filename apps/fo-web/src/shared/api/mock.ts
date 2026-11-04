@@ -86,7 +86,9 @@ export const mockFit: Fit = {
   parts: [
     { label: '기술 스택', value: 8.2 },
     { label: '경험 연관성', value: 7.4 },
+    { label: '경력 수준', value: 6.1 },
     { label: '키워드', value: 4.5 },
+    { label: '도메인', value: 5 },
   ],
   weakness: 'Kafka 운영 경험과 부하 테스트 근거가 부족해요',
   reachable: 8,
@@ -513,7 +515,7 @@ const filteredPostings = (url: URL) => {
     if (years.length > 0 && !years.some((year) => careerOverlaps(item, year))) return false
     if (places.length > 0 && !places.includes(item.location)) return false
     if (employment.length > 0 && !employment.includes(item.employmentType)) return false
-    if (sort === 'deadline' && !deadlineSoon(item.deadline)) return false
+    if ((sort === 'deadline' || url.searchParams.get('deadlineWithin') === '7') && !deadlineSoon(item.deadline)) return false
     return true
   })
   if (sort === 'popular') items = [...items].sort((a, b) => POPULAR_ORDER.indexOf(a.id) - POPULAR_ORDER.indexOf(b.id))

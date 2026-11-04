@@ -1,25 +1,52 @@
 import { useQuery } from '@tanstack/react-query'
-import { MOCK_FIT_DELAY_MS } from './constants'
+import { api } from '../../shared/api/client'
+import { mockFit } from '../../shared/api/mock'
 import { isMock, send } from '../../shared/lib/bridge'
-import { mockFit, type Fit } from '../../shared/api/mock'
+import { MOCK_FIT_DELAY_MS } from './constants'
+import { FIT_COMPARING, FIT_LOCK, FIT_PART_LABELS, FIT_SOON, loadPostingFit, type FitCardModel, type FitPayload } from './fit-view'
 
 const C = 2 * Math.PI * 27
 
-const loadFit = async (): Promise<Fit | null> => {
-  if (!isMock()) return null
-  await new Promise((r) => setTimeout(r, MOCK_FIT_DELAY_MS))
-  return mockFit
+const loadMockFit = async (): Promise<FitCardModel> => {
+  await new Promise((resolve) => setTimeout(resolve, MOCK_FIT_DELAY_MS))
+  return {
+    document: mockFit.document,
+    score: mockFit.score,
+    parts: mockFit.parts,
+    weakness: mockFit.weakness,
+    locked: false,
+    reachable: mockFit.reachable,
+  }
 }
 
+const loadFit = (postingId: string) =>
+  isMock()
+    ? loadMockFit()
+    : loadPostingFit(postingId, {
+        listDocuments: () => api.documents.list({ limit: 1 }),
+        startFit: (id, documentId) => api.postings.fit(id, documentId),
+        readJob: (id) => api.jobs.get<FitPayload>(id),
+      })
+
 const FitCard = ({ postingId }: { postingId: string }) => {
-  const { data: fit, isPending } = useQuery({ queryKey: ['fit', postingId], queryFn: loadFit, staleTime: Infinity })
-  const parts: { label: string; value: number | null }[] =
-    fit?.parts ?? ['기술 스택', '경험 연관성', '키워드'].map((label) => ({ label, value: null }))
+  const mock = isMock()
+  const { data: fit, isPending } = useQuery({ queryKey: ['fit', postingId, mock], queryFn: () => loadFit(postingId), staleTime: Infinity })
+  const comparing = mock && isPending
+  const parts = fit?.parts ?? FIT_PART_LABELS.map((label) => ({ label, value: null as number | null }))
+  const subtitle = comparing
+    ? FIT_COMPARING
+    : fit?.reachable != null
+      ? `조금만 고치면 ${fit.reachable}점대예요`
+      : fit?.locked
+        ? FIT_LOCK
+        : fit
+          ? null
+          : FIT_SOON
   return (
     <button
       type="button"
       className="fit"
-      aria-busy={isPending}
+      aria-busy={comparing}
       onClick={() => send({ type: 'open', path: `/chat?postingId=${encodeURIComponent(postingId)}` })}
     >
       <div className="fit-head">
@@ -32,17 +59,11 @@ const FitCard = ({ postingId }: { postingId: string }) => {
             <span className="num">{fit.score.toFixed(1)}</span>
           </div>
         ) : (
-          <span className="ring ring-empty">{isPending ? <span className="glyph" /> : null}</span>
+          <span className="ring ring-empty">{comparing ? <span className="glyph" /> : null}</span>
         )}
         <span className="fit-title">
           <span className="c1 t3 w7">내 적합도{fit ? ` · ${fit.document}` : ''}</span>
-          {isPending ? (
-            <span className="h3 shim shim-ac">공고와 서류를 비교하는 중…</span>
-          ) : fit ? (
-            <span className="h3">조금만 고치면 {fit.reachable}점대예요</span>
-          ) : (
-            <span className="h3 t3">적합도는 곧 볼 수 있어요</span>
-          )}
+          {subtitle ? <span className={comparing ? 'h3 shim shim-ac' : fit?.reachable != null || fit?.locked ? 'h3' : 'h3 t3'}>{subtitle}</span> : null}
         </span>
       </div>
       {parts.map(({ label, value }, i) => {
@@ -58,7 +79,7 @@ const FitCard = ({ postingId }: { postingId: string }) => {
           </div>
         )
       })}
-      {fit ? (
+      {fit?.weakness ? (
         <span className="c1 t2 weak">
           <span className="bang">!</span>
           {fit.weakness}
