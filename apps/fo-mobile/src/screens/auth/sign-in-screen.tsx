@@ -31,9 +31,9 @@ import { radius, useColors } from '@/theme'
 
 const devToken = __DEV__ ? DEV_AUTH_TOKEN : undefined
 
-const continueWith = (outcome: SignInOutcome) => {
+const continueWith = (provider: LoginProvider, outcome: SignInOutcome) => {
   if (outcome.kind !== 'phone') return
-  usePhoneAuth.getState().beginSocial(outcome.pendingToken, emailFromPendingToken(outcome.pendingToken))
+  usePhoneAuth.getState().beginSocial(outcome.pendingToken, emailFromPendingToken(outcome.pendingToken), provider)
   router.push('/phone')
 }
 
@@ -56,7 +56,7 @@ const SignInScreen = () => {
           setFailure(loginFailureCopy(provider))
           return
         }
-        continueWith(outcome)
+        continueWith(provider, outcome)
       })
       .catch(() => setFailure(loginFailureCopy(provider)))
       .finally(() => setBusy(false))
