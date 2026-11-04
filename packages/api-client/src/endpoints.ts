@@ -215,8 +215,12 @@ export const createApi = (c: Client) => ({
       if (!res.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
       yield* readEvents<StreamEvent>(res.body, signal)
     },
-    resolveApproval: (id: string, approvalId: string, optionId: string) =>
-      unwrap(c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, { body: { optionId } })),
+    resolveApproval: (id: string, approvalId: string, optionId: string, optionIds?: string[]) =>
+      unwrap(
+        c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, {
+          body: optionIds?.length ? { optionId, optionIds } : { optionId },
+        }),
+      ),
     follow: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       let seq = after
       for (;;) {
