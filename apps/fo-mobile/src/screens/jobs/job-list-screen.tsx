@@ -14,7 +14,7 @@ import {
   type FilterKey,
   type Filters,
 } from '@/features/jobs'
-import { Chip, GlassButton, Icon, LOADING_LABEL, Text, TopBar } from '@/shared/components'
+import { Chip, GlassButton, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const JobListScreen = () => {
@@ -33,17 +33,23 @@ const JobListScreen = () => {
           <Chip key={k} label={chipText(k, filters)} menu on={filters[k].length > 0} onPress={() => setOpen(k)} />
         ))}
       </ScrollView>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 12 }}>
-        <Text v="c1" weight="600" color="t3">
-          {pages.isPending ? LOADING_LABEL : total === undefined ? ' ' : `공고 ${formatCount(total)}개`}
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <Text v="c1" weight="600" color="t2">
-            최신순
-          </Text>
-          <Icon name="down" size={14} color="t2" />
+      {pages.isPending ? (
+        <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 }}>
+          <Skeleton width={80} height={12} />
         </View>
-      </View>
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 12 }}>
+          <Text v="c1" weight="600" color="t3">
+            {total === undefined ? ' ' : `공고 ${formatCount(total)}개`}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <Text v="c1" weight="600" color="t2">
+              최신순
+            </Text>
+            <Icon name="down" size={14} color="t2" />
+          </View>
+        </View>
+      )}
     </View>
   )
 
@@ -54,7 +60,7 @@ const JobListScreen = () => {
         onBack={() => router.back()}
         right={<GlassButton actions={[{ icon: 'search', label: '검색', onPress: () => router.push('/search') }]} />}
       />
-      <PostingGrid filters={query} header={header} loadingLabel={false} onReset={() => setFilters(EMPTY)} />
+      <PostingGrid filters={query} header={header} onReset={() => setFilters(EMPTY)} />
       <FilterSheet
         kind={open}
         value={filters}

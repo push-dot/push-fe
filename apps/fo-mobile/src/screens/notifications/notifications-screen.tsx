@@ -5,6 +5,7 @@ import {
   groupLabel,
   NOTIFICATION_EMPTY,
   NOTIFICATION_SETTINGS_LABEL,
+  NOTIFICATION_SKELETON,
   notificationHref,
   NotificationRow,
   openNotificationSettings,
@@ -12,7 +13,7 @@ import {
   useNotifications,
   useReadNotifications,
 } from '@/features/notifications'
-import { Button, LoadingNote, StatusNote, Text, TopBar } from '@/shared/components'
+import { Button, Skeleton, SkeletonRows, StatusNote, Text, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const NotificationsScreen = () => {
@@ -37,7 +38,7 @@ const NotificationsScreen = () => {
       <TopBar
         title="알림"
         onBack={() => router.back()}
-        right={<Button label="모두 읽음" variant="secondary" size="sm" disabled={!unread} onPress={() => read.mutate('all')} />}
+        right={<Button label="모두 읽음" variant="secondary" size="sm" disabled={!q.isPending && !unread} onPress={() => read.mutate('all')} />}
       />
       <SectionList
         sections={sections}
@@ -52,7 +53,12 @@ const NotificationsScreen = () => {
         renderItem={({ item }) => <NotificationRow n={item} onPress={() => open(item)} />}
         ListEmptyComponent={
           q.isPending ? (
-            <LoadingNote style={{ marginTop: 40 }} />
+            <View>
+              <View style={{ paddingHorizontal: 24, paddingVertical: 8 }}>
+                <Skeleton width={40} height={12} />
+              </View>
+              <SkeletonRows {...NOTIFICATION_SKELETON} />
+            </View>
           ) : q.isError ? (
             <Text v="b2" color="t3" style={{ textAlign: 'center', marginTop: 40 }}>
               알림을 불러오지 못했어요. 잠시 후 다시 열어 주세요.

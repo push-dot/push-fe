@@ -5,6 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, View } from 'react-
 import {
   EMPTY_SHEET,
   FilterButton,
+  HUB_SKELETON,
   HubFilterSheet,
   ProfileRow,
   Surface,
@@ -15,7 +16,7 @@ import {
   useViewerId,
   type SheetFilters,
 } from '@/features/hub'
-import { Badge, Button, Chip, Icon, LoadingNote, Text, TopBar } from '@/shared/components'
+import { Badge, Button, Chip, Icon, SkeletonRows, Text, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const HubScreen = () => {
@@ -91,7 +92,7 @@ const HubScreen = () => {
         ListHeaderComponent={header}
         ListEmptyComponent={
           list.isPending ? (
-            <LoadingNote style={{ marginTop: 32 }} />
+            <SkeletonRows {...HUB_SKELETON} />
           ) : list.isError ? (
             <Text v="b2" color="t3" style={{ textAlign: 'center', marginTop: 32 }}>
               프로필을 불러오지 못했어요.

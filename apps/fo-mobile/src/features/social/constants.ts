@@ -1,5 +1,6 @@
 export const MAX_COMMENT = 1000
 export const MAX_IMAGES = 4
+export const FEED_SKELETON_CARDS = 3
 export const MAX_BYTES = 10 * 1024 * 1024
 export const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
 export const POST_IMAGE_OPTIONS = {

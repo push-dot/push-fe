@@ -11,6 +11,7 @@ import {
   SEARCH_EMPTY_BODY,
   SEARCH_ERROR_LINES,
   SEARCH_RETRY_LABEL,
+  SEARCH_SKELETON,
   SearchBar,
   searchEmptyTitle,
   TABS,
@@ -18,7 +19,7 @@ import {
   useSearch,
   type SearchTab,
 } from '@/features/search'
-import { Chip, Icon, LoadingNote, StatusNote, Text } from '@/shared/components'
+import { Chip, Icon, Skeleton, SkeletonRows, StatusNote, Text } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) => {
@@ -116,17 +117,25 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                   return <Chip key={t.key} label={n === undefined ? t.label : `${t.label} ${formatCount(n)}`} on={tab === t.key} onPress={() => setTab(t.key)} />
                 })}
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 }}>
-                <Text v="c1" weight="600" color="t3" numberOfLines={1} style={{ flex: 1 }}>
-                  ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}개
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                  <Text v="c1" weight="600" color="t2">
-                    관련도순
-                  </Text>
-                  <Icon name="down" size={14} color="t2" />
+              {active.isPending ? (
+                <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+                  <Skeleton width={120} height={12} />
                 </View>
-              </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 }}>
+                  <Text v="c1" weight="600" color="t3" numberOfLines={1} style={{ flex: 1 }}>
+                    ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}개
+                  </Text>
+                  {tab === 'postings' ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                      <Text v="c1" weight="600" color="t2">
+                        관련도순
+                      </Text>
+                      <Icon name="down" size={14} color="t2" />
+                    </View>
+                  ) : null}
+                </View>
+              )}
             </>
           }
           renderItem={({ item }) =>
@@ -140,7 +149,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
           }
           ListEmptyComponent={
             active.isPending ? (
-              <LoadingNote style={{ marginTop: 40 }} />
+              <SkeletonRows {...SEARCH_SKELETON} />
             ) : active.isError ? (
               <StatusNote lines={SEARCH_ERROR_LINES} action={{ label: SEARCH_RETRY_LABEL, onPress: () => active.refetch() }} style={{ marginTop: 40 }} />
             ) : (

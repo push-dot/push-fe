@@ -2,6 +2,8 @@ import type { SectionKind } from './types'
 import type { FilterKey } from './utils'
 
 export const POSTING_PAGE_LIMIT = 20
+export const CARD_RADIUS = 20
+export const GRID_SKELETON_CARDS = 4
 export const JOBS_EMPTY_LINES = ['조건에 맞는 공고가 없어요.', '필터를 줄여 보세요.'] as const
 export const RESET_FILTERS_LABEL = '필터 초기화'
 
