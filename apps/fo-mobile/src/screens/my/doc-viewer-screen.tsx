@@ -193,13 +193,13 @@ const DocViewerScreen = ({ id }: { id: string }) => {
         }}
       >
         <Button
-          label="AI로 고치기"
+          label="에이전트로 고치기"
           icon="spark"
           variant="secondary"
           onPress={() => void start(FIX_UPLOADED_DOC, FIX_UPLOADED_DOC, undefined, undefined, undefined, { evidenceIds: [id] })}
         />
         <Button
-          label="지원 서류용 프로필로 만들기"
+          label="내 프로필로 전환"
           icon="user"
           disabled={!d}
           onPress={() => setSheet(true)}

@@ -15,7 +15,7 @@ import {
   useMyPosts,
 } from '../api/hooks'
 import type { ActivitySub } from '../types'
-import { emptyCta, followSeeAll, followerSee, postsSeeAll, stageTone, timeAgo } from '../utils'
+import { commentedSee, emptyCta, followSeeAll, followerSee, postsSeeAll, stageTone, timeAgo } from '../utils'
 import Avatar from './avatar'
 import CalendarView from './calendar-view'
 import Empty from './empty'
@@ -39,14 +39,15 @@ const Applications = () => {
   const list = data?.data ?? []
   return (
     <>
-      <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
       {list.length === 0 ? (
         <Empty
           text={emptyCta('applications').title}
           action={emptyCta('applications').action}
           onAction={() => router.push(emptyCta('applications').href)}
         />
-      ) : null}
+      ) : (
+        <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
+      )}
       {list.map((a) => (
         <Row
           key={a.id}
@@ -79,14 +80,15 @@ const Bookmarks = () => {
   )
   return (
     <>
-      <ListTitle title="북마크한 공고" count={list.length} />
       {list.length === 0 ? (
         <Empty
           text={emptyCta('bookmarks').title}
           action={emptyCta('bookmarks').action}
           onAction={() => router.push(emptyCta('bookmarks').href)}
         />
-      ) : null}
+      ) : (
+        <ListTitle title="북마크한 공고" count={list.length} />
+      )}
       {list.map((p) => (
         <Pressable
           key={p.id}
@@ -264,7 +266,7 @@ const Posts = () => {
         />
       ) : null}
       <SeeAll
-        label={`댓글 단 글 ${commentCount}개 보기`}
+        label={commentedSee(commentCount)}
         onPress={() => router.push({ pathname: '/activity/posts', params: { box: 'commented' } })}
       />
     </>

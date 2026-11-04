@@ -21,6 +21,7 @@ import {
 } from '@push/api-client'
 import {
   Avatar,
+  careerDeleteBody,
   careerDeleteCopy,
   careerPeriod,
   FieldLabel,
@@ -361,7 +362,7 @@ const EditIntro = ({ p }: { p: Profile }) => {
         />
         {/* shortcut: no inline rewrite API yet, so 다듬기 hands off to AI 채팅; add one when push-be ships it */}
         <Button
-          label="AI로 다듬기"
+          label="에이전트로 다듬기"
           icon="spark"
           variant="secondary"
           onPress={() => router.push('/(tabs)/(chat)/chat')}
@@ -530,7 +531,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     accessibilityRole="button"
                     onPress={() => {
                       const removed = it
-                      Alert.alert(careerDeleteCopy.title, careerDeleteCopy.body, [
+                      Alert.alert(careerDeleteCopy.title, careerDeleteBody(it), [
                         { text: '취소', style: 'cancel' },
                         {
                           text: careerDeleteCopy.confirm,

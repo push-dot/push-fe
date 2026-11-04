@@ -249,7 +249,7 @@ const SettingsScreen = () => {
         </Pressable>
       </SettingsGroup>
 
-      <SettingsGroup title="일반" note="앱 화면과 AI 답변 언어가 함께 바뀌어요.">
+      <SettingsGroup title="일반" note="앱 화면과 에이전트 답변 언어가 함께 바뀌어요.">
         <SettingsRow
           label="언어"
           right={<LanguageSelect value={s.locale} onPick={(locale) => set({ locale })} />}
@@ -352,7 +352,7 @@ const SettingsScreen = () => {
         onClose={() => setSheet(null)}
       />
       <Pick
-        title="AI가 어떤 말투로 쓸까요?"
+        title="에이전트가 어떤 말투로 쓸까요?"
         items={TONES}
         value={s.defaultTone}
         onPick={(defaultTone) => set({ defaultTone })}

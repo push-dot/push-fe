@@ -176,7 +176,7 @@ const DocsTab = () => {
         <PickRow
           icon="spark"
           tone="green"
-          title="AI로 새로 만들기"
+          title="에이전트로 새로 만들기"
           sub="대화하면서 이력서를 써요"
           onPress={() => (setPicking(false), openChat())}
         />
@@ -213,11 +213,11 @@ const DocsTab = () => {
           아직 등록한 서류가 없어요
         </Text>
         <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
-          {'PDF나 DOCX 파일을 올리거나\nAI로 새로 만들어 보세요.'}
+          {'PDF나 DOCX 파일을 올리거나\n에이전트로 새로 만들어 보세요.'}
         </Text>
         <View style={{ alignSelf: 'stretch', gap: 8, marginTop: 18 }}>
           <Button label="파일 등록" onPress={() => void pickFile()} />
-          <Button label="AI로 만들기" variant="secondary" onPress={openChat} />
+          <Button label="에이전트로 만들기" variant="secondary" onPress={openChat} />
         </View>
         {sheet}
         <Toast text={notice.text} action={notice.action} onHide={notice.hide} />

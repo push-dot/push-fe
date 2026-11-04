@@ -85,7 +85,7 @@ const Thread = ({ offer, meId }: { offer: Offer; meId: string }) => {
           accessibilityLabel="메시지"
           value={text}
           onChangeText={setText}
-          placeholder="메시지 보내기"
+          placeholder="메시지를 입력해 주세요"
           placeholderTextColor={c.t4}
           multiline
           style={[
@@ -261,7 +261,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
                 답장 전에 이 공고에 맞춰 볼까요?
               </Text>
               <Text v="c1" color="t2">
-                AI가 적합도를 보고 이력서를 고쳐 드려요
+                에이전트가 적합도를 보고 이력서를 고쳐 드려요
               </Text>
             </View>
             <Icon name="chev" size={18} color={c.ac} />
