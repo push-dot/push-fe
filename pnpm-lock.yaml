@@ -195,6 +195,18 @@ importers:
         specifier: ^3.1.4
         version: 3.2.7(@types/node@22.20.4)(lightningcss@1.33.0)(terser@5.51.2)
 
+  packages/design-system:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.1.4
+        version: 3.2.7(@types/node@22.20.4)(lightningcss@1.33.0)(terser@5.51.2)
+
   packages/shared:
     dependencies:
       es-hangul:

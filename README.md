@@ -10,7 +10,7 @@
 
 ---
 
-**push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/shared`예요.
+**push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/design-system`, `packages/shared`예요.
 
 화면 문구는 한국어이고, 시안 HTML은 `docs/design/`에 있어요. `docs/plans/`는 구현 계획이에요.
 
@@ -19,6 +19,7 @@
 | `apps/fo-mobile` (`@push/fo-mobile`) | 개인용 iOS·Android 앱. 탭은 홈, 허브, 소셜, AI 채팅, 마이예요. |
 | `apps/fo-web` (`@push/fo-web`) | 개인 웹과 기업 웹. 개발 서버는 5174예요. 모바일 WebView도 이 앱의 공고·프로필 상세를 열어요. |
 | `packages/api-client` (`@push/api-client`) | push-be `/api/v1` 클라이언트. ky, 타입, SSE 파서, 작업 폴링. |
+| `packages/design-system` (`@push/design-system`) | Claude Design 디자인 시스템의 색, 타입, 간격, 반경, 그림자 토큰과 아이콘. 웹은 `tokens.css`를 가져다 써요. |
 | `packages/shared` (`@push/shared`) | 한글 검색(`es-hangul`), 경력 라벨, 날짜, 파일 크기. 웹과 모바일이 같이 써요. |
 
 ## 개요
@@ -190,6 +191,7 @@ apps/
   fo-web/             Vite. src/app, pages, features, entities, shared
 packages/
   api-client/         @push/api-client
+  design-system/      @push/design-system
   shared/             @push/shared
 docs/
   design/             Claude Design 시안
