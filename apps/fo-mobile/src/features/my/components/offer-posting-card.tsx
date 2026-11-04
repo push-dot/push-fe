@@ -3,12 +3,12 @@ import { Pressable, View } from 'react-native'
 import type { OfferPosting } from '@push/api-client'
 import { careerLabel } from '@push/shared'
 import { Glass, Icon, Text } from '@/shared/components'
-import { useOfferPosting } from '../api/hooks'
+import { usePostingDetail } from '../api/hooks'
 import { dday } from '../utils'
 import Logo from './logo'
 
 const OfferPostingCard = ({ posting }: { posting: OfferPosting }) => {
-  const { data: full } = useOfferPosting(posting.id)
+  const { data: full } = usePostingDetail(posting.id)
   const career = full ? careerLabel(full) : null
   const careerText = !career || career === '신입' ? career : `경력 ${career}`
   return (

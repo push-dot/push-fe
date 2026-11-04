@@ -20,6 +20,11 @@ const ago = (ms: number) => new Date(Date.now() - ms).toISOString()
 const H = 3_600_000
 const D = 24 * H
 const on = (m: number, d: number, h = 9, min = 0) => new Date(2026, m - 1, d, h, min).toISOString()
+const tomorrowAt = (h: number) => {
+  const d = new Date(Date.now() + D)
+  d.setHours(h, 0, 0, 0)
+  return d.toISOString()
+}
 
 let profile: Profile = {
   userId: 'me',
@@ -168,7 +173,7 @@ const app = (
   createdAt: at,
 })
 const applications: Application[] = [
-  { ...app('a1', 'p1', '모아페이', '백엔드 엔지니어 (Kotlin·Spring)', 'INTERVIEW', on(10, 14)), fitScore: 86 },
+  { ...app('a1', 'p1', '모아페이', '백엔드 엔지니어 (Kotlin·Spring)', 'INTERVIEW', on(10, 14)), fitScore: 69 },
   app('a2', 'p3', '도토리증권', '서버 개발자 (Go)', 'SCREENING', on(10, 10)),
   app('a3', 'p8', '별빛게임즈', 'DevOps 엔지니어', 'APPLIED', on(10, 16)),
   app('a4', 'p7', '라온헬스', '백엔드 개발자 (Java)', 'ACCEPTED', on(9, 22)),
@@ -274,6 +279,11 @@ const events: CalendarEvent[] = [
   }),
   ev('e11', 'CUSTOM', '부하 테스트 스터디', on(10, 29, 20)),
   ev('e12', 'FOLLOW_UP', '모아페이 면접 후기 보내기', on(10, 30, 10)),
+  ev('e13', 'INTERVIEW', '결제 플랫폼팀 1차 면접', tomorrowAt(15), {
+    endsAt: tomorrowAt(16),
+    notes: 'Google Meet',
+    applicationId: 'a1',
+  }),
 ]
 mock('GET', 'calendar/events', ({ query }) => {
   const from = query.get('from') ?? ''

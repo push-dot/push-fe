@@ -3,7 +3,9 @@ import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
 import { type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
+import { DAY, NEXT_EVENT_DAYS } from '../constants'
 import type { CalendarEvent, PickedFile } from '../types'
+import { nextEventFor } from '../utils'
 import {
   acceptOffer,
   addLink,
@@ -28,6 +30,7 @@ import {
   fetchDocument,
   fetchDocuments,
   fetchDocumentVersions,
+  fetchEvents,
   fetchSettings,
   fetchSource,
   fetchUnreadOffers,
@@ -222,6 +225,16 @@ export const useCalendarEvents = (from: string, to: string) =>
     queryFn: () => myApi.calendar(from, to),
   })
 
+export const useNextEvent = (applicationId: string) =>
+  useQuery({
+    queryKey: ['calendar', 'next', applicationId],
+    queryFn: async () => {
+      const now = Date.now()
+      const r = await fetchEvents(new Date(now).toISOString(), new Date(now + NEXT_EVENT_DAYS * DAY).toISOString())
+      return nextEventFor(r.data, applicationId)
+    },
+  })
+
 export const useAddCalendarEvent = (onAdded: () => void) => {
   const qc = useQueryClient()
   return useMutation({
@@ -312,7 +325,7 @@ export const useOfferDecision = (id: string, reply: string, onAccepted: () => vo
   return { accept, decline }
 }
 
-export const useOfferPosting = (postingId: string | undefined) =>
+export const usePostingDetail = (postingId: string | undefined) =>
   useQuery({
     queryKey: ['postings', 'detail', postingId],
     queryFn: () => fetchPosting(postingId!),

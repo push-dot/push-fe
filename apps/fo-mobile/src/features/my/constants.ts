@@ -4,6 +4,7 @@ export const MIN = 60_000
 export const HOUR = 60 * MIN
 export const DAY = 24 * HOUR
 export const SHEET_SWAP_MS = 400
+export const NEXT_EVENT_DAYS = 90
 
 export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 

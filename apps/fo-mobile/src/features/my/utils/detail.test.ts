@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dayBreaks, eventWhen, fitTen, hubProfile, personLine, stageSteps } from './index'
+import { dayBreaks, eventWhen, fitTen, hubProfile, nextEventFor, personLine, stageSteps } from './index'
 
 const doc = (...nodes: unknown[]) => ({ type: 'doc', content: nodes })
 const h = (text: string) => ({ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text }] })
@@ -84,5 +84,13 @@ describe('my detail rules', () => {
     expect(personLine({ companyName: '모아페이', headline: '결제 플랫폼팀 채용 담당' })).toBe('모아페이 · 결제 플랫폼팀 채용 담당')
     expect(personLine({ companyName: null, headline: '' })).toBe('')
     expect(personLine({})).toBe('')
+  })
+
+  it('picks the earliest event of the application', () => {
+    const ev = (id: string, applicationId: string | null, startsAt: string) => ({ id, applicationId, startsAt })
+    expect(
+      nextEventFor([ev('x', 'a2', '2026-10-20'), ev('late', 'a1', '2026-10-25'), ev('soon', 'a1', '2026-10-21')], 'a1')?.id,
+    ).toBe('soon')
+    expect(nextEventFor([ev('x', null, '2026-10-20')], 'a1')).toBeNull()
   })
 })
