@@ -25,6 +25,10 @@ const harness = (reply: (req: Request) => Response = () => json(200, { data: nul
 const frame = (event: unknown) => [...parseFrame<StreamEvent>(`id: 7\ndata: ${JSON.stringify(event)}`)]
 
 describe('harness stream events', () => {
+  it('yields no events for a comment-only ping frame', () => {
+    expect([...parseFrame(': ping')]).toEqual([])
+  })
+
   it('parses tool, approval, choice, file, todo, and done frames as typed events', () => {
     const events: StreamEvent[] = [
       { type: 'tool', name: 'draft_posting', state: 'ok', summary: '공고 초안을 저장해요', tier: 'SAFE_WRITE', result: { draft: { id: 'p1' } }, seq: 1 },
