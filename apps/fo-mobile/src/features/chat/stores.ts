@@ -175,8 +175,9 @@ const startRun = async (input: Outgoing) => {
   // Messages sent while the agent worked go out one by one once it finishes.
   const s = get(id)
   if (!s.working && !s.approval && s.queue.length) {
+    const next = s.queue[0]!
     dispatch(id, { type: 'dequeue' })
-    send(id, s.queue[0]!)
+    send(id, next.text, next.file)
   }
 }
 
@@ -186,7 +187,10 @@ const nameOf = (attachment?: string | PickedFile) => (typeof attachment === 'str
 
 export const send = (id: string, text: string, attachment?: string | PickedFile, intent?: ChatIntent, context?: { documentId?: string }) => {
   const s = get(id)
-  if (s.working) return dispatch(id, { type: 'queue', text })
+  if (s.working) {
+    const file = fileOf(attachment)
+    return dispatch(id, { type: 'queue', text, ...(file ? { file } : {}) })
+  }
   if (s.approval?.optionIds) {
     // The server reads free text as the gate answer or as rejecting the pending approval.
     dispatch(id, { type: 'answer', text })

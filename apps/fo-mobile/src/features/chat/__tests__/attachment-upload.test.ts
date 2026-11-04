@@ -76,6 +76,56 @@ describe('chat attachment upload', () => {
     expect(chat('c-fail').working).toBeNull()
   })
 
+  it('uploads a file queued while the agent is working', async () => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const first = { uri: 'file:///first.pdf', name: 'first.pdf', mimeType: 'application/pdf', size: 10 }
+    const queued = { uri: 'file:///queued.pdf', name: 'queued.pdf', mimeType: 'application/pdf', size: 20 }
+    upload.mockImplementation(async (picked: { name: string }) => {
+      if (picked.name === 'first.pdf') await gate
+      return { id: picked.name === 'first.pdf' ? 'src-first' : sourceId }
+    })
+    send('c-q', '먼저', first)
+    await vi.waitFor(() => expect(chat('c-q').working).not.toBeNull())
+    send('c-q', '이어서', queued)
+    expect(upload).toHaveBeenCalledTimes(1)
+    expect(chat('c-q').queue).toEqual([{ text: '이어서', file: queued }])
+    release()
+    await vi.waitFor(() => expect(api.conversations.stream).toHaveBeenCalledTimes(2))
+    expect(upload).toHaveBeenCalledWith(queued)
+    expect(api.conversations.stream).toHaveBeenLastCalledWith(
+      'c-q',
+      { text: '이어서', accessMode: 'AUTO', context: { evidenceIds: [sourceId] } },
+      expect.anything(),
+    )
+  })
+
+  it('does not stream a queued file when its upload fails', async () => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const first = { uri: 'file:///first.pdf', name: 'first.pdf', mimeType: 'application/pdf', size: 10 }
+    const queued = { uri: 'file:///queued.pdf', name: 'queued.pdf', mimeType: 'application/pdf', size: 20 }
+    upload.mockImplementation(async (picked: { name: string }) => {
+      if (picked.name === 'first.pdf') {
+        await gate
+        return { id: 'src-first' }
+      }
+      throw new Error('offline')
+    })
+    send('c-q-fail', '먼저', first)
+    await vi.waitFor(() => expect(chat('c-q-fail').working).not.toBeNull())
+    send('c-q-fail', '이어서', queued)
+    release()
+    await vi.waitFor(() => expect(chat('c-q-fail').items.some((item) => item.type === 'error')).toBe(true))
+    expect(api.conversations.stream).toHaveBeenCalledTimes(1)
+    expect(api.conversations.stream.mock.calls[0]?.[1]).toMatchObject({ text: '먼저' })
+    expect(chat('c-q-fail').working).toBeNull()
+  })
+
   it('does not upload or attach a name-only chip to the stream body', async () => {
     send('c-name', '안녕', 'note.pdf')
     await vi.waitFor(() => expect(chat('c-name').working).toBeNull())
