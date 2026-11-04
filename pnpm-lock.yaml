@@ -26,6 +26,9 @@ importers:
       '@push/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@push/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
       '@push/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -144,6 +147,9 @@ importers:
       '@push/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@push/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
       '@push/shared':
         specifier: workspace:*
         version: link:../../packages/shared
