@@ -1,5 +1,5 @@
 import type { StreamEvent, StreamOption } from '@push/api-client'
-import { CHOICE_QUESTION, DEFAULT_ERROR_TEXT, ERROR_TEXT, FIT_ROWS, queueBusyText, SAY_LABEL } from '../constants'
+import { CHOICE_QUESTION, DEFAULT_ERROR_TEXT, ERROR_TEXT, FIT_ROWS, queueBusyText } from '../constants'
 import type { Approval, ChatEvent } from '../types'
 
 export const errorText = (code?: string, retryAfterSec?: number) =>
@@ -16,10 +16,7 @@ const ask = (id: string, question: string, options: StreamOption[], recommended?
       {
         kind: 'choices',
         selected: [],
-        items: [
-          ...options.map((o) => (o.id === recommended ? { label: o.label, badge: { label: '추천', tone: 'ac' as const } } : { label: o.label })),
-          { label: SAY_LABEL },
-        ],
+        items: options.map((o) => (o.id === recommended ? { label: o.label, badge: { label: '추천', tone: 'ac' as const } } : { label: o.label })),
       },
     ],
   }
@@ -37,7 +34,7 @@ const map = (ev: StreamEvent): ChatEvent | null => {
       return { type: 'tool', id: `tool-${ev.name}`, name: ev.name, action: ev.summary, state: ev.state, error }
     }
     case 'approval':
-      return ask(ev.id, ev.title, ev.options, undefined, ev.summary)
+      return ask(ev.id, ev.kind === 'TOOL_ACTION' ? ev.summary || ev.title : ev.title, ev.options, undefined, ev.kind === 'TOOL_ACTION' ? undefined : ev.summary)
     case 'choice': {
       if (!ev.auto) return ask(ev.id, ev.title ?? CHOICE_QUESTION, ev.options, ev.recommended, undefined, ev.detail)
       const picked = ev.options.find((o) => o.id === ev.recommended)

@@ -24,7 +24,7 @@ export const usePrefs = create<{ accessMode: AccessMode }>(() => ({ accessMode: 
 
 export const useConsentPrompt = create<{ open: boolean; dismissed: boolean }>(() => ({ open: false, dismissed: false }))
 
-type PendingOpen = { title: string; message: string; attachment?: string; intent?: ChatIntent }
+type PendingOpen = { title: string; message: string; attachment?: string; intent?: ChatIntent; context?: { documentId?: string } }
 
 let pendingConsent: RunInput | null = null
 let pendingOpen: PendingOpen | null = null
@@ -97,7 +97,13 @@ const scripted = async function* (input: RunInput, signal: AbortSignal): AsyncGe
 
 const streamed = (input: RunInput, signal: AbortSignal): AsyncGenerator<ChatEvent> => {
   const id = input.conversationId
-  const body = { text: input.text ?? '', accessMode: usePrefs.getState().accessMode, ...(input.intent ? { intent: input.intent } : {}) }
+  const documentId = input.context?.documentId
+  const body = {
+    text: input.text ?? '',
+    accessMode: usePrefs.getState().accessMode,
+    ...(input.intent ? { intent: input.intent } : {}),
+    ...(documentId ? { context: { documentId } } : {}),
+  }
   return fromStream(streamConversation(id, body, signal), (after) => followConversation(id, after, signal))
 }
 
@@ -144,7 +150,7 @@ const startRun = async (input: RunInput) => {
   }
 }
 
-export const send = (id: string, text: string, attachment?: string, intent?: ChatIntent) => {
+export const send = (id: string, text: string, attachment?: string, intent?: ChatIntent, context?: { documentId?: string }) => {
   const s = get(id)
   if (s.working) return dispatch(id, { type: 'queue', text })
   if (s.approval?.optionIds) {
@@ -158,7 +164,7 @@ export const send = (id: string, text: string, attachment?: string, intent?: Cha
     return answer(id, text, first && first.kind === 'choices' ? first.items.length - 1 : 0)
   }
   dispatch(id, { type: 'user', id: `u-${Date.now()}`, text, attachment })
-  void startRun({ conversationId: id, text, interrupted: s.interrupted, intent })
+  void startRun({ conversationId: id, text, interrupted: s.interrupted, intent, context })
 }
 
 export const answer = (id: string, text: string, choice: number) => {

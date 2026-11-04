@@ -19,8 +19,9 @@ describe('scripted runs (mock)', () => {
     s = play(s, await run({ conversationId: 't1', text: '네', answer: { approvalId: 'tailor-apply', choice: 0 } }))
     // Continuation updates the same tool line instead of adding a new one.
     expect(s.items.filter((i) => i.type === 'tool' && i.action === '이력서 수정')).toMatchObject([{ state: 'ok' }])
-    expect(s.items.some((i) => i.type === 'actions')).toBe(true)
-    expect(s.approval).toBeNull()
+    expect(s.items.some((i) => i.type === 'actions')).toBe(false)
+    expect(s.approval?.question).toBe('Push 프로필에 저장했어요. 결과를 확인할까요?')
+    expect(JSON.stringify(s.items)).not.toContain('PDF로')
   }, 10_000)
 
   it('failing run ends in the 어떻게 할까요 choice', async () => {

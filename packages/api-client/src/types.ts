@@ -220,7 +220,24 @@ export type AiOptions = {
 }
 
 export type AccessMode = 'ALWAYS_ASK' | 'AUTO' | 'BYPASS'
-export type ChatIntent = 'posting' | 'review' | 'interview' | 'general' | 'boost'
+export type ChatIntent =
+  | 'posting'
+  | 'review'
+  | 'interview'
+  | 'general'
+  | 'match_posting'
+  | 'fit'
+  | 'gaps'
+  | 'experience'
+  | 'boost'
+  | 'find_postings'
+  | 'deadline_postings'
+  | 'applications'
+  | 'calendar'
+  | 'hub_profile'
+  | 'offer_reply'
+  | 'coffee_chat'
+  | 'career_post'
 export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
 export type StreamOption = { id: string; label: string }
