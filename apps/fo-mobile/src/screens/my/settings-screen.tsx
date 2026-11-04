@@ -13,7 +13,6 @@ import {
   NOTIFICATION_ROWS,
   REFERENCE_LABEL,
   REFERENCE_SUB,
-  RETENTION,
   signOutSession,
   TONES,
   useAuthMe,
@@ -196,7 +195,7 @@ const SettingsScreen = () => {
   const { data: me } = useMyProfile()
   const { data: account } = useAuthMe()
   const login = LOGIN_LABEL[account?.provider ?? ''] ?? ''
-  const [sheet, setSheet] = useState<'contact' | 'tone' | 'retention' | null>(null)
+  const [sheet, setSheet] = useState<'contact' | 'tone' | null>(null)
   if (!s) {
     return (
       <Screen title="설정">
@@ -307,14 +306,6 @@ const SettingsScreen = () => {
           onPress={() => setSheet('tone')}
         />
         <SettingsRow
-          label="대화 기록 보관"
-          value={
-            RETENTION.find((r) => r.key === (s.chatRetentionDays ?? 0))?.label ??
-            `${s.chatRetentionDays}일`
-          }
-          onPress={() => setSheet('retention')}
-        />
-        <SettingsRow
           label="내 자료 읽기 허용"
           right={sw('allowAiReadMyFiles', '내 자료 읽기 허용')}
         />
@@ -357,14 +348,6 @@ const SettingsScreen = () => {
         value={s.defaultTone}
         onPick={(defaultTone) => set({ defaultTone })}
         visible={sheet === 'tone'}
-        onClose={() => setSheet(null)}
-      />
-      <Pick
-        title="대화 기록을 얼마나 보관할까요?"
-        items={RETENTION}
-        value={s.chatRetentionDays ?? 0}
-        onPick={(d) => set({ chatRetentionDays: d || null })}
-        visible={sheet === 'retention'}
         onClose={() => setSheet(null)}
       />
     </Screen>
