@@ -126,6 +126,17 @@ describe('chat attachment upload', () => {
     expect(chat('c-q-fail').working).toBeNull()
   })
 
+  it('streams an existing source id without uploading again', async () => {
+    send('c-src', '이 서류를 고쳐 줘', undefined, undefined, { evidenceIds: [sourceId] })
+    await vi.waitFor(() => expect(chat('c-src').working).toBeNull())
+    expect(upload).not.toHaveBeenCalled()
+    expect(api.conversations.stream).toHaveBeenCalledWith(
+      'c-src',
+      { text: '이 서류를 고쳐 줘', accessMode: 'AUTO', context: { evidenceIds: [sourceId] } },
+      expect.anything(),
+    )
+  })
+
   it('does not upload or attach a name-only chip to the stream body', async () => {
     send('c-name', '안녕', 'note.pdf')
     await vi.waitFor(() => expect(chat('c-name').working).toBeNull())

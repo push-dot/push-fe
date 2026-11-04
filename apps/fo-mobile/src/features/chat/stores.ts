@@ -26,7 +26,7 @@ export const usePrefs = create<{ accessMode: AccessMode }>(() => ({ accessMode: 
 
 export const useConsentPrompt = create<{ open: boolean; dismissed: boolean }>(() => ({ open: false, dismissed: false }))
 
-type PendingOpen = { title: string; message: string; attachment?: string | PickedFile; intent?: ChatIntent; context?: { documentId?: string } }
+type PendingOpen = { title: string; message: string; attachment?: string | PickedFile; intent?: ChatIntent; context?: RunInput['context'] }
 
 type Outgoing = RunInput & { file?: PickedFile }
 
@@ -185,7 +185,7 @@ const fileOf = (attachment?: string | PickedFile) => (typeof attachment === 'str
 
 const nameOf = (attachment?: string | PickedFile) => (typeof attachment === 'string' ? attachment : attachment?.name)
 
-export const send = (id: string, text: string, attachment?: string | PickedFile, intent?: ChatIntent, context?: { documentId?: string }) => {
+export const send = (id: string, text: string, attachment?: string | PickedFile, intent?: ChatIntent, context?: RunInput['context']) => {
   const s = get(id)
   if (s.working) {
     const file = fileOf(attachment)
