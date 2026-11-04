@@ -241,6 +241,7 @@ export type ChatIntent =
 export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
 export type StreamOption = { id: string; label: string }
+export type ResultAction = { id: string; label: string; method?: string; path?: string }
 export type ApprovalKind = 'TOOL_ACTION' | 'DOCUMENT_EDIT'
 
 export type StreamEvent = (
@@ -263,7 +264,32 @@ export type StreamEvent = (
     }
   | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string; multiple?: boolean }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
-  | { type: 'result'; source: 'file' | 'profile'; company: string; title: string; meta: string; documentId: string }
+  | {
+      type: 'result'
+      source: 'external'
+      taskLine: string
+      checklist: string[]
+      documentId: string
+      company?: string
+      actions: ResultAction[]
+      fileName: string
+      pageLine: string
+      savedLine?: string
+      cardMeta?: string
+    }
+  | {
+      type: 'result'
+      source: 'profile'
+      taskLine: string
+      checklist: string[]
+      documentId: string
+      company?: string
+      actions: ResultAction[]
+      name: string
+      headline: string
+      title: string
+      subtitle: string
+    }
   | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
   | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
   | { type: 'fit'; score: number; parts: { techStack: number; experienceLink: number; keyword: number }; topGap: string }

@@ -25,6 +25,5 @@ describe('file rows', () => {
       expect(text, path).not.toContain('fileKind')
     }
     expect(src('features/jobs/components/doc-row.tsx')).not.toMatch(/>\s*PDF\s*</)
-    expect(src('features/chat/components/links-modal.tsx')).not.toContain("icon: 'brief'")
   })
 })

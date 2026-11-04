@@ -18,9 +18,6 @@ export const ACCESS_MODE_TITLE = 'AI가 어떻게 실행할까요?'
 export const MICRO_CREDITS_PER_CREDIT = 6000
 
 export const SAY_LABEL = '직접 말하기'
-export const applyNowLabel = (company: string) => `${company}에 바로 지원하기`
-export const CONVERT_TO_PROFILE = '프로필로 전환'
-export const VIEW_PROFILE = '프로필 보기'
 export const CHOICE_QUESTION = '어떻게 할까요?'
 export const MULTI_PICK_SUBMIT = '이대로 진행'
 export const MULTI_PICK_FOOT = '여러 개 고를 수 있어요'

@@ -42,25 +42,34 @@ describe('harness events', () => {
   it('maps a result frame to the file or profile card', async () => {
     const file = await map({
       type: 'result',
-      source: 'file',
+      source: 'external',
+      taskLine: '이력서 수정 · 올린 파일 · 경력',
+      checklist: ['이력서 읽기', 'PDF로 만들기'],
       company: '모아페이',
-      title: '김서준_모아페이_백엔드.pdf',
-      meta: 'A4 1쪽 · 186KB · 내 서류에 자동 저장됨',
+      fileName: '김서준_모아페이_백엔드.pdf',
+      pageLine: 'A4 1쪽 · 186KB',
+      cardMeta: 'A4 1쪽 · 186KB · 내 서류에 자동 저장됨',
       documentId: 'src-1',
+      actions: [{ id: 'apply', label: '모아페이에 바로 지원하기' }, { id: 'convert', label: '프로필로 전환' }],
     })
     const profile = await map({
       type: 'result',
       source: 'profile',
+      taskLine: '프로필 수정 · Push 프로필 · 경력',
+      checklist: ['프로필 읽기', '프로필에 저장'],
       company: '모아페이',
+      name: '김서준',
+      headline: '백엔드 엔지니어',
       title: '김서준 · 백엔드 엔지니어',
-      meta: 'Push 프로필 · 방금 수정',
+      subtitle: 'Push 프로필 · 방금 수정',
       documentId: 'd1',
+      actions: [{ id: 'apply', label: '모아페이에 바로 지원하기' }, { id: 'view', label: '프로필 보기' }],
     })
     expect(play(file).items).toMatchObject([
-      { type: 'result', source: 'file', title: '김서준_모아페이_백엔드.pdf', documentId: 'src-1' },
+      { type: 'result', source: 'external', taskLine: '이력서 수정 · 올린 파일 · 경력', fileName: '김서준_모아페이_백엔드.pdf', documentId: 'src-1' },
     ])
     expect(play(profile).items).toMatchObject([
-      { type: 'result', source: 'profile', title: '김서준 · 백엔드 엔지니어', meta: 'Push 프로필 · 방금 수정' },
+      { type: 'result', source: 'profile', taskLine: '프로필 수정 · Push 프로필 · 경력', title: '김서준 · 백엔드 엔지니어', subtitle: 'Push 프로필 · 방금 수정' },
     ])
   })
 

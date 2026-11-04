@@ -113,7 +113,8 @@ const ConversationScreen = ({ id }: { id: string }) => {
             key={it.id}
             item={it}
             onAction={(text) => send(id, text)}
-            onResult={(card) => (card.source === 'profile' ? router.push(`/docs/push/${card.documentId}`) : convert.mutate(card.documentId))}
+            onConvert={(card) => convert.mutate(card.documentId)}
+            onView={(card) => router.push(`/docs/push/${card.documentId}`)}
             resultPending={convert.isPending}
             onUsage={(action) => (action === 'plan' ? setPlanOpen(true) : purchase.buyCredits())}
           />

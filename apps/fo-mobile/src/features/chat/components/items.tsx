@@ -7,7 +7,7 @@ import { useOpenArtifact } from '../api/hooks'
 import { usePop, usePulse, useReduceMotion } from '../hooks'
 import { isUsageExhausted } from '../utils/usage'
 import { formatElapsed } from '../utils/reducer'
-import { resultButtons, resultChrome } from '../utils/result-card'
+import { resultActions, resultChrome, resultMeta, resultTitle, type ResultActionId } from '../utils/result-card'
 import { Appear } from './motion'
 import Mark from './mark'
 import { UsageExhausted } from './usage-exhausted'
@@ -412,28 +412,37 @@ const FileCard = ({ item }: { item: Of<'file'> }) => {
 const ResultCard = ({
   item,
   onApply,
-  onSecondary,
-  secondaryDisabled,
+  onConvert,
+  onView,
+  convertPending,
 }: {
   item: Of<'result'>
   onApply: () => void
-  onSecondary: () => void
-  secondaryDisabled?: boolean
+  onConvert: () => void
+  onView: () => void
+  convertPending?: boolean
 }) => {
   const chrome = resultChrome(item)
-  const [primary, secondary] = resultButtons(item)
+  const title = resultTitle(item)
+  const actions = resultActions(item)
   const c = useColors()
-  const share = () => void shareMessage({ message: item.title, title: item.title })
+  const share = () => void shareMessage({ message: title, title })
+  const press = (id: ResultActionId) => (id === 'apply' ? onApply() : id === 'convert' ? onConvert() : onView())
   return (
     <Appear style={{ gap: 8 }}>
+      {item.taskLine ? (
+        <Text v="b2" weight="700">
+          {item.taskLine}
+        </Text>
+      ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {chrome.initials ? <Mark text={chrome.initials} color={c.ac} size={44} round /> : null}
         <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
           <Text v="b1" weight="700" numberOfLines={1}>
-            {item.title}
+            {title}
           </Text>
           <Text v="c1" color="t3">
-            {item.meta}
+            {resultMeta(item)}
           </Text>
         </View>
         {chrome.share ? (
@@ -442,8 +451,15 @@ const ResultCard = ({
           </Pressable>
         ) : null}
       </View>
-      <Button label={primary} onPress={onApply} />
-      <Button label={secondary} variant="secondary" onPress={onSecondary} disabled={secondaryDisabled} />
+      {actions.map((action, index) => (
+        <Button
+          key={`${action.id}-${index}`}
+          label={action.label}
+          variant={index === 0 ? 'primary' : 'secondary'}
+          disabled={action.id === 'convert' && convertPending}
+          onPress={() => press(action.id)}
+        />
+      ))}
     </Appear>
   )
 }
@@ -500,13 +516,15 @@ export const Item = ({
   item,
   onAction,
   onUsage,
-  onResult,
+  onConvert,
+  onView,
   resultPending,
 }: {
   item: ChatItem
   onAction: (text: string) => void
   onUsage?: (action: 'plan' | 'credits') => void
-  onResult?: (item: Of<'result'>) => void
+  onConvert?: (item: Of<'result'>) => void
+  onView?: (item: Of<'result'>) => void
   resultPending?: boolean
 }) => {
   const c = useColors()
@@ -542,9 +560,10 @@ export const Item = ({
       return (
         <ResultCard
           item={item}
-          onApply={() => onAction(`${item.company}에 바로 지원해 줘`)}
-          onSecondary={() => onResult?.(item)}
-          secondaryDisabled={item.source === 'file' && resultPending}
+          onApply={() => onAction(`${item.company ?? ''}에 바로 지원해 줘`)}
+          onConvert={() => onConvert?.(item)}
+          onView={() => onView?.(item)}
+          convertPending={resultPending}
         />
       )
     case 'worked':
