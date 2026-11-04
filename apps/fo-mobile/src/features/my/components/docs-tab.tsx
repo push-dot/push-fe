@@ -12,6 +12,7 @@ import { INGEST_TEXT, MAX_BYTES, RESUME_DOCUMENT_OPTIONS } from '../constants'
 import { useToast, useUndoRemove } from '../hooks'
 import type { HubDocument, MySource } from '../types'
 import { PUSH_DOCS_TITLE, pushCardLines, pushSeeAll, RETRY_LABEL, SIZE_LIMIT, UPLOADS_TITLE } from '../utils'
+import DeleteDocSheet from './delete-doc-sheet'
 import DocMenu from './doc-menu'
 import ListTitle from './list-title'
 import PushDocView from './push-doc-view'
@@ -298,6 +299,7 @@ const DocsTab = () => {
       </ScrollView>
       {sheet}
       <DocMenu doc={menu} onClose={() => setMenu(null)} onDelete={() => menu && undo.ask(menu)} />
+      <DeleteDocSheet undo={undo} />
       <Modal visible={!!openId} animationType="slide" onRequestClose={() => setOpenId(null)}>
         {openId ? <PushDocView id={openId} onClose={() => setOpenId(null)} /> : null}
       </Modal>

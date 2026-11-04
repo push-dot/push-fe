@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fileSize, monthDay } from '@push/shared'
 import { useStartChat } from '@/features/chat'
 import {
+  DeleteDocSheet,
   DocMenu,
   PREVIEW_HEADINGS,
   Toast,
@@ -208,6 +209,7 @@ const DocViewerScreen = ({ id }: { id: string }) => {
       </View>
       <ToProfileSheet id={id} visible={sheet} onClose={() => setSheet(false)} />
       <DocMenu doc={menu ? (s ?? null) : null} viewing onClose={() => setMenu(false)} onDelete={() => s && undo.ask(s)} />
+      <DeleteDocSheet undo={undo} />
       <Toast text={undo.toast.text} action={undo.toast.action} onHide={undo.toast.hide} />
     </View>
   )

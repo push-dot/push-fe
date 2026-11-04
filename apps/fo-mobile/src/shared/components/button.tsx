@@ -9,7 +9,7 @@ import Text from './text'
 type Props = {
   label: string
   onPress?: () => void
-  variant?: 'primary' | 'secondary'
+  variant?: 'primary' | 'secondary' | 'danger'
   size?: 'lg' | 'sm'
   icon?: IconName
   disabled?: boolean
@@ -19,7 +19,7 @@ type Props = {
 const Button = ({ label, onPress, variant = 'primary', size = 'lg', icon, disabled, style }: Props) => {
   const c = useColors()
   const sm = size === 'sm'
-  const fg = variant === 'primary' ? '#FFFFFF' : c.t1
+  const fg = variant === 'secondary' ? c.t1 : '#FFFFFF'
   const box: ViewStyle = {
     height: sm ? 40 : 56,
     borderRadius: sm ? radius.sm : radius.md,
@@ -51,7 +51,7 @@ const Button = ({ label, onPress, variant = 'primary', size = 'lg', icon, disabl
           {content}
         </Glass>
       ) : (
-        <View style={[box, { backgroundColor: variant === 'primary' ? c.ac : c.fill }]}>
+        <View style={[box, { backgroundColor: variant === 'primary' ? c.ac : variant === 'danger' ? c.red : c.fill }]}>
           {content}
         </View>
       )}
