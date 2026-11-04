@@ -1,5 +1,6 @@
 import type { Settings } from '@push/api-client'
 import { MAX_BYTES } from '../constants'
+import { fitTen } from './fit-ten'
 
 const MB = 1024 * 1024
 
@@ -138,9 +139,5 @@ export const pushCardLines = (
   application: { company: string; title: string; fitScore?: number | null } | null,
 ) =>
   application
-    ? {
-        title: application.title,
-        company: application.company,
-        score: application.fitScore == null ? '' : String(application.fitScore),
-      }
-    : { title: doc.title, company: '', score: '' }
+    ? { title: application.title, company: application.company, score: fitTen(application.fitScore), doc: doc.title }
+    : { title: doc.title, company: '', score: '', doc: '' }

@@ -237,11 +237,12 @@ describe('my screen rules', () => {
         { title: '허브 프로필' },
         { company: '모아페이', title: '백엔드 엔지니어', fitScore: 86 },
       ),
-    ).toEqual({ title: '백엔드 엔지니어', company: '모아페이', score: '86' })
+    ).toEqual({ title: '백엔드 엔지니어', company: '모아페이', score: '8.6', doc: '허브 프로필' })
     expect(pushCardLines({ title: '허브 프로필' }, null)).toEqual({
       title: '허브 프로필',
       company: '',
       score: '',
+      doc: '',
     })
   })
 })
