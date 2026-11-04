@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Platform, Pressable, View } from 'react-native'
 import { radius, useColors } from '../../theme'
 import Glass from './glass'
@@ -11,13 +12,15 @@ type Props = {
   menu?: boolean
   check?: boolean
   removable?: boolean
+  lead?: ReactNode
 }
 
-const Chip = ({ label, on, onPress, menu, check, removable }: Props) => {
+const Chip = ({ label, on, onPress, menu, check, removable, lead }: Props) => {
   const c = useColors()
   const fg = on ? c.bg : c.t2
   const inner = (
-    <View style={{ height: 34, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+    <View style={{ height: 34, paddingHorizontal: 14, paddingLeft: lead ? 8 : 14, flexDirection: 'row', alignItems: 'center', gap: lead ? 8 : 4 }}>
+      {lead}
       {check && on ? <Icon name="check" size={14} color={fg} /> : null}
       <Text v="c1" weight="600" style={{ fontSize: 14, color: fg }} numberOfLines={1}>
         {label}

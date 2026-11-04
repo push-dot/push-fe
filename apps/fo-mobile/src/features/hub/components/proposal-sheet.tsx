@@ -1,3 +1,4 @@
+import { brandOf } from '@push/shared'
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
 import { BottomSheet, Chip, Text, TextField } from '../../../shared/components'
@@ -58,16 +59,20 @@ const ProposalSheet = ({ userId, name, subtitle, visible, onClose, onSent }: Pro
         placeholder="어떤 이야기를 나누고 싶은지 적어 주세요"
       />
       {postings.length ? (
-        <View style={{ gap: 8 }}>
-          <Text v="c1" color="t3" weight="700">
-            함께 보낼 공고 (선택)
-          </Text>
+        <View style={{ gap: 12 }}>
+          <Text weight="700">함께 보낼 공고 (선택)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {postings.map((p) => (
               <Chip
                 key={p.id}
                 label={`${p.company} · ${p.title}`}
-                check
+                lead={
+                  <View style={{ width: 24, height: 24, borderRadius: 8, backgroundColor: brandOf(p.company), alignItems: 'center', justifyContent: 'center' }}>
+                    <Text weight="700" style={{ color: '#FFFFFF', fontSize: 11, lineHeight: 14 }}>
+                      {[...p.company][0]}
+                    </Text>
+                  </View>
+                }
                 on={postingId === p.id}
                 onPress={() => setPostingId(postingId === p.id ? undefined : p.id)}
               />
