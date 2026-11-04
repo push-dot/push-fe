@@ -192,6 +192,16 @@ let documents: HubDocument[] = [
     latestVersionId: 'v1',
     updatedAt: on(10, 14),
   },
+  {
+    id: 'd2',
+    revision: 1,
+    applicationId: null,
+    title: '김서준_백엔드_이력서_2026',
+    kind: 'HUB_PROFILE',
+    status: 'DRAFT',
+    latestVersionId: 'v1',
+    updatedAt: on(10, 12),
+  },
 ]
 
 mock('GET', 'documents', ({ query }) => page(documents, query))

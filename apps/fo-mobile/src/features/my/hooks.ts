@@ -8,15 +8,23 @@ type ToastAction = { label: string; onPress: () => void }
 export const useToast = () => {
   const [text, setText] = useState<string | null>(null)
   const [action, setAction] = useState<ToastAction | null>(null)
+  const [error, setError] = useState(false)
   const hide = useCallback(() => {
     setText(null)
     setAction(null)
+    setError(false)
   }, [])
   const show = useCallback((next: string, extra?: { action: string; onAction: () => void }) => {
     setText(next)
     setAction(extra ? { label: extra.action, onPress: extra.onAction } : null)
+    setError(false)
   }, [])
-  return { text, action, show, hide }
+  const fail = useCallback((next: string) => {
+    setText(next)
+    setAction(null)
+    setError(true)
+  }, [])
+  return { text, action, error, show, fail, hide }
 }
 
 export const useUndoRemove = (onRemoved?: () => void) => {

@@ -36,7 +36,7 @@ const RootLayout = () => {
             <Stack.Screen name="settings/index" />
             <Stack.Screen name="settings/visibility" />
             <Stack.Screen name="docs/[id]" />
-            <Stack.Screen name="docs/push/index" />
+            <Stack.Screen name="docs/push/index" options={{ presentation: 'fullScreenModal' }} />
             <Stack.Screen name="docs/push/[id]" />
             <Stack.Screen name="activity/follows" />
             <Stack.Screen name="activity/posts" />
