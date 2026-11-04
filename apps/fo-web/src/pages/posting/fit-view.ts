@@ -53,15 +53,24 @@ export const fitCardModel = (payload: FitPayload, document: string): FitCardMode
 
 const settled = new Set(['DONE', 'FAILED', 'DEAD', 'CANCELLED'])
 
-export const loadPostingFit = async (
+export type FitDocument = { id: string; title: string }
+
+export const firstDocument = async (client: Pick<FitClient, 'listDocuments'>): Promise<FitDocument | null> => {
+  try {
+    const page = await client.listDocuments()
+    return page.data[0] ?? null
+  } catch {
+    return null
+  }
+}
+
+export const runPostingFit = async (
   postingId: string,
-  client: FitClient,
+  doc: FitDocument,
+  client: Omit<FitClient, 'listDocuments'>,
   sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 ): Promise<FitCardModel | null> => {
   try {
-    const page = await client.listDocuments()
-    const doc = page.data[0]
-    if (!doc) return null
     const { jobId } = await client.startFit(postingId, doc.id)
     for (;;) {
       const job = await client.readJob(jobId)
@@ -72,4 +81,19 @@ export const loadPostingFit = async (
   } catch {
     return null
   }
+}
+
+export type FitStatus = 'comparing' | 'soon' | 'locked' | 'ready'
+
+export const fitStatus = (state: {
+  documentPending: boolean
+  document: FitDocument | null | undefined
+  fitPending: boolean
+  fit: FitCardModel | null | undefined
+}): FitStatus => {
+  if (state.documentPending) return 'comparing'
+  if (!state.document) return 'soon'
+  if (state.fitPending) return 'comparing'
+  if (!state.fit) return 'soon'
+  return state.fit.locked ? 'locked' : 'ready'
 }
