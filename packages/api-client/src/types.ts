@@ -41,6 +41,7 @@ export type PostingDetail = Posting & {
 export type PostingFilters = PageParams & {
   q?: string
   sort?: 'latest' | 'deadline' | 'popular'
+  deadlineWithin?: '7'
   category?: JobCategory[]
   skills?: string[]
   careerYears?: CareerYears[]
@@ -152,6 +153,13 @@ export type Settings = {
   confirmBeforeEdit: boolean
 }
 
+export type ResumeDocument = {
+  id: string
+  title: string
+  kind: string
+  status: string
+  updatedAt: string
+}
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
 export type UploadedSource = Source & { jobId?: string }
 export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> & {

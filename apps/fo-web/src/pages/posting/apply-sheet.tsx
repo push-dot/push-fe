@@ -57,6 +57,7 @@ const ApplySheet = ({
             </li>
           ))}
         </ul>
+        <p className="c1 t3">함께 보낼 수 있어요</p>
         <p className="c1 t3">{APPLY_LOCK}</p>
         <div className="apply-row">
           <button type="button" className="btn sec lg" onClick={onClose}>

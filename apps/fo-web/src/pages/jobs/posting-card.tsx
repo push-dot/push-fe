@@ -1,5 +1,5 @@
 import type { Posting } from '@push/api-client'
-import { brandOf, careerLabel } from '@push/shared'
+import { brandOf, cardCareerLabel } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
@@ -52,7 +52,7 @@ const PostingCard = ({ posting }: { posting: Posting }) => {
         <span className="c1 t3 w6">{posting.company}</span>
         <span className="b1 w7 cap">{posting.title}</span>
         <span className="c1 t3">
-          {posting.location} · {careerLabel(posting)}
+          {posting.location} · {cardCareerLabel(posting)}
         </span>
       </Link>
     </article>
