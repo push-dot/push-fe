@@ -20,7 +20,7 @@ const HubFilterSheet = ({ draft, sent, onChange }: Props) => (
       <Text v="h2" accessibilityRole="header">
         필터
       </Text>
-      <Pressable accessibilityRole="button" onPress={() => onChange(EMPTY_SHEET)} hitSlop={12} style={{ minHeight: 44, justifyContent: 'center' }}>
+      <Pressable accessibilityRole="button" onPress={() => onChange(EMPTY_SHEET)} hitSlop={12}>
         <Text v="c1" weight="700" color="ac">
           초기화
         </Text>
