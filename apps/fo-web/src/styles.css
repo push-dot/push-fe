@@ -605,3 +605,9 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .chat-thread{padding:20px 16px}
 .browser .member-row{flex-wrap:wrap}
 }
+
+/* canvas audit 2026-10 — shell only. WebView pages stay on the rules above. */
+.browser .nav a{color:var(--t1);min-height:48px;height:auto}
+.browser .nav a.on{color:var(--acText);background:var(--acSoft);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .chip[aria-pressed="true"],.browser .chip[aria-selected="true"]{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .sheet label:has(input[type="radio"]:checked){background:var(--acSoft);box-shadow:inset 0 0 0 1.5px var(--ac)}
