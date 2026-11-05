@@ -22,7 +22,7 @@ import {
   type SearchTab,
 } from '@/features/search'
 import { Chip, Icon, Menu, Skeleton, SkeletonRows, StatusNote, Text } from '@/shared/components'
-import { useColors } from '@/theme'
+import { space, useColors } from '@/theme'
 
 const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) => {
   const c = useColors()
@@ -80,7 +80,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
             </>
           ) : null}
           {popular.length ? (
-            <Text v="h3" accessibilityRole="header" style={{ paddingHorizontal: 20, paddingTop: 22, paddingBottom: 12 }}>
+            <Text v="h3" accessibilityRole="header" style={{ paddingHorizontal: space[5], paddingTop: space[6], paddingBottom: space[3] }}>
               지금 많이 찾는 검색어
             </Text>
           ) : null}
@@ -94,7 +94,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                   setText(t)
                   recent.add(t)
                 }}
-                style={{ width: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}
+                style={{ width: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: space[3] }}
               >
                 <Text v="b1" weight="700" color="acText" style={{ width: 16, fontVariant: ['tabular-nums'] }}>
                   {i + 1}
@@ -113,11 +113,11 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          contentContainerStyle={{ paddingBottom: 32 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
           onEndReached={() => active.hasNextPage && !active.isFetchingNextPage && active.fetchNextPage()}
           ListHeaderComponent={
             <>
-              <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 4 }}>
+              <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: space[5], paddingTop: space[2], paddingBottom: space[1] }}>
                 {TABS.map((t) => {
                   const n = totalOf(t.key)
                   return <Chip key={t.key} label={n === undefined ? t.label : `${t.label} ${formatCount(n)}`} on={tab === t.key} onPress={() => setTab(t.key)} />
@@ -128,7 +128,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                   <Skeleton width={120} height={12} />
                 </View>
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: space[4], paddingBottom: space[1] }}>
                   <Text v="c1" weight="600" color="t3" numberOfLines={1} style={{ flex: 1 }}>
                     ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}{TABS.find((t) => t.key === tab)!.unit}
                   </Text>
@@ -171,12 +171,12 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
             active.isPending ? (
               <SkeletonRows {...SEARCH_SKELETON} />
             ) : active.isError ? (
-              <StatusNote lines={SEARCH_ERROR_LINES} action={{ label: SEARCH_RETRY_LABEL, onPress: () => active.refetch() }} style={{ marginTop: 40 }} />
+              <StatusNote lines={SEARCH_ERROR_LINES} action={{ label: SEARCH_RETRY_LABEL, onPress: () => active.refetch() }} style={{ flex: 1, justifyContent: 'center' }} />
             ) : (
               <StatusNote
                 lines={[searchEmptyTitle(q), SEARCH_EMPTY_BODY]}
                 action={{ label: SEARCH_CLEAR_LABEL, onPress: () => setText('') }}
-                style={{ marginTop: 40 }}
+                style={{ flex: 1, justifyContent: 'center' }}
               />
             )
           }
