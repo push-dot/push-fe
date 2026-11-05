@@ -31,8 +31,7 @@ tags:
 - takeScreenshot: EditIntro
 - tapOn: "닫기"
 
-- scrollUntilVisible:
-    element: "기술 스택 편집"
+- scroll
 - tapOn: "기술 스택 편집"
 - extendedWaitUntil:
     visible: ".*내 기술 .*개.*"
