@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { View } from 'react-native'
-import { DocMenu, deleteDocCopy, useRemoveSource } from '@/features/my'
-import { Button, GlassButton, Icon, Text, askConfirm } from '@/shared/components'
+import { deleteDocCopy, useRemoveSource } from '@/features/my'
+import { Button, GlassButton, Icon, Menu, Text, askConfirm } from '@/shared/components'
 import { spacing } from '../../../theme'
 import { type ChatDoc } from '../api/schemas'
 import { useChatDocs, useUploadChatDoc } from '../api/hooks'
@@ -9,7 +9,6 @@ import Note from './note'
 import PageModal from './page-modal'
 import { docAiSub } from '../constants'
 import { ago } from '../utils'
-
 
 const size = (b: number) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)}MB` : `${Math.round(b / 1000)}KB`)
 const meta = (d: ChatDoc) => (d.aiMade ? docAiSub(ago(d.createdAt)) : `${size(d.size)} · ${ago(d.createdAt)}`)
@@ -47,11 +46,17 @@ export const DocsModal = () => {
               {meta(d)}
             </Text>
           </View>
-          <DocMenu doc={d} onDelete={() => ask(d)}>
+          <Menu
+            accessibilityLabel={`${d.fileName} 더 보기`}
+            actions={[
+              { key: 'view', label: '서류 보기', onPress: () => router.push(`/docs/${d.id}`) },
+              { key: 'delete', label: '서류 삭제하기', destructive: true, onPress: () => ask(d) },
+            ]}
+          >
             <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="menu" size={20} color="t3" />
             </View>
-          </DocMenu>
+          </Menu>
         </View>
       ))}
       {docs.isError ? (
