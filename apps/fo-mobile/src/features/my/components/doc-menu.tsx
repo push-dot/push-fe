@@ -19,7 +19,7 @@ const DocMenu = ({
     actions={[
       ...(viewing
         ? []
-        : [{ key: 'open', label: '서류 보기', systemImage: 'doc.text' as const, onPress: () => router.push(`/docs/${doc.id}`) }]),
+        : [{ key: 'open', label: '서류 보기', systemImage: 'eye' as const, onPress: () => router.push(`/docs/${doc.id}`) }]),
       { key: 'delete', label: '서류 삭제하기', systemImage: 'trash' as const, destructive: true, onPress: onDelete },
     ]}
   >
