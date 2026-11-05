@@ -8,8 +8,7 @@
         "^build"
       ],
       "outputs": [
-        "dist/**",
-        "storybook-static/**"
+        "dist/**"
       ]
     },
     "test": {
@@ -22,18 +21,6 @@
     "dev": {
       "persistent": true,
       "cache": false
-    },
-    "storybook": {
-      "persistent": true,
-      "cache": false
-    },
-    "build-storybook": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "storybook-static/**"
-      ]
     },
     "start": {
       "persistent": true,

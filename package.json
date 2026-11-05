@@ -5,16 +5,10 @@
   "type": "module",
   "packageManager": "pnpm@11.0.4",
   "scripts": {
-    "dev": "turbo run dev --filter=@push/fo-desktop",
-    "build": "turbo run build --filter=@push/fo-desktop",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "prettier --write .",
-    "test:e2e": "pnpm --filter @push/fo-desktop test:e2e",
-    "test:e2e:tauri": "pnpm --filter @push/fo-desktop test:e2e:tauri",
-    "storybook": "turbo run storybook",
-    "build-storybook": "turbo run build-storybook",
     "check": "turbo run typecheck lint test build"
   },
   "devDependencies": {
