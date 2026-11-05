@@ -65,7 +65,6 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   const title = qs.layout === 'deadline' && d ? `${qs.title} ${d.items.length}개` : qs.title
 
   const action = actionLabel ? { label: actionLabel, onPress: () => go(), disabled: !d || !qs.start(input) } : undefined
-  // 목록이 접힌 공고 행(점수 올리기)은 고른 공고가 있을 때만 접는다.
   const job = qs.listLabel ? picked[0] : undefined
   const listOpen = !job || pickingJob
   const docField = (
@@ -196,7 +195,6 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   )
 }
 
-/** Link field; offers the copied URL as a one-tap paste when the clipboard holds one. */
 const LinkInput = ({ url, setUrl }: { url: string; setUrl: (v: string) => void }) => {
   const c = useColors()
   const [clip, setClip] = useState('')
@@ -231,7 +229,6 @@ const LinkInput = ({ url, setUrl }: { url: string; setUrl: (v: string) => void }
   )
 }
 
-/** Label + value row that opens a picker (서류, 공고). */
 const PickerRow = ({ label, value, lead, trailing, onPress }: { label: string; value: string; lead?: ReactNode; trailing?: ReactNode; onPress: () => void }) => {
   const c = useColors()
   return (

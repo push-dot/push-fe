@@ -6,7 +6,6 @@ import { GlassButton, Text, ToastHost } from '@/shared/components'
 import { spacing, useColors } from '@/theme'
 
 
-/** Body of a sidebar page route presented as a native modal (iOS page sheet, Android full screen). */
 const PageModal = ({
   onClose = () => router.back(),
   title,

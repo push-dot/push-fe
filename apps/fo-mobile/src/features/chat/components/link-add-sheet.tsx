@@ -9,7 +9,6 @@ import { LINK_ADD_NOTE } from '../constants'
 import { LINK_KIND_LABEL, kindOf } from '../utils/links'
 
 
-/** 링크 추가 (MyLinkAdd), a native form sheet route over the 내 링크 page. */
 export const LinkAddSheet = () => {
   const c = useColors()
   const [url, setUrl] = useState('')

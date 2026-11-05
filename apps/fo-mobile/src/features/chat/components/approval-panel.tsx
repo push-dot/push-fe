@@ -85,7 +85,6 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
         const title = s.title && s.title !== approval.question ? s.title : undefined
         const stop = sectioned ? approval.secondary : undefined
         if (s.multi) {
-          // shortcut: an odd grid takes 그만하기 as its last cell (ChatPh0Input); an even one gets it as a full-width row (ChatPh2XPrevent).
           const stopRow = stop ? <ChoiceRow choice={{ label: stop }} on={false} square bare onPress={cancel} /> : null
           const inGrid = s.options.length % 2 === 1
           return (
@@ -333,7 +332,6 @@ const MiniChip = ({ label, on, onPress }: { label: string; on?: boolean; onPress
 
 const THUMB_LINES = ['90%', '72%', '84%', '56%']
 
-/** Tiny page preview per template (ChatPh4Design): heading treatment and line density follow the layout. */
 const Template = ({ label, recommended, on, layout, onPress }: { label: string; recommended?: boolean; on: boolean; layout: TemplateLayout; onPress: () => void }) => {
   const c = useColors()
   const line = (w: string, key: string | number, extra?: object) => <View key={key} style={{ height: 7, width: w as `${number}%`, borderRadius: 4, backgroundColor: c.fill2, ...extra }} />

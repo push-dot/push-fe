@@ -6,7 +6,6 @@ import { accountPath, bookmarksPath, consentPath, conversationsPath, docsPath, l
 const STACK = join(__dirname, '../../../app/(app)/(stack)')
 const layout = readFileSync(join(STACK, '_layout.tsx'), 'utf8')
 
-// Route name as the stack layout registers it: dynamic segments become [param].
 const routeOf = (href: string, param?: string) => {
   const path = href.split('?')[0]!.slice(1)
   return param ? path.replace(/[^/]+$/, `[${param}]`) : path

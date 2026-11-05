@@ -112,20 +112,17 @@ export const quickStartFrom = (key: string, s: QsSources, now = new Date()): QsD
   }
 }
 
-/** Cards you pick one of (경험, 커리어 글) open with the first suggestion chosen. */
 export const initialPicks = (qs: Pick<QuickStart, 'layout' | 'multi'>, items: QsItem[]) => {
   const chosen = items.filter((i) => i.selected).map((i) => i.id)
   return chosen.length || qs.layout !== 'cards' || qs.multi ? chosen : items.slice(0, 1).map((i) => i.id)
 }
 
-/** 자료 고르기 row meta: "PDF · 2.4MB · 10월 12일". */
 export const docMeta = (d: Pick<ChatDoc, 'fileName' | 'size' | 'createdAt'>) => {
   const at = new Date(d.createdAt)
   const size = d.size >= 1_000_000 ? `${(d.size / 1_000_000).toFixed(1)}MB` : `${Math.max(1, Math.round(d.size / 1000))}KB`
   return `${d.fileName.split('.').pop()!.toUpperCase()} · ${size} · ${at.getMonth() + 1}월 ${at.getDate()}일`
 }
 
-/** 자료 고르기 row meta: "서울 강남구 · 경력 4–6년 · D-13". */
 export const postingMeta = (p: Posting, now = new Date()) =>
   [p.location, p.careerMin === 0 && !p.careerMax ? careerLabel(p) : `경력 ${careerLabel(p)}`, p.deadline && dday(p.deadline, now)].filter(Boolean).join(' · ')
 

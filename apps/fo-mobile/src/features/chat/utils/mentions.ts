@@ -19,7 +19,6 @@ export const mentionQuery = (text: string): string | null => {
 /** Replaces the trailing "@query" with "@title ". */
 export const insertMention = (text: string, title: string) => text.replace(/@([^\s@]*)$/, `@${title} `)
 
-/** Keeps items whose title or sub matches (hangul-aware) and drops empty groups. */
 export const filterMentions = (groups: MentionGroup[], query: string) =>
   groups
     .map((g) => ({

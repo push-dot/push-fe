@@ -16,7 +16,7 @@ import Menu from './menu.ios'
 import NativeHost from './native-host'
 import Text from './text'
 
-/** iOS: compact SwiftUI DatePicker; month mode is a year menu plus a month menu (SwiftUI has no month-only picker), or a placeholder year menu while empty. */
+// SwiftUI has no month-only picker, so month mode is a year menu plus a month menu.
 const DatePicker = ({
   value,
   onChange,

@@ -4,7 +4,7 @@ import { radius, type Colors } from '../../theme'
 
 export type SheetDetents = NativeStackNavigationOptions['sheetAllowedDetents']
 
-// iOS keeps the system corner: on iOS 26 a partial-detent sheet floats inset with concentric corners, the native form of `.ios .sheet2`.
+// iOS 26 floats partial-detent sheets inset with concentric corners; keep the system corner.
 export const sheetOptions = (c: Colors, detents: SheetDetents = 'fitToContents'): NativeStackNavigationOptions => {
   const android = Platform.OS === 'android'
   return {

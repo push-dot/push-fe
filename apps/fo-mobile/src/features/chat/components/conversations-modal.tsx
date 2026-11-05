@@ -23,7 +23,6 @@ export const statusBadge = (s: ConversationRow['status']) =>
 
 const dayStart = () => new Date(new Date().setHours(0, 0, 0, 0)).getTime()
 
-/** Pinned rows first under no heading, then the rest by day. */
 const groups = (rows: ConversationRow[]) => {
   const today = dayStart()
   const week = today - 6 * 86_400_000

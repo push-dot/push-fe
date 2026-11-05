@@ -24,7 +24,6 @@ const choiceOf = (o: StreamOption): Choice => ({
   ...(o.badge ? { badge: { label: o.badge, tone: 'ac' as const } } : {}),
 })
 
-// ChatApprove..Ph6: the first row is drawn selected (acSoft + ring) until another is tapped.
 const ask = ({ id, question, options, multiple, warning, hint = true, recommended }: Ask): ChatEvent => {
   const first = Math.max(0, options.findIndex((o) => o.id === recommended))
   const approval: Approval = {

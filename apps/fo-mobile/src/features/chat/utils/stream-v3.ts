@@ -15,7 +15,6 @@ export const PLAN_TAG_TONE: Record<string, BadgeTone> = {
 
 export const planTone = (tag: string): BadgeTone => PLAN_TAG_TONE[tag] ?? 'grey'
 
-/** A toggle row's second line: the server's `desc`, or its `sub` (ChatPh4Quality draws both under the label). */
 const toggleChoiceOf = (o: StreamOption): Choice => ({
   label: o.label,
   ...(o.desc ?? o.sub ? { desc: (o.desc ?? o.sub)! } : {}),

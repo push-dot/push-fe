@@ -11,7 +11,6 @@ export const useReduceMotion = () => {
   return on
 }
 
-/** Looping hard blink 1 → low → 1, CSS `steps(2)` (the paper caret). Stops under Reduce Motion. */
 export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(1))[0]
@@ -32,7 +31,6 @@ export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
   return v
 }
 
-/** Scale pop 0.3 → 1.2 → 1 when `on` flips true (todo check and tool done, 200ms). */
 export const usePop = (on: boolean, duration = 200) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(1))[0]

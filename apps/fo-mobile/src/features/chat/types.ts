@@ -98,7 +98,6 @@ export type Approval = {
   foot?: string
   /** Server warning shown in place of the hint, e.g. 지원하면 취소할 수 없어요. */
   warning?: string
-  /** Not drawn: no artboard puts text under the question (mock still sends it, see mock-requests-agent.md). */
   detail?: string
   optionIds?: string[]
 }

@@ -21,14 +21,11 @@ export const EFFORTS = [
 export type Effort = (typeof EFFORTS)[number]['key']
 export const RETENTION_DAYS = [7, 30, 90, 365] as const
 
-/** 계정 › 작업 강도: inline menu, the saved effort checked (보통 when none is saved). */
 export const effortMenu = (current: Effort | undefined, onPick: (effort: Effort) => void): MenuAction[] =>
   EFFORTS.map((e) => ({ key: e.key, label: e.label, selected: e.key === (current ?? 'MEDIUM'), onPress: () => onPick(e.key) }))
 
-/** 계정 › 대화 기록 보관: inline menu, the saved days checked (30 when none is saved). */
 export const retentionMenu = (current: number | undefined, onPick: (days: number) => void): MenuAction[] =>
   RETENTION_DAYS.map((d) => ({ key: String(d), label: `${d}일`, selected: d === (current ?? 30), onPress: () => onPick(d) }))
 
-/** 이번 달 사용 비율 0-100; null hides the 사용량 row (no credits or an empty total). */
 export const usagePercent = (credits: Account['credits'] | undefined) =>
   credits && credits.total > 0 ? Math.min(100, Math.max(0, Math.round((credits.used / credits.total) * 100))) : null

@@ -262,7 +262,6 @@ const Plan = ({ item }: { item: Of<'plan'> }) => {
       ) : null}
     </Card>
   )
-  // ChatPh1Feedback: the untitled card sits inside the agent message above it (dot 8 + gap 10 indent, 10 below the text, thread gap 18).
   return titled ? card : <View style={{ paddingLeft: 18, marginTop: -spacing[2] }}>{card}</View>
 }
 
@@ -336,7 +335,6 @@ const FitRow = ({ label, score, index }: { label: string; score?: number; index:
   </View>
 )
 
-/** FREE: the part rows sit under a lock pill; the real scores and keywords are never drawn. */
 const LockedParts = ({ rows, onPlan }: { rows: { label: string }[]; onPlan?: () => void }) => {
   const c = useColors()
   const shadow = useShadow().pop
@@ -489,7 +487,6 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
   )
 }
 
-/** Solid card: bg2 on iOS, a 1px line on Android. */
 const Surface = ({ children }: { children: React.ReactNode }) => {
   const c = useColors()
   return (
@@ -655,7 +652,6 @@ export const Item = ({
   onConvert?: (item: Of<'result'>) => void
   onView?: (item: Of<'result'>) => void
   resultPending?: boolean
-  /** An approval for this result card is open: an external card hides its buttons. */
   resultAwaiting?: boolean
 }) => {
   const c = useColors()

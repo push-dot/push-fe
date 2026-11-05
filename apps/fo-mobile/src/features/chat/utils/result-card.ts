@@ -18,10 +18,8 @@ type ResultFields = {
 export const resultActions = (card: Pick<ResultFields, 'actions'>) =>
   card.actions.filter((action): action is ResultAction & { id: ResultActionId } => (KNOWN as readonly string[]).includes(action.id))
 
-/** One table: an action's button look follows its id, never its position. */
 export const RESULT_VARIANT: Record<ResultActionId, 'primary' | 'secondary'> = { apply: 'primary', convert: 'secondary', view: 'secondary' }
 
-/** The pending profile card keeps "프로필 보기" inline; an external card waits for its open approval without buttons. */
 export const resultActionsFor = (card: Pick<ResultFields, 'actions'> & { pendingNote?: string }, awaiting?: boolean) =>
   card.pendingNote || awaiting ? [] : resultActions(card)
 

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Sheet, TextField } from '@/shared/components'
 import { useConversationList, useRenameConversation } from '../api/hooks'
 
-/** 대화 이름 바꾸기 (native form sheet route), from the conversation ⋯ menu and the list's context menu. */
 export const RenameSheet = ({ id }: { id: string }) => {
   const conv = useConversationList().data?.data.find((x) => x.id === id)
   const [title, setTitle] = useState<string>()

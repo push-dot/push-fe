@@ -7,7 +7,6 @@ import { formatElapsed } from '../utils/reducer'
 
 type Props = { verbs: string[]; startedAt: number; onStop: () => void }
 
-/** Glass pill above the composer on iOS, flat on Android. */
 const Shell = ({ children, end }: { children: ReactNode; end: number }) => {
   const ios = Platform.OS === 'ios'
   const row = (
@@ -18,7 +17,6 @@ const Shell = ({ children, end }: { children: ReactNode; end: number }) => {
   return ios ? <Glass style={{ alignSelf: 'flex-start', borderRadius: 18 }}>{row}</Glass> : row
 }
 
-/** ✻ 맞춰보는 중… 14초 [중지]. Static text; only the ✻ steps. */
 export const StatusRow = ({ verbs, startedAt, onStop }: Props) => {
   const c = useColors()
   const [now, setNow] = useState(() => Date.now())
@@ -60,7 +58,6 @@ export const StatusRow = ({ verbs, startedAt, onStop }: Props) => {
   )
 }
 
-/** ✻ 확인을 기다리고 있어요: the same pill with a still glyph, while a choice waits for the user. */
 export const AwaitingRow = ({ text, tone = 'orange' }: { text: string; tone?: 'orange' | 'ac' }) => {
   const c = useColors()
   return (
