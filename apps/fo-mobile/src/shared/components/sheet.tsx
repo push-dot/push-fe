@@ -31,7 +31,7 @@ const Sheet = ({ title, description, children, action, secondary, onClose, gap =
       style={{
         paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
         paddingHorizontal: android ? spacing[5] : spacing[4],
-        paddingBottom: android ? insets.bottom + spacing[3] : Math.max(insets.bottom, spacing[5]),
+        paddingBottom: android ? insets.bottom + spacing[3] : spacing[5],
         gap,
       }}
     >
