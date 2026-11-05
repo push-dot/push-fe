@@ -81,3 +81,5 @@ export const followConversation = api.conversations.follow
 export const resolveConversationApproval = api.conversations.resolveApproval
 
 export const fetchConversationMessages = (id: string) => api.conversations.messages(id, { limit: 50 })
+
+export const fetchConversationTurns = (id: string) => api.conversations.turns(id, { limit: 50 })

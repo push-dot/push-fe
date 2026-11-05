@@ -1,7 +1,7 @@
 import { type ChatIntent, type Conversation } from '@push/api-client'
 
 /** Conversation plus the list badges (확인 필요 / 작업 중) and last progress line the design needs. */
-export type ConversationRow = Conversation & { status?: 'NEEDS_APPROVAL' | 'RUNNING' | null; lastLine?: string }
+export type ConversationRow = Conversation & { status?: 'NEEDS_APPROVAL' | 'RUNNING' | 'DONE' | null; lastLine?: string | null }
 
 export type ChatDoc = { id: string; fileName: string; size: number; createdAt: string; aiMade?: boolean }
 
@@ -46,6 +46,8 @@ export type RunInput = {
   answer?: { approvalId: string; choice: number }
   resolve?: { approvalId: string; optionId: string; optionIds?: string[] }
   interrupted?: boolean
+  /** Reattach to the conversation's running job and replay it from the start. */
+  follow?: boolean
   intent?: ChatIntent
   context?: { documentId?: string; evidenceIds?: string[] }
 }
