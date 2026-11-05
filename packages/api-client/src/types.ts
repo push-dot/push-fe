@@ -2,6 +2,7 @@ export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: nu
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
+export type SearchTrending = { terms: { term: string; count: number }[]; skills: { id: string; count: number }[] }
 
 export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sales' | 'hr' | 'ops'
 export type CareerYears = '0' | '1-3' | '4-6' | '7-9' | '10+'
@@ -77,7 +78,7 @@ export type ProfileFilters = PageParams & {
   category?: JobCategory[]
   tenure?: Tenure[]
   status?: CareerStatus[]
-  explore?: 'recommended' | 'offers'
+  explore?: 'recommended' | 'offers' | 'received'
 }
 
 export type UserRef = { id: string; displayName: string; avatarUrl?: string | null }
@@ -88,7 +89,7 @@ export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'
 export type Offer = {
   id: string
   sender: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
-  recipient: UserRef
+  recipient: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
   message: string
   posting: OfferPosting | null
   status: OfferStatus
@@ -161,6 +162,24 @@ export type ResumeDocument = {
   kind: string
   status: string
   updatedAt: string
+  applicationId: string | null
+  latestVersionId: string | null
+}
+
+export type DocumentExport = {
+  id: string
+  documentId: string
+  versionId: string
+  format: 'PDF' | 'DOCX'
+  status: 'READY_TO_RENDER' | 'SUCCEEDED' | 'FAILED'
+}
+
+export type DocumentExportResult = {
+  sha256: string
+  byteLength: number
+  pageCount?: number | null
+  status: 'SUCCEEDED' | 'FAILED'
+  errorCode?: string | null
 }
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
 export type UploadedSource = Source & { jobId?: string }
@@ -168,6 +187,7 @@ export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> &
   pageCount: number | null
   createdAt: string | null
   origin: string
+  kind?: string | null
 }
 export type ProfileDraft = {
   displayName: string
@@ -240,7 +260,20 @@ export type ChatIntent =
   | 'career_post'
 export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
-export type StreamOption = { id: string; label: string }
+export type StreamOption = { id: string; label: string; desc?: string; badge?: string; sub?: string }
+/** push-be #224. `action` is only on row options and is not an answer id. */
+export type ChoiceOption = StreamOption & { action?: 'change' }
+export type ChoiceSection =
+  | { id: string; kind: 'chips'; title?: string; multiple?: boolean; options: ChoiceOption[]; selected: string[] }
+  | { id: string; kind: 'rows'; title?: string; options: ChoiceOption[] }
+  | { id: string; kind: 'toggle'; title?: string; options: ChoiceOption[]; selected: string[] }
+  | { id: string; kind: 'thumbnails'; title?: string; options: ChoiceOption[]; selected: string[] }
+export type ChoiceSubmit = { label: string; zeroLabel?: string; optionLabels?: Record<string, string> }
+export type StreamHunk = { line: number | null; sign: '+' | '-' | ''; text: string }
+/** GET .../turns only: how a card was answered. */
+export type CardResolution = { status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'; optionId: string | null; optionIds?: string[] }
+export type FitParts = { techStack?: number; experienceLink?: number; careerLevel?: number; keyword?: number; domain?: number }
+export type DoneSummary = { summary?: string; fitFrom?: number; fitTo?: number; bullets?: string[] }
 export type ResultAction = { id: string; label: string; method?: string; path?: string }
 export type ApprovalKind = 'TOOL_ACTION' | 'DOCUMENT_EDIT'
 
@@ -250,7 +283,18 @@ export type StreamEvent = (
   | { type: 'done'; operation: unknown; awaiting?: 'approval' | 'choice' }
   | { type: 'error'; error: { code: string; message: string; details?: unknown } }
   | { type: 'cancelled' }
-  | { type: 'tool'; name: string; state: ToolRunState; summary: string; tier?: ToolTier; result?: Record<string, unknown> }
+  | {
+      type: 'tool'
+      name: string
+      state: ToolRunState
+      summary: string
+      tier?: ToolTier
+      result?: Record<string, unknown>
+      target?: string
+      resultLine?: string
+      extra?: string[]
+      warning?: string
+    }
   | {
       type: 'approval'
       id: string
@@ -261,10 +305,41 @@ export type StreamEvent = (
       toolName?: string
       args?: Record<string, unknown>
       documentId?: string
+      hunks?: StreamHunk[]
+      foot?: string
+      resolution?: CardResolution
     }
-  | { type: 'choice'; id: string; options: StreamOption[]; kind?: string; title?: string; gate?: string; recommended?: string; auto?: boolean; detail?: string; multiple?: boolean }
-  | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
   | {
+      type: 'choice'
+      id: string
+      options: StreamOption[]
+      kind?: string
+      title?: string
+      gate?: string
+      recommended?: string
+      auto?: boolean
+      detail?: string
+      multiple?: boolean
+      note?: string
+      documentId?: string
+      resolution?: CardResolution
+      /** Present → render these instead of the top-level options. */
+      sections?: ChoiceSection[]
+      submit?: ChoiceSubmit
+    }
+  | { type: 'think'; seconds: number; phase: string }
+  | {
+      type: 'plan'
+      id: 'strategy' | 'feedback'
+      title: string
+      meta: string
+      rows: { tag: string; label: string; note: string }[]
+      /** strategy only. No leading "+ ". */
+      keywords?: string[]
+    }
+  | { type: 'paper'; id: string; label: string; heading: string; lines: string[] }
+  | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
+  | ({
       type: 'result'
       source: 'external'
       taskLine: string
@@ -276,8 +351,8 @@ export type StreamEvent = (
       pageLine: string
       savedLine?: string
       cardMeta?: string
-    }
-  | {
+    } & DoneSummary)
+  | ({
       type: 'result'
       source: 'profile'
       taskLine: string
@@ -289,13 +364,39 @@ export type StreamEvent = (
       headline: string
       title: string
       subtitle: string
+    } & DoneSummary)
+  /** A later todo with the same `id` replaces the earlier list. */
+  | { type: 'todo'; id?: string; items: { id: string; text: string; state: 'todo' | 'now' | 'done'; added?: boolean }[] }
+  | { type: 'diff'; documentId: string; revisionId: string; hunks: StreamHunk[] }
+  | {
+      type: 'fit'
+      score: number
+      parts?: FitParts
+      topGap?: string
+      plan?: 'FREE' | 'PRO' | 'ULTRA'
+      band?: string
+      summary?: string
+      keywords?: { label: string; ok: boolean }[]
+      /** ULTRA only. */
+      projected?: { score: number; label: string; bullets: string[] }
+      from?: number
+      delta?: string
+      note?: string
     }
-  | { type: 'todo'; items: { id: string; text: string; state: 'todo' | 'now' | 'done' }[] }
-  | { type: 'diff'; documentId: string; revisionId: string; hunks: { line: number | null; sign: '+' | '-' | ''; text: string }[] }
-  | { type: 'fit'; score: number; parts: { techStack: number; experienceLink: number; keyword: number }; topGap: string }
 ) & { seq?: number }
 
-export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; jobId?: string }
+/** One chat job as GET .../turns returns it: stored stream frames minus status and done. */
+export type ConversationTurn = {
+  jobId: string
+  status: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED'
+  createdAt: string
+  userMessageId: string | null
+  assistantMessageId: string | null
+  answer: { approvalId: string; optionId: string | null; optionIds?: string[] } | null
+  events: Exclude<StreamEvent, { type: 'status' } | { type: 'done' }>[]
+}
+
+export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; optionIds?: string[]; jobId?: string }
 
 export type QueueJobStatus = 'QUEUED' | 'RUNNING' | 'RETRY' | 'DONE' | 'FAILED' | 'DEAD' | 'CANCELLED'
 export type QueueJob<R = unknown> = {

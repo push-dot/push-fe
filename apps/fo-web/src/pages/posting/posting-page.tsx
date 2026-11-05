@@ -42,7 +42,7 @@ const PostingPage = () => {
         </div>
         <h1 className="h1">{p.title}</h1>
         <div className="badges">
-          {dday ? <span className="badge red">{dday}</span> : null}
+          {dday ? <span className="badge grey">{dday}</span> : null}
           <span className="badge grey">{p.location}</span>
           <span className="badge grey">{career === '신입' ? career : `경력 ${career}`}</span>
           <span className="badge grey">{EMPLOYMENT_TYPES.find((t) => t.key === p.employmentType)?.label}</span>

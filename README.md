@@ -56,7 +56,7 @@ expo-secure-store                 브라우저 세션 (push-web-session)
 | 워크스페이스 | pnpm 11.0.4 (`packageManager`), Turborepo 2.11, TypeScript 5.8 (모바일만 6.0) |
 | Node | CI는 Node 22 |
 | 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58, Native Tabs, Zustand 5, React Native WebView 14, `@expo/ui` |
-| 웹 | Vite 6, React 19.1, React Router 7, TanStack Query 5, Pretendard |
+| 웹 | Vite 6, React 19.1, React Router 7, TanStack Query 5, Noto Sans KR |
 | HTTP | `@push/api-client` (ky 1) |
 | 한글 검색 | `@push/shared`가 `es-hangul` 2.4를 감싸요 |
 | 테스트 | Vitest. 모바일 린트는 `expo lint` |

@@ -1,18 +1,24 @@
 appId: app.push.mobile
-name: AI 채팅 → 실행 방식 시트 → 항상 묻기
+name: 에이전트 → 실행 방식 시트 → 항상 묻기
 ---
 - runFlow: _login.yaml
-- tapOn: "AI 채팅"
+- tapOn: "에이전트"
+- runFlow:
+    when:
+      visible: "동의하고 시작하기"
+    commands:
+      - tapOn: "동의하고 시작하기"
 - extendedWaitUntil:
     visible: "실행 방식, .*"
     timeout: 10000
 - tapOn: "실행 방식, .*"
 # Native form sheet: iOS grabber sheet, Android Material bottom sheet.
 - extendedWaitUntil:
-    visible: "AI가 어떻게 실행할까요?"
+    visible: "에이전트가 어떻게 실행할까요?"
     timeout: 5000
-- tapOn: "항상 묻기"
+# Each option reads as one label: name and description.
+- tapOn: "항상 묻기.*"
 - extendedWaitUntil:
-    notVisible: "AI가 어떻게 실행할까요?"
+    notVisible: "에이전트가 어떻게 실행할까요?"
     timeout: 5000
 - assertVisible: "실행 방식, 항상 묻기"
