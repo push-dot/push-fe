@@ -12,11 +12,11 @@ const size = (b: number) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)}MB` 
 const meta = (d: ChatDoc) => (d.aiMade ? docAiSub(ago(d.createdAt)) : `${size(d.size)} · ${ago(d.createdAt)}`)
 
 /** 내 서류 modal (ChatDocs): same list as 마이 › 서류, + uploads. */
-export const DocsModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
-  const docs = useChatDocs(visible)
+export const DocsModal = () => {
+  const docs = useChatDocs()
   const upload = useUploadChatDoc()
   return (
-    <PageModal visible={visible} onClose={onClose} title="내 서류" right={<GlassButton actions={[{ icon: 'plus', label: '서류 올리기', onPress: () => upload.mutate() }]} />}>
+    <PageModal title="내 서류" right={<GlassButton actions={[{ icon: 'plus', label: '서류 올리기', onPress: () => upload.mutate() }]} />}>
       {docs.data?.map((d) => (
         <View key={d.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12, paddingHorizontal: 20 }}>
           <View style={{ flex: 1, minWidth: 0 }}>

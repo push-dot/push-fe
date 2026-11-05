@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors } from '@/theme'
-import { BottomSheet, GlassButton, Icon, Mascot, Menu, Text, TextField } from '@/shared/components'
+import { GlassButton, Icon, Mascot, Menu, Text } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
 import { usePersonalPurchase } from '@/features/billing'
 import { useConvertDocument } from '@/features/my'
@@ -12,19 +12,20 @@ import {
   answer,
   ApprovalPanel,
   AWAITING_TEXT,
-  AccountModal,
   ComposerArea,
   ConsentSheet,
   OPEN_DRAWER,
   DELETE_CONFIRM,
-  DocsModal,
   headerMenu,
   hydrate,
   Item,
   Queued,
   Appear,
+  accountPath,
+  docsPath,
   materialsPath,
   quickStartPath,
+  renamePath,
   send,
   StatusRow,
   stop,
@@ -34,7 +35,6 @@ import {
   useDeleteConversation,
   usePinConversation,
   useReduceMotion,
-  useRenameConversation,
 } from '@/features/chat'
 
 const ConversationScreen = ({ id }: { id: string }) => {
@@ -49,9 +49,6 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const list = useConversationList()
   const conv = list.data?.data.find((x) => x.id === id)
   const navigation = useNavigation()
-  const [planOpen, setPlanOpen] = useState(false)
-  const [docs, setDocs] = useState(false)
-  const [renaming, setRenaming] = useState<string | null>(null)
   const [sayingFor, setSayingFor] = useState<string>()
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
@@ -64,7 +61,6 @@ const ConversationScreen = ({ id }: { id: string }) => {
   }, [id])
   const saying = !!chat.approval && sayingFor === chat.approval.id
 
-  const rename = useRenameConversation(id, conv?.revision)
   const remove = useDeleteConversation()
   const pin = usePinConversation()
   const archive = useArchiveConversation()
@@ -80,8 +76,8 @@ const ConversationScreen = ({ id }: { id: string }) => {
     label: action.label,
     destructive: action.destructive,
     onPress: () => {
-      if (action.id === 'rename') setRenaming(conv?.title ?? '')
-      else if (action.id === 'docs') setDocs(true)
+      if (action.id === 'rename') router.push(renamePath(id))
+      else if (action.id === 'docs') router.push(docsPath())
       else if (action.id === 'share') void shareMessage({ title: conv?.title, message: shareText() })
       else if (action.id === 'pin' && conv) pin.mutate(conv)
       else if (action.id === 'archive' && conv) archive.mutate(conv, { onSuccess: () => router.dismissTo('/chat') })
@@ -119,7 +115,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
             onConvert={(card) => convert.mutate(card.documentId)}
             onView={(card) => router.push(`/docs/push/${card.documentId}`)}
             resultPending={convert.isPending}
-            onUsage={(action) => (action === 'plan' ? setPlanOpen(true) : purchase.buyCredits())}
+            onUsage={(action) => (action === 'plan' ? router.push(accountPath('plan')) : purchase.buyCredits())}
           />
         ))}
         {chat.queue.map((item, i) => (
@@ -178,20 +174,6 @@ const ConversationScreen = ({ id }: { id: string }) => {
         </View>
       </KeyboardAvoidingView>
 
-      <BottomSheet
-        visible={renaming !== null}
-        onClose={() => setRenaming(null)}
-        title="대화 이름을 바꿀까요?"
-        action={{
-          label: '이름 바꾸기',
-          disabled: !renaming?.trim() || !conv,
-          onPress: () => (rename.mutate(renaming!.trim()), setRenaming(null)),
-        }}
-      >
-        <TextField value={renaming ?? ''} onChangeText={setRenaming} max={300} autoFocus accessibilityLabel="대화 이름" />
-      </BottomSheet>
-      <DocsModal visible={docs} onClose={() => setDocs(false)} />
-      <AccountModal visible={planOpen} initialPage="plan" onClose={() => setPlanOpen(false)} />
       <ConsentSheet />
     </View>
   )

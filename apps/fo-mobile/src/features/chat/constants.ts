@@ -212,3 +212,4 @@ export const CALENDAR_TASKS = [
 
 // DrawerActions.openDrawer(); bubbles up to the app drawer in app/(app)/_layout.tsx.
 export const OPEN_DRAWER = { type: 'OPEN_DRAWER' } as const
+export const CLOSE_DRAWER = { type: 'CLOSE_DRAWER' } as const

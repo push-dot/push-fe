@@ -1,12 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { Alert, Modal, Platform, Pressable, ScrollView, View } from 'react-native'
+import { Alert, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchHangul } from '@push/shared'
 import { useColors } from '@/theme'
-import { Badge, BottomSheet, Button, ContextMenu, GlassButton, Text, TextField, TopBar } from '@/shared/components'
-import { renameConversation } from '../api/fetchers'
+import { Badge, Button, ContextMenu, GlassButton, Text, TextField, TopBar } from '@/shared/components'
 import {
   useArchiveConversation,
   useArchivedConversations,
@@ -16,7 +14,7 @@ import {
   useUnarchiveConversation,
 } from '../api/hooks'
 import type { ConversationRow } from '../api/schemas'
-import { ago } from '../utils'
+import { ago, renamePath } from '../utils'
 import { ARCHIVED_NOTE, ARCHIVED_TITLE, DELETE_CONFIRM, UNARCHIVE_LABEL, conversationRowMenu } from '../utils/conversation-menu'
 
 export const statusBadge = (s: ConversationRow['status']) =>
@@ -84,16 +82,6 @@ export const ConversationList = ({
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [q, setQ] = useState('')
-  const [renaming, setRenaming] = useState<ConversationRow | null>(null)
-  const [nextTitle, setNextTitle] = useState('')
-  const qc = useQueryClient()
-  const rename = useMutation({
-    mutationFn: () => renameConversation(renaming!.id, renaming!.revision, nextTitle.trim()),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['conversations'] })
-      setRenaming(null)
-    },
-  })
   const [archivedView, setArchivedView] = useState(false)
   const list = useConversationList()
   const archived = useArchivedConversations(archivedView)
@@ -128,10 +116,7 @@ export const ConversationList = ({
         if (a.id === 'pin') pin.mutate(row)
         else if (a.id === 'archive') archive.mutate(row)
         else if (a.id === 'delete') confirmDelete(row)
-        else {
-          setNextTitle(row.title)
-          setRenaming(row)
-        }
+        else router.push(renamePath(row.id))
       },
     }))
 
@@ -199,30 +184,6 @@ export const ConversationList = ({
           </Text>
         ) : null}
       </ScrollView>
-      <BottomSheet
-        visible={!!renaming}
-        onClose={() => setRenaming(null)}
-        title="대화 이름을 바꿀까요?"
-        action={{ label: '이름 바꾸기', disabled: !nextTitle.trim() || rename.isPending, onPress: () => rename.mutate() }}
-      >
-        <TextField value={nextTitle} onChangeText={setNextTitle} max={300} accessibilityLabel="대화 이름" />
-      </BottomSheet>
     </View>
   )
 }
-
-export const ConversationsModal = ({
-  visible,
-  onClose,
-  currentId,
-  onDeleted,
-}: {
-  visible: boolean
-  onClose: () => void
-  currentId?: string
-  onDeleted?: () => void
-}) => (
-  <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'} onRequestClose={onClose}>
-    <ConversationList onClose={onClose} currentId={currentId} onDeleted={onDeleted} />
-  </Modal>
-)

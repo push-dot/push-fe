@@ -25,30 +25,15 @@ const RETENTION = [7, 30, 90, 365]
 type Picker = { title: string; options: string[]; value: number; onPick: (i: number) => void } | null
 
 /** 계정 modal (ChatAccount) with the 요금제 page inside it (PlanUpgrade). */
-export const AccountModal = ({
-  visible,
-  onClose,
-  initialPage = 'account',
-}: {
-  visible: boolean
-  onClose: () => void
-  initialPage?: 'account' | 'plan'
-}) => {
+export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'account' | 'plan' }) => {
   const [page, setPage] = useState<'account' | 'plan'>(initialPage)
-  const [seen, setSeen] = useState(visible)
-  if (visible !== seen) {
-    setSeen(visible)
-    if (visible) setPage(initialPage)
-  }
-  const close = () => (setPage('account'), onClose())
-  const account = useChatAccount(visible)
+  const close = () => router.back()
+  const account = useChatAccount(true)
   const purchase = usePersonalPurchase()
   const plan = page === 'plan' && account.data
   // One modal for both pages: 요금제 navigates inside the sheet instead of stacking another.
   return (
     <PageModal
-      visible={visible}
-      onClose={close}
       title={plan ? '요금제' : '계정'}
       left={plan ? <GlassButton actions={[{ icon: 'back', label: '뒤로', onPress: () => setPage('account') }]} /> : undefined}
       footer={
@@ -59,16 +44,16 @@ export const AccountModal = ({
         )
       }
     >
-      {plan ? <PlanPage account={account.data!} purchase={purchase} /> : <AccountPage visible={visible} account={account.data} onPlan={() => setPage('plan')} onClose={close} />}
+      {plan ? <PlanPage account={account.data!} purchase={purchase} /> : <AccountPage account={account.data} onPlan={() => setPage('plan')} onClose={close} />}
     </PageModal>
   )
 }
 
-const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; account?: Account; onPlan: () => void; onClose: () => void }) => {
+const AccountPage = ({ account, onPlan, onClose }: { account?: Account; onPlan: () => void; onClose: () => void }) => {
   const me = useMe()
   const [picker, setPicker] = useState<Picker>(null)
-  const settings = useMySettings(visible)
-  const docs = useChatDocs(visible)
+  const settings = useMySettings(true)
+  const docs = useChatDocs()
   const save = useUpdateSettings()
   const access = useAccessMode()
   const mode = ACCESS_MODES.find((m) => m.key === access.mode)!

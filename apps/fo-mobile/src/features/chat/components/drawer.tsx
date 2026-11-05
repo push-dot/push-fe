@@ -1,20 +1,13 @@
 import { router, usePathname } from 'expo-router'
 import { useDrawerStatus } from 'expo-router/drawer'
-import { useState } from 'react'
-import { Pressable, ScrollView, View } from 'react-native'
+import { Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useColors } from '../../../theme'
 import { GlassButton, Icon, Text, type IconName } from '@/shared/components'
-import { AccountModal } from './account-modal'
 import { useChatAccount, useMe, useRecentConversations } from '../api/hooks'
-import { BookmarksModal } from './bookmarks-modal'
-import { ConversationsModal, statusBadge } from './conversations-modal'
-import { DocsModal } from './docs-modal'
-import { LinksModal } from './links-modal'
+import { statusBadge } from './conversations-modal'
 import Mark from './mark'
-import { ago } from '../utils'
-
-type Sheet = 'account' | 'docs' | 'links' | 'bookmarks' | 'list' | null
+import { accountPath, ago, bookmarksPath, conversationsPath, docsPath, linksPath } from '../utils'
 
 /** Content of the app drawer (see app/(app)/_layout.tsx): full-width chat sidebar over the tab bar. */
 export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
@@ -22,7 +15,6 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
   const insets = useSafeAreaInsets()
   const visible = useDrawerStatus() === 'open'
   const currentId = usePathname().match(/^\/chat\/([^/]+)$/)?.[1]
-  const [sheet, setSheet] = useState<Sheet>(null)
   const me = useMe()
   const account = useChatAccount(visible)
   const recent = useRecentConversations(visible)
@@ -33,6 +25,11 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
     if (currentId) router.replace(`/chat/${id}`)
     else router.push(`/chat/${id}`)
   }
+  // iOS presents the page sheet over the open sidebar; on Android the drawer would cover the stack's modal.
+  const page = (href: Parameters<typeof router.push>[0]) => {
+    if (Platform.OS === 'android') onClose()
+    router.push(href)
+  }
   const newChat = () => {
     onClose()
     if (currentId) router.dismissTo('/chat')
@@ -40,9 +37,9 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
 
   const menu: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'edit', label: '새 대화', onPress: newChat },
-    { icon: 'doc', label: '내 서류', onPress: () => setSheet('docs') },
-    { icon: 'link', label: '내 링크', onPress: () => setSheet('links') },
-    { icon: 'bookmark', label: '북마크한 공고', onPress: () => setSheet('bookmarks') },
+    { icon: 'doc', label: '내 서류', onPress: () => page(docsPath()) },
+    { icon: 'link', label: '내 링크', onPress: () => page(linksPath()) },
+    { icon: 'bookmark', label: '북마크한 공고', onPress: () => page(bookmarksPath()) },
   ]
 
   return (
@@ -60,7 +57,7 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${me.name}, 계정 열기`}
-          onPress={() => setSheet('account')}
+          onPress={() => page(accountPath())}
           style={({ pressed }) => ({
             flex: 1,
             marginRight: 8,
@@ -165,7 +162,7 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="최근 대화 모두 보기"
-          onPress={() => (onClose(), setSheet('list'))}
+          onPress={() => (onClose(), router.push(conversationsPath(currentId)))}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -181,25 +178,6 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
           <Icon name="chev" size={16} color="t2" />
         </Pressable>
       </ScrollView>
-
-      <AccountModal visible={sheet === 'account'} onClose={() => setSheet(null)} />
-      <DocsModal visible={sheet === 'docs'} onClose={() => setSheet(null)} />
-      <LinksModal
-        visible={sheet === 'links'}
-        onClose={() => setSheet(null)}
-        onUse={() => (setSheet(null), onClose())}
-      />
-      <BookmarksModal
-        visible={sheet === 'bookmarks'}
-        onClose={() => setSheet(null)}
-        onDone={() => (setSheet(null), onClose())}
-      />
-      <ConversationsModal
-        visible={sheet === 'list'}
-        onClose={() => setSheet(null)}
-        currentId={currentId}
-        onDeleted={currentId ? () => router.dismissTo('/chat') : undefined}
-      />
     </View>
   )
 }

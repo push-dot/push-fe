@@ -1,24 +1,19 @@
 import type { LinkKind, UserLink } from '@push/api-client'
+import { router } from 'expo-router'
 import { useState } from 'react'
 import { Alert, ScrollView, View } from 'react-native'
-import { useColors } from '../../../theme'
-import { Badge, BottomSheet, Button, Chip, GlassButton, Icon, Menu, Text, TextField, ToastHost, showToast, type BadgeTone, type IconName } from '@/shared/components'
+import { Badge, Button, Chip, GlassButton, Icon, Menu, Text, ToastHost, showToast, type BadgeTone, type IconName } from '@/shared/components'
 import { openUrl, shareMessage } from '../../../shared/infrastructure'
-import { LINK_ADD_NOTE, LINK_DELETED_TOAST, LINK_EMPTY, LINK_UNDO, linkDeleteBody } from '../constants'
-import { kindOf } from '../utils/links'
+import { LINK_DELETED_TOAST, LINK_EMPTY, LINK_UNDO, linkDeleteBody } from '../constants'
+import { LINK_KIND_LABEL } from '../utils/links'
+import { linkAddPath } from '../utils/sheet-routes'
 import { useAddLink, useDeleteLink, useMyLinks } from '@/features/my'
 import { useStartChat } from '../api/hooks'
 import GroupTitle from './group-title'
 import Note from './note'
 import PageModal from './page-modal'
 
-const KINDS: { key: LinkKind; label: string }[] = [
-  { key: 'job', label: '공고' },
-  { key: 'github', label: 'GitHub' },
-  { key: 'portfolio', label: '포트폴리오' },
-  { key: 'blog', label: '블로그' },
-  { key: 'other', label: '기타' },
-]
+const KINDS = (Object.keys(LINK_KIND_LABEL) as LinkKind[]).map((key) => ({ key, label: LINK_KIND_LABEL[key] }))
 const GROUPS: { title: string; kinds: LinkKind[] }[] = [
   { title: '공고', kinds: ['job'] },
   { title: 'GitHub', kinds: ['github'] },
@@ -48,11 +43,10 @@ const statusOf = (l: UserLink): { label: string; tone: BadgeTone } =>
       : { label: KINDS.find((k) => k.key === l.kind)!.label, tone: 'grey' }
 
 /** 내 링크 modal (MyLinks / MyLinksEmpty / MyLinkMenu / MyLinkAdd). */
-export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onClose: () => void; onUse: () => void }) => {
+export const LinksModal = ({ onUse }: { onUse: () => void }) => {
   const start = useStartChat()
   const [kind, setKind] = useState<LinkKind | null>(null)
-  const [adding, setAdding] = useState<LinkKind | 'auto' | null>(null)
-  const q = useMyLinks(visible)
+  const q = useMyLinks(true)
   const all = q.data?.data ?? []
   const shown = kind ? all.filter((l) => l.kind === kind) : all
   const remove = useDeleteLink()
@@ -87,10 +81,10 @@ export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onCl
   }
 
   return (
-    <PageModal visible={visible} onClose={onClose} title="내 링크" right={<GlassButton actions={[{ icon: 'plus', label: '링크 추가', onPress: () => setAdding('auto') }]} />}>
+    <PageModal title="내 링크" right={<GlassButton actions={[{ icon: 'plus', label: '링크 추가', onPress: () => router.push(linkAddPath()) }]} />}>
       <ToastHost />
       {q.data && all.length === 0 ? (
-        <Empty onAdd={setAdding} />
+        <Empty onAdd={() => router.push(linkAddPath())} />
       ) : (
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20, paddingTop: 2, paddingBottom: 4 }}>
@@ -117,7 +111,6 @@ export const LinksModal = ({ visible, onClose, onUse }: { visible: boolean; onCl
         </>
       )}
 
-      <AddLinkSheet open={adding} onClose={() => setAdding(null)} />
     </PageModal>
   )
 }
@@ -162,50 +155,11 @@ const LinkRow = ({ link, onAct }: { link: UserLink; onAct: (what: 'open' | 'copy
   )
 }
 
-const Empty = ({ onAdd }: { onAdd: (k: LinkKind | 'auto') => void }) => {
+const Empty = ({ onAdd }: { onAdd: () => void }) => {
   return (
     <View style={{ alignItems: 'center', gap: 10, paddingTop: 80, paddingHorizontal: 32 }}>
       <Text v="h2">{LINK_EMPTY}</Text>
-      <Button label="링크 추가" icon="plus" onPress={() => onAdd('auto')} style={{ marginTop: 10, alignSelf: 'stretch' }} />
+      <Button label="링크 추가" icon="plus" onPress={onAdd} style={{ marginTop: 10, alignSelf: 'stretch' }} />
     </View>
-  )
-}
-
-const AddLinkSheet = ({ open, onClose }: { open: LinkKind | 'auto' | null; onClose: () => void }) => {
-  const c = useColors()
-  const [url, setUrl] = useState('')
-  const [picked, setPicked] = useState<LinkKind | null>(null)
-  const preset = open && open !== 'auto' ? open : null
-  const kind = picked ?? preset ?? (url.trim() ? kindOf(url) : null)
-  const full = /^https?:\/\//.test(url.trim()) ? url.trim() : `https://${url.trim()}`
-  const valid = /^https?:\/\/[^\s@/]+\.[^\s@]+$/.test(full)
-  const close = () => (setUrl(''), setPicked(null), onClose())
-  const add = useAddLink(close)
-  return (
-    <BottomSheet
-      visible={!!open}
-      onClose={close}
-      title="링크 추가"
-      description="링크를 붙여넣으면 종류를 알아서 골라요."
-      action={{ label: '추가하기', onPress: () => add.mutate({ url: full, kind: kind ?? undefined, aiRead: true }), disabled: !valid || add.isPending }}
-    >
-      <TextField icon="link" placeholder="https://" value={url} onChangeText={setUrl} autoCapitalize="none" autoCorrect={false} keyboardType="url" autoFocus accessibilityLabel="링크 주소" />
-      <View style={{ gap: 8 }}>
-        <Text v="c1" weight="700" color="t3">
-          종류
-        </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {KINDS.map((k) => (
-            <Chip key={k.key} label={k.label} on={kind === k.key} onPress={() => setPicked(k.key)} />
-          ))}
-        </View>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, backgroundColor: c.bg2 }}>
-        <Icon name="spark" size={20} color="acText" />
-        <Text v="b2" style={{ flex: 1 }}>
-          {LINK_ADD_NOTE}
-        </Text>
-      </View>
-    </BottomSheet>
   )
 }

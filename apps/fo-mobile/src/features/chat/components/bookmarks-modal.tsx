@@ -16,17 +16,17 @@ export const logoColor = brandOf
 const soon = (p: Posting) => !!p.deadline && new Date(p.deadline).getTime() - Date.now() < 7 * 86_400_000
 
 /** 북마크한 공고 modal (ChatBookmarks). Tapping a job offers its detail or a conversation tailored to it. */
-export const BookmarksModal = ({ visible, onClose, onDone }: { visible: boolean; onClose: () => void; onDone: () => void }) => {
+export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
   const start = useStartChat()
   const [filter, setFilter] = useState<'all' | 'soon' | 'notApplied'>('all')
   const [picked, setPicked] = useState<Posting | null>(null)
-  const q = useBookmarkList(visible)
+  const q = useBookmarkList(true)
   const all = q.data?.data ?? []
   const lists = { all, soon: all.filter(soon), notApplied: all.filter((p) => !p.applied) }
   const go = (fn: () => void) => (setPicked(null), onDone(), fn())
 
   return (
-    <PageModal visible={visible} onClose={onClose} title="북마크한 공고">
+    <PageModal title="북마크한 공고">
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20, paddingTop: 2, paddingBottom: 6 }}>
         <Chip label={`전체 ${lists.all.length}`} on={filter === 'all'} onPress={() => setFilter('all')} />
         <Chip label={`마감 임박 ${lists.soon.length}`} on={filter === 'soon'} onPress={() => setFilter('soon')} />
