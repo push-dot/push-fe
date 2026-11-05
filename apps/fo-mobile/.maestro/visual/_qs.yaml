@@ -7,10 +7,7 @@ tags:
     file: _pill.yaml
     env:
       LABEL: ${LABEL}
-      START: "85%,74%"
-      END: "30%,74%"
-      NUDGE_START: "70%,74%"
-      NUDGE_END: "55%,74%"
+      DIR: left
 - tapOn: ${LABEL}
 - extendedWaitUntil:
     visible: ${WAIT}

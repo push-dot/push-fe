@@ -34,10 +34,7 @@ tags:
     file: _pill.yaml
     env:
       LABEL: "공고 링크로 맞추기"
-      START: "15%,74%"
-      END: "85%,74%"
-      NUDGE_START: "55%,74%"
-      NUDGE_END: "70%,74%"
+      DIR: right
 - tapOn: "공고 링크로 맞추기"
 - extendedWaitUntil:
     visible: "맞추기 시작"
