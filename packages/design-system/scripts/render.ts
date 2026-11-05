@@ -195,7 +195,11 @@ const bare = (svg: string) =>
 const mapValues = (o: Record<string, string>, f: (v: string) => string) =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => [k, f(v)]))
 
-export const renderIcons = (icons: Record<string, string>, icons3d: Record<string, string>) =>
+export const renderIcons = (
+  icons: Record<string, string>,
+  icons3d: Record<string, string>,
+  brand: Record<string, string>,
+) =>
   [
     declare(
       'LINE_ICONS',
@@ -203,5 +207,6 @@ export const renderIcons = (icons: Record<string, string>, icons3d: Record<strin
       '',
     ),
     declare('ICONS_3D', mapValues(icons3d, bare), ''),
+    declare('BRAND', mapValues(brand, bare), ''),
     'export type IconName = keyof typeof LINE_ICONS\nexport type Icon3DName = keyof typeof ICONS_3D\n',
   ].join('\n')
