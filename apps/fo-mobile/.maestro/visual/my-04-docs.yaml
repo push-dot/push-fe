@@ -28,6 +28,9 @@ tags:
 # Tap the scrim above the sheet.
 - tapOn:
     point: "50%,5%"
+- extendedWaitUntil:
+    notVisible: "서류 가져오기"
+    timeout: 10000
 - waitForAnimationToEnd:
     timeout: 3000
 
