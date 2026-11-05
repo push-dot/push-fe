@@ -17,6 +17,8 @@ type Props = {
   full?: boolean
 }
 
+const notScreenSized = { position: 'absolute', top: -1, left: 0, right: 0, bottom: 0 } as const
+
 const BottomSheet = ({ visible, onClose, title, description, children, action, full }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
@@ -54,7 +56,7 @@ const BottomSheet = ({ visible, onClose, title, description, children, action, f
   )
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable accessibilityLabel="닫기" onPress={onClose} style={{ flex: 1, backgroundColor: c.scrim }} />
+      <Pressable accessibilityLabel="닫기" onPress={onClose} style={[notScreenSized, { backgroundColor: c.scrim }]} />
       <View
         style={{
           position: 'absolute',
