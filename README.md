@@ -12,7 +12,7 @@
 
 **push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/design-system`, `packages/shared`예요.
 
-화면 문구는 한국어예요. Claude Design 내보내기와 FE 태스크 스펙은 `docs/design-handoff/`, 웹 시안 HTML은 `docs/design/`, 구현 계획은 `docs/plans/`에 있어요.
+화면 문구는 한국어예요.
 
 | 패키지 | 하는 일 |
 | --- | --- |
@@ -200,10 +200,6 @@ packages/
   design-system/      @push/design-system
   shared/             @push/shared
 patches/              pnpm 패치 (expo-router)
-docs/
-  design/             웹 시안 HTML
-  design-handoff/     Claude Design 앱 내보내기, gap 분석, FE 태스크 스펙
-  plans/              구현 계획
 ```
 
 ## 기여
