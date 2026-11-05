@@ -1,13 +1,13 @@
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { useRef, useState, type ComponentRef, type ReactNode } from 'react'
+import { useRef, useState, type ComponentRef } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { BODY_LABEL, MAX_IMAGES, POST_IMAGE_OPTIONS, TITLE_HINT, TITLE_LABEL, TITLE_MAX, acceptedPostImages, categoryLabel, toSocialImage, useCreatePost, type SocialImage } from '@/features/social'
-import { Button, Glass, GlassButton, Icon, Menu, Text } from '@/shared/components'
+import { Button, GlassButton, Icon, Menu, Text } from '@/shared/components'
 import { pickImage } from '@/shared/infrastructure'
-import { fontFor, useColors } from '@/theme'
+import { fontFor, onAccent, radius, space, useColors } from '@/theme'
 
 const ComposeScreen = () => {
   const c = useColors()
@@ -30,26 +30,23 @@ const ComposeScreen = () => {
     setImages((prev) => [...prev, ...ok].slice(0, MAX_IMAGES))
   }
 
-  const field = (children: ReactNode, style: object) =>
-    ios ? <Glass style={[{ borderRadius: 16 }, style]}>{children}</Glass> : <View style={[{ borderRadius: 16, backgroundColor: c.fill }, style]}>{children}</View>
-
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior="padding">
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={ios ? 'padding' : undefined}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2], paddingHorizontal: space[5], paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
         <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: () => router.back() }]} />
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>
           새 글
         </Text>
         <Button label="게시" size="sm" disabled={!ready} onPress={() => submit.mutate({ category: category!, title, body, images })} />
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, gap: 14, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: space[5], gap: 14, paddingBottom: space[4] }} keyboardShouldPersistTaps="handled">
         <Menu
           accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`}
           actions={POST_CATEGORIES.flatMap((x) =>
             x.key ? [{ key: x.key, label: x.label, selected: x.key === category, onPress: () => setCategory(x.key) }] : [],
           )}
         >
-          <View style={{ minHeight: 56, paddingHorizontal: 16, borderRadius: 16, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ minHeight: 56, paddingHorizontal: space[4], borderRadius: radius.md, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text v="b2" color="t3">
               카테고리
             </Text>
@@ -101,36 +98,33 @@ const ComposeScreen = () => {
             style={[{ fontSize: 16, lineHeight: 26, color: c.t2, padding: 4, minHeight: 200, textAlignVertical: 'top' }, fontFor('400')]}
           />
         </View>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          {images.map((a, i) => (
-            <View key={a.uri}>
-              <Image source={a.uri} contentFit="cover" style={{ width: 80, height: 80, borderRadius: 14, backgroundColor: c.fill2 }} accessibilityIgnoresInvertColors />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`사진 ${i + 1} 빼기`}
-                onPress={() => setImages((prev) => prev.filter((x) => x.uri !== a.uri))}
-                hitSlop={11}
-                style={{ position: 'absolute', top: 5, right: 5, width: 22, height: 22, borderRadius: 11, backgroundColor: c.scrim, alignItems: 'center', justifyContent: 'center' }}
-              >
-                <Icon name="x" size={12} color="#FFFFFF" />
-              </Pressable>
-            </View>
-          ))}
-          {images.length < MAX_IMAGES ? (
-            <Pressable accessibilityRole="button" accessibilityLabel={`사진 추가, ${images.length}/${MAX_IMAGES}`} onPress={pick}>
-              {field(
-                <>
-                  <Icon name="plus" size={22} color="acText" />
-                  <Text v="c2" weight="700" color="acText">
-                    {images.length}/{MAX_IMAGES}
-                  </Text>
-                </>,
-                { width: 80, height: 80, alignItems: 'center', justifyContent: 'center', gap: 2 },
-              )}
-            </Pressable>
-          ) : null}
-        </View>
       </ScrollView>
+      <View style={{ flexDirection: 'row', gap: space[2], alignItems: 'center', paddingHorizontal: space[5], paddingTop: space[2], paddingBottom: insets.bottom + space[3] }}>
+        {images.map((a, i) => (
+          <View key={a.uri}>
+            <Image source={a.uri} contentFit="cover" style={{ width: 80, height: 80, borderRadius: 14, backgroundColor: c.fill2 }} accessibilityIgnoresInvertColors />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`사진 ${i + 1} 빼기`}
+              onPress={() => setImages((prev) => prev.filter((x) => x.uri !== a.uri))}
+              hitSlop={11}
+              style={{ position: 'absolute', top: 5, right: 5, width: 22, height: 22, borderRadius: 11, backgroundColor: c.scrim, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Icon name="x" size={12} color={onAccent} />
+            </Pressable>
+          </View>
+        ))}
+        {images.length < MAX_IMAGES ? (
+          <Pressable accessibilityRole="button" accessibilityLabel={`사진 추가, ${images.length}/${MAX_IMAGES}`} onPress={pick}>
+            <View style={{ width: 80, height: 80, borderRadius: radius.md, backgroundColor: c.bg2, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+              <Icon name="plus" size={22} color="acText" />
+              <Text v="c2" weight="700" color="acText">
+                {images.length}/{MAX_IMAGES}
+              </Text>
+            </View>
+          </Pressable>
+        ) : null}
+      </View>
     </KeyboardAvoidingView>
   )
 }

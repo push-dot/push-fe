@@ -2,7 +2,7 @@ import { useState, type ComponentRef, type RefObject } from 'react'
 import { ActivityIndicator, Platform, Pressable, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Glass, Icon, Text } from '../../../shared/components'
-import { fontFor, useColors } from '../../../theme'
+import { fontFor, onAccent, space, useColors } from '../../../theme'
 import { useCreateComment } from '../api/hooks'
 import { MAX_COMMENT } from '../constants'
 
@@ -49,7 +49,7 @@ const CommentComposer = ({
         hitSlop={4}
         style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? c.ac : c.fill2 }}
       >
-        {send.isPending ? <ActivityIndicator color={c.t4} /> : <Icon name="up" size={20} color={ok ? '#FFFFFF' : c.t4} />}
+        {send.isPending ? <ActivityIndicator color={c.t4} /> : <Icon name="up" size={20} color={ok ? onAccent : c.t4} />}
       </Pressable>
     </View>
   )
@@ -57,15 +57,15 @@ const CommentComposer = ({
   return (
     <View
       style={{
-        paddingHorizontal: ios ? 16 : 12,
+        paddingHorizontal: ios ? space[4] : space[3],
         paddingTop: ios ? 6 : 8,
         paddingBottom: ios ? Math.max(insets.bottom - 6, 8) : insets.bottom + 8,
         backgroundColor: ios ? 'transparent' : c.bg,
-        gap: 8,
+        gap: space[2],
       }}
     >
       {replyTo ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[2] }}>
           <Text v="c1" color="t3" style={{ flex: 1 }}>
             {replyTo.name}님에게 답글 남기는 중
           </Text>
