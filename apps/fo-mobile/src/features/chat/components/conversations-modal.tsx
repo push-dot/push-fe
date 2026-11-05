@@ -5,7 +5,7 @@ import { Alert, Modal, Platform, Pressable, ScrollView, View } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchHangul } from '@push/shared'
 import { useColors } from '@/theme'
-import { BottomSheet, Button, GlassButton, Text, TextField, TopBar } from '@/shared/components'
+import { BottomSheet, Button, ContextMenu, GlassButton, Text, TextField, TopBar } from '@/shared/components'
 import { renameConversation } from '../api/fetchers'
 import {
   useArchiveConversation,
@@ -35,6 +35,34 @@ const groups = (rows: ConversationRow[]) => {
     out[t >= today ? 0 : t >= week ? 1 : 2]!.rows.push(r)
   }
   return out.filter((g) => g.rows.length)
+}
+
+/** Title, last line and time; the long-press preview reuses it (iOS only). */
+const RowBody = ({ row: r, archived, preview }: { row: ConversationRow; archived?: boolean; preview?: boolean }) => {
+  const c = useColors()
+  return (
+    <View style={{ gap: 3, ...(preview ? { width: 320, padding: 16, backgroundColor: c.card } : {}) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
+          {r.title}
+        </Text>
+        {r.pinned && !archived ? (
+          <Text v="c2" weight="700" color="acText">
+            고정
+          </Text>
+        ) : null}
+        {statusBadge(r.status)}
+        <Text v="c2" color="t3" style={{ marginLeft: 'auto' }}>
+          {ago(r.updatedAt)}
+        </Text>
+      </View>
+      {r.lastLine ? (
+        <Text v="b2" color="t3" numberOfLines={1}>
+          {r.lastLine}
+        </Text>
+      ) : null}
+    </View>
+  )
 }
 
 const startNew = (onClose: () => void) => {
@@ -90,22 +118,20 @@ export const ConversationList = ({
     ])
 
   const menu = (row: ConversationRow) =>
-    Alert.alert(row.title, undefined, [
-      ...conversationRowMenu(row.pinned).map((a) => ({
-        text: a.label,
-        style: (a.id === 'delete' ? 'destructive' : 'default') as 'destructive' | 'default',
-        onPress: () => {
-          if (a.id === 'pin') pin.mutate(row)
-          else if (a.id === 'archive') archive.mutate(row)
-          else if (a.id === 'delete') confirmDelete(row)
-          else {
-            setNextTitle(row.title)
-            setRenaming(row)
-          }
-        },
-      })),
-      { text: '취소', style: 'cancel' as const },
-    ])
+    conversationRowMenu(row.pinned).map((a) => ({
+      key: a.id,
+      label: a.label,
+      destructive: a.destructive,
+      onPress: () => {
+        if (a.id === 'pin') pin.mutate(row)
+        else if (a.id === 'archive') archive.mutate(row)
+        else if (a.id === 'delete') confirmDelete(row)
+        else {
+          setNextTitle(row.title)
+          setRenaming(row)
+        }
+      },
+    }))
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg, paddingTop: Platform.OS === 'ios' ? 8 : insets.top }}>
@@ -125,32 +151,20 @@ export const ConversationList = ({
             </Text>
             {g.rows.map((r) => (
               <View key={r.id} style={{ paddingVertical: 14, paddingHorizontal: 20, gap: 3 }}>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => router.push(`/chat/${r.id}`)}
-                  onLongPress={archivedView ? undefined : () => menu(r)}
-                  style={({ pressed }) => ({ gap: 3, backgroundColor: pressed ? c.fill : 'transparent' })}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
-                      {r.title}
-                    </Text>
-                    {r.pinned && !archivedView ? (
-                      <Text v="c2" weight="700" color="acText">
-                        고정
-                      </Text>
-                    ) : null}
-                    {statusBadge(r.status)}
-                    <Text v="c2" color="t3" style={{ marginLeft: 'auto' }}>
-                      {ago(r.updatedAt)}
-                    </Text>
-                  </View>
-                  {r.lastLine ? (
-                    <Text v="b2" color="t3" numberOfLines={1}>
-                      {r.lastLine}
-                    </Text>
-                  ) : null}
-                </Pressable>
+                {archivedView ? (
+                  <Pressable accessibilityRole="button" onPress={() => router.push(`/chat/${r.id}`)}>
+                    <RowBody row={r} archived />
+                  </Pressable>
+                ) : (
+                  <ContextMenu
+                    accessibilityLabel={r.title}
+                    actions={menu(r)}
+                    onPress={() => router.push(`/chat/${r.id}`)}
+                    preview={<RowBody row={r} preview />}
+                  >
+                    <RowBody row={r} />
+                  </ContextMenu>
+                )}
                 {archivedView ? (
                   <Pressable accessibilityRole="button" accessibilityLabel={UNARCHIVE_LABEL} onPress={() => unarchive.mutate(r)} hitSlop={8}>
                     <Text v="c1" weight="700" color="acText">
