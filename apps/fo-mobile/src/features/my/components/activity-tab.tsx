@@ -36,7 +36,7 @@ const SUBS: { key: ActivitySub; label: string }[] = [
 const Applications = () => {
   const { data, isLoading } = useMyApplications()
   if (isLoading) return <ListSkeleton />
-  const list = data?.data ?? []
+  const list = (data?.data ?? []).filter((a) => a.appliedAt)
   return (
     <>
       {list.length === 0 ? (
@@ -46,7 +46,7 @@ const Applications = () => {
           onAction={() => router.push(emptyCta('applications').href)}
         />
       ) : (
-        <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
+        <ListTitle title="지원한 공고" count={list.length} />
       )}
       {list.map((a) => (
         <Row
@@ -248,6 +248,7 @@ const ActivityTab = ({ sub, onSub }: { sub: ActivitySub; onSub: (s: ActivitySub)
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
         contentContainerStyle={{ gap: spacing[2], paddingTop: spacing[5], paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}
       >
         {SUBS.map((s) => (
