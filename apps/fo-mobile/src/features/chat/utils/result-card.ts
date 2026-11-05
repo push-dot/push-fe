@@ -18,6 +18,15 @@ type ResultFields = {
 export const resultActions = (card: Pick<ResultFields, 'actions'>) =>
   card.actions.filter((action): action is ResultAction & { id: ResultActionId } => (KNOWN as readonly string[]).includes(action.id))
 
+/** One table: an action's button look follows its id, never its position. */
+export const RESULT_VARIANT: Record<ResultActionId, 'primary' | 'secondary'> = { apply: 'primary', convert: 'secondary', view: 'secondary' }
+
+/** The pending profile card keeps "프로필 보기" inline; an external card waits for its open approval without buttons. */
+export const resultActionsFor = (card: Pick<ResultFields, 'actions'> & { pendingNote?: string }, awaiting?: boolean) =>
+  card.pendingNote || awaiting ? [] : resultActions(card)
+
+export const applyText = (company?: string) => (company ? `${company}에 바로 지원해 줘` : '바로 지원해 줘')
+
 export const resultButtons = (card: Pick<ResultFields, 'actions'>) => resultActions(card).map((action) => action.label)
 
 export const PROFILE_SAVE_TITLE = 'Push 프로필에 저장했어요'
