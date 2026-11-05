@@ -31,7 +31,7 @@ const ComposeScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={ios ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior="padding">
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
         <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: () => router.back() }]} />
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>

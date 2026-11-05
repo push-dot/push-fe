@@ -83,7 +83,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const empty = data?.data.length === 0 && !send.isPending && failed.length === 0
 
   return (
-    <KeyboardAvoidingView behavior={ios ? 'padding' : undefined} style={{ flex: 1, backgroundColor: c.bg }}>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: c.bg }}>
       <TopBar
         onBack={() => router.back()}
         left={
