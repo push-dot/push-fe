@@ -14,7 +14,8 @@ import '@push/design-system/tokens.css'
 
 - `colors.light`, `colors.dark`: 색. 이름은 시안 CSS와 같아요(`acSoft`, `acText`).
 - `typography`: px 크기, px 줄 높이, 굵기, em 자간이에요. 자간을 따로 정하지 않은 스타일은 기본값 -0.02em이에요.
-- `spacing`(`1`–`6`), `radius`(`xs`–`pill`): px 숫자예요.
+- `spacing`(`1`–`6`), `radius`(`xs`–`pill`, 부품별 `card`·`buttonIos`·`buttonAndroid`·`chip`·`sheetTop` 등): px 숫자예요.
+- `largeText`: 큰 글씨 모드의 크기와 줄 높이예요. `fontWeights`: `w6`, `w7`. `platform.ios`, `platform.android`: 안전 영역과 탭바 높이(px)예요.
 - `shadows.light.pop`, `shadows.light.glass`: CSS `box-shadow` 문자열이에요. RN에서는 fo-mobile `src/theme`이 바꿔 써요.
 - `LINE_ICONS`, `ICONS_3D`: 이름별 SVG 문자열이에요. 선 아이콘은 `currentColor`로 그려요. 원본 SVG는 `assets/`에 있어요.
 
@@ -25,7 +26,7 @@ import '@push/design-system/tokens.css'
 | 파일 | 내용 |
 | --- | --- |
 | `tokens/design-system.json` | 디자인 시스템에서 내보낸 `tokens.json` 그대로예요 (2026-10-20 수정본). |
-| `tokens/canvas.json` | 앱 캔버스("Push 앱", 2026-11-05 내보냄)가 다르게 쓰는 값이에요. 이 값이 이겨요. |
+| `tokens/push-app.json` | 앱 핸드오프("Push 앱", 2026-11-05) `design-system/tokens.json` 그대로예요. 색·그림자·반경·큰 글씨·플랫폼 값은 이 파일이 이겨요. 글꼴만 예외예요: 시안 CSS 마지막 규칙이 Noto Sans KR이라 `design-system.json` 값을 써요. |
 | `assets/icons`, `assets/icons-3d` | 선 아이콘 40개, 3D 아이콘 13개 원본이에요. |
 | `src/tokens.ts`, `src/tokens.css`, `src/icons.ts` | 위 파일로 만든 결과예요. 직접 고치지 마세요. |
 

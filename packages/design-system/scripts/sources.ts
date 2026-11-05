@@ -17,7 +17,7 @@ const readSvgs = (dir: string) =>
 export const outputs = () => {
   const model = buildTokens(
     JSON.parse(readSource(SOURCES.designSystem)),
-    JSON.parse(readSource(SOURCES.canvas)),
+    JSON.parse(readSource(SOURCES.app)),
   )
   return {
     [OUTPUTS.tokens]: renderTokens(model),

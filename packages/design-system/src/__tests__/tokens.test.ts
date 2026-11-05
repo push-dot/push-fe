@@ -1,10 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { outputs, readSource } from '../../scripts/sources.ts'
 import { ICONS_3D, LINE_ICONS } from '../icons'
-import { colors, fontFamily, radius, shadows, spacing, typography } from '../tokens'
+import {
+  colors,
+  fontFamily,
+  fontWeights,
+  largeText,
+  platform,
+  radius,
+  shadows,
+  spacing,
+  typography,
+} from '../tokens'
 
 const designSystem = JSON.parse(readSource('tokens/design-system.json'))
-const canvas = JSON.parse(readSource('tokens/canvas.json'))
+const app = JSON.parse(readSource('tokens/push-app.json'))
+const px = (v: string) => Number.parseFloat(v)
 const camel = (name: string) => name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())
 const byName = (theme: 'light' | 'dark') => colors[theme] as Record<string, string>
 
@@ -15,21 +26,24 @@ describe('generated files', () => {
 })
 
 describe('colors', () => {
-  it.each(['light', 'dark'] as const)('keep every design system colour in %s', (theme) => {
-    for (const token of designSystem.color.tokens) {
-      const name = camel(token.name)
-      expect(byName(theme)[name]).toBe(canvas.color[name]?.[theme] ?? token.value[theme])
-    }
+  it.each(['light', 'dark'] as const)('equal the app handoff in %s', (theme) => {
+    const { shadow, glassShadow, ...flat } = app.color[theme]
+    expect(byName(theme)).toEqual(flat)
+    expect(shadows[theme]).toEqual({ pop: shadow, glass: glassShadow })
   })
 
-  it('let the app canvas win over the design system', () => {
+  it.each(['light', 'dark'] as const)('keep every design system colour name in %s', (theme) => {
+    for (const token of designSystem.color.tokens) expect(byName(theme)).toHaveProperty(camel(token.name))
+  })
+
+  it('let the app handoff win over the design system', () => {
     expect(colors.light.t3).toBe('#646B75')
     expect(colors.light.red).toBe('#C9302C')
     expect(colors.dark.ac).toBe('#6B5BFA')
     expect(colors.dark.t4).toBe('#8C939C')
   })
 
-  it('add the canvas-only colours to both themes', () => {
+  it('add the app-only colours to both themes', () => {
     expect(colors.light.deco).toBe('#B4BAC2')
     expect(colors.dark.deco).toBe('#5C636C')
     expect(Object.keys(colors.dark)).toEqual(Object.keys(colors.light))
@@ -39,7 +53,23 @@ describe('colors', () => {
 describe('scales', () => {
   it('turn spacing and radius into pixel numbers', () => {
     expect(spacing).toEqual({ 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 })
-    expect(radius).toEqual({ xs: 6, sm: 12, md: 16, lg: 20, xl: 28, pill: 999 })
+    expect(radius).toMatchObject({ xs: 6, sm: 12, md: 16, lg: 20, xl: 28, pill: 999 })
+  })
+
+  it('add the app radii, large text, weights and platform insets from the handoff', () => {
+    for (const [name, value] of Object.entries(app.radius as Record<string, string>)) {
+      expect(radius[camel(name) as keyof typeof radius]).toBe(px(value))
+    }
+    expect(radius.buttonIos).toBe(28)
+    expect(radius.buttonAndroid).toBe(16)
+    for (const [name, s] of Object.entries(app.typography.largeText as Record<string, { size: number; line: number }>)) {
+      expect(largeText[name as keyof typeof largeText]).toEqual({ fontSize: s.size, lineHeight: s.line })
+    }
+    expect(fontWeights).toEqual(app.typography.weights)
+    expect(platform).toEqual({
+      ios: { safeTop: 54, safeBottom: 34, tabBarHeight: 94 },
+      android: { safeTop: 40, safeBottom: 20, tabBarHeight: 78 },
+    })
   })
 
   it('give every type style a size, line height, weight and tracking in em', () => {
@@ -63,7 +93,7 @@ describe('scales', () => {
 
   it('keep both shadows per theme as CSS', () => {
     expect(shadows.light.pop).toBe('0 8px 28px rgba(22,25,29,.10)')
-    expect(shadows.dark.glass).toBe(designSystem.shadow.tokens[1].value.dark)
+    expect(shadows.dark.glass).toBe(app.color.dark.glassShadow)
   })
 })
 

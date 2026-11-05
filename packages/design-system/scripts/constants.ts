@@ -10,7 +10,7 @@ export const SHORT_KEY = 5
 
 export const SOURCES = {
   designSystem: 'tokens/design-system.json',
-  canvas: 'tokens/canvas.json',
+  app: 'tokens/push-app.json',
   icons: 'assets/icons',
   icons3d: 'assets/icons-3d',
 }

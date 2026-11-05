@@ -68,6 +68,18 @@ export const typography = {
   mono: { family: 'mono', fontSize: 12.5, lineHeight: 19, fontWeight: 400, letterSpacing: -0.02 },
 } as const
 
+export const largeText = {
+  h1: { fontSize: 34, lineHeight: 44 },
+  h2: { fontSize: 26, lineHeight: 34 },
+  h3: { fontSize: 22, lineHeight: 30 },
+  b1: { fontSize: 21, lineHeight: 30 },
+  b2: { fontSize: 20, lineHeight: 28 },
+  c1: { fontSize: 17, lineHeight: 24 },
+  c2: { fontSize: 16, lineHeight: 22 },
+} as const
+
+export const fontWeights = { w6: 600, w7: 700 } as const
+
 export const fontFamily = {
   sans: '"Noto Sans KR", "Noto Sans", system-ui, sans-serif',
   mono: '"JetBrains Mono", ui-monospace, monospace',
@@ -75,17 +87,39 @@ export const fontFamily = {
 
 export const spacing = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 } as const
 
-export const radius = { xs: 6, sm: 12, md: 16, lg: 20, xl: 28, pill: 999 } as const
+export const radius = {
+  xs: 6,
+  sm: 12,
+  md: 16,
+  lg: 20,
+  xl: 28,
+  pill: 999,
+  card: 20,
+  buttonAndroid: 16,
+  buttonIos: 28,
+  buttonSmAndroid: 12,
+  buttonSmIos: 20,
+  chip: 17,
+  confirmPanelTop: 24,
+  sheetTop: 28,
+  phoneIos: 54,
+  phoneAndroid: 40,
+} as const
 
 export const shadows = {
   light: {
     pop: '0 8px 28px rgba(22,25,29,.10)',
     glass:
-      '0 6px 24px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.95)',
+      '0 6px 24px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)',
   },
   dark: {
     pop: '0 8px 28px rgba(0,0,0,.5)',
     glass:
-      '0 6px 24px rgba(0,0,0,.5), 0 0 0 .5px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.16)',
+      '0 6px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)',
   },
+} as const
+
+export const platform = {
+  ios: { safeTop: 54, safeBottom: 34, tabBarHeight: 94 },
+  android: { safeTop: 40, safeBottom: 20, tabBarHeight: 78 },
 } as const

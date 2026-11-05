@@ -27,7 +27,14 @@ export type DesignSystem = {
   shadow: { tokens: Named<Themed>[] }
 }
 
-export type Canvas = { color: Record<string, Partial<Themed>>; letterSpacing: string }
+type Size = { size: number; line: number }
+
+export type App = {
+  color: Record<Theme, Record<string, string>>
+  radius: Record<string, string>
+  typography: { letterSpacing: string; weights: Record<string, number>; largeText: Record<string, Size> }
+  platform: Record<string, Record<string, string>>
+}
 
 type Model = ReturnType<typeof buildTokens>
 
@@ -38,19 +45,26 @@ const unit = (value: string) => Number.parseFloat(value)
 const scale = (tokens: Named<string>[], prefix: string) =>
   Object.fromEntries(tokens.map((t) => [t.name.slice(prefix.length), unit(t.value)]))
 
-const themeColors = (ds: DesignSystem, canvas: Canvas, theme: Theme) => ({
+const shadowNames = Object.values(SHADOW_CSS_NAMES)
+
+const themeColors = (ds: DesignSystem, app: App, theme: Theme) => ({
   ...Object.fromEntries(ds.color.tokens.map((t) => [camel(t.name), t.value[theme]])),
   ...Object.fromEntries(
-    Object.entries(canvas.color).flatMap(([name, v]) => (v[theme] ? [[name, v[theme]]] : [])),
+    Object.entries(app.color[theme]).filter(([name]) => !shadowNames.includes(name)),
   ),
 })
 
-export const buildTokens = (ds: DesignSystem, canvas: Canvas) => {
-  const [light, dark] = THEMES.map((theme) => themeColors(ds, canvas, theme))
+const pixels = (values: Record<string, string>) =>
+  Object.fromEntries(
+    Object.entries(values).flatMap(([k, v]) => (v.endsWith('px') ? [[camel(k), unit(v)]] : [])),
+  )
+
+export const buildTokens = (ds: DesignSystem, app: App) => {
+  const [light, dark] = THEMES.map((theme) => themeColors(ds, app, theme))
   if (Object.keys(light).join() !== Object.keys(dark).join()) {
     throw new Error('Every colour needs both a light and a dark value')
   }
-  const tracking = unit(canvas.letterSpacing)
+  const tracking = unit(app.typography.letterSpacing)
   return {
     colors: { light, dark },
     typography: Object.fromEntries(
@@ -67,17 +81,28 @@ export const buildTokens = (ds: DesignSystem, canvas: Canvas) => {
         ]),
       ),
     ),
+    largeText: Object.fromEntries(
+      Object.entries(app.typography.largeText).map(([name, s]) => [
+        name,
+        { fontSize: s.size, lineHeight: s.line },
+      ]),
+    ),
+    fontWeights: app.typography.weights,
     fontFamily: ds.type.families,
     spacing: scale(ds.spacing.tokens, PREFIXES.space),
-    radius: scale(ds.radius.tokens, PREFIXES.radius),
+    radius: { ...scale(ds.radius.tokens, PREFIXES.radius), ...pixels(app.radius) },
     shadows: Object.fromEntries(
       THEMES.map((theme) => [
         theme,
         Object.fromEntries(
-          ds.shadow.tokens.map((t) => [t.name.slice(PREFIXES.shadow.length), t.value[theme]]),
+          ds.shadow.tokens.map((t) => {
+            const name = t.name.slice(PREFIXES.shadow.length)
+            return [name, app.color[theme][SHADOW_CSS_NAMES[name] ?? name] ?? t.value[theme]]
+          }),
         ),
       ]),
     ),
+    platform: Object.fromEntries(Object.entries(app.platform).map(([os, v]) => [os, pixels(v)])),
     tracking,
   }
 }
@@ -116,10 +141,13 @@ export const renderTokens = (m: Model) =>
   [
     declare('colors', m.colors),
     declare('typography', m.typography),
+    declare('largeText', m.largeText),
+    declare('fontWeights', m.fontWeights),
     declare('fontFamily', m.fontFamily),
     declare('spacing', m.spacing),
     declare('radius', m.radius),
     declare('shadows', m.shadows),
+    declare('platform', m.platform),
   ].join('\n')
 
 const vars = (entries: [string, string][]) => entries.map(([k, v]) => `--${k}:${v}`).join(';')
