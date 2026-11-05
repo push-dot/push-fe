@@ -33,7 +33,7 @@ const Chip = ({ label, on, onPress, menu, check, removable, lead }: Props) => {
     >
       {lead}
       {check && on ? <Icon name="check" size={14} color={fg} /> : null}
-      <Text v="c1" weight="600" style={{ fontSize: 14, color: fg }} numberOfLines={1}>
+      <Text v="c1" weight="600" style={{ fontSize: 14, color: fg, flexShrink: 1 }} numberOfLines={1}>
         {label}
       </Text>
       {menu ? <Icon name="down" size={14} color={fg} /> : null}
@@ -41,7 +41,7 @@ const Chip = ({ label, on, onPress, menu, check, removable, lead }: Props) => {
     </View>
   )
   return (
-    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!on }} onPress={onPress}>
+    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!on }} onPress={onPress} style={{ maxWidth: '100%' }}>
       {on ? (
         <View style={[{ borderRadius: radius.pill }, chipFrame(true, c)]}>{inner}</View>
       ) : Platform.OS === 'ios' ? (
