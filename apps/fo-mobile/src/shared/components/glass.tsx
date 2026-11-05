@@ -34,8 +34,9 @@ const Glass = ({ children, style, surface = 'glass', interactive }: Props) => {
   const glass = useGlassSurface()
   if (Platform.OS === 'android') return <View style={[{ backgroundColor: c.bg2 }, style]}>{children}</View>
   if (glass) {
+    // An RN boxShadow stays at rest size while interactive glass grows on press, leaving a fixed disc inside it.
     return (
-      <GlassView style={[{ boxShadow }, style]} glassEffectStyle="regular" isInteractive={interactive}>
+      <GlassView style={[interactive ? null : { boxShadow }, style]} glassEffectStyle="regular" isInteractive={interactive}>
         {children}
       </GlassView>
     )
