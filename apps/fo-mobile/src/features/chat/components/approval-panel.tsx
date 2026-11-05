@@ -145,7 +145,11 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay }: Props) => {
           />
         </View>
       ) : null}
-      {approval.foot ? (
+      {approval.warning ? (
+        <Text v="c1" weight="600" color="t2" style={{ textAlign: 'center', paddingTop: 6 }}>
+          {approval.warning}
+        </Text>
+      ) : approval.foot ? (
         <Text v="c2" color="t4" style={{ textAlign: 'center', paddingTop: 6 }}>
           {approval.foot}
         </Text>
