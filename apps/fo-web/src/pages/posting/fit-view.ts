@@ -18,6 +18,7 @@ export type FitPayload = {
   parts: Record<(typeof FIT_PARTS)[number][0], number>
   topGap: string
   plan: string
+  reachable?: number
 }
 
 export type FitCardModel = {
@@ -37,6 +38,9 @@ type FitClient = {
 
 const planOf = (plan: string) => (plan === 'PRO' || plan === 'ULTRA' ? plan : 'FREE')
 
+const reachableBand = ({ fitScore, reachable }: FitPayload) =>
+  reachable != null && Math.floor(reachable) > Math.floor(fitScore) ? Math.floor(reachable) : undefined
+
 export const fitCardModel = (payload: FitPayload, document: string): FitCardModel => {
   const locked = planOf(payload.plan) === 'FREE'
   return {
@@ -44,6 +48,7 @@ export const fitCardModel = (payload: FitPayload, document: string): FitCardMode
     score: payload.fitScore,
     locked,
     weakness: locked ? null : payload.topGap || null,
+    reachable: locked ? undefined : reachableBand(payload),
     parts: FIT_PARTS.map(([key, label]) => ({
       label,
       value: locked ? null : payload.parts[key],

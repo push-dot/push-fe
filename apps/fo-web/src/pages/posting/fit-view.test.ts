@@ -43,6 +43,17 @@ describe('fit card', () => {
     }
   })
 
+  it('turns reachable into the next score band on PRO and ULTRA', () => {
+    expect(fitCardModel({ ...payload('PRO'), reachable: 8.2 }, '이력서').reachable).toBe(8)
+    expect(fitCardModel({ ...payload('ULTRA'), reachable: 7 }, '이력서').reachable).toBe(7)
+  })
+
+  it('hides reachable on FREE, in the same band, or when the server leaves it out', () => {
+    expect(fitCardModel({ ...payload('FREE'), reachable: 8.2 }, '이력서').reachable).toBeUndefined()
+    expect(fitCardModel({ ...payload('PRO'), reachable: 6.95 }, '이력서').reachable).toBeUndefined()
+    expect(fitCardModel(payload('PRO'), '이력서').reachable).toBeUndefined()
+  })
+
   it('finds the newest document or none', async () => {
     expect(await firstDocument(client('PRO'))).toEqual(doc)
     expect(await firstDocument({ ...client('PRO'), listDocuments: async () => ({ data: [] }) })).toBeNull()
