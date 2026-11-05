@@ -226,7 +226,7 @@ const TodoList = ({ item }: { item: Of<'todo'> }) => {
 
 const Plan = ({ item }: { item: Of<'plan'> }) => {
   const titled = !!item.title
-  return (
+  const card = (
     <Card gap={titled ? spacing[3] : 14} padding={spacing[4]}>
       {titled ? (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -253,7 +253,7 @@ const Plan = ({ item }: { item: Of<'plan'> }) => {
           </View>
         </View>
       ))}
-      {item.keywords.length ? (
+      {titled && item.keywords.length ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] }}>
           {item.keywords.map((k) => (
             <Badge key={k} label={`+ ${k}`} tone="ac" />
@@ -262,6 +262,8 @@ const Plan = ({ item }: { item: Of<'plan'> }) => {
       ) : null}
     </Card>
   )
+  // ChatPh1Feedback: the untitled card sits inside the agent message above it (dot 8 + gap 10 indent, 10 below the text, thread gap 18).
+  return titled ? card : <View style={{ paddingLeft: 18, marginTop: -spacing[2] }}>{card}</View>
 }
 
 const Diff = ({ item }: { item: Of<'diff'> }) => {

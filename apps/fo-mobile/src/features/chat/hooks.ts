@@ -11,7 +11,7 @@ export const useReduceMotion = () => {
   return on
 }
 
-/** Looping opacity 1 → low → 1 (the paper caret). Stops under Reduce Motion. */
+/** Looping hard blink 1 → low → 1, CSS `steps(2)` (the paper caret). Stops under Reduce Motion. */
 export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(1))[0]
@@ -22,8 +22,8 @@ export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
     }
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(v, { toValue: low, duration: period / 2, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(v, { toValue: 1, duration: period / 2, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(v, { toValue: low, duration: period / 2, easing: Easing.step0, useNativeDriver: true }),
+        Animated.timing(v, { toValue: 1, duration: period / 2, easing: Easing.step0, useNativeDriver: true }),
       ]),
     )
     loop.start()
