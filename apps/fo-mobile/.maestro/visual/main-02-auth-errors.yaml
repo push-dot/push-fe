@@ -16,6 +16,7 @@ tags:
     when:
       platform: iOS
     commands:
+      - eraseText: 3
       - takeScreenshot: SignInErrors.1
 - tapOn: "번호 바꾸기"
 - tapOn: "인증번호 받기"
@@ -33,6 +34,7 @@ tags:
     when:
       platform: iOS
     commands:
+      - eraseText: 3
       - takeScreenshot: SignInErrors.2
 - tapOn: "번호 바꾸기"
 - tapOn: "인증번호 받기"
