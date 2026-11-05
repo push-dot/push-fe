@@ -3,7 +3,11 @@ name: 허브 → 프로필 → 제안하기
 ---
 - runFlow: _login.yaml
 - runFlow: _dismiss_logbox.yaml
-- tapOn: "허브"
+- runFlow:
+    file: _tap_tab.yaml
+    env:
+      TAB: "허브"
+      READY: "추천 프로필"
 - extendedWaitUntil:
     visible: "추천 프로필"
     timeout: 10000

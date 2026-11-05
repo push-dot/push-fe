@@ -3,7 +3,11 @@ name: 마이 → 설정 → 로그아웃
 ---
 - runFlow: _login.yaml
 - runFlow: _dismiss_logbox.yaml
-- tapOn: "마이"
+- runFlow:
+    file: _tap_tab.yaml
+    env:
+      TAB: "마이"
+      READY: "김서준"
 - extendedWaitUntil:
     visible: "김서준"
     timeout: 10000

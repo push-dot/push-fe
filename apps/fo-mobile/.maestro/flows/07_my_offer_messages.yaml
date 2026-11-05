@@ -2,7 +2,11 @@ appId: app.push.mobile
 name: 마이 → 제안함 → 제안 메시지 → 보내기
 ---
 - runFlow: _login.yaml
-- tapOn: "마이"
+- runFlow:
+    file: _tap_tab.yaml
+    env:
+      TAB: "마이"
+      READY: "김서준"
 - extendedWaitUntil:
     visible: "김서준"
     timeout: 10000
