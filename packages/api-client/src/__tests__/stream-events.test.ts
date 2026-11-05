@@ -4,7 +4,7 @@ import { createApi } from '../endpoints'
 import { QueueBusyError } from '../errors'
 import { isJobSettled, jobQuery } from '../jobs'
 import { parseFrame } from '../sse'
-import type { QueueJob, StreamEvent } from '../types'
+import type { ConversationTurn, QueueJob, StreamEvent } from '../types'
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...headers } })
@@ -98,6 +98,28 @@ describe('harness endpoints', () => {
     const { api, hits } = harness(() => json(200, { data: { aiAccessMode: 'ALWAYS_ASK' } }))
     await expect(api.me.updateSettings({ aiAccessMode: 'ALWAYS_ASK' })).resolves.toMatchObject({ aiAccessMode: 'ALWAYS_ASK' })
     expect(hits[0]).toMatchObject({ method: 'PATCH', url: 'http://x/api/v1/me/settings', body: '{"aiAccessMode":"ALWAYS_ASK"}' })
+  })
+
+  it('lists the stored turns of a conversation with their cards', async () => {
+    const turn: ConversationTurn = {
+      jobId: 'j1',
+      status: 'DONE',
+      createdAt: '2026-11-05T00:00:00Z',
+      userMessageId: 'm1',
+      assistantMessageId: null,
+      answer: null,
+      events: [
+        { type: 'todo', id: 'analyze', items: [{ id: 'resume', text: '이력서 읽기', state: 'now', added: false }], seq: 1 },
+        {
+          type: 'approval', id: 'a1', kind: 'DOCUMENT_EDIT', title: '이 수정을 적용할까요?',
+          options: [{ id: 'apply', label: '적용' }, { id: 'skip', label: '그대로 두기' }],
+          hunks: [{ line: null, sign: '+', text: 'Kafka' }], resolution: { status: 'PENDING', optionId: null }, seq: 2,
+        },
+      ],
+    }
+    const { api, hits } = harness(() => json(200, { data: [turn], page: { nextCursor: null } }))
+    await expect(api.conversations.turns('c1', { limit: 50 })).resolves.toMatchObject({ data: [turn] })
+    expect(hits[0]).toMatchObject({ method: 'GET', url: 'http://x/api/v1/conversations/c1/turns?limit=50' })
   })
 })
 
