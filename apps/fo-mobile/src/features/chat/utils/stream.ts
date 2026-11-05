@@ -121,7 +121,8 @@ export const mapEvent = (ev: StreamEvent): ChatEvent[] => {
       if (ev.kind === 'DOCUMENT_EDIT') return askEdit(ev)
       return [ask({ id: ev.id, question: ev.summary || ev.title, options: ev.options, warning: ev.foot })]
     case 'choice': {
-      if (ev.sections?.length) return [{ type: 'approval', approval: approvalFromSections(ev) }]
+      // push-be #224 auto mode still sends sections; the auto line wins.
+      if (!ev.auto && ev.sections?.length) return [{ type: 'approval', approval: approvalFromSections(ev) }]
       if (!ev.auto) {
         const pending = ev.note && (!ev.resolution || ev.resolution.status === 'PENDING') ? ev.note : undefined
         const event = ask({ id: ev.id, question: ev.title ?? CHOICE_QUESTION, options: ev.options, detail: ev.detail, multiple: ev.multiple, hint: !HINTLESS_GATES.includes(ev.gate ?? '') })

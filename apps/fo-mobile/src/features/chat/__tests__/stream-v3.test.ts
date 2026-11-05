@@ -2,7 +2,7 @@ import type { StreamEvent } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
 import { applyEvent, emptyChat } from '../utils/reducer'
 import { fromStream, mapEvent } from '../utils/stream'
-import { sectionAnswer, submitLabelFor } from '../utils/stream-v3'
+import { sectionLabel, sectionPicks, submitLabelFor } from '../utils/stream-v3'
 import type { Approval, ChatItem } from '../types'
 
 const profile = (): ChatItem => ({
@@ -87,6 +87,20 @@ describe('stream v3', () => {
     expect(ev.approval.submit).toBe('다음')
   })
 
+  it('auto section choice is a line, not a panel', () => {
+    expect(
+      mapEvent({
+        type: 'choice',
+        id: 'q',
+        auto: true,
+        recommended: 'rec1',
+        options: [{ id: 'rec1', label: '숫자로 성과 쓰기' }],
+        sections: [{ id: 'recs', kind: 'toggle', options: [{ id: 'rec1', label: '숫자로 성과 쓰기' }], selected: ['rec1'] }],
+        submit: { label: '{n}개 반영하고 디자인으로' },
+      } as StreamEvent),
+    ).toEqual([{ type: 'agentText', id: 'auto-q', text: '자동으로 골랐어요: 숫자로 성과 쓰기' }])
+  })
+
   it('template submit label follows the selected thumbnail', () => {
     const approval: Approval = {
       id: 'r',
@@ -99,9 +113,60 @@ describe('stream v3', () => {
     expect(submitLabelFor(approval, { templateId: 'CLASSIC', toggleCount: 1 })).toBe('클래식으로 만들기')
     expect(submitLabelFor({ ...approval, submit: '{n}개 반영하고 디자인으로' }, { toggleCount: 0 })).toBe('그대로 디자인으로')
     expect(submitLabelFor({ ...approval, submit: '{n}개 반영하고 디자인으로' }, { toggleCount: 2 })).toBe('2개 반영하고 디자인으로')
-    expect(sectionAnswer(false, [])).toEqual({ optionId: 'submit', optionIds: ['submit'] })
-    expect(sectionAnswer(false, ['CLASSIC', 'photo'])).toEqual({ optionId: 'submit', optionIds: ['submit', 'CLASSIC', 'photo'] })
-    expect(sectionAnswer(true, [])).toEqual({ optionId: 'cancel' })
+  })
+
+  it('review card answers submit with the picked thumbnail and toggle', () => {
+    const [ev] = mapEvent({
+      type: 'choice',
+      id: 'r',
+      gate: 'review',
+      title: '검증을 마쳤어요. 어떤 디자인을 적용할까요?',
+      recommended: 'CLASSIC',
+      options: [
+        { id: 'CLASSIC', label: '클래식', badge: '추천' },
+        { id: 'MODERN', label: '모던' },
+        { id: 'cancel', label: '그만하기' },
+      ],
+      sections: [
+        { id: 'template', kind: 'thumbnails', options: [{ id: 'CLASSIC', label: '클래식', badge: '추천' }, { id: 'MODERN', label: '모던' }], selected: ['CLASSIC'] },
+        { id: 'photo', kind: 'toggle', options: [{ id: 'photo', label: '프로필 사진 넣기', desc: '마이 › 프로필 사진을 써요 · 모든 템플릿' }], selected: ['photo'] },
+      ],
+      submit: { label: '만들기', optionLabels: { CLASSIC: '클래식으로 만들기', MODERN: '모던으로 만들기' } },
+    })
+    if (ev?.type !== 'approval') throw new Error('expected approval')
+    const a = ev.approval
+    expect(a.optionIds).toEqual(['submit', 'CLASSIC', 'MODERN', 'photo', 'cancel'])
+    expect(a.secondary).toBe('그만하기')
+    const ids = (sel: number[][]) => sectionPicks(a, sel).map((i) => a.optionIds![i])
+    expect(ids([[1], [0]])).toEqual(['submit', 'MODERN', 'photo'])
+    expect(ids([[0], []])).toEqual(['submit', 'CLASSIC'])
+    expect(submitLabelFor(a, { templateId: 'MODERN', toggleCount: 1 })).toBe('모던으로 만들기')
+    expect(sectionLabel(a, [[1], [0]])).toBe('모던으로 만들기')
+  })
+
+  it('material rows are not answers and know their icon', () => {
+    const [ev] = mapEvent({
+      type: 'choice',
+      id: 'g',
+      title: '어떤 산출물을 만들까요?',
+      options: [{ id: 'resume', label: '이력서' }],
+      sections: [
+        {
+          id: 'materials',
+          kind: 'rows',
+          title: '가져올 자료',
+          options: [
+            { id: 'm_posting', label: '백엔드 엔지니어', sub: '홈 › 북마크 공고', badge: '모', action: 'change' },
+            { id: 'm_github', label: 'github.com/seojun-kim', sub: '이력서에서 찾았어요', action: 'change' },
+          ],
+        },
+      ],
+      submit: { label: '다음' },
+    })
+    if (ev?.type !== 'approval') throw new Error('expected approval')
+    const [rows] = ev.approval.sections
+    expect(rows).toMatchObject({ kind: 'rows', items: [{ tag: '모', ac: true }, { tag: 'link', ac: false }] })
+    expect(sectionPicks(ev.approval, [[]]).map((i) => ev.approval.optionIds![i])).toEqual(['submit'])
   })
 
   it('choice without note does not set pendingNote', () => {

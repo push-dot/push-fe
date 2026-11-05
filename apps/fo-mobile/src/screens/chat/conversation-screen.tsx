@@ -24,6 +24,7 @@ import {
   Item,
   Queued,
   Appear,
+  materialsPath,
   quickStartPath,
   send,
   StatusRow,
@@ -152,6 +153,8 @@ const ConversationScreen = ({ id }: { id: string }) => {
               approval={chat.approval!}
               onAnswer={(text, choice) => answer(id, text, choice)}
               onSay={() => (setSayingFor(chat.approval?.id), setTimeout(() => input.current?.focus(), 50))}
+              // The picked material lands in the composer; sending it re-asks the gate with that material.
+              onMaterials={() => (setSayingFor(chat.approval?.id), router.push(materialsPath()))}
             />
           ) : (
             <View style={{ paddingHorizontal: 12, paddingBottom: Math.max(insets.bottom, 6) }}>

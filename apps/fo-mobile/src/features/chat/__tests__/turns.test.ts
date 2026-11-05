@@ -81,4 +81,24 @@ describe('restoreTurns', () => {
       { type: 'agentText', text: '두 가지를 만들게요.' },
     ])
   })
+
+  it('a section card answer replays as the label the app showed', () => {
+    const INTAKE: ConversationTurn['events'][number] = {
+      type: 'choice', id: 'g0', gate: 'output_targets', title: '어떤 산출물을 만들까요?', multiple: true,
+      options: [{ id: 'resume', label: '이력서' }, { id: 'portfolio', label: '포트폴리오' }, { id: 'cancel', label: '그만하기' }],
+      sections: [
+        { id: 'targets', kind: 'chips', title: '어떤 산출물을 만들까요?', multiple: true, options: [{ id: 'resume', label: '이력서' }, { id: 'portfolio', label: '포트폴리오' }], selected: ['resume'] },
+        { id: 'materials', kind: 'rows', title: '가져올 자료', options: [{ id: 'm_file', label: 'a.pdf', sub: '마이 › 서류', action: 'change' }] },
+        { id: 'tone', kind: 'chips', title: '어떤 말투로 쓸까요?', options: [{ id: 'concise', label: '짧게' }, { id: 'preserve', label: '원래 말투로' }], selected: ['preserve'] },
+      ],
+      submit: { label: '다음' },
+      resolution: { status: 'APPROVED', optionId: 'submit', optionIds: ['submit', 'resume', 'preserve'] }, seq: 2,
+    }
+    const turns = [
+      turn('j2', [{ type: 'token', text: '이대로 분석을 시작할까요?', seq: 3 }], { answer: { approvalId: 'g0', optionId: 'submit', optionIds: ['submit', 'resume', 'preserve'] } }),
+      turn('j1', [INTAKE], { userMessageId: 'm1' }),
+    ]
+    const s = restoreTurns(turns, [msg('m1', 'USER', '이력서 고쳐 줘')])
+    expect(s.items.filter((i) => i.type === 'user').map((i) => i.type === 'user' && i.text)).toEqual(['이력서 고쳐 줘', '이력서만 · 자료 1개 · 원래 말투로'])
+  })
 })

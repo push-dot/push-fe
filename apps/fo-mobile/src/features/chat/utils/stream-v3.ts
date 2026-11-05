@@ -45,9 +45,12 @@ const sectionOf = (raw: ChoiceSection | { kind: string }, recommended?: string):
         title: s.title ?? '가져올 자료',
         items: s.options.map((o) => ({
           id: o.id,
-          tag: o.badge ?? '',
+          // ChatPh0Input: company initial, a link tile for GitHub, nothing for the file.
+          tag: o.badge ?? (o.id === 'm_github' ? 'link' : ''),
           title: o.label,
           sub: o.sub ?? '',
+          // A Push location (마이 › 서류) is accent; "이력서에서 찾았어요" stays grey.
+          ac: !!o.sub?.includes('›'),
           ...(o.action ? { action: o.action } : {}),
         })),
       }
@@ -90,12 +93,14 @@ export const approvalFromSections = (ev: Extract<StreamEvent, { type: 'choice' }
   })
   const submit: ChoiceSubmit | undefined = ev.submit
   const pending = ev.note && (!ev.resolution || ev.resolution.status === 'PENDING') ? ev.note : undefined
+  const cancel = ev.options.find((o) => o.id === 'cancel')
   return {
     id: ev.id,
     question: ev.title ?? '',
     detail: ev.detail,
     sections,
-    optionIds: ['submit', ...answerableIds(sections)],
+    optionIds: ['submit', ...answerableIds(sections), ...(cancel ? ['cancel'] : [])],
+    ...(cancel ? { secondary: cancel.label } : {}),
     ...(submit ? { submit: submit.label } : {}),
     ...(submit?.optionLabels ? { submitLabels: submit.optionLabels } : {}),
     ...(submit?.zeroLabel ? { zeroSubmit: submit.zeroLabel } : {}),
@@ -136,9 +141,47 @@ export const submitLabelFor = (approval: Approval, selected: { templateId?: stri
   return base.replaceAll('{n}', String(selected.toggleCount))
 }
 
-/** Section cards answer with submit plus the picked ids. Cancel stays a single id. */
-export const sectionAnswer = (cancel: boolean, pickedIds: string[]): { optionId: string; optionIds?: string[] } =>
-  cancel ? { optionId: 'cancel' } : { optionId: 'submit', optionIds: ['submit', ...pickedIds] }
+/** A card whose last section is a single-pick chip row (ChatPh0Input 말투) is sent by tapping that chip. */
+export const chipSends = (approval: Approval) => {
+  const last = approval.sections.at(-1)
+  return last?.kind === 'chips' && !last.multi
+}
+
+/** The user bubble after a section card: ChatPh0Input "이력서만 · 자료 3개 · 원래 말투로", else the button label. */
+export const sectionLabel = (approval: Approval, sel: number[][]): string => {
+  if (chipSends(approval))
+    return approval.sections
+      .flatMap((s, si) => {
+        if (s.kind === 'rows') return s.items.length ? [`자료 ${s.items.length}개`] : []
+        if (s.kind !== 'chips') return []
+        const labels = (sel[si] ?? []).map((i) => s.options[i]!)
+        return labels.length ? [s.multi && labels.length === 1 ? `${labels[0]}만` : labels.join(', ')] : []
+      })
+      .join(' · ')
+  const ti = approval.sections.findIndex((s) => s.kind === 'templates')
+  const tpl = approval.sections[ti]
+  const templateId = tpl?.kind === 'templates' ? tpl.items[sel[ti]?.[0] ?? -1]?.id : undefined
+  const toggleCount = approval.sections.reduce((n, s, si) => n + (s.kind === 'toggle' ? (sel[si]?.length ?? 0) : 0), 0)
+  return submitLabelFor(approval, { templateId, toggleCount })
+}
+
+/** Inverse of sectionPicks: the per-section selection a stored answer made (replay). */
+export const sectionSel = (approval: Approval, ids: string[]): number[][] =>
+  approval.sections.map((s) => {
+    const own = s.kind === 'templates' ? s.items.map((t) => t.id ?? '') : s.kind === 'chips' || s.kind === 'toggle' ? (s.ids ?? []) : []
+    return own.flatMap((id, i) => (ids.includes(id) ? [i] : []))
+  })
+
+/** Section card answer as indexes into `optionIds`: submit first, then each pick in answerable sections (push-be #224). */
+export const sectionPicks = (approval: Approval, sel: number[][]): number[] => {
+  const ids = approval.optionIds ?? []
+  const picked = approval.sections.flatMap((s, si) => {
+    if (s.kind === 'rows' || s.kind === 'choices') return []
+    const own = s.kind === 'templates' ? s.items.map((t) => t.id ?? '') : (s.ids ?? [])
+    return (sel[si] ?? []).flatMap((i) => (own[i] ? [own[i]] : []))
+  })
+  return ['submit', ...picked].map((id) => ids.indexOf(id)).filter((i) => i >= 0)
+}
 
 export const attachPendingNote = (items: ChatItem[], note: string | undefined): ChatItem[] => {
   if (!note) return items
