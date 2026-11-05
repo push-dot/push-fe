@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Platform, Pressable, View } from 'react-native'
-import { STATUS_ROW_MIN_HEIGHT } from './hit-target'
+import { STATUS_ROW_MIN_HEIGHT } from '../../theme'
 import Icon from './icon'
 import Text from './text'
 

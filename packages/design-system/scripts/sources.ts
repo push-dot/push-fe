@@ -17,11 +17,11 @@ const readSvgs = (dir: string) =>
 export const outputs = () => {
   const model = buildTokens(
     JSON.parse(readSource(SOURCES.designSystem)),
-    JSON.parse(readSource(SOURCES.canvas)),
+    JSON.parse(readSource(SOURCES.app)),
   )
   return {
     [OUTPUTS.tokens]: renderTokens(model),
     [OUTPUTS.css]: renderCss(model),
-    [OUTPUTS.icons]: renderIcons(readSvgs(SOURCES.icons), readSvgs(SOURCES.icons3d)),
+    [OUTPUTS.icons]: renderIcons(readSvgs(SOURCES.icons), readSvgs(SOURCES.icons3d), readSvgs(SOURCES.brand)),
   }
 }
