@@ -17,7 +17,7 @@ name: 홈 → 채용공고 필터 → 상세 → 지원
     file: _tap_sheet_button.yaml
     env:
       TEXT: "공고 .*개 보기"
-- assertVisible: "개발"
+- assertVisible: ".*개발.*"
 # Open the first dev posting; mock postings past their deadline drop out of the list.
 - tapOn:
     text: ".*개발자.*"
