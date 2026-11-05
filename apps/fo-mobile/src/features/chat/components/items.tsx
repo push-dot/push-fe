@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, View } from 'react-native'
-import { onAccent, radius, spacing, useColors, useShadow, type Colors } from '../../../theme'
+import { onAccent, radius, spacing, tile, useColors, useShadow, type Colors } from '../../../theme'
 import { Badge, Button, Icon, Text } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
 import { useOpenArtifact } from '../api/hooks'
@@ -552,7 +552,6 @@ const ResultCard = ({
   convertPending?: boolean
   awaiting?: boolean
 }) => {
-  const c = useColors()
   const chrome = resultChrome(item)
   const save = profileSaveCopy(item)
   const title = save?.title ?? resultTitle(item)
@@ -562,7 +561,7 @@ const ResultCard = ({
     <Appear style={{ gap: 18 }}>
       {item.taskLine ? <ToolLine item={{ type: 'tool', id: `${item.id}-task`, state: 'ok', ...resultTask(item.taskLine) }} /> : null}
       <Surface>
-        {chrome.initials ? <Mark text={chrome.initials} color={c.ac} size={40} round /> : null}
+        {chrome.initials ? <Mark text={chrome.initials} color={tile.indigo} size={40} round /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text v="b2" weight="700" numberOfLines={1}>
             {title}

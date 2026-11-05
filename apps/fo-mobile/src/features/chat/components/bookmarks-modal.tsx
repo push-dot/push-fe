@@ -35,7 +35,7 @@ export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
           <Text v="b1" weight="700" color="t2">
             {BOOKMARK_EMPTY}
           </Text>
-          <Button label="채용공고 보기" size="sm" variant="secondary" onPress={() => go(() => (router.back(), router.push('/jobs')))} />
+          <Button label="채용공고 보기" size="pill" variant="secondary" onPress={() => go(() => (router.back(), router.push('/jobs')))} />
         </View>
       ) : (
         <>

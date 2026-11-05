@@ -155,7 +155,7 @@ const Empty = ({ onAdd }: { onAdd: () => void }) => {
       <Text v="b1" weight="700" color="t2" style={{ textAlign: 'center' }}>
         {LINK_EMPTY}
       </Text>
-      <Button label="링크 추가" variant="secondary" size="sm" onPress={onAdd} style={{ marginTop: spacing[3] }} />
+      <Button label="링크 추가" variant="secondary" size="pill" onPress={onAdd} style={{ marginTop: spacing[3] }} />
     </View>
   )
 }

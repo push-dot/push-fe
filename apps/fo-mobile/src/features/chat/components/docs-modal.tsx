@@ -32,8 +32,8 @@ export const DocsModal = () => {
             아직 등록한 서류가 없어요.
           </Text>
           <View style={{ flexDirection: 'row', gap: spacing[2] }}>
-            <Button label="파일 등록" size="sm" onPress={() => upload.mutate()} />
-            <Button label="에이전트로 만들기" size="sm" variant="secondary" onPress={() => router.back()} />
+            <Button label="파일 등록" size="pill" variant="secondary" onPress={() => upload.mutate()} />
+            <Button label="에이전트로 만들기" size="pill" variant="secondary" onPress={() => router.back()} />
           </View>
         </View>
       ) : null}

@@ -378,7 +378,7 @@ const OptionCard = ({ item, on, grid, onPress }: { item: QsItem; on: boolean; gr
         alignItems: 'flex-start',
         gap: spacing[3],
         padding: spacing[4],
-        borderRadius: radius.md,
+        borderRadius: on ? radius.md : radius.card,
         width: grid ? '48.5%' : undefined,
         ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
       }}

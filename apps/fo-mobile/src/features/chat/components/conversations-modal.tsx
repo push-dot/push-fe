@@ -172,7 +172,7 @@ export const ConversationList = ({
           <Text v="b1" weight="700" color="t2" style={{ textAlign: 'center' }}>
             {q ? `“${q}”에 맞는 대화가 없어요` : '아직 대화가 없어요'}
           </Text>
-          {!q ? <Button label="새 대화 시작" variant="secondary" size="sm" onPress={() => startNew(onClose)} style={{ marginTop: spacing[3] }} /> : null}
+          {!q ? <Button label="새 대화 시작" variant="secondary" size="pill" onPress={() => startNew(onClose)} style={{ marginTop: spacing[3] }} /> : null}
         </View>
       ) : null}
       {!q && rows.length > 0 ? (
