@@ -103,10 +103,10 @@ const todo = (id: string, labels: string[], done: number, added = -1, title?: st
   items: labels.map((label, i) => ({ label, state: i < done ? 'done' : i === done || i === added ? 'now' : 'todo', added: i === added })),
 })
 const ask = (approval: Approval) => s(500, { type: 'approval', approval })
-const numbered = (id: string, question: string, items: (string | Choice)[], foot = PICK_HINT): Approval => ({
+const numbered = (id: string, question: string, items: (string | Choice)[], foot = PICK_HINT, selected = [0]): Approval => ({
   id,
   question,
-  sections: [{ kind: 'choices', items: items.map((x) => (typeof x === 'string' ? { label: x } : x)), selected: [0] }],
+  sections: [{ kind: 'choices', items: items.map((x) => (typeof x === 'string' ? { label: x } : x)), selected }],
   foot,
 })
 const done = s(200, { type: 'done', at: 0 })
@@ -451,7 +451,7 @@ const ph2xApproach: Step[] = [
   ask(numbered('ph2x-approach', '어떤 접근 방식으로 진행할까요?', ['병목을 만들게요', '문제를 예방할게요', '그만하기'])),
 ]
 const ph2xLevel: Step[] = [
-  ask(numbered('ph2x-level', '병목 강도를 어느 정도로 할까요?', ['가벼운 제약으로', '중간 제약으로', '강한 제약으로', '그만하기'])),
+  ask(numbered('ph2x-level', '병목 강도를 어느 정도로 할까요?', ['가벼운 제약으로', '중간 제약으로', '강한 제약으로', '그만하기'], PICK_HINT, [1])),
 ]
 const PREVENT = ['성능', '보안', '확장성', '안정성', '유지보수', '데이터 무결성', '그만하기']
 const ph2xPrevent: Step[] = [
@@ -574,6 +574,9 @@ const TOKENS: Record<string, Step[]> = {
   // Jump straight to a phase: the design draws each phase under its own user line.
   analyze: ph1,
   boost: ph3Boost,
+  // ChatPh4Quality draws the quality check right under this line, without the boost card.
+  quality: ph4Quality,
+  '품질 검사로 넘어가기': ph4Quality,
   'ph2x': ph2xApproach,
   '네, 시작해 주세요': ph1,
   '피드백만 받을게요': feedbackOnly,
@@ -666,6 +669,8 @@ const storedTurns: Record<string, ConversationTurn['events']> = {
       seq: 7,
     },
   ],
+  // ChatResume: the draft stopped at its review gate. The gate card itself needs an app card for a stale gate.
+  'c-dotori': [{ type: 'tool', name: 'write_draft', state: 'ok', summary: '초안 쓰기', target: '이력서 v1', resultLine: '1쪽 · 섹션 5개 · 말투 그대로', seq: 1 }],
   'c-career': [
     { type: 'todo', items: PROFILE_TODO.map((text, i) => ({ id: String(i), text, state: 'done' as const })), seq: 1 },
     {
@@ -683,7 +688,7 @@ mock('GET', 'conversations/:id/turns', ({ params, query }) => {
   const c = find(params.id!)
   const events = c && storedTurns[c.id]
   const turns: ConversationTurn[] = events
-    ? [{ jobId: `${c.id}-j`, status: 'DONE', createdAt: c.updatedAt, userMessageId: `${c.id}-u`, assistantMessageId: null, answer: null, events }]
+    ? [{ jobId: `${c.id}-j`, status: 'DONE', createdAt: c.updatedAt, userMessageId: c.id === 'c-dotori' ? null : `${c.id}-u`, assistantMessageId: null, answer: null, events }]
     : []
   return page(turns, query)
 })

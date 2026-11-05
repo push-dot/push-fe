@@ -67,6 +67,9 @@ let profile: Profile = {
   updatedAt: ago(D),
 }
 
+// Followed people, shared with hub.ts. 이하은 starts unfollowed (프로필 상세 board shows 팔로우); me/follows marks everyone it lists.
+export const following = new Set<string>()
+export const myProfile = () => profile
 mock('GET', 'me/profile', () => ({ data: profile }))
 mock('PATCH', 'me/profile', ({ body }) => {
   const { avatarKey, ...patch } = body as Partial<Profile> & { avatarKey?: string }
@@ -425,7 +428,10 @@ const followers = [
   { ...person('u-jihyun', '오지현', '모아페이 결제 플랫폼팀 채용 담당'), following: false },
   { ...follows[2]!, following: true },
 ]
-mock('GET', 'me/follows', ({ query }) => withTotal(follows, query, 18))
+mock('GET', 'me/follows', ({ query }) => {
+  for (const f of follows) following.add(f.userId)
+  return withTotal(follows, query, 18)
+})
 mock('GET', 'me/followers', ({ query }) => withTotal(followers, query, 12))
 
 // 게시글
@@ -612,7 +618,12 @@ const update = (id: string, patch: Partial<Offer>) => {
   return { data: o }
 }
 
-mock('GET', 'me/offers', ({ query }) => page(query.get('box') === 'sent' ? sent : received, query))
+// The 받은 제안 board's first row previews the opening line and 2시간 전; the detail keeps the full message and its date.
+const o1Row = (o: Offer): Offer =>
+  o.id === 'o1'
+    ? { ...o, message: '결제 플랫폼팀 시니어 포지션으로 가볍게 커피챗 어떠세요? 승인 API 개선하신 경험이 딱 저희 팀 고민이에요.', createdAt: ago(2 * H + 10 * 60_000) }
+    : o
+mock('GET', 'me/offers', ({ query }) => page(query.get('box') === 'sent' ? sent : received.map(o1Row), query))
 mock('GET', 'me/offers/:id', ({ params }) => {
   const o = findOffer(params.id!)
   if (!o) return notFound

@@ -5,16 +5,12 @@ tags:
 ---
 - runFlow: ../flows/_login.yaml
 - runFlow: _agent_tab.yaml
+# ChatPh4Quality draws the quality check right under 품질 검사로 넘어가기, with no boost card above, so the token jumps there.
 - runFlow:
     file: _say.yaml
     env:
-      KO: "좋아요, 계속해 주세요"
-      EN: "boost"
-- extendedWaitUntil:
-    visible: "점수를 한 번 더 올릴까요?"
-    timeout: 40000
-- waitForAnimationToEnd
-- tapOn: ".*여기서 멈추기"
+      KO: "품질 검사로 넘어가기"
+      EN: "quality"
 - extendedWaitUntil:
     visible: "추천 수정도 반영할까요?"
     timeout: 30000
@@ -25,6 +21,7 @@ tags:
     visible: "검증을 마쳤어요. 어떤 디자인을 적용할까요?"
     timeout: 30000
 - waitForAnimationToEnd
+- tapOn: "프로필 사진 넣기"
 - takeScreenshot: ChatPh4Design
 - tapOn: "클래식으로 만들기"
 - extendedWaitUntil:

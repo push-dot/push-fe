@@ -2,6 +2,7 @@
 import type { Offer, Profile } from '@push/api-client'
 import { tenureOf } from '../features/hub/utils/filters'
 import { searchHangul } from '@push/shared'
+import { following, myProfile } from './me'
 import { mock, page } from './server'
 
 const base = (p: Pick<Profile, 'userId' | 'displayName' | 'headline' | 'tenureYears' | 'careerStatus'> & Partial<Profile>): Profile => ({
@@ -48,7 +49,6 @@ export const profiles: Profile[] = [
   base({ userId: 'u12', displayName: '문예린', headline: 'ML 모델을 서비스로 옮기는 엔지니어', jobCategory: 'data', tenureYears: 1, careerStatus: 'seeking', skills: ['PyTorch'] }),
 ]
 
-const following = new Set<string>(['u2'])
 const offers = new Map<string, Offer>()
 const sentOffer = (to: Profile): Offer => ({
   id: `o-${to.userId}`,
@@ -86,6 +86,7 @@ mock('GET', 'profiles', ({ query }) => {
 })
 
 mock('GET', 'profiles/:userId', ({ params }) => {
+  if (params.userId === 'me') return { data: { ...myProfile(), following: false, offered: false } }
   const p = profiles.find((x) => x.userId === params.userId)
   if (!p) return notFound
   return { data: { ...p, following: following.has(p.userId), offered: offers.has(p.userId) } }

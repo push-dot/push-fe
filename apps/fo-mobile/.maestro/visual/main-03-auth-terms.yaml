@@ -11,4 +11,8 @@ tags:
     visible: "서비스 이용에 동의해 주세요"
     timeout: 15000
 - waitForAnimationToEnd
+- tapOn: ".*만 14세 이상이에요"
+- tapOn: ".*서비스 이용약관"
+- tapOn: ".*개인정보 수집·이용"
+- waitForAnimationToEnd
 - takeScreenshot: Terms

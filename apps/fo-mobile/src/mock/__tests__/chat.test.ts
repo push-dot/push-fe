@@ -36,4 +36,22 @@ describe('chat mock', () => {
     const boost = await run('t-boost', { text: '점수를 올려 주세요', intent: 'boost' })
     expect(boost.some((e) => e.type === 'approval' && e.approval.id === 'ph3-boost')).toBe(true)
   })
+
+  it('jumps to the quality check without the boost card', async () => {
+    const events = await run('t-quality', { text: '품질 검사로 넘어가기' })
+    expect(types(events)).not.toContain('fit')
+    expect(events.some((e) => e.type === 'approval' && e.approval.id === 'ph4-quality')).toBe(true)
+  })
+
+  it('selects 중간 제약으로 in the 병목 강도 gate', async () => {
+    const events = await run('t-level', { text: 'ph2x' })
+    const gate = (await run('t-level', { answer: { approvalId: 'ph2x-approach', choice: 0 } })).find((e) => e.type === 'approval')
+    expect(events).not.toHaveLength(0)
+    expect(gate).toMatchObject({ approval: { id: 'ph2x-level', sections: [{ selected: [1] }] } })
+  })
+
+  it('serves the stopped draft for 도토리증권 without a first user bubble', async () => {
+    const turns = (await call('GET', 'conversations/c-dotori/turns')).data as { userMessageId: string | null; events: { type: string }[] }[]
+    expect(turns[0]).toMatchObject({ userMessageId: null, events: [{ type: 'tool' }] })
+  })
 })

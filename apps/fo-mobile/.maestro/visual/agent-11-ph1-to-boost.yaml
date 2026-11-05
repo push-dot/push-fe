@@ -20,7 +20,18 @@ tags:
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: ChatPh1Feedback
-- tapOn: ".*반영해서 수정할게요"
+# ChatPh2 draws the strategy gate right under 네, 맞춰서 고쳐 주세요, so it takes its own run (the feedback detour adds a bubble).
+- runFlow: _back_home.yaml
+- runFlow:
+    file: _say.yaml
+    env:
+      KO: "네, 시작해 주세요"
+      EN: "analyze"
+- extendedWaitUntil:
+    visible: "이 공고에 맞춰 이력서를 고칠까요?"
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn: ".*맞춰서 고쳐 주세요"
 - extendedWaitUntil:
     visible: "이 전략대로 초안을 쓸까요?"
     timeout: 30000
@@ -31,15 +42,18 @@ tags:
     visible: ".*경력 섹션을 쓰는 중.*"
     timeout: 30000
 - waitForAnimationToEnd
+- runFlow: _chat_bottom.yaml
 - takeScreenshot: ChatPh3
 - extendedWaitUntil:
     visible: "첫 번째 초안.v1.이에요.*"
     timeout: 40000
 - waitForAnimationToEnd
+- runFlow: _chat_bottom.yaml
 - takeScreenshot: ChatPh3Review
 - tapOn: ".*검토할게요"
 - extendedWaitUntil:
     visible: "점수를 한 번 더 올릴까요?"
     timeout: 40000
 - waitForAnimationToEnd
+- runFlow: _chat_bottom.yaml
 - takeScreenshot: ChatPh3Boost

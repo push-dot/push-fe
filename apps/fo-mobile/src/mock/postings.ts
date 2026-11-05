@@ -22,7 +22,7 @@ const inDays = (n: number) => new Date(Date.now() + n * DAY).toISOString().slice
 // Sample data from the Claude Design boards (홈, 채용공고, 채용공고 상세).
 export const postings: Posting[] = [
   base({ id: 'p1', company: '모아페이', title: '백엔드 엔지니어 (Kotlin·Spring)', location: '서울 강남구', careerMin: 4, careerMax: 6, skills: ['Kotlin', 'Spring Boot', 'JPA', 'Kafka'], deadline: inDays(13), bookmarked: true, sourceUrl: 'https://careers.moapay.kr/jobs/1182' }),
-  base({ id: 'p2', company: '파도AI', title: '데이터 분석가', jobCategory: 'data', location: '서울 서초구', careerMin: 0, skills: ['SQL', 'Python'], deadline: inDays(2), bookmarked: true }),
+  base({ id: 'p2', company: '파도AI', title: '데이터 분석가', jobCategory: 'data', location: '서울 서초구', careerMin: 0, skills: ['SQL', 'Python'], deadline: inDays(2) }),
   base({ id: 'p3', company: '도토리증권', title: '서버 개발자 (Go)', location: '서울 영등포구', careerMin: 4, careerMax: 6, skills: ['Go', 'gRPC'], deadline: inDays(3) }),
   base({ id: 'p4', company: '누리클라우드', title: '프론트엔드 개발자 (React)', location: '서울 마포구', careerMin: 1, careerMax: 3, skills: ['React', 'TypeScript'], deadline: inDays(21) }),
   base({ id: 'p5', company: '그린티켓', title: '그로스 마케터', jobCategory: 'marketing', location: '서울 중구', careerMin: 1, careerMax: 3, deadline: inDays(4), createdAt: '2026-10-18T09:00:00Z' }),
@@ -147,6 +147,7 @@ mock('GET', 'postings/:id', ({ params }) => {
 })
 
 // Newest bookmark first, like the 허브 제안 sheet lists them.
+// shortcut: p2 is in the 북마크 board's list but its card is unmarked on the home and list boards, so only this list knows it.
 const bookmarkOrder = ['p1', 'p7', 'p8', 'p2']
 const setBookmark = (id: string, on: boolean) => {
   const p = postings.find((x) => x.id === id)
@@ -157,12 +158,13 @@ const setBookmark = (id: string, on: boolean) => {
 }
 mock('POST', 'postings/:id/bookmark', ({ params }) => setBookmark(params.id!, true))
 mock('DELETE', 'postings/:id/bookmark', ({ params }) => setBookmark(params.id!, false))
-mock('GET', 'me/bookmarks', ({ query }) =>
-  page(
-    postings.filter((p) => p.bookmarked).sort((a, b) => bookmarkOrder.indexOf(a.id) - bookmarkOrder.indexOf(b.id)),
-    query,
-  ),
-)
+// shortcut: the 허브 제안 sheet (the only limit=10 caller) draws the title without its stack suffix; drop when the sheet trims it.
+const SHEET_TITLES: Record<string, string> = { p1: '백엔드 엔지니어' }
+mock('GET', 'me/bookmarks', ({ query }) => {
+  const sheet = query.get('limit') === '10'
+  const list = bookmarkOrder.flatMap((id) => postings.find((p) => p.id === id) ?? []).map((p) => ({ ...p, bookmarked: true, title: (sheet && SHEET_TITLES[p.id]) || p.title }))
+  return page(list, query)
+})
 mock('POST', 'postings/:id/apply', ({ params }) => {
   const p = postings.find((x) => x.id === params.id)
   if (p) p.applied = true

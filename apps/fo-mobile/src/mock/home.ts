@@ -117,6 +117,8 @@ mock('POST', 'me/notifications/read', ({ body }) => {
   const b = (body ?? {}) as { all?: boolean; ids?: string[] }
   const now = new Date().toISOString()
   for (const n of notifications) if (!n.readAt && (b.all || b.ids?.includes(n.id))) n.readAt = now
+  // shortcut: NotificationsStates draws the box after 모두 읽음 with no 오늘 group, so reading all drops today's rows (a server would keep them); revisit if a flow reads all and expects them.
+  if (b.all) notifications.splice(0, notifications.length, ...notifications.filter((n) => n.createdAt < new Date(startOfToday).toISOString()))
 })
 
 // Phone sign-in. The code's tail picks the outcome so the boards' error states can be reached: 482111 wrong, 482222 expired,

@@ -62,4 +62,11 @@ describe('mock data drawn on the design boards', () => {
     expect((await verify('482333')).error?.code).toBe('RATE_LIMITED')
     expect((await verify('482915')).data?.accessToken).toBeTruthy()
   })
+
+  it('leaves no 오늘 notifications after 모두 읽음', async () => {
+    const { mockFetch } = await import('../server')
+    await mockFetch('http://x/api/v1/me/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ all: true }) })
+    const list = await fetchJson<{ data: { id: string }[] }>('me/notifications')
+    expect(list.data.map((n) => n.id)).toEqual(['n5', 'n6', 'n7', 'n8'])
+  })
 })

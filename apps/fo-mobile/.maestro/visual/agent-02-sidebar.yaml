@@ -5,6 +5,16 @@ tags:
 ---
 - runFlow: ../flows/_login.yaml
 - runFlow: _agent_tab.yaml
+# The design draws the drawer over an open thread, so its row is the highlighted current one.
+- tapOn: "대화 목록 열기"
+- extendedWaitUntil:
+    visible: ".*모아페이 백엔드 이력서.*"
+    timeout: 10000
+- tapOn: ".*모아페이 백엔드 이력서.*"
+- extendedWaitUntil:
+    notVisible: "공고 링크로 맞추기"
+    timeout: 10000
+- waitForAnimationToEnd
 - tapOn: "대화 목록 열기"
 - extendedWaitUntil:
     visible: "최근 대화"
