@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native'
 import { monthDay } from '@push/shared'
 import { router } from 'expo-router'
 import { GlassButton, Text } from '@/shared/components'
-import { radius, spacing, useColors, type Colors } from '../../../theme'
+import { radius, spacing, tile, useColors, type Colors } from '../../../theme'
 import { useCalendarEvents } from '../api/hooks'
 import { EVENT_TYPES } from '../constants'
 import type { CalendarEvent, CalendarEventType } from '../types'
@@ -11,12 +11,12 @@ import { clock, dayTitle, dday, monthGrid, sameDay, toDayParam } from '../utils'
 
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']
-const EVENT_COLOR: Record<CalendarEventType, keyof Colors> = {
-  INTERVIEW: 'ac',
-  DEADLINE: 'red',
-  FOLLOW_UP: 'green',
-  COFFEE_CHAT: 'orange',
-  CUSTOM: 't4',
+const EVENT_COLOR: Record<CalendarEventType, (c: Colors) => string> = {
+  INTERVIEW: (c) => c.ac,
+  DEADLINE: (c) => c.red,
+  FOLLOW_UP: () => tile.sky,
+  COFFEE_CHAT: (c) => c.orange,
+  CUSTOM: (c) => c.t4,
 }
 const typeOf = (k: CalendarEventType) => ({ ...EVENT_TYPES.find((t) => t.key === k)!, color: EVENT_COLOR[k] })
 
@@ -129,7 +129,7 @@ const CalendarView = () => {
                       width: 5,
                       height: 5,
                       borderRadius: radius.pill,
-                      backgroundColor: c[typeOf(t).color],
+                      backgroundColor: typeOf(t).color(c),
                     }}
                   />
                 ))}
@@ -140,7 +140,7 @@ const CalendarView = () => {
       </View>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing[3], rowGap: spacing[1], paddingBottom: spacing[3], paddingHorizontal: spacing[5] }}>
-        {[...EVENT_TYPES.map((t) => ({ label: t.label, color: c[EVENT_COLOR[t.key]] })), { label: 'Google 캘린더', color: c.green }].map((l) => (
+        {[...EVENT_TYPES.map((t) => ({ label: t.label, color: EVENT_COLOR[t.key](c) })), { label: 'Google 캘린더', color: c.green }].map((l) => (
           <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[1] }}>
             <View style={{ width: 6, height: 6, borderRadius: radius.pill, backgroundColor: l.color }} />
             <Text v="c2" weight="600" color="t3">
@@ -200,7 +200,7 @@ const CalendarView = () => {
                   width: 4,
                   alignSelf: 'stretch',
                   borderRadius: radius.pill,
-                  backgroundColor: c[t.color],
+                  backgroundColor: t.color(c),
                 }}
               />
               <View style={{ flex: 1, minWidth: 0 }}>

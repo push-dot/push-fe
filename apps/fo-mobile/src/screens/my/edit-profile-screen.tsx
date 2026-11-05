@@ -678,18 +678,14 @@ const EditSkills = ({ p }: { p: Profile }) => {
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] }}>
           {skills.map((s, i) => (
-            <Pressable
+            <Chip
               key={s}
-              accessibilityRole="button"
-              accessibilityLabel={`${s} 삭제`}
-              accessibilityHint="길게 누르면 앞으로 옮겨요"
+              label={s}
+              on
+              removable
               onPress={() => setSkills((xs) => xs.filter((x) => x !== s))}
               onLongPress={() => moveEarlier(i)}
-            >
-              <View pointerEvents="none">
-                <Chip label={s} on removable />
-              </View>
-            </Pressable>
+            />
           ))}
         </View>
         {/* shortcut: long press moves a chip one place earlier (no drag library installed). */}

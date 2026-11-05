@@ -1,12 +1,13 @@
 import type { Settings, Tone } from '@push/api-client'
 import { tile } from '@push/design-system'
+import { TOAST_MS } from '@/shared/components/constants'
 import type { CalendarEventType } from './types'
 
 export const MIN = 60_000
 export const HOUR = 60 * MIN
 export const DAY = 24 * HOUR
 export const SHEET_SWAP_MS = 400
-export const UNDO_MS = 5000
+export const UNDO_MS = TOAST_MS.action
 export const PUSH_CARD_WIDTH = 242
 export const NEXT_EVENT_DAYS = 90
 export const FOLLOW_PREVIEW = 5
