@@ -10,10 +10,11 @@ import FilterSkills from './filter-skills'
 type Props = {
   kind: FilterKey
   draft: Filters
+  trending: string[]
   onChange: (filters: Filters) => void
 }
 
-const FilterSheetBody = ({ kind, draft, onChange }: Props) => {
+const FilterSheetBody = ({ kind, draft, trending, onChange }: Props) => {
   const set = (list: Filters[FilterKey]) => onChange({ ...draft, [kind]: list })
   return (
     <View style={{ gap: 14 }}>
@@ -34,7 +35,7 @@ const FilterSheetBody = ({ kind, draft, onChange }: Props) => {
       ) : kind === 'employmentType' ? (
         <FilterOptions options={EMPLOYMENT_TYPES} selected={draft.employmentType} onToggle={(k) => set(toggle(draft.employmentType, k))} />
       ) : kind === 'skills' ? (
-        <FilterSkills selected={draft.skills} onToggle={(s) => set(toggle(draft.skills, s))} />
+        <FilterSkills selected={draft.skills} trending={trending} onToggle={(s) => set(toggle(draft.skills, s))} />
       ) : (
         <FilterRegions draft={draft} onToggle={(v) => set(toggleRegion(draft.location, v))} />
       )}

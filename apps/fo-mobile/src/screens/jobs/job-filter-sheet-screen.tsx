@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { FILTER_KEYS, FilterSheetBody, LONG_FILTER_KINDS, formatCount, useJobListStore, usePostingCount, type FilterKey } from '@/features/jobs'
+import { useTrending } from '@/features/search'
 import { Sheet } from '@/shared/components'
 
 const kindOf = (value: string | string[] | undefined) => {
@@ -16,6 +17,7 @@ const JobFilterSheetScreen = () => {
   const setFilters = useJobListStore((s) => s.setFilters)
   const count = usePostingCount(draft)
   const total = count.data?.page.total
+  const trending = useTrending().data?.skills.map((s) => s.id) ?? []
 
   useEffect(() => {
     if (!kind) router.back()
@@ -23,7 +25,7 @@ const JobFilterSheetScreen = () => {
 
   if (!kind) return null
 
-  const body = <FilterSheetBody kind={kind} draft={draft} onChange={setDraft} />
+  const body = <FilterSheetBody kind={kind} draft={draft} trending={trending} onChange={setDraft} />
   return (
     <Sheet
       action={{
