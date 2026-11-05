@@ -10,7 +10,7 @@ const ago = (min: number) => new Date(Date.now() - min * 60_000).toISOString()
 
 // ---------- conversations ----------
 
-// `at` pins the date the design draws ("10월 16일"); otherwise it is `min` minutes ago.
+// `at` pins a date; otherwise it is `min` minutes ago.
 const conv = (id: string, title: string, min: number, lastLine: string, status: ConversationRow['status'] = null, at?: string): ConversationRow => ({
   id,
   revision: 1,
@@ -28,8 +28,9 @@ const conversations: ConversationRow[] = [
   conv('c-dotori', '도토리증권 공고 갭 분석', 60, '경력 섹션 고치는 중', 'RUNNING'),
   // ChatListPress draws this row pinned.
   { ...conv('c-career', '경력기술서 다듬기', 60 * 30, 'PDF로 저장했어요 · 적합도 8.2'), pinned: true },
-  conv('c-pado', '파도AI 자기소개서 초안', 0, '초안 v1을 만들었어요', null, '2026-10-16T03:00:00.000Z'),
-  conv('c-nuri', '누리클라우드 자기소개서', 0, '지원 동기 문단을 줄였어요', null, '2026-10-12T03:00:00.000Z'),
+  // The design lists these two under 이번 주, so keep them inside the last six days whatever day the tour runs.
+  conv('c-pado', '파도AI 자기소개서 초안', 3 * 24 * 60, '초안 v1을 만들었어요'),
+  conv('c-nuri', '누리클라우드 자기소개서', 5 * 24 * 60, '지원 동기 문단을 줄였어요'),
   conv('a-toss', '토스 백엔드 이력서', 0, '적합도 7.4 · PDF로 저장했어요', null, '2026-09-28T03:00:00.000Z'),
   conv('a-line', '라인 커버레터 초안', 0, '초안 v2를 만들었어요', null, '2026-09-14T03:00:00.000Z'),
   conv('a-baemin', '배민 공고 갭 분석', 0, '경력 섹션을 고쳤어요', null, '2026-08-30T03:00:00.000Z'),
@@ -49,6 +50,10 @@ mock('POST', 'conversations', ({ body }) => {
   const c = conv(`c-${Date.now()}`, b.title.slice(0, 300), 0, '')
   conversations.push(c)
   return { status: 201, body: { data: c } }
+})
+mock('GET', 'conversations/:id', ({ params }) => {
+  const c = find(params.id!)
+  return c ? { data: c } : { status: 404, body: { error: { code: 'NOT_FOUND', message: 'conversation' } } }
 })
 mock('PATCH', 'conversations/:id', ({ params, body }) => {
   const c = find(params.id!)
@@ -265,7 +270,7 @@ const ph0Input: Step[] = [
     id: 'ph0-input',
     question: '어떤 산출물을 만들까요?',
     sections: [
-      { kind: 'choices', items: [{ label: '이력서' }, { label: '포트폴리오' }, { label: '자기소개서' }, { label: '그만하기' }], selected: [0] },
+      { kind: 'chips', multi: true, options: ['이력서', '포트폴리오', '자기소개서'], selected: [0] },
       {
         kind: 'rows',
         title: '가져올 자료',
@@ -275,8 +280,9 @@ const ph0Input: Step[] = [
           { tag: 'link', title: 'github.com/seojun-kim', sub: '이력서에서 찾았어요', action: 'change' },
         ],
       },
-      { kind: 'chips', title: '어떤 말투로 쓸까요?', options: ['전문적으로', '자신 있게', '짧게', '기술 중심으로', '협업 중심으로', '원래 말투로', '그만하기'], selected: [0] },
+      { kind: 'chips', title: '어떤 말투로 쓸까요?', options: ['전문적으로', '자신 있게', '짧게', '기술 중심으로', '협업 중심으로', '원래 말투로'], selected: [5] },
     ],
+    secondary: '그만하기',
     submit: '이대로 진행',
     answer: '1번, 지금 이력서로 할게요',
   }),
@@ -331,9 +337,9 @@ const feedbackOnly: Step[] = [
   s(300, {
     type: 'plan', id: 'fbplan', title: '', meta: '',
     rows: [
-      { tag: '키워드', tone: 'ac', label: 'Kafka, 정산 배치가 없어요', note: '경험 문장에 직접 넣어 주세요' },
+      { tag: '키워드', tone: 'orange', label: 'Kafka, 정산 배치가 없어요', note: '경험 문장에 직접 넣어 주세요' },
       { tag: '도메인', tone: 'orange', label: '정산 경험이 약해 보여요', note: 'payment-retry-lab을 정산 맥락으로 써 주세요' },
-      { tag: '성과', tone: 'green', label: '숫자가 부족해요', note: '승인 API 개선 결과를 수치로 보여 주세요' },
+      { tag: '성과', tone: 'grey', label: '숫자가 부족해요', note: '승인 API 개선 결과를 수치로 보여 주세요' },
     ],
     keywords: [],
   }),
@@ -465,8 +471,6 @@ const ph2xBlueprints: Step[] = [
   s(200, status('기획하는 중…')),
   s(300, tool('check', '방향 검증', '5개 기준', 'run', '공고 연관성을 보는 중')),
   s(1200, tool('check', '방향 검증', '5개 기준', 'ok', '공고 연관성·임팩트·실현 가능성 모두 통과')),
-  s(300, tool('bp', '기획서 만들기', '4개', 'run', '기획서를 쓰는 중')),
-  s(1500, tool('bp', '기획서 만들기', '4개', 'ok', '공고 스택과 70% 이상 일치')),
   s(300, {
     type: 'plan', id: 'bplan', title: '프로젝트 기획서', meta: '4개',
     rows: [
@@ -540,7 +544,7 @@ const verifyFail: Step[] = [
   s(200, status('검증하는 중…')),
   s(300, tool('check', '방향 검증', '5개 기준', 'run', '공고 연관성을 보는 중')),
   s(1200, { type: 'tool', id: 'check', action: '방향 검증', target: '5개 기준', state: 'err' }),
-  ask(numbered('ph2x-verify', '검증을 통과하지 못했어요. 다른 방향으로 다시 고를까요?', ['다시 고르기', '그만하기'])),
+  ask({ ...numbered('ph2x-verify', '검증을 통과하지 못했어요. 다른 방향으로 다시 고를까요?', ['다시 고르기', '그만하기']), foot: undefined }),
 ]
 const autoPick: Step[] = [
   s(300, tool('jd', '공고 읽기', MOA, 'ok', '필수 5개 · 우대 3개', JD_LINES)),
@@ -669,8 +673,16 @@ const storedTurns: Record<string, ConversationTurn['events']> = {
       seq: 7,
     },
   ],
-  // ChatResume: the draft stopped at its review gate. The gate card itself needs an app card for a stale gate.
-  'c-dotori': [{ type: 'tool', name: 'write_draft', state: 'ok', summary: '초안 쓰기', target: '이력서 v1', resultLine: '1쪽 · 섹션 5개 · 말투 그대로', seq: 1 }],
+  // ChatResume: the draft stopped at its review gate, which expired unanswered.
+  'c-dotori': [
+    { type: 'tool', name: 'write_draft', state: 'ok', summary: '초안 쓰기', target: '이력서 v1', resultLine: '1쪽 · 섹션 5개 · 말투 그대로', seq: 1 },
+    {
+      type: 'choice', id: 'ph3-review', title: '첫 번째 초안(v1)이에요. 이대로 검토할까요?',
+      options: [{ id: 'review', label: '검토할게요' }, { id: 'stop', label: '그만하기' }],
+      resolution: { status: 'EXPIRED', optionId: null },
+      seq: 2,
+    },
+  ],
   'c-career': [
     { type: 'todo', items: PROFILE_TODO.map((text, i) => ({ id: String(i), text, state: 'done' as const })), seq: 1 },
     {
