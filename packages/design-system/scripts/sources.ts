@@ -18,6 +18,7 @@ export const outputs = () => {
   const model = buildTokens(
     JSON.parse(readSource(SOURCES.designSystem)),
     JSON.parse(readSource(SOURCES.app)),
+    JSON.parse(readSource(SOURCES.artboard)),
   )
   return {
     [OUTPUTS.tokens]: renderTokens(model),
