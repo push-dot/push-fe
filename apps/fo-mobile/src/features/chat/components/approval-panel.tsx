@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { radius, useColors } from '../../../theme'
-import { Badge, Button, Glass, Icon, Text } from '@/shared/components'
+import { radius, selectedRing, useColors } from '../../../theme'
+import { Badge, Button, Glass, Icon, Text, hitSlopTo } from '@/shared/components'
 import { SPRING } from '../constants'
 import { useReduceMotion } from '../hooks'
 import type { Approval, ApprovalSection, Choice } from '../types'
@@ -261,7 +261,7 @@ const ChoiceRow = ({ n, choice, on, square, bare, onPress }: { n?: number; choic
         paddingHorizontal: 14,
         paddingVertical: two ? 12 : 0,
         borderRadius: 14,
-        backgroundColor: on ? c.acSoft : 'transparent',
+        ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
         transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
     >
@@ -313,7 +313,7 @@ const MiniChip = ({ label, on, onPress }: { label: string; on?: boolean; onPress
       accessibilityRole="button"
       accessibilityState={{ selected: !!on }}
       onPress={onPress}
-      hitSlop={8}
+      hitSlop={hitSlopTo(28)}
       style={{ height: 28, paddingHorizontal: 10, borderRadius: 14, justifyContent: 'center', backgroundColor: on ? c.t1 : c.fill }}
     >
       <Text v="c1" weight="600" style={{ color: on ? c.bg : c.t2 }}>
@@ -333,7 +333,7 @@ const Template = ({ label, recommended, on, variant, onPress }: { label: string;
       accessibilityState={{ selected: on }}
       accessibilityLabel={recommended ? `${label}, 추천` : label}
       onPress={onPress}
-      style={{ flex: 1, gap: 8, padding: 8, borderRadius: radius.md, backgroundColor: on ? c.acSoft : 'transparent', borderWidth: 2, borderColor: on ? c.ac : 'transparent' }}
+      style={{ flex: 1, gap: 8, padding: 8, borderRadius: radius.md, ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
     >
       <View style={{ aspectRatio: 0.75, borderRadius: 6, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, padding: 6, gap: 4 }}>
         {variant === 1 ? <View style={{ height: 10, borderRadius: 2, backgroundColor: c.acSoft }} /> : null}

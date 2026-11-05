@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
-import { useColors } from '../../../theme'
+import { selectedRing, useColors } from '../../../theme'
 import { Badge, BottomSheet, Button, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
@@ -383,9 +383,7 @@ const OptionCard = ({ item, on, grid, onPress }: { item: QsItem; on: boolean; gr
         padding: 14,
         borderRadius: 16,
         width: grid ? '48.5%' : undefined,
-        backgroundColor: on ? c.acSoft : c.bg2,
-        borderWidth: 2,
-        borderColor: on ? c.ac : 'transparent',
+        ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
       }}
     >
       <Pick on={on} square />
@@ -448,7 +446,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
               accessibilityRole="radio"
               accessibilityState={{ selected: on }}
               onPress={() => setTask(i)}
-              style={{ width: '48.5%', gap: 6, padding: 14, borderRadius: 16, backgroundColor: on ? c.acSoft : c.bg2, borderWidth: 2, borderColor: on ? c.ac : 'transparent' }}
+              style={{ width: '48.5%', gap: 6, padding: 14, borderRadius: 16, ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
             >
               <Icon name={t.icon} size={20} color={on ? 'acText' : 't2'} />
               <Text v="b2" weight="700">
