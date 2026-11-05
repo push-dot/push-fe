@@ -7,7 +7,8 @@ name: 마이 → 내 활동 → 지원한 공고 상세
     visible: "김서준"
     timeout: 10000
 - tapOn: "내 활동"
-- tapOn: "백엔드 엔지니어 \\(Kotlin·Spring\\)"
+# The row's accessibility label is "<company> <title> <stage>".
+- tapOn: ".*백엔드 엔지니어 \\(Kotlin·Spring\\).*"
 - extendedWaitUntil:
     visible: "면접 진행 중"
     timeout: 10000
