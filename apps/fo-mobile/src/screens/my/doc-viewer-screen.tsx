@@ -2,9 +2,7 @@ import { router } from 'expo-router'
 import { ScrollView, View } from 'react-native'
 import { useStartChat } from '@/features/chat'
 import {
-  DocMenu,
   FIX_DOC,
-  MoreButton,
   PREVIEW_HEADINGS,
   useResumeDraft,
   useSource,
@@ -90,7 +88,7 @@ const DocViewerScreen = ({ id }: { id: string }) => {
   const start = useStartChat()
   const doc = useSource(id)
   const draft = useResumeDraft(id)
-  const undo = useUndoRemove(() => router.back())
+  useUndoRemove(() => router.back())
   const s = doc.data
   const d = draft.data
 
@@ -100,23 +98,13 @@ const DocViewerScreen = ({ id }: { id: string }) => {
         title={s?.fileName ?? '서류 보기'}
         onBack={() => router.back()}
         right={
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
-            <GlassButton
-              actions={[
-                // shortcut: Source has no download URL yet, so 공유 shares the file name; share the file once push-be returns a URL.
-                {
-                  icon: 'share',
-                  label: '공유',
-                  onPress: () => s && void shareMessage({ message: s.fileName }),
-                },
-              ]}
-            />
-            {s ? (
-              <DocMenu doc={s} viewing onDelete={() => undo.ask(s)}>
-                <MoreButton />
-              </DocMenu>
-            ) : null}
-          </View>
+          <GlassButton
+            actions={[
+              // shortcut: Source has no download URL yet, so 공유 shares the file name; share the file once push-be returns a URL.
+              { icon: 'share', label: '공유', onPress: () => s && void shareMessage({ message: s.fileName }) },
+              { icon: 'menu', label: '더 보기', onPress: () => router.push({ pathname: '/docs/[id]/more', params: { id, viewing: '1' } }) },
+            ]}
+          />
         }
       />
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>

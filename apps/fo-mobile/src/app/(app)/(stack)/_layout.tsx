@@ -48,6 +48,7 @@ const SignedInStack = () => {
       <Stack.Screen name="settings/pick" options={sheetOptions(c)} />
       <Stack.Screen name="docs/import" options={sheetOptions(c)} />
       <Stack.Screen name="docs/[id]/to-profile" options={sheetOptions(c)} />
+      <Stack.Screen name="docs/[id]/more" options={sheetOptions(c)} />
       <Stack.Screen name="offers/[id]/reply" options={sheetOptions(c)} />
     </Stack>
   )

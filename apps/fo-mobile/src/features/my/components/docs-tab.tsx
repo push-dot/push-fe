@@ -12,7 +12,6 @@ import { pickResume, useUndoRemove } from '../hooks'
 import { useDocImport } from '../stores'
 import type { HubDocument, MySource } from '../types'
 import { PUSH_DOCS_TITLE, pushCardLines, pushSeeAll, RETRY_LABEL, SIZE_LIMIT, UPLOADS_TITLE } from '../utils'
-import DocMenu from './doc-menu'
 import FitRing from './fit-ring'
 import ListTitle from './list-title'
 import Row from './row'
@@ -25,7 +24,7 @@ const EMPTY_BOTTOM = 140
 
 const openChat = () => router.push('/(app)/(stack)/(tabs)/(chat)/chat')
 
-const DocRow = ({ doc, onDelete }: { doc: MySource; onDelete: () => void }) => {
+const DocRow = ({ doc }: { doc: MySource }) => {
   const qc = useQueryClient()
   const job = useIngestJob(doc.jobId).data
   const reading = !!doc.jobId && (!job || !isJobSettled(job))
@@ -56,11 +55,14 @@ const DocRow = ({ doc, onDelete }: { doc: MySource; onDelete: () => void }) => {
         </View>
       </View>
       {failed ? <Button label={RETRY_LABEL} icon="retry" variant="secondary" size="sm" onPress={retry} /> : null}
-      <DocMenu doc={doc} onDelete={onDelete}>
-        <View style={{ width: HIT, height: HIT, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="menu" size={20} color="t3" />
-        </View>
-      </DocMenu>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${doc.fileName} 더 보기`}
+        onPress={() => router.push(`/docs/${doc.id}/more`)}
+        style={{ width: HIT, height: HIT, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Icon name="menu" size={20} color="t3" />
+      </Pressable>
     </Row>
   )
 }
@@ -110,7 +112,7 @@ const DocsTab = () => {
   const { data, isLoading } = useSources()
   const push = useDocuments()
   const undo = useUndoRemove()
-  const { upload, start, cancel } = useUpload(() => showToast({ message: '이력서 파일을 올렸어요' }))
+  const { upload, start, cancel } = useUpload(() => showToast({ message: '이력서 파일을 올렸어요', tone: 'success' }))
   const imported = useDocImport((st) => st.file)
   useEffect(() => {
     if (!imported) return
@@ -221,7 +223,7 @@ const DocsTab = () => {
           </Row>
         ) : null}
         {docs.map((d) => (
-          <DocRow key={d.id} doc={d} onDelete={() => undo.ask(d)} />
+          <DocRow key={d.id} doc={d} />
         ))}
         <View style={{ paddingTop: spacing[5], paddingHorizontal: spacing[5] }}>
           <Button
