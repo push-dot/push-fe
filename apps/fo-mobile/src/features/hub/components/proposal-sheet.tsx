@@ -59,7 +59,7 @@ const ProposalSheet = ({ userId, name, subtitle, message, postingId, postings, e
           <Text v="b2" weight="700">
             함께 보낼 공고 (선택)
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -spacing[4] }} contentContainerStyle={{ gap: spacing[2], paddingRight: spacing[4] }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -spacing[spacing[1]] }} contentContainerStyle={{ gap: spacing[2], paddingRight: spacing[spacing[1]] }}>
             {postings.map((p) => (
               <Chip
                 key={p.id}

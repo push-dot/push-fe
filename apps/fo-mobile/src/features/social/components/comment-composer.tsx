@@ -57,9 +57,9 @@ const CommentComposer = ({
   return (
     <View
       style={{
-        paddingHorizontal: ios ? spacing[4] : spacing[3],
-        paddingTop: ios ? 6 : 8,
-        paddingBottom: ios ? Math.max(insets.bottom - 6, 8) : insets.bottom + 8,
+        paddingHorizontal: ios ? spacing[spacing[1]] : spacing[3],
+        paddingTop: ios ? 6 : spacing[2],
+        paddingBottom: ios ? Math.max(insets.bottom - 6, spacing[2]) : insets.bottom + spacing[2],
         backgroundColor: ios ? 'transparent' : c.bg,
         gap: spacing[2],
       }}

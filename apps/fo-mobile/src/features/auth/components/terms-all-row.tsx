@@ -11,7 +11,7 @@ const TermsAllRow = ({ checked, onPress }: { checked: boolean; onPress: () => vo
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
       onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[4], borderRadius: FIELD_RADIUS, backgroundColor: c.bg2 }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[spacing[1]], borderRadius: FIELD_RADIUS, backgroundColor: c.bg2 }}
     >
       <TermCheckbox checked={checked} size={26} />
       <Text v="b1" weight="700">

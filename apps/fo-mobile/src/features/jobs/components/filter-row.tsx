@@ -9,7 +9,7 @@ const FilterRow = ({ label, count, on, check, onPress }: { label: string; count:
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], height: 46, paddingHorizontal: spacing[4], borderRadius: radius.sm, backgroundColor: on ? c.acSoft : undefined }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], height: 46, paddingHorizontal: spacing[spacing[1]], borderRadius: radius.sm, backgroundColor: on ? c.acSoft : undefined }}
     >
       <Text v="b1" weight={on ? '700' : '400'} color={on ? 'acText' : 't1'} style={{ flex: 1 }} numberOfLines={1}>
         {label}

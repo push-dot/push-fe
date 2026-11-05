@@ -172,7 +172,7 @@ const OtpScreen = () => {
             }}
           />
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], marginTop: spacing[4] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], marginTop: spacing[spacing[1]] }}>
           {status}
           <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
             <Text v="c1" weight="600" color="t2">

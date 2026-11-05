@@ -8,7 +8,7 @@ const SearchBar = ({ value, onChange, onSubmit }: { value: string; onChange: (v:
   const c = useColors()
   const insets = useSafeAreaInsets()
   const field = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], minHeight: 44, paddingHorizontal: spacing[4] }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], minHeight: 44, paddingHorizontal: spacing[spacing[1]] }}>
       <Icon name="search" size={18} color="t3" />
       <TextInput
         autoFocus

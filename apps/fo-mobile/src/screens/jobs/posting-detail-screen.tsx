@@ -40,7 +40,7 @@ const PostingDetailScreen = ({ id }: { id: string }) => {
           flexDirection: 'row',
           gap: spacing[2],
           paddingTop: 14,
-          paddingHorizontal: spacing[4],
+          paddingHorizontal: spacing[spacing[1]],
           paddingBottom: barBottom,
           backgroundColor: c.bg,
           borderTopWidth: android ? 1 : 0,

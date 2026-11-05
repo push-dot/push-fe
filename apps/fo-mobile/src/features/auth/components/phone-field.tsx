@@ -12,7 +12,7 @@ const PhoneField = ({ value, onChange }: { value: string; onChange: (next: strin
       <View
         accessible
         accessibilityLabel={COUNTRY_CODE_LABEL}
-        style={{ height: 56, paddingHorizontal: spacing[4], borderRadius: FIELD_RADIUS, backgroundColor: c.bg2, flexDirection: 'row', alignItems: 'center', gap: spacing[1] }}
+        style={{ height: 56, paddingHorizontal: spacing[spacing[1]], borderRadius: FIELD_RADIUS, backgroundColor: c.bg2, flexDirection: 'row', alignItems: 'center', gap: spacing[1] }}
       >
         <Text v="b1" weight="700">
           {COUNTRY_CODE}

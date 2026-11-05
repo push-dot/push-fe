@@ -39,14 +39,14 @@ const ComposeScreen = () => {
         </Text>
         <Button label="게시" size="sm" disabled={!ready} onPress={() => submit.mutate({ category: category!, title, body, images })} />
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing[5], gap: 14, paddingBottom: spacing[4] }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing[5], gap: 14, paddingBottom: spacing[spacing[1]] }} keyboardShouldPersistTaps="handled">
         <Menu
           accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`}
           actions={POST_CATEGORIES.flatMap((x) =>
             x.key ? [{ key: x.key, label: x.label, selected: x.key === category, onPress: () => setCategory(x.key) }] : [],
           )}
         >
-          <View style={{ minHeight: 56, paddingHorizontal: spacing[4], borderRadius: radius.md, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ minHeight: 56, paddingHorizontal: spacing[spacing[1]], borderRadius: radius.md, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text v="b2" color="t3">
               카테고리
             </Text>

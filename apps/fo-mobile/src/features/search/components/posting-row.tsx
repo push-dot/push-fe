@@ -17,7 +17,7 @@ const PostingRow = ({ p, q, onOpen }: { p: Posting; q: string; onOpen: () => voi
         onOpen()
         router.push(`/postings/${p.id}`)
       }}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[4], paddingHorizontal: spacing[5], paddingVertical: spacing[3] }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[spacing[1]], paddingHorizontal: spacing[5], paddingVertical: spacing[3] }}
     >
       <View style={{ width: 56, height: 56, borderRadius: radius.md, backgroundColor: brandOf(p.company), alignItems: 'center', justifyContent: 'center' }}>
         <Text v="h3" weight="800" style={{ color: onAccent, fontSize: 21, lineHeight: 26 }}>
