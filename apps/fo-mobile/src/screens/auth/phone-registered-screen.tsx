@@ -66,11 +66,11 @@ const PhoneRegisteredScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <TopBar onBack={() => router.back()} />
-      <View style={{ paddingHorizontal: 24, paddingTop: 24, gap: 10 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 12, gap: 10 }}>
         <Text accessibilityRole="header" v="h1">
           {REGISTERED_TITLE}
         </Text>
-        <Text v="b2" color="t3">
+        <Text v="b2" color="t2">
           {registeredBody(providers)}
         </Text>
         {failure ? (
@@ -84,7 +84,7 @@ const PhoneRegisteredScreen = () => {
           </View>
         ) : null}
       </View>
-      <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16, gap: 10 }}>
+      <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16, gap: 8 }}>
         <Button label={list} disabled={busy || target == null} onPress={press} />
         <Button
           label={OTHER_NUMBER}

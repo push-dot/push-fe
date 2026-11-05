@@ -54,7 +54,7 @@ const OtpScreen = () => {
   }, [e164])
 
   const resend = () => {
-    if (!e164 || remaining > 0) return
+    if (!e164) return
     setBusy(true)
     setError(null)
     sendPhoneCode(e164)
@@ -119,8 +119,6 @@ const OtpScreen = () => {
     <Text v="c1" weight="600" color="t2" style={{ flex: 1, fontVariant: ['tabular-nums'] }}>
       {countdownLabel(remaining)}
     </Text>
-  ) : blocked ? (
-    <View style={{ flex: 1 }} />
   ) : (
     <Pressable accessibilityRole="button" disabled={busy} onPress={resend} style={{ flex: 1 }}>
       <Text v="c1" weight="700" color="acText">
@@ -143,10 +141,9 @@ const OtpScreen = () => {
           <View style={{ marginTop: 28, opacity: 0.5 }}>
             <OtpBoxes value="" active={null} />
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 16 }}>{status}</View>
         </View>
         <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
-          <Button label={RESEND_CODE} disabled={busy || remaining > 0} onPress={resend} />
+          <Button label={RESEND_CODE} disabled={busy} onPress={resend} />
         </View>
       </View>
     )
@@ -168,6 +165,7 @@ const OtpScreen = () => {
         <View style={{ marginTop: 28 }}>
           <OtpCells
             value={code}
+            error={otpError === 'invalid'}
             onChange={(next) => {
               setCode(next)
               setOtpError(null)
@@ -185,7 +183,7 @@ const OtpScreen = () => {
       </View>
       <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 16 }}>
         {otpError === 'expired' ? (
-          <Button label={RESEND_CODE} disabled={busy || remaining > 0} onPress={resend} />
+          <Button label={RESEND_CODE} disabled={busy} onPress={resend} />
         ) : (
           <Button label={CONFIRM} disabled={busy || code.length !== 6} onPress={confirm} />
         )}

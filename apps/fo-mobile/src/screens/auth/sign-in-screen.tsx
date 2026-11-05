@@ -4,10 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import {
   APPLE,
-  APPLE_BG,
   APPLE_START,
   GITHUB,
-  GITHUB_BG,
   GITHUB_START,
   COMPACT_HEIGHT,
   GOOGLE,
@@ -81,9 +79,9 @@ const SignInScreen = () => {
       <View style={{ position: 'absolute', left: 20, right: 20, bottom: insets.bottom + 24, gap: 12 }}>
         <ProviderButton label={GOOGLE_START} logo={GOOGLE} bg={c.card} fg={c.t1} border={c.line} disabled={busy} onPress={() => run('google')} />
         {apple ? (
-          <ProviderButton label={APPLE_START} logo={APPLE} bg={APPLE_BG} fg="#FFFFFF" disabled={busy} onPress={() => run('apple')} />
+          <ProviderButton label={APPLE_START} logo={APPLE} bg={c.t1} fg={c.bg} disabled={busy} onPress={() => run('apple')} />
         ) : null}
-        <ProviderButton label={GITHUB_START} logo={GITHUB} bg={GITHUB_BG} fg="#FFFFFF" disabled={busy} onPress={() => run('github')} />
+        <ProviderButton label={GITHUB_START} logo={GITHUB} bg={c.t1} fg={c.bg} disabled={busy} onPress={() => run('github')} />
         <Pressable
           accessibilityRole="button"
           disabled={busy}
