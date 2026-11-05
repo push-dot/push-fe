@@ -22,7 +22,7 @@ const RootLayout = () => {
     <ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Protected guard={!!session}>
+          <Stack.Protected guard={!!session} redirectTo="/sign-in">
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="chat/[id]" />
             <Stack.Screen name="postings/[id]" />
