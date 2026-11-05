@@ -1,8 +1,12 @@
 import type { AccessMode } from '@push/api-client'
 import { Pressable, View } from 'react-native'
 import { Text } from '@/shared/components'
+import { spacing } from '../../../theme'
 import { ACCESS_MODES } from '../constants'
 import Pick from './pick'
+
+// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
+const md = spacing[4]
 
 const ModeOptions = ({ value, onChange }: { value: AccessMode; onChange: (mode: AccessMode) => void }) => (
   <View accessibilityRole="radiogroup">
@@ -12,10 +16,10 @@ const ModeOptions = ({ value, onChange }: { value: AccessMode; onChange: (mode: 
         accessibilityRole="radio"
         accessibilityState={{ selected: m.key === value }}
         onPress={() => onChange(m.key)}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 8 }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: md, paddingVertical: md, paddingHorizontal: spacing[1] }}
       >
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text v="b1" weight="600">
+        <View style={{ flex: 1, gap: spacing[1] }}>
+          <Text v="b1" weight={m.key === value ? '700' : '600'}>
             {m.label}
           </Text>
           <Text v="c1" color="t3">
