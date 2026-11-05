@@ -26,7 +26,7 @@ import '@push/design-system/tokens.css'
 | --- | --- |
 | `tokens/design-system.json` | 디자인 시스템에서 내보낸 `tokens.json` 그대로예요 (2026-10-20 수정본). |
 | `tokens/canvas.json` | 앱 캔버스("Push 앱", 2026-11-05 내보냄)가 다르게 쓰는 값이에요. 이 값이 이겨요. |
-| `assets/icons`, `assets/icons-3d` | 선 아이콘 38개, 3D 아이콘 13개 원본이에요. |
+| `assets/icons`, `assets/icons-3d` | 선 아이콘 40개, 3D 아이콘 13개 원본이에요. |
 | `src/tokens.ts`, `src/tokens.css`, `src/icons.ts` | 위 파일로 만든 결과예요. 직접 고치지 마세요. |
 
 원본을 바꿨으면 생성 파일을 다시 만드세요.
