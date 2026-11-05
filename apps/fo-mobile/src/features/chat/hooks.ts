@@ -11,7 +11,7 @@ export const useReduceMotion = () => {
   return on
 }
 
-/** Looping opacity 1 → low → 1 (running dots, shimmer stand-in). Stops under Reduce Motion. */
+/** Looping opacity 1 → low → 1 (the paper caret). Stops under Reduce Motion. */
 export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(1))[0]
@@ -32,8 +32,8 @@ export const usePulse = (active: boolean, period = 1000, low = 0.25) => {
   return v
 }
 
-/** Scale pop 0.3 → 1.2 → 1 when `on` flips true (todo check 350ms, tool done 300ms). */
-export const usePop = (on: boolean, duration = 350) => {
+/** Scale pop 0.3 → 1.2 → 1 when `on` flips true (todo check and tool done, 200ms). */
+export const usePop = (on: boolean, duration = 200) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(1))[0]
   const was = useRef(on)

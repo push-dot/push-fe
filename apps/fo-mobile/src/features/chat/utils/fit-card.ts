@@ -10,3 +10,12 @@ export const fitChrome = (item: Fit) => ({
   teaser: item.plan === 'PRO' ? FIT_TEASER : undefined,
   projected: item.plan === 'ULTRA' ? item.projected : undefined,
 })
+
+/** FREE draws decorative keyword badges behind the lock; widths only, never the real keywords. */
+export const LOCKED_KEYWORDS = [
+  { ok: true, width: 48 },
+  { ok: true, width: 84 },
+  { ok: true, width: 36 },
+  { ok: false, width: 48 },
+  { ok: false, width: 84 },
+] as const
