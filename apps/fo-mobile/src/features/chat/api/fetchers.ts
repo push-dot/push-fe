@@ -2,6 +2,7 @@ import { type AccessMode, type DataEnvelope, type ListEnvelope } from '@push/api
 import { api, http, API_MOCK } from '@/shared/infrastructure'
 import { myApi, type PickedFile } from '@/features/my'
 import { MICRO_CREDITS_PER_CREDIT } from '../constants'
+import { chatDocFromSource } from '../utils/docs'
 import { QS_NEEDS, quickStartFrom, type QsSources } from '../utils/quick-start-data'
 import type { Step } from '../types'
 import type { Account, ChatDoc, ConversationRow, QsData, RunInput } from './schemas'
@@ -13,8 +14,7 @@ const c = http
 const data = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
 /** 내 서류 for chat: the same list as 마이 › 서류. */
-const realDocs = async (): Promise<ChatDoc[]> =>
-  (await myApi.sources()).data.map((s) => ({ id: s.id, fileName: s.fileName, size: s.size, createdAt: s.createdAt ?? new Date().toISOString() }))
+const realDocs = async (): Promise<ChatDoc[]> => (await myApi.sources()).data.map(chatDocFromSource)
 
 const load: { [K in keyof QsSources]-?: () => Promise<QsSources[K]> } = {
   bookmarks: async () => (await api.me.bookmarks({ limit: 50 })).data,

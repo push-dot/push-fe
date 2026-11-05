@@ -240,7 +240,15 @@ export type ChatIntent =
   | 'career_post'
 export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
-export type StreamOption = { id: string; label: string; desc?: string; badge?: string }
+export type StreamOption = { id: string; label: string; desc?: string; badge?: string; sub?: string }
+/** push-be #224. `action` is only on row options and is not an answer id. */
+export type ChoiceOption = StreamOption & { action?: 'change' }
+export type ChoiceSection =
+  | { id: string; kind: 'chips'; title?: string; multiple?: boolean; options: ChoiceOption[]; selected: string[] }
+  | { id: string; kind: 'rows'; title?: string; options: ChoiceOption[] }
+  | { id: string; kind: 'toggle'; title?: string; options: ChoiceOption[]; selected: string[] }
+  | { id: string; kind: 'thumbnails'; title?: string; options: ChoiceOption[]; selected: string[] }
+export type ChoiceSubmit = { label: string; zeroLabel?: string; optionLabels?: Record<string, string> }
 export type StreamHunk = { line: number | null; sign: '+' | '-' | ''; text: string }
 /** GET .../turns only: how a card was answered. */
 export type CardResolution = { status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'; optionId: string | null; optionIds?: string[] }
@@ -295,7 +303,21 @@ export type StreamEvent = (
       note?: string
       documentId?: string
       resolution?: CardResolution
+      /** Present → render these instead of the top-level options. */
+      sections?: ChoiceSection[]
+      submit?: ChoiceSubmit
     }
+  | { type: 'think'; seconds: number; phase: string }
+  | {
+      type: 'plan'
+      id: 'strategy' | 'feedback'
+      title: string
+      meta: string
+      rows: { tag: string; label: string; note: string }[]
+      /** strategy only. No leading "+ ". */
+      keywords?: string[]
+    }
+  | { type: 'paper'; id: string; label: string; heading: string; lines: string[] }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
   | ({
       type: 'result'
@@ -354,7 +376,7 @@ export type ConversationTurn = {
   events: Exclude<StreamEvent, { type: 'status' } | { type: 'done' }>[]
 }
 
-export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; jobId?: string }
+export type ApprovalResolution = { id: string; status: 'APPROVED' | 'REJECTED'; optionId: string; optionIds?: string[]; jobId?: string }
 
 export type QueueJobStatus = 'QUEUED' | 'RUNNING' | 'RETRY' | 'DONE' | 'FAILED' | 'DEAD' | 'CANCELLED'
 export type QueueJob<R = unknown> = {

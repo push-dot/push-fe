@@ -8,10 +8,9 @@ import { usePersonalPurchase } from '@/features/billing'
 import { type Account } from '../api/schemas'
 import { useMySettings, useUpdateSettings } from '@/features/my'
 import { useAccessMode, useChatAccount, useChatDocs, useMe } from '../api/hooks'
-import { ACCESS_MODE_TITLE, ACCESS_MODES } from '../constants'
+import { ACCESS_MODE_TITLE, ACCESS_MODES, ACCOUNT_REFERENCE_NOTE, ACCOUNT_REFERENCE_TITLE, PLAN_FOOTER, PLAN_HEADER } from '../constants'
 import { Appear } from './motion'
 import Mark from './mark'
-import Note from './note'
 import PageModal from './page-modal'
 import Pick from './pick'
 
@@ -99,7 +98,7 @@ const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; 
           <SettingsRow label={account?.plan ?? ' '} onPress={onPlan} />
         </SettingsGroup>
         <View>
-          <SettingsGroup title="AI가 참고하는 내 정보" note="대화를 시작할 때 AI가 이 정보부터 읽어요.">
+          <SettingsGroup title={ACCOUNT_REFERENCE_TITLE} note={ACCOUNT_REFERENCE_NOTE}>
             <SettingsRow label={me.profile?.headline || '희망 직무'} onPress={toMy} />
             <SettingsRow label={me.profile?.tenureYears != null ? `${me.profile.tenureYears}년차` : '연차'} onPress={toMy} />
             <SettingsRow label={docs.data?.find((d) => !d.aiMade)?.fileName ?? '기본 서류'} onPress={toMy} />
@@ -169,7 +168,7 @@ const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnTyp
   return (
     <Appear kind="fade">
       <Text v="h1" style={{ fontSize: 25, lineHeight: 34, paddingTop: 6, paddingHorizontal: 24, paddingBottom: 16 }}>
-        {'더 많이 맡기고\n더 빨리 붙어요'}
+        {PLAN_HEADER}
       </Text>
       <Pressable
         accessibilityRole="button"
@@ -218,16 +217,19 @@ const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnTyp
           </Pressable>
         ))}
       </View>
-      <Text v="c1" color="t3" style={{ paddingTop: 14, paddingHorizontal: 24 }}>
-        매달 결제돼요 · 언제든 해지할 수 있어요
-      </Text>
+      <View style={{ paddingTop: 14, paddingHorizontal: 24, gap: 4 }}>
+        {PLAN_FOOTER.map((line) => (
+          <Text key={line} v="c1" color="t3">
+            {line}
+          </Text>
+        ))}
+      </View>
       <View style={{ marginTop: 22, marginHorizontal: 20 }}>
         <SettingsGroup>
           <SettingsRow label="크레딧 구매" right={<Button label="구매" size="sm" variant="secondary" onPress={purchase.buyCredits} disabled={purchase.pending} />} />
           <SettingsRow label="구매 복원" onPress={purchase.pending ? undefined : purchase.restore} />
         </SettingsGroup>
       </View>
-      <Note>요금제마다 쓸 수 있는 양이 달라요</Note>
     </Appear>
   )
 }

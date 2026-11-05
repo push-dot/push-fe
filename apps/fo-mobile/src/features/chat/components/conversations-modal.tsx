@@ -1,10 +1,12 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Modal, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchHangul } from '@push/shared'
 import { useColors } from '@/theme'
-import { Button, GlassButton, Text, TextField, TopBar } from '@/shared/components'
+import { BottomSheet, Button, GlassButton, Text, TextField, TopBar } from '@/shared/components'
+import { renameConversation } from '../api/fetchers'
 import {
   useArchiveConversation,
   useArchivedConversations,
@@ -52,6 +54,16 @@ export const ConversationList = ({
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [q, setQ] = useState('')
+  const [renaming, setRenaming] = useState<ConversationRow | null>(null)
+  const [nextTitle, setNextTitle] = useState('')
+  const qc = useQueryClient()
+  const rename = useMutation({
+    mutationFn: () => renameConversation(renaming!.id, renaming!.revision, nextTitle.trim()),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['conversations'] })
+      setRenaming(null)
+    },
+  })
   const [archivedView, setArchivedView] = useState(false)
   const list = useConversationList()
   const archived = useArchivedConversations(archivedView)
@@ -82,7 +94,15 @@ export const ConversationList = ({
       ...conversationRowMenu(row.pinned).map((a) => ({
         text: a.label,
         style: (a.id === 'delete' ? 'destructive' : 'default') as 'destructive' | 'default',
-        onPress: () => (a.id === 'pin' ? pin.mutate(row) : a.id === 'archive' ? archive.mutate(row) : confirmDelete(row)),
+        onPress: () => {
+          if (a.id === 'pin') pin.mutate(row)
+          else if (a.id === 'archive') archive.mutate(row)
+          else if (a.id === 'delete') confirmDelete(row)
+          else {
+            setNextTitle(row.title)
+            setRenaming(row)
+          }
+        },
       })),
       { text: '취소', style: 'cancel' as const },
     ])
@@ -150,7 +170,7 @@ export const ConversationList = ({
             {!q && !archivedView ? <Button label="새 대화 시작" onPress={() => startNew(onClose)} /> : null}
           </View>
         ) : null}
-        {!q && !archivedView ? (
+        {!q && !archivedView && (source.data?.data.length ?? 0) > 0 ? (
           <Pressable accessibilityRole="button" onPress={() => setArchivedView(true)} style={{ paddingVertical: 16, paddingHorizontal: 24 }}>
             <Text v="b1" weight="700">
               {ARCHIVED_TITLE}
@@ -163,6 +183,14 @@ export const ConversationList = ({
           </Text>
         ) : null}
       </ScrollView>
+      <BottomSheet
+        visible={!!renaming}
+        onClose={() => setRenaming(null)}
+        title="대화 이름을 바꿀까요?"
+        action={{ label: '이름 바꾸기', disabled: !nextTitle.trim() || rename.isPending, onPress: () => rename.mutate() }}
+      >
+        <TextField value={nextTitle} onChangeText={setNextTitle} max={300} accessibilityLabel="대화 이름" />
+      </BottomSheet>
     </View>
   )
 }

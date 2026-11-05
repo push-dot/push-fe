@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useColors } from '../../../theme'
-import { Badge, BottomSheet, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
+import { Badge, BottomSheet, Button, Chip, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
 import { useChatDocs, useQuickStart, useStartChat } from '../api/hooks'
@@ -11,11 +11,11 @@ import Pick from './pick'
 import { CALENDAR_TASKS, type QuickStart } from '../constants'
 
 /** Ingredient sheet for one quick start (Qs*.html). Collects what the task needs, then starts the conversation. */
-export const QuickStartSheet = ({ qs, onClose }: { qs: QuickStart | null; onClose: () => void }) => {
-  return qs ? <Sheet key={qs.key} qs={qs} onClose={onClose} /> : null
+export const QuickStartSheet = ({ qs, onClose, embedded }: { qs: QuickStart | null; onClose: () => void; embedded?: boolean }) => {
+  return qs ? <Body key={qs.key} qs={qs} onClose={onClose} embedded={embedded} /> : null
 }
 
-const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
+const Body = ({ qs, onClose, embedded }: { qs: QuickStart; onClose: () => void; embedded?: boolean }) => {
   const c = useColors()
   const start = useStartChat()
   const q = useQuickStart(qs.key)
@@ -59,14 +59,9 @@ const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   const actionLabel = typeof qs.action === 'function' ? qs.action(qs.layout === 'calendar' ? task : picked.length) : qs.action
   const title = qs.layout === 'deadline' && d ? `${qs.title} ${d.items.length}개` : qs.title
 
-  return (
-    <BottomSheet
-      visible
-      onClose={onClose}
-      title={title}
-      description={qs.description}
-      action={actionLabel ? { label: actionLabel, onPress: () => go(), disabled: !d || !qs.start(input) } : undefined}
-    >
+  const action = actionLabel ? { label: actionLabel, onPress: () => go(), disabled: !d || !qs.start(input) } : undefined
+  const body = (
+    <>
       {!d ? (
         <Text v="b2" color="t3" style={{ paddingVertical: 24, textAlign: 'center' }}>
           {q.isError ? '불러오지 못했어요. 닫았다가 다시 열어 주세요.' : '불러오는 중이에요'}
@@ -234,6 +229,19 @@ const Sheet = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
           ) : null}
         </>
       )}
+    </>
+  )
+  if (embedded) {
+    return (
+      <View style={{ gap: 12 }}>
+        {body}
+        {action ? <Button label={action.label} onPress={action.onPress} disabled={action.disabled} /> : null}
+      </View>
+    )
+  }
+  return (
+    <BottomSheet visible onClose={onClose} title={title} description={qs.description} action={action}>
+      {body}
     </BottomSheet>
   )
 }

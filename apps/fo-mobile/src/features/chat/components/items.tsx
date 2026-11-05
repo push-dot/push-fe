@@ -7,7 +7,7 @@ import { useOpenArtifact } from '../api/hooks'
 import { usePop, usePulse, useReduceMotion } from '../hooks'
 import { isUsageExhausted } from '../utils/usage'
 import { formatElapsed } from '../utils/reducer'
-import { resultActions, resultChrome, resultMeta, resultTask, resultTitle, type ResultActionId } from '../utils/result-card'
+import { profileSaveCopy, resultActions, resultChrome, resultMeta, resultTask, resultTitle, type ResultActionId } from '../utils/result-card'
 import { fitChrome } from '../utils/fit-card'
 import { FIT_LOCKED, FIT_LOCKED_PCT, fitProjected } from '../constants'
 import { Appear } from './motion'
@@ -507,8 +507,9 @@ const ResultCard = ({
   convertPending?: boolean
 }) => {
   const chrome = resultChrome(item)
-  const title = resultTitle(item)
-  const actions = resultActions(item)
+  const save = profileSaveCopy(item)
+  const title = save?.title ?? resultTitle(item)
+  const actions = save ? [{ id: 'view' as const, label: '프로필 보기' }] : resultActions(item)
   const c = useColors()
   const share = () => void shareMessage({ message: title, title })
   const press = (id: ResultActionId) => (id === 'apply' ? onApply() : id === 'convert' ? onConvert() : onView())
@@ -522,7 +523,7 @@ const ResultCard = ({
             {title}
           </Text>
           <Text v="c1" color="t3">
-            {resultMeta(item)}
+            {save?.body ?? resultMeta(item)}
           </Text>
         </View>
         {chrome.share ? (

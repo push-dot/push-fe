@@ -65,6 +65,8 @@ export type ChatItem =
       headline: string
       title: string
       subtitle: string
+      /** Set while a profile-save choice is still unanswered. */
+      pendingNote?: string
     }
   | { type: 'worked'; id: string; seconds: number }
   | { type: 'error'; id: string; text: string; code?: string }
@@ -72,10 +74,11 @@ export type ChatItem =
 export type Choice = { label: string; desc?: string; hint?: string; badge?: { label: string; tone: BadgeTone } }
 
 export type ApprovalSection =
-  | { kind: 'choices'; items: Choice[]; selected: number[]; multi?: boolean }
-  | { kind: 'chips'; title?: string; options: string[]; selected: number[]; multi?: boolean }
-  | { kind: 'rows'; title: string; items: { tag: string; title: string; sub: string; ac?: boolean }[] }
-  | { kind: 'templates'; items: { label: string; recommended?: boolean }[]; selected: number[] }
+  | { id?: string; kind: 'choices'; items: Choice[]; selected: number[]; multi?: boolean; ids?: string[] }
+  | { id?: string; kind: 'chips'; title?: string; options: string[]; selected: number[]; multi?: boolean; ids?: string[] }
+  | { id?: string; kind: 'rows'; title: string; items: { id?: string; tag: string; title: string; sub: string; ac?: boolean; action?: 'change' }[] }
+  | { id?: string; kind: 'templates'; items: { id?: string; label: string; recommended?: boolean }[]; selected: number[] }
+  | { id?: string; kind: 'toggle'; items: Choice[]; selected: number[]; ids: string[] }
 
 export type Approval = {
   id: string
@@ -83,6 +86,10 @@ export type Approval = {
   sections: ApprovalSection[]
   /** Present → picks are confirmed with this button instead of tapping a number. */
   submit?: string
+  submitLabels?: Record<string, string>
+  zeroSubmit?: string
+  /** Copied onto the latest profile result while this choice is open. */
+  pendingNote?: string
   secondary?: string
   /** What the user bubble says after submit; defaults to the button label. */
   answer?: string

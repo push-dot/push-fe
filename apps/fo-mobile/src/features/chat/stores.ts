@@ -28,6 +28,11 @@ export const usePrefs = create<{ accessMode: AccessMode }>(() => ({ accessMode: 
 
 export const useConsentPrompt = create<{ open: boolean; dismissed: boolean }>(() => ({ open: false, dismissed: false }))
 
+/** 자료 고르기 sheet writes back into the composer. File picks stay in the composer. */
+export const useMaterialBridge = create<{ text: string | null; file: number }>(() => ({ text: null, file: 0 }))
+export const submitMaterialText = (text: string) => useMaterialBridge.setState({ text })
+export const requestMaterialFile = () => useMaterialBridge.setState((s) => ({ file: s.file + 1 }))
+
 type PendingOpen = { title: string; message: string; attachment?: string | PickedFile; intent?: ChatIntent; context?: RunInput['context'] }
 
 type Outgoing = RunInput & { file?: PickedFile }
@@ -51,7 +56,8 @@ let openChat: ((p: PendingOpen) => void) | null = null
 
 export const askConsent = (force = false) => {
   const s = useConsentPrompt.getState()
-  if (force || !s.dismissed) useConsentPrompt.setState({ open: true })
+  if (!(force || !s.dismissed) || s.open) return
+  useConsentPrompt.setState({ open: true })
 }
 
 export const holdOpen = (p: PendingOpen) => {

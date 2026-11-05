@@ -12,6 +12,7 @@ import {
   queueBusyText,
 } from '../constants'
 import type { Approval, ChatEvent, ChatItem, Choice } from '../types'
+import { approvalFromSections, mapPaper, mapPlan, mapThink } from './stream-v3'
 
 export const errorText = (code?: string, retryAfterSec?: number) =>
   code === 'QUEUE_BUSY' && retryAfterSec ? queueBusyText(retryAfterSec) : (code && ERROR_TEXT[code]) || DEFAULT_ERROR_TEXT
@@ -120,12 +121,22 @@ export const mapEvent = (ev: StreamEvent): ChatEvent[] => {
       if (ev.kind === 'DOCUMENT_EDIT') return askEdit(ev)
       return [ask({ id: ev.id, question: ev.summary || ev.title, options: ev.options, warning: ev.foot })]
     case 'choice': {
+      if (ev.sections?.length) return [{ type: 'approval', approval: approvalFromSections(ev) }]
       if (!ev.auto) {
-        return [ask({ id: ev.id, question: ev.title ?? CHOICE_QUESTION, options: ev.options, detail: ev.detail, multiple: ev.multiple, hint: !HINTLESS_GATES.includes(ev.gate ?? '') })]
+        const pending = ev.note && (!ev.resolution || ev.resolution.status === 'PENDING') ? ev.note : undefined
+        const event = ask({ id: ev.id, question: ev.title ?? CHOICE_QUESTION, options: ev.options, detail: ev.detail, multiple: ev.multiple, hint: !HINTLESS_GATES.includes(ev.gate ?? '') })
+        if (event.type === 'approval' && pending) event.approval.pendingNote = pending
+        return [event]
       }
       const picked = ev.options.find((o) => o.id === ev.recommended)
       return picked ? [{ type: 'agentText', id: `auto-${ev.id}`, text: `자동으로 골랐어요: ${picked.label}` }] : []
     }
+    case 'think':
+      return [mapThink(ev)]
+    case 'plan':
+      return [mapPlan(ev)]
+    case 'paper':
+      return [mapPaper(ev)]
     case 'file':
       return [{ type: 'file', id: `file-${ev.fileId}`, name: ev.name, url: ev.downloadUrl, preview: true }]
     case 'result':
@@ -142,6 +153,9 @@ export const mapEvent = (ev: StreamEvent): ChatEvent[] => {
       return [{ type: 'stop' }]
     case 'done':
       return [{ type: 'done', at: 0, awaiting: ev.awaiting }]
+    default:
+      // push-be #224: a type this build does not know must not stop the stream.
+      return []
   }
 }
 
