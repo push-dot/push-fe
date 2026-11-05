@@ -12,6 +12,7 @@ import {
   answer,
   ApprovalPanel,
   AWAITING_TEXT,
+  AwaitingRow,
   ComposerArea,
   ConsentSheet,
   OPEN_DRAWER,
@@ -93,6 +94,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const company = chat.items.findLast((i) => i.type === 'result')?.company
   const placeholder = chat.working ? '작업 중에도 말할 수 있어요' : chat.items.length ? '더 고칠 부분이 있으면 말해 주세요' : '공고 링크를 붙여넣어 보세요'
   const showPanel = chat.approval && !saying
+  const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
@@ -117,6 +119,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
             onConvert={(card) => convert.mutate(card.documentId)}
             onView={(card) => router.push(`/docs/push/${card.documentId}`)}
             resultPending={convert.isPending}
+            resultAwaiting={!!chat.approval && it.id === lastResultId}
             onUsage={(action) => (action === 'plan' ? router.push(accountPath('plan')) : purchase.buyCredits())}
           />
         ))}
@@ -165,10 +168,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
                   chat.working ? (
                     <StatusRow verbs={chat.working.verbs} startedAt={chat.working.startedAt} onStop={() => stop(id)} />
                   ) : chat.awaiting ? (
-                    // AwaitingRow (status-row.tsx) replaces this line.
-                    <Text v="c1" weight="600" color="t3" style={{ paddingHorizontal: spacing[2] }}>
-                      {AWAITING_TEXT[chat.awaiting]}
-                    </Text>
+                    <AwaitingRow text={AWAITING_TEXT[chat.awaiting]} />
                   ) : null
                 }
               />
