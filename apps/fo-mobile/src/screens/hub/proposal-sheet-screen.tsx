@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
+import { ScrollView } from 'react-native'
 import { ProposalSheet, proposalSubtitle, useOfferBookmarks, useProfile, useSendOffer } from '@/features/hub'
 import { Sheet } from '@/shared/components'
 
@@ -22,23 +23,26 @@ const ProposalSheetScreen = () => {
   if (!userId) return null
 
   return (
-    <Sheet
-      title="제안하기"
-      action={{ label: '제안 보내기', onPress: () => send.mutate(), disabled: !message.trim() || send.isPending }}
-    >
-      <ProposalSheet
-        userId={userId}
-        name={p?.displayName ?? ''}
-        subtitle={p ? proposalSubtitle(p) : ''}
-        message={message}
-        postingId={postingId}
-        postings={bookmarks.data?.data ?? []}
-        error={error}
-        onMessage={setMessage}
-        onPosting={setPostingId}
-        onError={setError}
-      />
-    </Sheet>
+    // The sheet is taller than the space above the keyboard, so it scrolls to reach 제안 보내기 and a drag hides the keyboard.
+    <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets>
+      <Sheet
+        title="제안하기"
+        action={{ label: '제안 보내기', onPress: () => send.mutate(), disabled: !message.trim() || send.isPending }}
+      >
+        <ProposalSheet
+          userId={userId}
+          name={p?.displayName ?? ''}
+          subtitle={p ? proposalSubtitle(p) : ''}
+          message={message}
+          postingId={postingId}
+          postings={bookmarks.data?.data ?? []}
+          error={error}
+          onMessage={setMessage}
+          onPosting={setPostingId}
+          onError={setError}
+        />
+      </Sheet>
+    </ScrollView>
   )
 }
 
