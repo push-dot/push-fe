@@ -1,7 +1,7 @@
 import { useState, type ComponentRef, type RefObject } from 'react'
 import { ActivityIndicator, Platform, Pressable, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Glass, Icon, Text } from '../../../shared/components'
+import { Glass, GlassPressable, Icon, Text } from '../../../shared/components'
 import { fontFor, onAccent, radius, spacing, type, useColors } from '../../../theme'
 import { useCreateComment } from '../api/hooks'
 import { MAX_COMMENT } from '../constants'
@@ -40,17 +40,20 @@ const CommentComposer = ({
         placeholderTextColor={c.t4}
         style={[{ flex: 1, fontSize: type.b1.fontSize, color: c.t1, paddingHorizontal: spacing[1], paddingVertical: 9, minHeight: 40, maxHeight: 120 }, fontFor('400')]}
       />
-      <Pressable
+      <GlassPressable
         accessibilityRole="button"
         accessibilityLabel="보내기"
         accessibilityState={{ disabled: !ok }}
         disabled={!ok}
         onPress={() => send.mutate({ text, parentId: replyTo?.id })}
         hitSlop={4}
-        style={{ width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? c.ac : c.fill2 }}
+        glass={false}
+        fill={ok ? 'ac' : 'fill2'}
+        pressedFill="acPress"
+        style={{ width: 40, height: 40, borderRadius: radius.pill }}
       >
         {send.isPending ? <ActivityIndicator color={c.t4} /> : <Icon name="up" size={20} color={ok ? onAccent : c.t4} />}
-      </Pressable>
+      </GlassPressable>
     </View>
   )
 
