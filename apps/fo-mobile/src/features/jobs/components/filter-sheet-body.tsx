@@ -22,7 +22,7 @@ const FilterSheetBody = ({ kind, draft, trending, onChange }: Props) => {
         <Text v="h2" accessibilityRole="header">
           {FILTER_TITLES[kind]}
         </Text>
-        <Pressable accessibilityRole="button" onPress={() => set(EMPTY[kind])} hitSlop={12} style={{ minHeight: 44, justifyContent: 'center' }}>
+        <Pressable accessibilityRole="button" onPress={() => set(EMPTY[kind])} hitSlop={12}>
           <Text v="c1" weight="700" color="acText">
             초기화
           </Text>
