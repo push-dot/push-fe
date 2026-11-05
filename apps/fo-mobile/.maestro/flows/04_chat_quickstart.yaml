@@ -1,8 +1,14 @@
 appId: app.push.mobile
-name: AI 채팅 → 빠른 시작(공고 링크) → 변경 확인 → 완료
+name: 에이전트 → 빠른 시작(공고 링크) → 변경 적용 → 완료
 ---
 - runFlow: _login.yaml
-- tapOn: "AI 채팅"
+- runFlow: _dismiss_logbox.yaml
+- tapOn: "에이전트"
+- runFlow:
+    when:
+      visible: "동의하고 시작하기"
+    commands:
+      - tapOn: "동의하고 시작하기"
 - extendedWaitUntil:
     visible: "공고 링크로 맞추기"
     timeout: 10000
