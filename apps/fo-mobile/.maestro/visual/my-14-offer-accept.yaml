@@ -63,6 +63,16 @@ tags:
 - extendedWaitUntil:
     visible: ".*메시지를 보내지 못했어요.*"
     timeout: 10000
-- hideKeyboard
+# hideKeyboard fails on iOS; a tap on the static date label dismisses the keyboard there.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "10월 20일"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - waitForAnimationToEnd
 - takeScreenshot: ProposalChat

@@ -31,8 +31,9 @@ tags:
     notVisible: "에이전트가 어떻게 실행할까요?"
     timeout: 5000
 - tapOn: "언급"
+# 바로가기 is the last group, below the popover's scroll fold, so wait on the first group.
 - extendedWaitUntil:
-    visible: "바로가기"
+    visible: "북마크 공고"
     timeout: 10000
 - waitForAnimationToEnd
 - takeScreenshot: ChatMention
@@ -42,8 +43,9 @@ tags:
       platform: iOS
     commands:
       - inputText: "모아"
+      # 파도AI's bookmark does not contain "모아", so its row leaves the list.
       - extendedWaitUntil:
-          notVisible: "바로가기"
+          notVisible: "북마크 공고, 데이터 분석가"
           timeout: 5000
       - waitForAnimationToEnd
       - takeScreenshot: ChatEmpty

@@ -24,18 +24,25 @@ tags:
           timeout: 5000
       - waitForAnimationToEnd
       - takeScreenshot: SettingsStates.3
-      - tapOn:
-          point: "50%,5%"
-      - waitForAnimationToEnd
+      # The sheet's scrim is a button labelled 닫기 (a tap at the top edge left the sheet open).
+      - tapOn: "닫기"
+      - extendedWaitUntil:
+          notVisible: "누구에게 연락처를 보여 줄까요?"
+          timeout: 5000
+      # 기본 말투 is below the first screen.
+      - scrollUntilVisible:
+          element: "기본 말투.*"
+          direction: DOWN
       - tapOn: "기본 말투.*"
       - extendedWaitUntil:
           visible: "에이전트가 어떤 말투로 쓸까요?"
           timeout: 5000
       - waitForAnimationToEnd
       - takeScreenshot: SettingsStates.4
-      - tapOn:
-          point: "50%,5%"
-      - waitForAnimationToEnd
+      - tapOn: "닫기"
+      - extendedWaitUntil:
+          notVisible: "에이전트가 어떤 말투로 쓸까요?"
+          timeout: 5000
       - scrollUntilVisible:
           element: "로그아웃"
           direction: DOWN

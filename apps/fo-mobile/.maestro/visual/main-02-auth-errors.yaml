@@ -6,7 +6,7 @@ tags:
 # The mock reads the code's tail: 482111 wrong, 482222 expired, 482333 too many tries (mock/home.ts).
 - runFlow: _phone_code.yaml
 - inputText: "482111"
-- hideKeyboard
+- runFlow: _hide_kbd.yaml
 - tapOn: "확인"
 - extendedWaitUntil:
     visible: "인증번호가 맞지 않아요.*"
@@ -23,7 +23,7 @@ tags:
     visible: "인증번호를 입력해 주세요"
     timeout: 10000
 - inputText: "482222"
-- hideKeyboard
+- runFlow: _hide_kbd.yaml
 - tapOn: "확인"
 - extendedWaitUntil:
     visible: "인증번호가 만료됐어요.*"
@@ -40,7 +40,7 @@ tags:
     visible: "인증번호를 입력해 주세요"
     timeout: 10000
 - inputText: "482333"
-- hideKeyboard
+- runFlow: _hide_kbd.yaml
 - tapOn: "확인"
 - extendedWaitUntil:
     visible: "인증번호를 5번 잘못 입력했어요"

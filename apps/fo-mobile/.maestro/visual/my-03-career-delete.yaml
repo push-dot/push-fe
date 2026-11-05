@@ -10,7 +10,7 @@ tags:
     visible: "김서준"
     timeout: 10000
 - extendedWaitUntil:
-    visible: "Kafka"
+    visible: "경력 편집"
     timeout: 10000
 # Both boards are iOS only; nothing is saved, the toast's 되돌리기 is left alone.
 - runFlow:

@@ -16,7 +16,7 @@ tags:
     timeout: 10000
 - tapOn: "휴대폰 번호"
 - inputText: "01012345678"
-- hideKeyboard
+- runFlow: _hide_kbd.yaml
 - tapOn: "인증번호 받기"
 - extendedWaitUntil:
     visible: "인증번호를 입력해 주세요"

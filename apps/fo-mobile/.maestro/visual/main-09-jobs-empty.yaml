@@ -20,16 +20,17 @@ tags:
     file: ../flows/_tap_sheet_button.yaml
     env:
       TEXT: "공고 .*개 보기"
+- runFlow: _scroll_chips.yaml
 - tapOn: "지역"
 - tapOn: "대전"
 - tapOn: "유성구(.*28)?"
 - waitForAnimationToEnd
 - runFlow:
-    file: ../flows/_tap_sheet_button.yaml
+    file: _apply_region.yaml
     env:
       TEXT: "공고 0개 보기"
 - extendedWaitUntil:
-    visible: "조건에 맞는 공고가 없어요."
+    visible: ".*조건에 맞는 공고가 없어요.*"
     timeout: 10000
 - waitForAnimationToEnd
 - takeScreenshot: JobListEmpty.1

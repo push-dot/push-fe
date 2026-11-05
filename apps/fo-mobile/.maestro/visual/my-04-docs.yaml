@@ -11,9 +11,10 @@ tags:
     timeout: 10000
 - tapOn: "서류"
 - extendedWaitUntil:
-    visible: "읽지 못했어요"
+    visible: "포트폴리오_결제시스템.pdf"
     timeout: 10000
 # The 읽는 중 spinner never stops, so do not wait out the full animation timeout.
+# (iOS reads each row as one element labelled with its file name, so 읽지 못했어요 is not matchable.)
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: MyResume
@@ -35,10 +36,9 @@ tags:
     when:
       platform: iOS
     commands:
-      # shortcut: the row's menu may be hidden from iOS accessibility by the row itself; optional so the tour survives.
+      # The row's own accessibility label hides its ⋯ menu from iOS accessibility, so tap the ⋯ of the first file by position.
       - tapOn:
-          text: ".*백엔드_이력서_2026.pdf 더 보기"
-          optional: true
+          point: "90%,52%"
       - extendedWaitUntil:
           visible: "서류 삭제하기"
           timeout: 5000

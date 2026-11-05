@@ -3,11 +3,12 @@ tags:
   - subflow
 # From a conversation back to the 에이전트 first screen (pushed route: edge swipe on iOS, back on Android).
 ---
-- hideKeyboard
 - runFlow:
     when:
       platform: Android
     commands:
+      - hideKeyboard:
+          optional: true
       - back
 - runFlow:
     when:

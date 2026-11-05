@@ -3,7 +3,8 @@ tags:
   - subflow
 # Types ${KO} on iOS and ${EN} on Android (inputText is ASCII-only there), then sends.
 ---
-- tapOn: "메시지"
+# Empty composer reads "메시지 <placeholder>" on iOS, typed text reads "메시지".
+- tapOn: "메시지.*"
 - runFlow:
     when:
       platform: iOS

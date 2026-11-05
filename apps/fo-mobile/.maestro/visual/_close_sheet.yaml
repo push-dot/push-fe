@@ -22,6 +22,15 @@ tags:
       platform: iOS
       visible: ${TITLE}
     commands:
+      - tapOn:
+          point: "50%,10%"
+          optional: true
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+      visible: ${TITLE}
+    commands:
       - swipe:
           start: "50%,45%"
           end: "50%,98%"

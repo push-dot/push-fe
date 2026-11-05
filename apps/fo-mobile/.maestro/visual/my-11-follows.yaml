@@ -28,8 +28,9 @@ tags:
 - takeScreenshot: MyFollowingAll
 
 - tapOn: ".*이하은.*"
+# The profile body is a web page the mock has no server for (it shows 불러오지 못했어요, as in the hub tour); wait on the native 제안하기 button.
 - extendedWaitUntil:
-    visible: ".*Storybook.*"
-    timeout: 10000
+    visible: "제안하기"
+    timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: MyFollowingProfile

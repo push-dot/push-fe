@@ -29,10 +29,16 @@ tags:
 - extendedWaitUntil:
     visible: "Google 캘린더"
     timeout: 10000
+# The mock events are all in October 2026 and the calendar opens on the device's month, so step back from November.
+- runFlow:
+    when:
+      visible: "2026년 11월"
+    commands:
+      - tapOn: "이전 달"
 - extendedWaitUntil:
     visible: ".*일정 .*개.*"
     timeout: 10000
-# The board selects 10월 21일 (the day after its "today"); a no-op when the device date is not October 2026.
+# The board selects 10월 21일 (the day after its "today").
 - tapOn:
     text: ".*10월 21일.*"
     optional: true

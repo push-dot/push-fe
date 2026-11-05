@@ -3,10 +3,14 @@ tags:
   - subflow
 # Opens the quick-start pill ${LABEL}, waits for ${WAIT} (text that shows once the sheet data has loaded), shoots ${SHOT}, closes.
 ---
-- scrollUntilVisible:
-    element: ${LABEL}
-    direction: RIGHT
-    timeout: 20000
+- runFlow:
+    file: _pill.yaml
+    env:
+      LABEL: ${LABEL}
+      START: "85%,74%"
+      END: "30%,74%"
+      NUDGE_START: "70%,74%"
+      NUDGE_END: "55%,74%"
 - tapOn: ${LABEL}
 - extendedWaitUntil:
     visible: ${WAIT}

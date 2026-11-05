@@ -22,10 +22,17 @@ tags:
 - inputText: "github.com/seojun-kim/payment-gateway"
 - waitForAnimationToEnd
 - takeScreenshot: MyLinkAdd
-# Dismiss the add sheet through its scrim (above the keyboard-lifted sheet).
+# Dismiss the add sheet through its scrim (the page's top strip is not tappable on iOS); retry once.
 - tapOn:
-    point: "50%,8%"
+    point: "50%,25%"
 - waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "추가하기"
+    commands:
+      - tapOn:
+          point: "50%,15%"
+      - waitForAnimationToEnd
 - tapOn:
     text: ".*더 보기"
     index: 0

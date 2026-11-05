@@ -18,6 +18,14 @@ tags:
     visible: "에이전트로 고치기"
     timeout: 10000
 - tapOn: "에이전트로 고치기"
+# The mock starts with the reference-data consent off, so the chat opens behind its sheet.
+- extendedWaitUntil:
+    visible: "동의하고 시작하기"
+    timeout: 10000
+- tapOn: "동의하고 시작하기"
+- extendedWaitUntil:
+    notVisible: "동의하고 시작하기"
+    timeout: 10000
 - extendedWaitUntil:
     visible: ".*이 서류를 고쳐 줘.*"
     timeout: 15000

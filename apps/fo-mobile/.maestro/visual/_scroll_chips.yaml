@@ -1,0 +1,10 @@
+appId: app.push.mobile
+tags:
+  - subflow
+# The 채용공고 filter chip row scrolls sideways: 지역 is clipped and 고용형태 is off screen until it is swiped left.
+---
+- swipe:
+    start: "90%,17%"
+    end: "10%,17%"
+    duration: 300
+- waitForAnimationToEnd

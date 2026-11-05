@@ -1,0 +1,21 @@
+appId: app.push.mobile
+tags:
+  - subflow
+# Brings the quick-start pill ${LABEL} into view by swiping the pill row itself
+# (scrollUntilVisible swipes from the screen centre, which is not on the row), then nudges it off the edge.
+# ${START}/${END}: the swipe, ${NUDGE_START}/${NUDGE_END}: a short follow-up swipe in the same direction.
+---
+- repeat:
+    while:
+      notVisible: ${LABEL}
+    times: 12
+    commands:
+      - swipe:
+          start: ${START}
+          end: ${END}
+          duration: 400
+- swipe:
+    start: ${NUDGE_START}
+    end: ${NUDGE_END}
+    duration: 300
+- waitForAnimationToEnd

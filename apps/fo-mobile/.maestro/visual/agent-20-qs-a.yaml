@@ -30,10 +30,14 @@ tags:
       WAIT: "올릴 서류"
       SHOT: QsBoost
 # The link sheet autofocuses its field, so it goes last and is left open.
-- scrollUntilVisible:
-    element: "공고 링크로 맞추기"
-    direction: LEFT
-    timeout: 20000
+- runFlow:
+    file: _pill.yaml
+    env:
+      LABEL: "공고 링크로 맞추기"
+      START: "15%,74%"
+      END: "85%,74%"
+      NUDGE_START: "55%,74%"
+      NUDGE_END: "70%,74%"
 - tapOn: "공고 링크로 맞추기"
 - extendedWaitUntil:
     visible: "맞추기 시작"

@@ -5,7 +5,7 @@ tags:
 ---
 - runFlow: _phone_code.yaml
 - inputText: "482915"
-- hideKeyboard
+- runFlow: _hide_kbd.yaml
 - tapOn: "확인"
 - extendedWaitUntil:
     visible: "서비스 이용에 동의해 주세요"

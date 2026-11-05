@@ -10,7 +10,7 @@ tags:
     visible: "김서준"
     timeout: 10000
 - extendedWaitUntil:
-    visible: "Kafka"
+    visible: "경력 편집"
     timeout: 10000
 - tapOn: "경력 편집"
 - extendedWaitUntil:
@@ -35,7 +35,7 @@ tags:
           index: 1
       - tapOn: "직무.*"
       - eraseText
-      - hideKeyboard
+      - runFlow: _hide_kbd.yaml
       - extendedWaitUntil:
           visible: "회사, 직무, 기간을 채워 주세요"
           timeout: 5000

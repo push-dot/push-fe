@@ -11,7 +11,7 @@ tags:
     timeout: 10000
 - tapOn: ".*도토리증권 공고 갭 분석.*"
 - extendedWaitUntil:
-    visible: "메시지"
+    visible: "메시지.*"
     timeout: 10000
 - waitForAnimationToEnd
 - runFlow:

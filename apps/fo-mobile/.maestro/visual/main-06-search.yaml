@@ -11,7 +11,12 @@ tags:
 - extendedWaitUntil:
     visible: ".*프론트엔드.*"
     timeout: 10000
-- hideKeyboard
+# iOS shows the autofocused screen without a keyboard, so there is nothing to hide (hideKeyboard fails there).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - waitForAnimationToEnd
 - takeScreenshot: Search
 - tapOn: "검색어|회사, 직무, 기술 검색"
@@ -35,7 +40,7 @@ tags:
       - extendedWaitUntil:
           visible: "‘백엔드’ 공고.*"
           timeout: 10000
-      - hideKeyboard
+      - runFlow: _hide_kbd.yaml
       - waitForAnimationToEnd
       - takeScreenshot: SearchResult
       - tapOn: "사람.*"
@@ -55,6 +60,6 @@ tags:
       - extendedWaitUntil:
           visible: "‘데브옵스 인턴’에 맞는 결과가 없어요.*"
           timeout: 10000
-      - hideKeyboard
+      - runFlow: _hide_kbd.yaml
       - waitForAnimationToEnd
       - takeScreenshot: HomeStates.2
