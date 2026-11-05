@@ -5,7 +5,7 @@ import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
-  AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
+  AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
@@ -101,6 +101,7 @@ export const createApi = (c: Client) => ({
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
     bookmarks: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/bookmarks', { query: p }),
+    postingViews: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/posting-views', { query: p }),
     follows: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/follows', { query: p }),
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
     posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
@@ -186,6 +187,8 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<Conversation>>(`conversations/${id}/archive`, { body: { expectedRevision } })),
     messages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<Message>>(`conversations/${id}/messages`, { query: p }),
+    turns: (id: string, p: PageParams = {}) =>
+      c.get<ListEnvelope<ConversationTurn>>(`conversations/${id}/turns`, { query: p }),
     send: async (
       id: string,
       body: {
