@@ -467,6 +467,25 @@ const commented = [
   }),
 ]
 mock('GET', 'me/posts', ({ query }) => page(myPosts, query))
+// social.ts owns `posts/:id` and 404s my ids, so index.ts loads this file first and these patterns
+// (regex, not :params) catch the mp* ids only. shortcut: only mp1 has a body and comments.
+mock('GET', 'posts/mp[0-9]+', ({ path }) => {
+  const p = myPosts.find((x) => x.id === path.split('/').pop())
+  return p
+    ? { data: { ...p, body: '연봉 협상 전에 정리해 두면 좋은 것들을 적어 봤어요. 시장 시세, 내가 만든 성과, 포기할 수 있는 조건 순서로 정리하면 대화가 훨씬 편해져요.' } }
+    : { status: 404, body: { error: { code: 'NOT_FOUND', message: '게시물을 찾을 수 없어요' } } }
+})
+mock('GET', 'posts/mp[0-9]+/comments', ({ path, query }) =>
+  page(
+    path.includes('mp1/')
+      ? [
+          { id: 'mc-1', author: { id: 'u-subin', displayName: '이수빈', avatarUrl: null }, body: '시세는 어디서 확인하세요? 저도 협상 전에 정리해 보고 싶어요.', parentId: null, createdAt: ago(D) },
+          { id: 'mc-2', author: ME, body: '지인 두세 분께 여쭤보고 공고 연봉 범위를 같이 봤어요.', parentId: 'mc-1', createdAt: ago(D - H) },
+        ]
+      : [],
+    query,
+  ),
+)
 mock('GET', 'me/commented-posts', ({ query }) => withTotal(commented, query, 9))
 
 // 제안함

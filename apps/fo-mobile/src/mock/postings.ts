@@ -45,6 +45,7 @@ export const postings: Posting[] = [
   base({ id: 'p22', company: '라온헬스', title: 'iOS 개발자', location: '서울 서초구', careerMin: 10, skills: ['Swift', 'SwiftUI'], deadline: inDays(43), createdAt: '2026-10-05T09:00:00Z' }),
   base({ id: 'p23', company: '바다물류', title: '물류 시스템 개발자', location: '경기 수원시', careerMin: 4, careerMax: 6, skills: ['Java', 'Spring Boot'], employmentType: 'dispatch', deadline: inDays(40), createdAt: '2026-10-04T09:00:00Z' }),
   base({ id: 'p24', company: '모아페이', title: '퍼포먼스 마케터', jobCategory: 'marketing', location: '서울 강남구', careerMin: 1, careerMax: 3, deadline: inDays(18), createdAt: '2026-10-03T09:00:00Z' }),
+  base({ id: 'p25', company: '모아페이', title: '결제 플랫폼 시니어 엔지니어', location: '서울 강남구', careerMin: 5, deadline: inDays(21), createdAt: '2026-10-02T09:00:00Z' }),
 ]
 
 // The home 새로 올라온 공고 cards show the long title the board drew; lists and detail use the short one.
