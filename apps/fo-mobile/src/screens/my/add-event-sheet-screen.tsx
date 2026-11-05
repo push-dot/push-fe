@@ -33,14 +33,20 @@ const AddEventSheetScreen = () => {
         onPress: () => add.mutate({ type, title: title.trim(), startsAt: withTime(date, time).toISOString() }),
       }}
     >
-      <TextField label="일정 이름" accessibilityLabel="일정 이름" value={title} onChangeText={setTitle} placeholder="일정 이름" />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flex: 1 }}>
+          <DatePicker label="날짜" mode="date" value={date} onChange={setDate} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <DatePicker label="시간" mode="time" value={time} onChange={setTime} />
+        </View>
+      </View>
+      <TextField accessibilityLabel="일정 이름" value={title} onChangeText={setTitle} placeholder="일정 이름" />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {EVENT_TYPES.map((t) => (
           <Chip key={t.key} label={t.label} on={type === t.key} onPress={() => setType(t.key)} />
         ))}
       </View>
-      <DatePicker label="날짜" mode="date" value={date} onChange={setDate} />
-      <DatePicker label="시간" mode="time" value={time} onChange={setTime} />
       {add.isError ? (
         <Text v="c1" color="red">
           일정을 추가하지 못했어요. 잠시 후 다시 해 주세요.

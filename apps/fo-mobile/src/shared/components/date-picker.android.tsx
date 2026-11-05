@@ -35,7 +35,7 @@ const DatePicker = ({ value, onChange, label, mode = 'date', min, max }: DatePic
         <Text v="b1" color={value ? 't1' : 't4'} style={{ flex: 1 }}>
           {value ? FORMAT[mode](value) : label}
         </Text>
-        <Icon name={mode === 'time' ? 'clock' : 'down'} size={18} color="t3" />
+        {mode === 'month' ? null : <Icon name={mode === 'time' ? 'clock' : 'calendar'} size={18} color="t3" />}
       </Pressable>
       {open ? (
         <NativeHost matchContents>

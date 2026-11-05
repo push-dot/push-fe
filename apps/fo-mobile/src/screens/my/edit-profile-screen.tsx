@@ -45,6 +45,8 @@ import { pickImage } from '@/shared/infrastructure'
 import { searchHangul } from '@push/shared'
 import { fontFor, radius, useColors } from '@/theme'
 
+const CAREER_MISSING = '회사, 직무, 기간을 채워 주세요'
+
 const TITLES: Record<ProfileSection, string> = {
   basic: '기본 정보',
   intro: '소개',
@@ -454,6 +456,9 @@ const EditCareer = ({ p }: { p: Profile }) => {
         {items.map((it, i) => {
           const expanded = open === i
           const valid = parsed[i]
+          const start = parseYm(it.start)
+          const end = it.current ? null : parseYm(it.end)
+          const period = start && (it.current || end) ? careerPeriod({ startedOn: start, endedOn: end }) : null
           return (
             <View key={i} style={{ padding: 16, borderRadius: 18, backgroundColor: c.bg2, gap: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -485,9 +490,15 @@ const EditCareer = ({ p }: { p: Profile }) => {
                   <Icon name={expanded ? 'up' : 'down'} size={18} color="t3" />
                 </Pressable>
               </View>
-              <Text v="c1" color={valid ? 't3' : 'red'} style={{ paddingLeft: 26 }}>
-                {valid ? careerPeriod(valid) : '회사, 직무, 기간을 채워 주세요'}
-              </Text>
+              {!valid && !expanded ? (
+                <Text v="c1" color="red" style={{ paddingLeft: 26 }}>
+                  {CAREER_MISSING}
+                </Text>
+              ) : period ? (
+                <Text v="c1" color="t3" style={{ paddingLeft: 26 }}>
+                  {period}
+                </Text>
+              ) : null}
               {expanded ? (
                 <View style={{ gap: 8, paddingTop: 8 }}>
                   <Input
@@ -543,6 +554,11 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     value={it.description}
                     onChangeText={(t) => set(i, { description: t })}
                   />
+                  {valid ? null : (
+                    <Text v="c1" weight="600" color="red">
+                      {CAREER_MISSING}
+                    </Text>
+                  )}
                   <Pressable
                     accessibilityRole="button"
                     onPress={() =>
@@ -557,7 +573,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
                         '/(tabs)/(my)/confirm',
                       )
                     }
-                    style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
+                    style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'center' }}
                   >
                     <Text v="b2" weight="600" color="red">
                       이 경력 삭제하기
