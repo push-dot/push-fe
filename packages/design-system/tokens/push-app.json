@@ -1,0 +1,177 @@
+{
+  "color": {
+    "light": {
+      "bg": "#FFFFFF",
+      "bg2": "#F4F5F7",
+      "card": "#FFFFFF",
+      "fill": "#F2F3F5",
+      "fill2": "#E9EBEE",
+      "line": "#EBEDF0",
+      "t1": "#16191D",
+      "t2": "#4B525C",
+      "t3": "#646B75",
+      "t4": "#646B75",
+      "ac": "#5B4CF0",
+      "acSoft": "#EFEDFF",
+      "acText": "#4A3BDF",
+      "acPress": "#4A3BDF",
+      "green": "#087A3E",
+      "greenSoft": "#E6F6EE",
+      "red": "#C9302C",
+      "redSoft": "#FDEEEE",
+      "orange": "#AD4E00",
+      "orangeSoft": "#FFF2E6",
+      "scrim": "rgba(0,0,0,.4)",
+      "shadow": "0 8px 28px rgba(22,25,29,.10)",
+      "paper": "#FFFFFF",
+      "glass": "rgba(255,255,255,.6)",
+      "sheet": "rgba(250,250,252,.84)",
+      "glassShadow": "0 6px 24px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)",
+      "deco": "#B4BAC2"
+    },
+    "dark": {
+      "bg": "#0F1012",
+      "bg2": "#17181B",
+      "card": "#1C1E22",
+      "fill": "#24272C",
+      "fill2": "#2E3238",
+      "line": "#2A2D33",
+      "t1": "#F3F4F6",
+      "t2": "#C2C7CE",
+      "t3": "#8C939C",
+      "t4": "#8C939C",
+      "ac": "#6B5BFA",
+      "acSoft": "rgba(116,100,255,.18)",
+      "acText": "#A69CFF",
+      "acPress": "#5E4FEA",
+      "green": "#3CCB7F",
+      "greenSoft": "rgba(60,203,127,.14)",
+      "red": "#FF6B6F",
+      "redSoft": "rgba(255,107,111,.14)",
+      "orange": "#FF9A3D",
+      "orangeSoft": "rgba(255,154,61,.14)",
+      "scrim": "rgba(0,0,0,.6)",
+      "shadow": "0 8px 28px rgba(0,0,0,.5)",
+      "paper": "#24272C",
+      "glass": "rgba(44,46,52,.58)",
+      "sheet": "rgba(32,34,38,.86)",
+      "glassShadow": "0 6px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)",
+      "deco": "#5C636C"
+    }
+  },
+  "spacing": {
+    "sp1": "4px",
+    "sp2": "8px",
+    "sp3": "12px",
+    "sp4": "16px",
+    "sp5": "20px",
+    "sp6": "24px"
+  },
+  "radius": {
+    "card": "20px",
+    "button-android": "16px",
+    "button-ios": "28px",
+    "button-sm-android": "12px",
+    "button-sm-ios": "20px",
+    "chip": "17px",
+    "confirm-panel-top": "24px",
+    "sheet-top": "28px",
+    "phone-ios": "54px",
+    "phone-android": "40px"
+  },
+  "typography": {
+    "fontFamily": "Pretendard, -apple-system, \"Apple SD Gothic Neo\", \"Noto Sans KR\", system-ui, sans-serif",
+    "letterSpacing": "-0.02em",
+    "styles": {
+      "h1": {
+        "size": 26,
+        "line": 36,
+        "weight": 800,
+        "tracking": "-0.03em"
+      },
+      "h2": {
+        "size": 20,
+        "line": 28,
+        "weight": 700,
+        "tracking": "-0.025em"
+      },
+      "h3": {
+        "size": 17,
+        "line": 24,
+        "weight": 700
+      },
+      "b1": {
+        "size": 16,
+        "line": 24,
+        "weight": 400
+      },
+      "b2": {
+        "size": 15,
+        "line": 22,
+        "weight": 400
+      },
+      "c1": {
+        "size": 13,
+        "line": 18,
+        "weight": 400
+      },
+      "c2": {
+        "size": 12,
+        "line": 16,
+        "weight": 400
+      }
+    },
+    "weights": {
+      "w6": 600,
+      "w7": 700
+    },
+    "largeText": {
+      "h1": {
+        "size": 34,
+        "line": 44
+      },
+      "h2": {
+        "size": 26,
+        "line": 34
+      },
+      "h3": {
+        "size": 22,
+        "line": 30
+      },
+      "b1": {
+        "size": 21,
+        "line": 30
+      },
+      "b2": {
+        "size": 20,
+        "line": 28
+      },
+      "c1": {
+        "size": 17,
+        "line": 24
+      },
+      "c2": {
+        "size": 16,
+        "line": 22
+      }
+    }
+  },
+  "platform": {
+    "ios": {
+      "safeTop": "54px",
+      "safeBottom": "34px",
+      "tabBarHeight": "94px",
+      "surface": "Liquid Glass (glass, sheet, glassShadow)"
+    },
+    "android": {
+      "safeTop": "40px",
+      "safeBottom": "20px",
+      "tabBarHeight": "78px",
+      "surface": "단색 (bg, bg2, card)"
+    }
+  },
+  "screen": {
+    "width": 390,
+    "height": 844
+  }
+}
