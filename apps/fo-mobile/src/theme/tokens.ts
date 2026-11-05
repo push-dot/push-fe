@@ -20,7 +20,6 @@ export const type = Object.fromEntries(
 
 export type TypeName = keyof typeof type
 
-/** Handoff "큰 글씨" sizes. The system font scale drives Text; these are the design's reference points. */
 export const largeType = Object.fromEntries(
   Object.entries(largeText).map(([name, t]) => [
     name,

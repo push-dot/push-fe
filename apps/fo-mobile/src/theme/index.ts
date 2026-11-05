@@ -16,7 +16,6 @@ export { useThemePreference } from './preference'
 export { HIT_TARGET, STATUS_ROW_MIN_HEIGHT, hitSlopTo } from './hit-target'
 export { platformTokens } from './platform'
 
-/** Per-platform tokens for the running OS. */
 export const platformTheme = platformTokens(Platform.OS === 'ios' ? 'ios' : 'android')
 
 export const useThemeMode = (): 'light' | 'dark' => {
