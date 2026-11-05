@@ -12,11 +12,13 @@ name: 에이전트 → 실행 방식 시트 → 항상 묻기
 - extendedWaitUntil:
     visible: "실행 방식, .*"
     timeout: 10000
+- takeScreenshot: 06_chat_access_mode-01
 - tapOn: "실행 방식, .*"
 # Native form sheet: iOS grabber sheet, Android Material bottom sheet.
 - extendedWaitUntil:
     visible: "에이전트가 어떻게 실행할까요?"
     timeout: 5000
+- takeScreenshot: 06_chat_access_mode-02
 # Each option reads as one label: name and description.
 - tapOn: "항상 묻기.*"
 - extendedWaitUntil:

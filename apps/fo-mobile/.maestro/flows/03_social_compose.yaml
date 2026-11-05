@@ -7,6 +7,7 @@ name: 소셜 → 글쓰기 → 게시
 - extendedWaitUntil:
     visible: "직장 생활"
     timeout: 10000
+- takeScreenshot: 03_social_compose-01
 - tapOn: "글쓰기"
 - tapOn: "카테고리.*"
 - tapOn: "개발"
@@ -20,3 +21,4 @@ name: 소셜 → 글쓰기 → 게시
 - extendedWaitUntil:
     visible: ".*Maestro E2E post.*"
     timeout: 10000
+- takeScreenshot: 03_social_compose-02
