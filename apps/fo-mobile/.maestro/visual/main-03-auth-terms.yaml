@@ -1,0 +1,14 @@
+appId: app.push.mobile
+name: 인증 성공 → 약관 동의
+tags:
+  - visual
+---
+- runFlow: _phone_code.yaml
+- inputText: "482915"
+- hideKeyboard
+- tapOn: "확인"
+- extendedWaitUntil:
+    visible: "서비스 이용에 동의해 주세요"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: Terms

@@ -1,0 +1,17 @@
+appId: app.push.mobile
+tags:
+  - subflow
+# Types ${KO} on iOS and ${EN} on Android (inputText is ASCII-only there), then sends.
+---
+- tapOn: "메시지"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - inputText: ${KO}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - inputText: ${EN}
+- tapOn: "보내기"
