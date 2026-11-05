@@ -4,7 +4,7 @@ tags:
   - visual
 ---
 # The boards draw each error over a code cut back to 3 digits, so the tour erases after the error shows.
-# The code input is transparent over the boxes and has no hit box for Maestro, so the boxes are tapped by point.
+# The code input is transparent over the boxes and has no hit box for Maestro (eraseText misses it), so the boxes are tapped by point and Backspace is pressed.
 # The mock reads the code's tail: 482111 wrong, 482222 expired, 482333 too many tries (mock/home.ts).
 - runFlow: _phone_code.yaml
 - inputText: "482111"
@@ -20,7 +20,9 @@ tags:
     commands:
       - tapOn:
           point: "50%,29%"
-      - eraseText: 3
+      - pressKey: Backspace
+      - pressKey: Backspace
+      - pressKey: Backspace
       - runFlow: _hide_kbd.yaml
       - takeScreenshot: SignInErrors.1
 - tapOn: "번호 바꾸기"
@@ -41,7 +43,9 @@ tags:
     commands:
       - tapOn:
           point: "50%,29%"
-      - eraseText: 3
+      - pressKey: Backspace
+      - pressKey: Backspace
+      - pressKey: Backspace
       - runFlow: _hide_kbd.yaml
       - takeScreenshot: SignInErrors.2
 - tapOn: "번호 바꾸기"
