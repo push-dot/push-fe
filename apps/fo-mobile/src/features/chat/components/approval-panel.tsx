@@ -170,11 +170,6 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
       <Text v="h3" accessibilityRole="header" style={{ fontSize: 18, lineHeight: 26, paddingHorizontal: spacing[1], paddingBottom: spacing[2] }}>
         {approval.question}
       </Text>
-      {approval.detail ? (
-        <Text v="b2" color="t2" style={{ paddingHorizontal: spacing[1], paddingBottom: spacing[2] }}>
-          {approval.detail}
-        </Text>
-      ) : null}
       {approval.sections.map(section)}
       {sectioned ? (
         <View style={{ gap: spacing[2], marginTop: spacing[1] }}>

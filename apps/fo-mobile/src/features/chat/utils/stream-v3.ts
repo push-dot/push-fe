@@ -105,7 +105,6 @@ export const approvalFromSections = (ev: Extract<StreamEvent, { type: 'choice' }
   return {
     id: ev.id,
     question: ev.title ?? '',
-    detail: ev.detail,
     ...(multi ? { foot: MULTI_PICK_FOOT } : {}),
     sections,
     optionIds: ['submit', ...answerableIds(sections), ...(cancel ? ['cancel'] : [])],

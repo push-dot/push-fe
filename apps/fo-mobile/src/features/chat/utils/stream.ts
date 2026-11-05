@@ -16,7 +16,7 @@ import { approvalFromSections, mapPaper, mapPlan, mapThink } from './stream-v3'
 export const errorText = (code?: string, retryAfterSec?: number) =>
   code === 'QUEUE_BUSY' && retryAfterSec ? queueBusyText(retryAfterSec) : (code && ERROR_TEXT[code]) || DEFAULT_ERROR_TEXT
 
-type Ask = { id: string; question: string; options: StreamOption[]; detail?: string; multiple?: boolean; warning?: string; hint?: boolean; recommended?: string }
+type Ask = { id: string; question: string; options: StreamOption[]; multiple?: boolean; warning?: string; hint?: boolean; recommended?: string }
 
 const choiceOf = (o: StreamOption): Choice => ({
   label: o.label,
@@ -25,14 +25,13 @@ const choiceOf = (o: StreamOption): Choice => ({
 })
 
 // ChatApprove..Ph6: the first row is drawn selected (acSoft + ring) until another is tapped.
-const ask = ({ id, question, options, detail, multiple, warning, hint = true, recommended }: Ask): ChatEvent => {
+const ask = ({ id, question, options, multiple, warning, hint = true, recommended }: Ask): ChatEvent => {
   const first = Math.max(0, options.findIndex((o) => o.id === recommended))
   const approval: Approval = {
     id,
     question,
     foot: multiple ? MULTI_PICK_FOOT : warning || !hint ? undefined : PICK_HINT,
     warning,
-    detail,
     submit: multiple ? MULTI_PICK_SUBMIT : undefined,
     optionIds: options.map((o) => o.id),
     sections: [{ kind: 'choices', selected: multiple ? [] : [first], ...(multiple ? { multi: true as const } : {}), items: options.map(choiceOf) }],
@@ -46,7 +45,6 @@ const askEdit = (ev: Extract<StreamEvent, { type: 'approval' }>): ChatEvent[] =>
   const approval: Approval = {
     id: ev.id,
     question: ev.title,
-    detail: ev.summary,
     foot: PICK_HINT,
     optionIds: ev.options.map((o) => o.id),
     sections: [],
@@ -126,7 +124,7 @@ export const mapEvent = (ev: StreamEvent): ChatEvent[] => {
       if (!ev.auto && ev.sections?.length) return [{ type: 'approval', approval: approvalFromSections(ev) }]
       if (!ev.auto) {
         const pending = ev.note && (!ev.resolution || ev.resolution.status === 'PENDING') ? ev.note : undefined
-        const event = ask({ id: ev.id, question: ev.title ?? CHOICE_QUESTION, options: ev.options, detail: ev.detail, multiple: ev.multiple, hint: !HINTLESS_GATES.includes(ev.gate ?? ''), recommended: ev.recommended })
+        const event = ask({ id: ev.id, question: ev.title ?? CHOICE_QUESTION, options: ev.options, multiple: ev.multiple, hint: !HINTLESS_GATES.includes(ev.gate ?? ''), recommended: ev.recommended })
         if (event.type === 'approval' && pending) event.approval.pendingNote = pending
         return [event]
       }
