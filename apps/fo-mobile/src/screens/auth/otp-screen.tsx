@@ -27,7 +27,7 @@ import {
 } from '@/features/auth'
 import { useSession } from '@/shared/infrastructure'
 import { Button, Text, TopBar } from '@/shared/components'
-import { useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const OtpScreen = () => {
@@ -131,11 +131,11 @@ const OtpScreen = () => {
     return (
       <View style={{ flex: 1, backgroundColor: c.bg }}>
         <TopBar onBack={() => router.back()} />
-        <View style={{ paddingHorizontal: 24, paddingTop: 12 }}>
+        <View style={{ paddingHorizontal: spacing[6], paddingTop: spacing[3] }}>
           <Text accessibilityRole="header" v="h1" style={{ fontSize: 24, lineHeight: 33 }}>
             {TOO_MANY_TITLE}
           </Text>
-          <Text v="b2" color="t2" style={{ marginTop: 8 }}>
+          <Text v="b2" color="t2" style={{ marginTop: spacing[2] }}>
             {TOO_MANY_BODY}
           </Text>
           <View style={{ marginTop: 28, opacity: 0.5 }}>
@@ -152,11 +152,11 @@ const OtpScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <TopBar onBack={() => router.back()} />
-      <View style={{ paddingHorizontal: 24, paddingTop: 12 }}>
+      <View style={{ paddingHorizontal: spacing[6], paddingTop: spacing[3] }}>
         <Text accessibilityRole="header" v="h1" style={{ fontSize: 24, lineHeight: 33 }}>
           {OTP_TITLE}
         </Text>
-        <Text v="b2" color="t2" style={{ marginTop: 8 }}>
+        <Text v="b2" color="t2" style={{ marginTop: spacing[2] }}>
           <Text v="b2" weight="700" style={{ fontVariant: ['tabular-nums'] }}>
             {display}
           </Text>
@@ -172,7 +172,7 @@ const OtpScreen = () => {
             }}
           />
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], marginTop: spacing[4] }}>
           {status}
           <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
             <Text v="c1" weight="600" color="t2">

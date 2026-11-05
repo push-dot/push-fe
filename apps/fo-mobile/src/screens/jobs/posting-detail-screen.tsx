@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { postingShareMessage, usePosting, useToggleBookmark } from '@/features/jobs'
 import { Button, DetailWebView, GlassButton, TopBar } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
-import { space, useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 
 const PostingDetailScreen = ({ id }: { id: string }) => {
   const c = useColors()
@@ -38,9 +38,9 @@ const PostingDetailScreen = ({ id }: { id: string }) => {
       <View
         style={{
           flexDirection: 'row',
-          gap: space[2],
+          gap: spacing[2],
           paddingTop: 14,
-          paddingHorizontal: space[4],
+          paddingHorizontal: spacing[4],
           paddingBottom: barBottom,
           backgroundColor: c.bg,
           borderTopWidth: android ? 1 : 0,

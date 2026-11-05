@@ -13,7 +13,7 @@ import {
   useViewerId,
 } from '@/features/hub'
 import { Badge, Button, Chip, Icon, SkeletonRows, StatusNote, Text, TopBar } from '@/shared/components'
-import { radius, space, useColors } from '@/theme'
+import { radius, spacing, useColors } from '@/theme'
 
 const HubScreen = () => {
   const c = useColors()
@@ -29,13 +29,13 @@ const HubScreen = () => {
 
   const header = (
     <View>
-      <View style={{ paddingHorizontal: space[5], paddingTop: space[1] }}>
+      <View style={{ paddingHorizontal: spacing[5], paddingTop: spacing[1] }}>
         <Pressable
           accessibilityRole="search"
           accessibilityLabel="이름, 직무, 기술 검색"
           onPress={() => router.push({ pathname: '/search', params: { tab: 'people' } } as unknown as Href)}
         >
-          <View style={{ height: 48, borderRadius: radius.pill, paddingHorizontal: space[4], flexDirection: 'row', alignItems: 'center', gap: space[2], backgroundColor: c.fill }}>
+          <View style={{ height: 48, borderRadius: radius.pill, paddingHorizontal: spacing[4], flexDirection: 'row', alignItems: 'center', gap: spacing[2], backgroundColor: c.fill }}>
             <Icon name="search" size={20} color="t3" />
             <Text v="b1" color="t3">
               이름, 직무, 기술 검색
@@ -43,12 +43,12 @@ const HubScreen = () => {
           </View>
         </Pressable>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2], paddingHorizontal: space[5], paddingTop: space[4] }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: spacing[4] }}>
         {HUB_CATEGORIES.map((k) => (
           <Chip key={k.key} label={k.label} check on={category.includes(k.key)} onPress={() => setCategory(toggle(category, k.key))} />
         ))}
       </ScrollView>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space[5], paddingTop: space[6], paddingBottom: space[1], gap: space[2] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing[5], paddingTop: spacing[6], paddingBottom: spacing[1], gap: spacing[2] }}>
         <Text v="h2" accessibilityRole="header">
           추천 프로필
         </Text>
@@ -66,7 +66,7 @@ const HubScreen = () => {
           </Text>
         }
         right={
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
             {viewerId ? (
               <Button label="내 프로필" variant="secondary" size="sm" onPress={() => router.push(`/profiles/${viewerId}` as Href)} />
             ) : null}
@@ -96,7 +96,7 @@ const HubScreen = () => {
         }
         onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={list.isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: space[4] }} /> : undefined}
+        ListFooterComponent={list.isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: spacing[4] }} /> : undefined}
         contentContainerStyle={{ flexGrow: 1 }}
         contentInsetAdjustmentBehavior="automatic"
       />

@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { Band, PostCard, PostListSkeleton, usePosts } from '@/features/social'
 import { Chip, GlassButton, StatusNote, Text, TopBar } from '@/shared/components'
-import { space, useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 
 const SocialScreen = () => {
   const c = useColors()
@@ -39,7 +39,7 @@ const SocialScreen = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: space[2], paddingHorizontal: space[5], paddingTop: 4, paddingBottom: 6 }}
+          contentContainerStyle={{ gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: spacing[1], paddingBottom: 6 }}
         >
           {POST_CATEGORIES.map((cat) => (
             <Chip key={cat.label} label={cat.label} on={cat.key === category} onPress={() => setCategory(cat.key)} />
@@ -73,7 +73,7 @@ const SocialScreen = () => {
             </View>
           )
         }
-        ListFooterComponent={q.isFetchingNextPage ? <ActivityIndicator style={{ padding: 20 }} /> : undefined}
+        ListFooterComponent={q.isFetchingNextPage ? <ActivityIndicator style={{ padding: spacing[5] }} /> : undefined}
       />
     </View>
   )

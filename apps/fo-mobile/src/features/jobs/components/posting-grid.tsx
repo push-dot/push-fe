@@ -5,7 +5,7 @@ import type { PostingFilters } from '@push/api-client'
 import { JobCard, StatusNote } from '../../../shared/components'
 import { usePostingPages, useToggleBookmark } from '../api/hooks'
 import { JOBS_EMPTY_LINES, RESET_FILTERS_LABEL } from '../constants'
-import { space } from '../../../theme'
+import { spacing } from '../../../theme'
 import PostingGridSkeleton from './posting-grid-skeleton'
 
 type Props = {
@@ -20,7 +20,7 @@ const EMPTY_NOTE = { flex: 1, justifyContent: 'center', paddingHorizontal: 40, p
 
 const PostingGrid = ({ filters, header, onReset }: Props) => {
   const { width } = useWindowDimensions()
-  const cardWidth = Math.floor((width - space[5] * 2 - space[3]) / 2)
+  const cardWidth = Math.floor((width - spacing[5] * 2 - spacing[3]) / 2)
   const q = usePostingPages(filters)
   const toggleBookmark = useToggleBookmark()
   const items = q.data?.pages.flatMap((p) => p.data) ?? []
@@ -31,7 +31,7 @@ const PostingGrid = ({ filters, header, onReset }: Props) => {
       numColumns={2}
       contentInsetAdjustmentBehavior="automatic"
       ListHeaderComponent={header}
-      columnWrapperStyle={{ gap: space[3], paddingHorizontal: space[5] }}
+      columnWrapperStyle={{ gap: spacing[3], paddingHorizontal: spacing[5] }}
       contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
       ItemSeparatorComponent={Gap}
       renderItem={({ item }) => (
@@ -52,7 +52,7 @@ const PostingGrid = ({ filters, header, onReset }: Props) => {
           />
         )
       }
-      ListFooterComponent={q.isFetchingNextPage ? <ActivityIndicator style={{ marginTop: 8 }} /> : undefined}
+      ListFooterComponent={q.isFetchingNextPage ? <ActivityIndicator style={{ marginTop: spacing[2] }} /> : undefined}
     />
   )
 }

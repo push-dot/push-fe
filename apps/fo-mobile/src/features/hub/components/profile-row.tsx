@@ -2,7 +2,7 @@ import { router, type Href } from 'expo-router'
 import { Pressable, View } from 'react-native'
 import type { Profile } from '@push/api-client'
 import { Badge, Icon, Text } from '../../../shared/components'
-import { space, useColors } from '../../../theme'
+import { spacing, useColors } from '../../../theme'
 import { STATUS_TONE } from '../constants'
 import { careerLine, statusLabel } from '../utils'
 import Avatar from './avatar'
@@ -13,11 +13,11 @@ const ProfileRow = ({ p }: { p: Profile }) => {
     <Pressable
       accessibilityRole="button"
       onPress={() => router.push(`/profiles/${p.userId}` as Href)}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'flex-start', gap: 14, paddingHorizontal: space[5], paddingVertical: 14, backgroundColor: pressed ? c.fill : undefined })}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'flex-start', gap: 14, paddingHorizontal: spacing[5], paddingVertical: 14, backgroundColor: pressed ? c.fill : undefined })}
     >
       <Avatar userId={p.userId} name={p.displayName} url={p.avatarUrl} size={52} />
-      <View style={{ flex: 1, minWidth: 0, gap: space[1] }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+      <View style={{ flex: 1, minWidth: 0, gap: spacing[1] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
           <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
             {p.displayName}
           </Text>

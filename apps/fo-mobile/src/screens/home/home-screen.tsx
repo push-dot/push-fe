@@ -5,7 +5,7 @@ import { Section, Shortcut, SHORTCUTS, useHomeSections } from '@/features/home'
 import { SECTIONS, useToggleBookmark, type SectionKind } from '@/features/jobs'
 import { useUnreadCount } from '@/features/notifications'
 import { GlassButton, TopBar, Wordmark } from '@/shared/components'
-import { useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 
 const HomeScreen = () => {
   const c = useColors()
@@ -32,7 +32,7 @@ const HomeScreen = () => {
         onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > 0)}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingTop: 8 }}>
+        <View style={{ flexDirection: 'row', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: spacing[2] }}>
           {SHORTCUTS.map((s) => (
             <Shortcut key={s.label} {...s} />
           ))}

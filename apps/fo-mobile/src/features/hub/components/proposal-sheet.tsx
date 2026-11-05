@@ -1,7 +1,7 @@
 import { brandOf } from '@push/shared'
 import { Platform, ScrollView, View } from 'react-native'
 import { Chip, GlassButton, Text, TextField } from '../../../shared/components'
-import { space, useColors } from '../../../theme'
+import { spacing, useColors } from '../../../theme'
 import { PROPOSAL_MAX } from '../constants'
 import Avatar from './avatar'
 
@@ -25,13 +25,13 @@ const ProposalSheet = ({ userId, name, subtitle, message, postingId, postings, e
   const c = useColors()
   return (
     <View style={{ gap: 14 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[3] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
         {Platform.OS === 'ios' ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null}
         <Text v="h2" accessibilityRole="header" style={{ flex: 1 }}>
           제안하기
         </Text>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[3] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
         <Avatar userId={userId} name={name} size={44} />
         <View style={{ flex: 1 }}>
           <Text v="b1" weight="700">
@@ -55,11 +55,11 @@ const ProposalSheet = ({ userId, name, subtitle, message, postingId, postings, e
         placeholder="어떤 이야기를 나누고 싶은지 적어 주세요"
       />
       {postings.length ? (
-        <View style={{ gap: space[3] }}>
+        <View style={{ gap: spacing[3] }}>
           <Text v="b2" weight="700">
             함께 보낼 공고 (선택)
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -space[4] }} contentContainerStyle={{ gap: space[2], paddingRight: space[4] }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -spacing[4] }} contentContainerStyle={{ gap: spacing[2], paddingRight: spacing[4] }}>
             {postings.map((p) => (
               <Chip
                 key={p.id}

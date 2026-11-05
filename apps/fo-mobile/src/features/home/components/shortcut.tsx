@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { Pressable, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { Icon3D, Text } from '../../../shared/components'
-import { useColors } from '../../../theme'
+import { type, useColors } from '../../../theme'
 import { SHORTCUTS } from '../constants'
 
 const Shortcut = ({ label, icon, glow, opacity, href }: (typeof SHORTCUTS)[number]) => {
@@ -22,7 +22,7 @@ const Shortcut = ({ label, icon, glow, opacity, href }: (typeof SHORTCUTS)[numbe
         </Defs>
         <Rect width="100%" height="100%" fill={`url(#glow-${icon})`} />
       </Svg>
-      <Text v="b1" weight="700" style={{ lineHeight: 22, paddingBottom: 40 }}>
+      <Text v="b1" weight="700" style={{ lineHeight: type.b2.lineHeight, paddingBottom: 40 }}>
         {label}
       </Text>
       <View

@@ -1,15 +1,15 @@
 import { Pressable, View } from 'react-native'
 import type { Comment } from '@push/api-client'
 import { Text } from '../../../shared/components'
-import { space } from '../../../theme'
+import { spacing } from '../../../theme'
 import { timeAgo } from '../utils'
 import Avatar from './avatar'
 
 const CommentRow = ({ comment, reply, onReply }: { comment: Comment; reply: boolean; onReply: () => void }) => {
   return (
-    <View style={{ flexDirection: 'row', gap: space[3], marginLeft: reply ? 42 : 0, marginBottom: 14 }}>
+    <View style={{ flexDirection: 'row', gap: spacing[3], marginLeft: reply ? 42 : 0, marginBottom: 14 }}>
       <Avatar user={comment.author} size={32} />
-      <View style={{ flex: 1, gap: space[1] }}>
+      <View style={{ flex: 1, gap: spacing[1] }}>
         <Text v="c1">
           <Text v="c1" weight="700">
             {comment.author.displayName}

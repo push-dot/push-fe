@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, KeyboardAvoidingView, TextInput, View } fr
 import { CommentComposer, CommentRow, PostHeader, postShareMessage, postUrl, threadComments, useComments, usePost } from '@/features/social'
 import { Glass, Icon, Menu, Text, TopBar, showToast } from '@/shared/components'
 import { copyText, shareMessage } from '@/shared/infrastructure'
-import { useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 
 const PostDetailScreen = ({ id }: { id: string }) => {
   const c = useColors()
@@ -55,11 +55,11 @@ const PostDetailScreen = ({ id }: { id: string }) => {
                 }}
               />
             )}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16 }}
+            contentContainerStyle={{ paddingHorizontal: spacing[5], paddingBottom: spacing[4] }}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="interactive"
             onEndReached={() => comments.hasNextPage && !comments.isFetchingNextPage && comments.fetchNextPage()}
-            ListFooterComponent={comments.isPending || comments.isFetchingNextPage ? <ActivityIndicator style={{ padding: 16 }} /> : undefined}
+            ListFooterComponent={comments.isPending || comments.isFetchingNextPage ? <ActivityIndicator style={{ padding: spacing[4] }} /> : undefined}
           />
           <CommentComposer postId={id} replyTo={replyTo} onClearReply={() => setReplyTo(null)} inputRef={inputRef} />
         </KeyboardAvoidingView>

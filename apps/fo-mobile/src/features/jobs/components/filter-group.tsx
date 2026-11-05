@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { View } from 'react-native'
-import { space } from '../../../theme'
+import { spacing } from '../../../theme'
 import { Text } from '../../../shared/components'
 
 const FilterGroup = ({ title, children }: { title: string; children: ReactNode }) => (
@@ -8,7 +8,7 @@ const FilterGroup = ({ title, children }: { title: string; children: ReactNode }
     <Text v="b2" weight="700">
       {title}
     </Text>
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space[2] }}>{children}</View>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] }}>{children}</View>
   </View>
 )
 

@@ -7,7 +7,7 @@ import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
 import { BODY_LABEL, MAX_IMAGES, POST_IMAGE_OPTIONS, TITLE_HINT, TITLE_LABEL, TITLE_MAX, acceptedPostImages, categoryLabel, toSocialImage, useCreatePost, type SocialImage } from '@/features/social'
 import { Button, GlassButton, Icon, Menu, Text } from '@/shared/components'
 import { pickImage } from '@/shared/infrastructure'
-import { fontFor, onAccent, radius, space, useColors } from '@/theme'
+import { fontFor, onAccent, radius, spacing, type, useColors } from '@/theme'
 
 const ComposeScreen = () => {
   const c = useColors()
@@ -32,21 +32,21 @@ const ComposeScreen = () => {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={ios ? 'padding' : undefined}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2], paddingHorizontal: space[5], paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
         <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: () => router.back() }]} />
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>
           새 글
         </Text>
         <Button label="게시" size="sm" disabled={!ready} onPress={() => submit.mutate({ category: category!, title, body, images })} />
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: space[5], gap: 14, paddingBottom: space[4] }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing[5], gap: 14, paddingBottom: spacing[4] }} keyboardShouldPersistTaps="handled">
         <Menu
           accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`}
           actions={POST_CATEGORIES.flatMap((x) =>
             x.key ? [{ key: x.key, label: x.label, selected: x.key === category, onPress: () => setCategory(x.key) }] : [],
           )}
         >
-          <View style={{ minHeight: 56, paddingHorizontal: space[4], borderRadius: radius.md, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ minHeight: 56, paddingHorizontal: spacing[4], borderRadius: radius.md, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text v="b2" color="t3">
               카테고리
             </Text>
@@ -59,7 +59,7 @@ const ComposeScreen = () => {
           </View>
         </Menu>
         <View style={{ gap: 6 }}>
-          <Pressable accessible={false} onPress={() => titleRef.current?.focus()} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+          <Pressable accessible={false} onPress={() => titleRef.current?.focus()} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing[1] }}>
             <Text v="c1" weight="700" color="t2">
               {TITLE_LABEL}
             </Text>
@@ -76,11 +76,11 @@ const ComposeScreen = () => {
             accessibilityLabel={TITLE_LABEL}
             placeholder="제목을 입력해 주세요"
             placeholderTextColor={c.t4}
-            style={[{ fontSize: 22, letterSpacing: -0.66, color: c.t1, paddingTop: 4, paddingBottom: 8, paddingHorizontal: 4, borderBottomWidth: 1, borderBottomColor: c.line }, fontFor('800')]}
+            style={[{ fontSize: 22, letterSpacing: -0.66, color: c.t1, paddingTop: spacing[1], paddingBottom: spacing[2], paddingHorizontal: spacing[1], borderBottomWidth: 1, borderBottomColor: c.line }, fontFor('800')]}
           />
         </View>
         <View style={{ gap: 6 }}>
-          <Pressable accessible={false} onPress={() => bodyRef.current?.focus()} style={{ paddingHorizontal: 4 }}>
+          <Pressable accessible={false} onPress={() => bodyRef.current?.focus()} style={{ paddingHorizontal: spacing[1] }}>
             <Text v="c1" weight="700" color="t2">
               {BODY_LABEL}
             </Text>
@@ -95,11 +95,11 @@ const ComposeScreen = () => {
             accessibilityLabel={BODY_LABEL}
             placeholder="나누고 싶은 이야기를 적어 주세요"
             placeholderTextColor={c.t4}
-            style={[{ fontSize: 16, lineHeight: 26, color: c.t2, padding: 4, minHeight: 200, textAlignVertical: 'top' }, fontFor('400')]}
+            style={[{ fontSize: type.b1.fontSize, lineHeight: 26, color: c.t2, padding: spacing[1], minHeight: 200, textAlignVertical: 'top' }, fontFor('400')]}
           />
         </View>
       </ScrollView>
-      <View style={{ flexDirection: 'row', gap: space[2], alignItems: 'center', paddingHorizontal: space[5], paddingTop: space[2], paddingBottom: insets.bottom + space[3] }}>
+      <View style={{ flexDirection: 'row', gap: spacing[2], alignItems: 'center', paddingHorizontal: spacing[5], paddingTop: spacing[2], paddingBottom: insets.bottom + spacing[3] }}>
         {images.map((a, i) => (
           <View key={a.uri}>
             <Image source={a.uri} contentFit="cover" style={{ width: 80, height: 80, borderRadius: 14, backgroundColor: c.fill2 }} accessibilityIgnoresInvertColors />

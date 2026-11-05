@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native'
 import { Icon, Text } from '../../../shared/components'
-import { onAccent, radius, space, useColors } from '../../../theme'
+import { onAccent, radius, spacing, useColors } from '../../../theme'
 import Surface from './surface'
 
 const FilterButton = ({ count, onPress }: { count: number; onPress: () => void }) => {
@@ -15,7 +15,7 @@ const FilterButton = ({ count, onPress }: { count: number; onPress: () => void }
         <Icon name="filter" size={22} color={count ? c.acText : c.t1} />
       </Surface>
       {count ? (
-        <View style={{ position: 'absolute', top: 4, right: 2, minWidth: 18, height: 18, paddingHorizontal: space[1], borderRadius: radius.pill, backgroundColor: c.ac, borderWidth: 2, borderColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ position: 'absolute', top: 4, right: 2, minWidth: 18, height: 18, paddingHorizontal: spacing[1], borderRadius: radius.pill, backgroundColor: c.ac, borderWidth: 2, borderColor: c.bg, alignItems: 'center', justifyContent: 'center' }}>
           <Text v="c2" weight="800" style={{ color: onAccent }}>
             {count}
           </Text>

@@ -3,7 +3,7 @@ import { FlatList, Pressable, View } from 'react-native'
 import type { Posting } from '@push/api-client'
 import type { SectionKind } from '@/features/jobs'
 import { Button, Icon, JobCard, Text } from '../../../shared/components'
-import { radius, space, useColors } from '../../../theme'
+import { radius, spacing, useColors } from '../../../theme'
 import { useHomePostings } from '../api/hooks'
 import { SECTION_ERROR_LINES, SECTION_RETRY_LABEL } from '../constants'
 import SectionSkeleton from './section-skeleton'
@@ -16,7 +16,7 @@ const Section = ({ kind, title, onBookmark }: { kind: SectionKind; title: string
   if (q.isPending) return <SectionSkeleton />
   return (
     <View>
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: space[5], paddingTop: space[6], paddingBottom: space[3] }}>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: spacing[5], paddingTop: spacing[6], paddingBottom: spacing[3] }}>
         <Text v="h2" accessibilityRole="header" style={{ flex: 1 }}>
           {title}
         </Text>
@@ -34,7 +34,7 @@ const Section = ({ kind, title, onBookmark }: { kind: SectionKind; title: string
         </Pressable>
       </View>
       {q.isError ? (
-        <View style={{ marginHorizontal: space[5], borderRadius: radius.lg, backgroundColor: c.bg2, alignItems: 'center', padding: space[6], gap: space[3] }}>
+        <View style={{ marginHorizontal: spacing[5], borderRadius: radius.lg, backgroundColor: c.bg2, alignItems: 'center', padding: spacing[6], gap: spacing[3] }}>
           <View>
             {SECTION_ERROR_LINES.map((line) => (
               <Text key={line} v="b2" color="t3" style={{ textAlign: 'center' }}>
@@ -50,7 +50,7 @@ const Section = ({ kind, title, onBookmark }: { kind: SectionKind; title: string
           data={items}
           keyExtractor={(p) => p.id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 14, paddingHorizontal: space[5] }}
+          contentContainerStyle={{ gap: 14, paddingHorizontal: spacing[5] }}
           renderItem={({ item }) => (
             <JobCard posting={item} onPress={() => router.push(`/postings/${item.id}`)} onBookmark={() => onBookmark(item)} />
           )}
