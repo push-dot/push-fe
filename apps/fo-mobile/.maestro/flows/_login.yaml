@@ -6,6 +6,7 @@ tags:
 - clearKeychain
 - launchApp:
     clearState: true
+    clearKeychain: true
 - extendedWaitUntil:
     visible: "휴대폰 번호를 입력해 주세요|개발 토큰으로 들어가기"
     timeout: 60000

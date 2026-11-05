@@ -5,7 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fileSize, monthDay } from '@push/shared'
 import { useStartChat } from '@/features/chat'
 import {
+  DeleteDocSheet,
   DocMenu,
+  FIX_DOC,
   PREVIEW_HEADINGS,
   Toast,
   useConvertDocument,
@@ -19,9 +21,9 @@ import { shareMessage } from '@/shared/infrastructure'
 import { useColors } from '@/theme'
 
 const ToProfileSheet = ({ id, visible, onClose }: { id: string; visible: boolean; onClose: () => void }) => {
-  const convert = useConvertDocument((documentId) => {
+  const convert = useConvertDocument((documentId, jobId) => {
     onClose()
-    router.push(`/docs/push/${documentId}`)
+    router.push(`/docs/push/${documentId}${jobId ? `?jobId=${jobId}` : ''}`)
   })
   return (
     <BottomSheet
@@ -116,8 +118,6 @@ const Paper = ({ d }: { d: ResumeDraft }) => {
   )
 }
 
-const FIX_UPLOADED_DOC = '이 서류를 고쳐 줘'
-
 const DocViewerScreen = ({ id }: { id: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
@@ -193,13 +193,13 @@ const DocViewerScreen = ({ id }: { id: string }) => {
         }}
       >
         <Button
-          label="AI로 고치기"
+          label="에이전트로 고치기"
           icon="spark"
           variant="secondary"
-          onPress={() => void start(FIX_UPLOADED_DOC, FIX_UPLOADED_DOC, undefined, undefined, undefined, { evidenceIds: [id] })}
+          onPress={() => void start(FIX_DOC, FIX_DOC, undefined, undefined, undefined, { evidenceIds: [id] })}
         />
         <Button
-          label="지원 서류용 프로필로 만들기"
+          label="내 프로필로 전환"
           icon="user"
           disabled={!d}
           onPress={() => setSheet(true)}
@@ -208,6 +208,7 @@ const DocViewerScreen = ({ id }: { id: string }) => {
       </View>
       <ToProfileSheet id={id} visible={sheet} onClose={() => setSheet(false)} />
       <DocMenu doc={menu ? (s ?? null) : null} viewing onClose={() => setMenu(false)} onDelete={() => s && undo.ask(s)} />
+      <DeleteDocSheet undo={undo} />
       <Toast text={undo.toast.text} action={undo.toast.action} onHide={undo.toast.hide} />
     </View>
   )

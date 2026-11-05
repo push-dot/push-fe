@@ -46,6 +46,7 @@ export const postings: Posting[] = [
 const details: Record<string, Partial<Omit<PostingDetail, keyof Posting>>> = {
   p1: {
     requirements: ['Kotlin 또는 Java로 4년 이상 서버 개발', 'Spring Boot, JPA 실무 경험'],
+    preferred: ['결제·금융 도메인 경험', 'Kafka 등 메시징 시스템 운영 경험'],
     workConditions: { 근무: '주 5일, 유연 출퇴근 (코어 11–16시)', 보상: '연봉 협의 · 스톡옵션' },
   },
 }

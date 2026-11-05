@@ -21,6 +21,8 @@ import {
 } from '@push/api-client'
 import {
   Avatar,
+  careerDeleteBody,
+  ConfirmSheet,
   careerDeleteCopy,
   careerPeriod,
   FieldLabel,
@@ -361,7 +363,7 @@ const EditIntro = ({ p }: { p: Profile }) => {
         />
         {/* shortcut: no inline rewrite API yet, so 다듬기 hands off to AI 채팅; add one when push-be ships it */}
         <Button
-          label="AI로 다듬기"
+          label="에이전트로 다듬기"
           icon="spark"
           variant="secondary"
           onPress={() => router.push('/(tabs)/(chat)/chat')}
@@ -409,7 +411,24 @@ const EditCareer = ({ p }: { p: Profile }) => {
   const toast = useToast()
   const [items, setItems] = useState<CareerDraft[]>(p.careers.map(toDraft))
   const [open, setOpen] = useState<number | null>(items.length ? 0 : null)
+  const [removing, setRemoving] = useState<{ i: number; item: CareerDraft } | null>(null)
+  const [asking, setAsking] = useState(false)
   const parsed = items.map(toCareer)
+  const remove = () => {
+    if (!removing) return
+    const { i, item } = removing
+    setItems((xs) => xs.filter((_, j) => j !== i))
+    setOpen(null)
+    toast.show(careerDeleteCopy.toast, {
+      action: careerDeleteCopy.undo,
+      onAction: () =>
+        setItems((xs) => {
+          const next = [...xs]
+          next.splice(i, 0, item)
+          return next
+        }),
+    })
+  }
   const set = (i: number, patch: Partial<CareerDraft>) =>
     setItems((xs) => xs.map((x, j) => (j === i ? { ...x, ...patch } : x)))
   // shortcut: no drag library installed, so the grip moves an item up one place; swap for drag-to-reorder if one is added.
@@ -529,27 +548,8 @@ const EditCareer = ({ p }: { p: Profile }) => {
                   <Pressable
                     accessibilityRole="button"
                     onPress={() => {
-                      const removed = it
-                      Alert.alert(careerDeleteCopy.title, careerDeleteCopy.body, [
-                        { text: '취소', style: 'cancel' },
-                        {
-                          text: careerDeleteCopy.confirm,
-                          style: 'destructive',
-                          onPress: () => {
-                            setItems((xs) => xs.filter((_, j) => j !== i))
-                            setOpen(null)
-                            toast.show(careerDeleteCopy.toast, {
-                              action: careerDeleteCopy.undo,
-                              onAction: () =>
-                                setItems((xs) => {
-                                  const next = [...xs]
-                                  next.splice(i, 0, removed)
-                                  return next
-                                }),
-                            })
-                          },
-                        },
-                      ])
+                      setRemoving({ i, item: it })
+                      setAsking(true)
                     }}
                     style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
                   >
@@ -575,6 +575,15 @@ const EditCareer = ({ p }: { p: Profile }) => {
           }}
         />
       </ScrollView>
+      <ConfirmSheet
+        visible={asking}
+        title={careerDeleteCopy.title}
+        body={removing ? careerDeleteBody(removing.item) : ''}
+        confirm={careerDeleteCopy.confirm}
+        danger
+        onConfirm={remove}
+        onClose={() => setAsking(false)}
+      />
       <Toast text={toast.text} action={toast.action} onHide={toast.hide} />
     </>
   )

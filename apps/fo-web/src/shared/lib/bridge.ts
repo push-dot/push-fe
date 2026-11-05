@@ -1,4 +1,12 @@
-type PushEnv = { token?: string | null; apiBaseUrl?: string; mock?: boolean }
+type PushEnv = { token?: string | null; apiBaseUrl?: string; mock?: boolean; theme?: 'light' | 'dark' }
+
+export const themeOf = (value: unknown): 'light' | 'dark' | undefined => (value === 'light' || value === 'dark' ? value : undefined)
+
+export const applyTheme = (value: unknown) => {
+  const theme = themeOf(value)
+  if (!theme || typeof document === 'undefined') return
+  document.documentElement.dataset.theme = theme
+}
 
 export type BridgeMessage =
   | { type: 'title'; title: string }
@@ -30,8 +38,12 @@ export const isMock = () => {
 }
 
 if (typeof window !== 'undefined') {
+  applyTheme(pushEnv().theme)
   window.addEventListener('push:token', (e) => {
     pushEnv().token = (e as CustomEvent<{ token?: string | null }>).detail?.token
+  })
+  window.addEventListener('push:theme', (e) => {
+    applyTheme((e as CustomEvent<{ theme?: unknown }>).detail?.theme)
   })
 }
 

@@ -1,9 +1,20 @@
 import { NativeTabs } from 'expo-router/native-tabs'
+import { Platform } from 'react-native'
+import { tabColor, useColors } from '@/theme'
 
 const TabsLayout = () => {
+  const c = useColors()
+  const platform = Platform.OS === 'android' ? 'android' : 'ios'
+  const idle = tabColor(platform, false, c)
+  const selected = tabColor(platform, true, c)
   return (
     // Android: label every tab like the design boards (Material hides unselected labels by default).
-    <NativeTabs minimizeBehavior="onScrollDown" labelVisibilityMode="labeled">
+    <NativeTabs
+      minimizeBehavior="onScrollDown"
+      labelVisibilityMode="labeled"
+      iconColor={{ default: idle, selected }}
+      labelStyle={{ default: { color: idle }, selected: { color: selected } }}
+    >
       <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>홈</NativeTabs.Trigger.Label>

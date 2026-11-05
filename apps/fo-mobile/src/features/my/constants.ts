@@ -3,6 +3,10 @@ import type { Settings, Tone } from '@push/api-client'
 export const MIN = 60_000
 export const HOUR = 60 * MIN
 export const DAY = 24 * HOUR
+export const SHEET_SWAP_MS = 400
+export const NEXT_EVENT_DAYS = 90
+export const FOLLOW_PREVIEW = 5
+export const POST_PREVIEW = 4
 
 export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -85,9 +89,6 @@ export const TONES: { key: Tone; label: string }[] = [
   { key: 'technical', label: '기술 중심' },
   { key: 'friendly', label: '친근한' },
 ]
-// shortcut: plan limits (FREE 7일 · PRO 30일 · ULTRA 무제한) aren't exposed yet, so every option is offered and push-be
-// rejects the ones over the plan; 0 here is push-be's null (무제한).
-export const RETENTION = [7, 30, 90, 0].map((d) => ({ key: d, label: d ? `${d}일` : '무제한' }))
 export const CONTACT: { key: Settings['contactVisibility']; label: string }[] = [
   { key: 'accepted', label: '제안 수락한 사람만' },
   { key: 'everyone', label: '모두에게' },
@@ -107,7 +108,9 @@ export const LANGS: { key: Settings['locale']; label: string }[] = [
 ]
 export const LOGIN_LABEL: Record<string, string> = {
   google: 'Google 계정으로 로그인',
+  apple: 'Apple 계정으로 로그인',
   github: 'GitHub 계정으로 로그인',
+  phone: '전화번호로 로그인',
   email: '이메일로 로그인',
 }
 

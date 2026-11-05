@@ -7,7 +7,7 @@ import type {
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
-  ProfileFilters, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
 
@@ -83,6 +83,8 @@ export const createApi = (c: Client) => ({
     c.get<ListEnvelope<T extends 'postings' ? Posting : T extends 'people' ? Profile : Post>>('search', {
       query: { q, type, ...page },
     }),
+
+  searchTrending: () => unwrap(c.get<DataEnvelope<SearchTrending>>('search/trending')),
 
   profiles: {
     list: (f: ProfileFilters = {}) => c.get<ListEnvelope<Profile>>('profiles', { query: f }),

@@ -1,15 +1,17 @@
 import { searchHangul } from '@push/shared'
 import { useState } from 'react'
+import { useTrending } from '@/features/search'
 import { Chip, Text, TextField } from '../../../shared/components'
 import { useProfile } from '../api/hooks'
-import { POPULAR_SKILLS, SKILL_CATALOG } from '../constants'
+import { POPULAR_SKILL_COUNT, SKILL_CATALOG } from '../constants'
 import FilterGroup from './filter-group'
 
 const FilterSkills = ({ selected, onToggle }: { selected: string[]; onToggle: (s: string) => void }) => {
   const [q, setQ] = useState('')
   const profile = useProfile()
   const mine = (profile.data?.skills ?? []).filter((s) => !selected.includes(s))
-  const popular = POPULAR_SKILLS.filter((s) => !selected.includes(s))
+  const trending = useTrending().data?.skills ?? []
+  const popular = trending.map((s) => s.id).filter((s) => !selected.includes(s)).slice(0, POPULAR_SKILL_COUNT)
   const found = q.trim() ? searchHangul(SKILL_CATALOG, q, (s) => [s]).map((r) => r.item) : []
   return (
     <>
