@@ -1,7 +1,7 @@
 import { colors, largeText, shadows, typography } from '@push/design-system'
 import { nativeShadow } from './native-shadow'
 
-export { fontWeights, radius, spacing } from '@push/design-system'
+export { fontWeights, glow, photo, radius, spacing, tile } from '@push/design-system'
 
 export const palette = colors
 
@@ -27,9 +27,7 @@ export const largeType = Object.fromEntries(
   ]),
 ) as Record<keyof typeof largeText, NativeType>
 
-const nativeShadows = (theme: { pop: string; glass: string }) => ({
-  pop: nativeShadow(theme.pop),
-  glass: nativeShadow(theme.glass),
-})
+const nativeShadows = <T extends Record<string, string>>(theme: T) =>
+  Object.fromEntries(Object.entries(theme).map(([k, v]) => [k, nativeShadow(v)])) as { [K in keyof T]: ReturnType<typeof nativeShadow> }
 
 export const shadow = { light: nativeShadows(shadows.light), dark: nativeShadows(shadows.dark) }

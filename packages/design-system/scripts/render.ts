@@ -36,6 +36,13 @@ export type App = {
   platform: Record<string, Record<string, string>>
 }
 
+export type Artboard = {
+  tile: Record<string, string>
+  glow: Record<string, string>
+  photo: Record<string, string>
+  shadow: Record<string, string>
+}
+
 type Model = ReturnType<typeof buildTokens>
 
 const camel = (name: string) => name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())
@@ -59,7 +66,7 @@ const pixels = (values: Record<string, string>) =>
     Object.entries(values).flatMap(([k, v]) => (v.endsWith('px') ? [[camel(k), unit(v)]] : [])),
   )
 
-export const buildTokens = (ds: DesignSystem, app: App) => {
+export const buildTokens = (ds: DesignSystem, app: App, artboard: Artboard) => {
   const [light, dark] = THEMES.map((theme) => themeColors(ds, app, theme))
   if (Object.keys(light).join() !== Object.keys(dark).join()) {
     throw new Error('Every colour needs both a light and a dark value')
@@ -94,15 +101,21 @@ export const buildTokens = (ds: DesignSystem, app: App) => {
     shadows: Object.fromEntries(
       THEMES.map((theme) => [
         theme,
-        Object.fromEntries(
-          ds.shadow.tokens.map((t) => {
-            const name = t.name.slice(PREFIXES.shadow.length)
-            return [name, app.color[theme][SHADOW_CSS_NAMES[name] ?? name] ?? t.value[theme]]
-          }),
-        ),
+        {
+          ...Object.fromEntries(
+            ds.shadow.tokens.map((t) => {
+              const name = t.name.slice(PREFIXES.shadow.length)
+              return [name, app.color[theme][SHADOW_CSS_NAMES[name] ?? name] ?? t.value[theme]]
+            }),
+          ),
+          ...artboard.shadow,
+        },
       ]),
     ),
     platform: Object.fromEntries(Object.entries(app.platform).map(([os, v]) => [os, pixels(v)])),
+    tile: artboard.tile,
+    glow: artboard.glow,
+    photo: artboard.photo,
     tracking,
   }
 }
@@ -148,6 +161,9 @@ export const renderTokens = (m: Model) =>
     declare('radius', m.radius),
     declare('shadows', m.shadows),
     declare('platform', m.platform),
+    declare('tile', m.tile),
+    declare('glow', m.glow),
+    declare('photo', m.photo),
   ].join('\n')
 
 const vars = (entries: [string, string][]) => entries.map(([k, v]) => `--${k}:${v}`).join(';')

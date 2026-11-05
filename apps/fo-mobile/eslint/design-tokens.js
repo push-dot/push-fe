@@ -19,7 +19,7 @@ const BANNED_COLOR_NAMES = 'white|black|blue|gray|grey|purple|yellow|pink|brown|
 const HINT = 'Read it from @/theme (useColors, type, radius, spacing, useShadow, fontFor) or add it to the design-system tokens.'
 
 const numeric = (keys, values, what) => ({
-  selector: `Property[key.name=${keys}] Literal[raw=${oneOf(values)}]`,
+  selector: `Property[key.name=${keys}] Literal[raw=${oneOf(values)}]:not(MemberExpression > Literal)`,
   message: `Raw ${what} matches a design token. ${HINT}`,
 })
 
@@ -29,6 +29,10 @@ const restricted = [
   { selector: `Property[key.name=/[cC]olor$/] Literal[value=/^(${BANNED_COLOR_NAMES})$/]`, message: `Named colour. ${HINT}` },
   { selector: `JSXAttribute[name.name=/[cC]olor$/] Literal[value=/^(${BANNED_COLOR_NAMES})$/]`, message: `Named colour. ${HINT}` },
   { selector: 'Property[key.name="fontFamily"]', message: `Raw fontFamily. Use Text or fontFor() from @/theme.` },
+  {
+    selector: 'MemberExpression[object.name=/^(spacing|radius|type)$/] > MemberExpression.property',
+    message: 'Nested token lookup. Write spacing[4], not spacing[spacing[1]].',
+  },
   numeric('/^(gap|rowGap|columnGap|padding|margin)(Top|Bottom|Left|Right|Start|End|Horizontal|Vertical)?$/', SPACING, 'spacing'),
   numeric('/^border\\w*Radius$/', RADIUS, 'radius'),
   numeric('"fontSize"', FONT_SIZE, 'fontSize'),
