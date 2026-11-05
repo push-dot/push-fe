@@ -35,7 +35,7 @@ const HubScreen = () => {
           accessibilityLabel="이름, 직무, 기술 검색"
           onPress={() => router.push({ pathname: '/search', params: { tab: 'people' } } as unknown as Href)}
         >
-          <View style={{ height: 48, borderRadius: radius.pill, paddingHorizontal: spacing[spacing[1]], flexDirection: 'row', alignItems: 'center', gap: spacing[2], backgroundColor: c.fill }}>
+          <View style={{ height: 48, borderRadius: radius.pill, paddingHorizontal: spacing[4], flexDirection: 'row', alignItems: 'center', gap: spacing[2], backgroundColor: c.fill }}>
             <Icon name="search" size={20} color="t3" />
             <Text v="b1" color="t3">
               이름, 직무, 기술 검색
@@ -43,7 +43,7 @@ const HubScreen = () => {
           </View>
         </Pressable>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: spacing[spacing[1]] }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: spacing[4] }}>
         {HUB_CATEGORIES.map((k) => (
           <Chip key={k.key} label={k.label} check on={category.includes(k.key)} onPress={() => setCategory(toggle(category, k.key))} />
         ))}
@@ -96,7 +96,7 @@ const HubScreen = () => {
         }
         onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={list.isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: spacing[spacing[1]] }} /> : undefined}
+        ListFooterComponent={list.isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: spacing[4] }} /> : undefined}
         contentContainerStyle={{ flexGrow: 1 }}
         contentInsetAdjustmentBehavior="automatic"
       />

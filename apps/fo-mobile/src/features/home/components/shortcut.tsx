@@ -2,11 +2,12 @@ import { router } from 'expo-router'
 import { Pressable, View } from 'react-native'
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg'
 import { Icon3D, Text } from '../../../shared/components'
-import { type, useColors } from '../../../theme'
+import { type, useColors, useShadow } from '../../../theme'
 import { SHORTCUTS } from '../constants'
 
 const Shortcut = ({ label, icon, glow, opacity, href }: (typeof SHORTCUTS)[number]) => {
   const c = useColors()
+  const shadow = useShadow()
   return (
     <Pressable
       accessibilityRole="button"
@@ -31,10 +32,7 @@ const Shortcut = ({ label, icon, glow, opacity, href }: (typeof SHORTCUTS)[numbe
           right: 6,
           bottom: 4,
           transform: [{ rotate: '-8deg' }],
-          shadowColor: '#000000',
-          shadowOpacity: 0.18,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 6 },
+          ...shadow.icon,
         }}
       >
         <Icon3D name={icon} size={52} />

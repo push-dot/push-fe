@@ -124,11 +124,11 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                 })}
               </View>
               {active.isPending ? (
-                <View style={{ paddingHorizontal: spacing[5], paddingTop: spacing[spacing[1]], paddingBottom: spacing[1] }}>
+                <View style={{ paddingHorizontal: spacing[5], paddingTop: spacing[4], paddingBottom: spacing[1] }}>
                   <Skeleton width={120} height={12} />
                 </View>
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing[5], paddingTop: spacing[spacing[1]], paddingBottom: spacing[1] }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing[5], paddingTop: spacing[4], paddingBottom: spacing[1] }}>
                   <Text v="c1" weight="600" color="t3" numberOfLines={1} style={{ flex: 1 }}>
                     ‘{q}’ {TABS.find((t) => t.key === tab)!.label} {formatCount(totalOf(tab) ?? items.length)}{totalOf(tab) === undefined && active.hasNextPage ? '+' : ''}{TABS.find((t) => t.key === tab)!.unit}
                   </Text>

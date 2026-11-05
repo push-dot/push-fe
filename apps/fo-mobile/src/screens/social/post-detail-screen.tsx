@@ -61,11 +61,11 @@ const PostDetailScreen = ({ id }: { id: string }) => {
                 }}
               />
             )}
-            contentContainerStyle={{ paddingHorizontal: spacing[5], paddingBottom: spacing[spacing[1]] }}
+            contentContainerStyle={{ paddingHorizontal: spacing[5], paddingBottom: spacing[4] }}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="interactive"
             onEndReached={() => comments.hasNextPage && !comments.isFetchingNextPage && comments.fetchNextPage()}
-            ListFooterComponent={comments.isPending || comments.isFetchingNextPage ? <ActivityIndicator style={{ padding: spacing[spacing[1]] }} /> : undefined}
+            ListFooterComponent={comments.isPending || comments.isFetchingNextPage ? <ActivityIndicator style={{ padding: spacing[4] }} /> : undefined}
           />
           <CommentComposer postId={id} replyTo={replyTo} onClearReply={() => setReplyTo(null)} inputRef={inputRef} />
         </KeyboardAvoidingView>

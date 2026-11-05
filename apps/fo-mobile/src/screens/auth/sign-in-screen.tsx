@@ -86,7 +86,7 @@ const SignInScreen = () => {
           accessibilityRole="button"
           disabled={busy}
           onPress={startPhone}
-          style={{ alignSelf: 'center', minHeight: 44, paddingHorizontal: spacing[spacing[1]], justifyContent: 'center' }}
+          style={{ alignSelf: 'center', minHeight: 44, paddingHorizontal: spacing[4], justifyContent: 'center' }}
         >
           <Text weight="600" color="t2">
             {PHONE_START}
@@ -108,7 +108,7 @@ const SignInScreen = () => {
       {failure ? (
         <View
           accessibilityRole="alert"
-          style={{ position: 'absolute', left: 20, right: 20, top: insets.top + 16, flexDirection: 'row', alignItems: 'flex-start', gap: spacing[3], padding: spacing[spacing[1]], borderRadius: radius.lg, backgroundColor: c.redSoft }}
+          style={{ position: 'absolute', left: 20, right: 20, top: insets.top + 16, flexDirection: 'row', alignItems: 'flex-start', gap: spacing[3], padding: spacing[4], borderRadius: radius.lg, backgroundColor: c.redSoft }}
         >
           <Text weight="800" color="red">
             !

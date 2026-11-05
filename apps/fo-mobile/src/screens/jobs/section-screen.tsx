@@ -14,7 +14,7 @@ const SectionScreen = ({ kind }: { kind: SectionKind }) => {
       <PostingGrid
         filters={withDeadlineWindow({ sort: kind })}
         header={
-          <Text v="b2" color="t3" style={{ paddingHorizontal: spacing[5], paddingTop: spacing[1], paddingBottom: spacing[spacing[1]] }}>
+          <Text v="b2" color="t3" style={{ paddingHorizontal: spacing[5], paddingTop: spacing[1], paddingBottom: spacing[4] }}>
             {s.description}
           </Text>
         }
