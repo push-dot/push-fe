@@ -111,15 +111,44 @@ export const shadows = {
     pop: '0 8px 28px rgba(22,25,29,.10)',
     glass:
       '0 6px 24px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)',
+    icon: '0 6px 10px rgba(0,0,0,.18)',
   },
   dark: {
     pop: '0 8px 28px rgba(0,0,0,.5)',
     glass:
       '0 6px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)',
+    icon: '0 6px 10px rgba(0,0,0,.18)',
   },
 } as const
 
 export const platform = {
   ios: { safeTop: 54, safeBottom: 34, tabBarHeight: 94 },
   android: { safeTop: 40, safeBottom: 20, tabBarHeight: 78 },
+} as const
+
+export const tile = {
+  navy: '#1F3A8A',
+  indigo: '#3B5BDB',
+  indigoDeep: '#364FC7',
+  blue: '#1971C2',
+  blueDeep: '#1864AB',
+  sky: '#1C7ED6',
+  cyan: '#0C8599',
+  green: '#2F9E44',
+  greenDeep: '#2B8A3E',
+  amber: '#E67700',
+  orange: '#E8590C',
+  violet: '#5F3DC4',
+  grape: '#862E9C',
+  pink: '#D6336C',
+  rose: '#C2255C',
+  slate: '#343A40',
+} as const
+
+export const glow = { ac: '#6C5CF5', orange: '#FF8A2A', green: '#12A866' } as const
+
+export const photo = {
+  ink: 'rgba(255,255,255,.92)',
+  button: 'rgba(255,255,255,.86)',
+  shade: 'rgba(0,0,0,.28)',
 } as const

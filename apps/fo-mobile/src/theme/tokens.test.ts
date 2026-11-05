@@ -27,10 +27,12 @@ describe('theme tokens', () => {
       light: {
         pop: { shadowColor: '#16191D', shadowOpacity: 0.1, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
         glass: { shadowColor: '#000000', shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
+        icon: { shadowColor: '#000000', shadowOpacity: 0.18, shadowRadius: 5, shadowOffset: { width: 0, height: 6 } },
       },
       dark: {
         pop: { shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
         glass: { shadowColor: '#000000', shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
+        icon: { shadowColor: '#000000', shadowOpacity: 0.18, shadowRadius: 5, shadowOffset: { width: 0, height: 6 } },
       },
     })
   })

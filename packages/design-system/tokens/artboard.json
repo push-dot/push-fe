@@ -1,0 +1,34 @@
+{
+  "source": "Values the 2026-11-05 artboards draw that the handoff tokens.json lacks. Same in light and dark.",
+  "tile": {
+    "navy": "#1F3A8A",
+    "indigo": "#3B5BDB",
+    "indigoDeep": "#364FC7",
+    "blue": "#1971C2",
+    "blueDeep": "#1864AB",
+    "sky": "#1C7ED6",
+    "cyan": "#0C8599",
+    "green": "#2F9E44",
+    "greenDeep": "#2B8A3E",
+    "amber": "#E67700",
+    "orange": "#E8590C",
+    "violet": "#5F3DC4",
+    "grape": "#862E9C",
+    "pink": "#D6336C",
+    "rose": "#C2255C",
+    "slate": "#343A40"
+  },
+  "glow": {
+    "ac": "#6C5CF5",
+    "orange": "#FF8A2A",
+    "green": "#12A866"
+  },
+  "photo": {
+    "ink": "rgba(255,255,255,.92)",
+    "button": "rgba(255,255,255,.86)",
+    "shade": "rgba(0,0,0,.28)"
+  },
+  "shadow": {
+    "icon": "0 6px 10px rgba(0,0,0,.18)"
+  }
+}

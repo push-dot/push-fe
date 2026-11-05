@@ -6,15 +6,19 @@ import {
   fontFamily,
   fontWeights,
   largeText,
+  glow,
+  photo,
   platform,
   radius,
   shadows,
   spacing,
+  tile,
   typography,
 } from '../tokens'
 
 const designSystem = JSON.parse(readSource('tokens/design-system.json'))
 const app = JSON.parse(readSource('tokens/push-app.json'))
+const artboard = JSON.parse(readSource('tokens/artboard.json'))
 const px = (v: string) => Number.parseFloat(v)
 const camel = (name: string) => name.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())
 const byName = (theme: 'light' | 'dark') => colors[theme] as Record<string, string>
@@ -29,7 +33,7 @@ describe('colors', () => {
   it.each(['light', 'dark'] as const)('equal the app handoff in %s', (theme) => {
     const { shadow, glassShadow, ...flat } = app.color[theme]
     expect(byName(theme)).toEqual(flat)
-    expect(shadows[theme]).toEqual({ pop: shadow, glass: glassShadow })
+    expect(shadows[theme]).toEqual({ pop: shadow, glass: glassShadow, icon: artboard.shadow.icon })
   })
 
   it.each(['light', 'dark'] as const)('keep every design system colour name in %s', (theme) => {
@@ -47,6 +51,15 @@ describe('colors', () => {
     expect(colors.light.deco).toBe('#B4BAC2')
     expect(colors.dark.deco).toBe('#5C636C')
     expect(Object.keys(colors.dark)).toEqual(Object.keys(colors.light))
+  })
+})
+
+describe('artboard colours', () => {
+  it('give avatar tiles and shortcut glows one name each', () => {
+    expect(tile).toEqual(artboard.tile)
+    expect(glow).toEqual(artboard.glow)
+    expect(photo).toEqual(artboard.photo)
+    expect(tile.indigo).toBe('#3B5BDB')
   })
 })
 
