@@ -22,14 +22,21 @@ export const CHOICE_QUESTION = '어떻게 할까요?'
 export const MULTI_PICK_SUBMIT = '이대로 진행'
 export const MULTI_PICK_FOOT = '여러 개 고를 수 있어요'
 export const PREVENTION_QUESTION = '어떤 문제를 예방할까요?'
+export const PICK_HINT = '번호를 누르거나 바로 말해도 돼요'
+export const HINTLESS_GATES = ['validate_cap']
 
 export const AWAITING_TEXT = { approval: '확인을 기다리고 있어요', choice: '선택을 기다리고 있어요' } as const
 
 export const FIT_ROWS = [
   { key: 'techStack', label: '기술 스택' },
   { key: 'experienceLink', label: '경험 연관성' },
+  { key: 'careerLevel', label: '경력 수준' },
   { key: 'keyword', label: '키워드' },
+  { key: 'domain', label: '도메인' },
 ] as const
+export const FIT_LOCKED = 'PRO로 올리면 항목별 점수와 약점을 볼 수 있어요'
+export const FIT_TEASER = '이렇게 고치면 N점대 · ULTRA'
+export const fitProjected = (label: string) => `이렇게 고치면 ${label}`
 
 const USAGE_BODY = usageExhausted('FREE').body
 export const ERROR_TEXT: Record<string, string> = {
