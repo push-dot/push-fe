@@ -28,16 +28,24 @@ name: 에이전트 → 대화 이름 바꾸기·링크 추가 시트 → 키보�
     visible: "경력기술서 다듬기"
     timeout: 10000
 # The row's menu opens on long press on both platforms; a tap opens the thread.
-- longPressOn: "경력기술서 다듬기"
+# Android drops a long press made while the modal still slides in, so wait and retry.
+- waitForAnimationToEnd
+- retry:
+    maxRetries: 2
+    commands:
+      - longPressOn: "경력기술서 다듬기"
+      - extendedWaitUntil:
+          visible: "이름 바꾸기"
+          timeout: 4000
 - tapOn: "이름 바꾸기"
 - extendedWaitUntil:
     visible: "대화 이름을 바꿀까요?"
     timeout: 5000
+- eraseText
+- inputText: "Renamed chat"
 - assertVisible: "대화 이름"
 - assertVisible: "이름 바꾸기"
 - takeScreenshot: 10_sheet_keyboard_rename-02
-- eraseText
-- inputText: "Renamed chat"
 - runFlow:
     file: _tap_sheet_button.yaml
     env:
