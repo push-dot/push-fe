@@ -47,7 +47,10 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   return (
-    <div className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}>
+    <div
+      className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}
+      data-theme="light"
+    >
       {auth ? (
         <header className="auth-bar">
           <NavLink to="/" end className="auth-logo">

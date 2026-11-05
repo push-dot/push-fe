@@ -1,0 +1,27 @@
+{
+  "source": "Claude Design \"Push 앱\" canvas exported 2026-11-05 (layer \"audit 2026-10\"). Values here win over design-system.json.",
+  "color": {
+    "t3": { "light": "#646B75" },
+    "t4": { "light": "#646B75", "dark": "#8C939C" },
+    "ac": { "dark": "#6B5BFA" },
+    "red": { "light": "#C9302C" },
+    "green": { "light": "#087A3E" },
+    "orange": { "light": "#AD4E00" },
+    "acPress": {
+      "light": "#4A3BDF",
+      "dark": "#5E4FEA",
+      "usage": "Pressed primary button."
+    },
+    "paper": {
+      "light": "#FFFFFF",
+      "dark": "#24272C",
+      "usage": "Document page surface in the 서류 viewer."
+    },
+    "deco": {
+      "light": "#B4BAC2",
+      "dark": "#5C636C",
+      "usage": "Decoration only: sheet grabber, to-do box, result elbow, queued message border. Never text."
+    }
+  },
+  "letterSpacing": "-0.02em"
+}
