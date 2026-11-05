@@ -22,7 +22,8 @@ name: 에이전트 → 빠른 시작(공고 링크) → 변경 적용 → 완료
 - extendedWaitUntil:
     visible: "이 수정을 적용할까요?"
     timeout: 60000
-- tapOn: "적용"
+# iOS reads the numbered option as one label, "1. 적용".
+- tapOn: ".*적용"
 - extendedWaitUntil:
     visible: "Push 프로필에 저장했어요.*"
     timeout: 60000
