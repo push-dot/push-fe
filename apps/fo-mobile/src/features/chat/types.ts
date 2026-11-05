@@ -70,6 +70,8 @@ export type ChatItem =
     }
   | { type: 'worked'; id: string; seconds: number }
   | { type: 'error'; id: string; text: string; code?: string }
+  /** A gate nobody answered before the conversation moved on (resolution EXPIRED): its question, greyed out. */
+  | { type: 'stale'; id: string; text: string }
 
 export type Choice = { label: string; desc?: string; hint?: string; badge?: { label: string; tone: BadgeTone } }
 
