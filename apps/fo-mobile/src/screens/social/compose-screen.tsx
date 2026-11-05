@@ -32,14 +32,14 @@ const ComposeScreen = () => {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior="padding">
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: ios ? 14 : insets.top + 14, paddingBottom: 14 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: ios ? spacing[4] : insets.top + spacing[4], paddingBottom: spacing[4] }}>
         <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: () => router.back() }]} />
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>
           새 글
         </Text>
         <Button label="게시" size="pill" style={{ flexGrow: 0 }} disabled={!ready} onPress={() => submit.mutate({ category: category!, title, body, images })} />
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing[5], gap: 14, paddingBottom: insets.bottom + spacing[4] }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing[5], gap: spacing[4], paddingBottom: insets.bottom + spacing[4] }} keyboardShouldPersistTaps="handled">
         <Menu
           stretch
           accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`}
