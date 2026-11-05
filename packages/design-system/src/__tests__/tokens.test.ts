@@ -33,7 +33,7 @@ describe('colors', () => {
   it.each(['light', 'dark'] as const)('equal the app handoff in %s', (theme) => {
     const { shadow, glassShadow, ...flat } = app.color[theme]
     expect(byName(theme)).toEqual(flat)
-    expect(shadows[theme]).toEqual({ pop: shadow, glass: glassShadow, icon: artboard.shadow.icon })
+    expect(shadows[theme]).toEqual({ pop: shadow, glass: glassShadow, ...artboard.shadow })
   })
 
   it.each(['light', 'dark'] as const)('keep every design system colour name in %s', (theme) => {

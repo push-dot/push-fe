@@ -85,6 +85,13 @@ describe('MenuAnchor (Android)', () => {
     expect(onClose).toHaveBeenCalled()
     expect(actions[1]!.onPress).toHaveBeenCalled()
   })
+
+  it('separates the destructive item and draws a design icon as the leading icon', () => {
+    const withIcon = [{ ...actions[0]!, icon: 'share' as const }, actions[1]!]
+    const tree = MenuAnchor({ actions: withIcon, open: true, onClose: vi.fn(), children: createElement('View') })
+    expect(findAll(tree, stubs.compose.HorizontalDivider)).toHaveLength(1)
+    expect(findAll(tree, stubs.compose.DropdownMenuItem.LeadingIcon)).toHaveLength(1)
+  })
 })
 
 describe('Menu and ContextMenu (Android)', () => {

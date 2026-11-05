@@ -10,16 +10,17 @@ type Props = {
   left?: ReactNode
   onBack?: () => void
   right?: ReactNode
+  safeTop?: boolean
 }
 
 const ios = Platform.OS === 'ios'
 const EDGE = ios ? spacing[3] : spacing[2]
 
-const TopBar = ({ title, left, onBack, right }: Props) => {
+const TopBar = ({ title, left, onBack, right, safeTop = true }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   return (
-    <View style={{ paddingTop: insets.top, backgroundColor: c.bg, zIndex: 3 }}>
+    <View style={{ paddingTop: safeTop ? insets.top : 0, backgroundColor: c.bg, zIndex: 3 }}>
       <View style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', paddingLeft: onBack ? EDGE : spacing[5], paddingRight: EDGE, gap: 2 }}>
         {onBack ? <GlassButton actions={[{ icon: 'back', label: '뒤로', onPress: onBack }]} /> : null}
         {left ? <View style={{ flex: 1 }}>{left}</View> : null}
