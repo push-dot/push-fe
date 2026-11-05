@@ -5,6 +5,7 @@ import { Button, GlassButton, Icon, Menu, Text, askConfirm } from '@/shared/comp
 import { spacing } from '../../../theme'
 import { type ChatDoc } from '../api/schemas'
 import { useChatDocs, useUploadChatDoc } from '../api/hooks'
+import { useLeaveSidebar } from '../hooks'
 import Note from './note'
 import PageModal from './page-modal'
 import { docAiSub } from '../constants'
@@ -18,6 +19,7 @@ export const DocsModal = () => {
   const docs = useChatDocs()
   const upload = useUploadChatDoc()
   const remove = useRemoveSource(() => {})
+  const leave = useLeaveSidebar()
   const ask = (d: ChatDoc) => {
     const copy = deleteDocCopy(d.fileName)
     askConfirm({ ...copy, danger: true, onConfirm: () => remove.mutate(d.id) })
@@ -32,7 +34,7 @@ export const DocsModal = () => {
           </Text>
           <View style={{ flexDirection: 'row', gap: spacing[2] }}>
             <Button label="파일 등록" size="pill" variant="secondary" onPress={() => upload.mutate()} />
-            <Button label="에이전트로 만들기" size="pill" variant="secondary" onPress={() => router.back()} />
+            <Button label="에이전트로 만들기" size="pill" variant="secondary" onPress={() => leave(() => router.dismissTo('/chat'))} />
           </View>
         </View>
       ) : null}
@@ -49,7 +51,7 @@ export const DocsModal = () => {
           <Menu
             accessibilityLabel={`${d.fileName} 더 보기`}
             actions={[
-              { key: 'view', label: '서류 보기', onPress: () => router.push(`/docs/${d.id}`) },
+              { key: 'view', label: '서류 보기', onPress: () => leave(() => router.push(`/docs/${d.id}`)) },
               { key: 'delete', label: '서류 삭제하기', destructive: true, onPress: () => ask(d) },
             ]}
           >

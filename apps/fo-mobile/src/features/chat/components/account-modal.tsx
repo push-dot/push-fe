@@ -7,6 +7,7 @@ import { usePersonalPurchase } from '@/features/billing'
 import { type Account } from '../api/schemas'
 import { TONES, tintOf, useMySettings, useUpdateSettings } from '@/features/my'
 import { useAccessMode, useChatAccount, useChatDocs, useMe } from '../api/hooks'
+import { useLeaveSidebar } from '../hooks'
 import { ACCESS_MODES, ACCOUNT_REFERENCE_NOTE, ACCOUNT_REFERENCE_TITLE, PLAN_FOOTER, PLAN_HEADER } from '../constants'
 import { EFFORTS, accessMenu, effortMenu, retentionMenu, toneMenu, usagePercent } from '../utils/account-menus'
 import { Appear } from './motion'
@@ -17,7 +18,6 @@ import PageModal from './page-modal'
 /** 계정 modal (ChatAccount) with the 요금제 page inside it (PlanUpgrade). */
 export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'account' | 'plan' }) => {
   const [page, setPage] = useState<'account' | 'plan'>(initialPage)
-  const close = () => router.back()
   const account = useChatAccount(true)
   const purchase = usePersonalPurchase()
   const plan = page === 'plan' && account.data
@@ -34,7 +34,7 @@ export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'accou
         )
       }
     >
-      {plan ? <PlanPage account={account.data!} purchase={purchase} /> : <AccountPage account={account.data} onPlan={() => setPage('plan')} onClose={close} />}
+      {plan ? <PlanPage account={account.data!} purchase={purchase} /> : <AccountPage account={account.data} onPlan={() => setPage('plan')} />}
     </PageModal>
   )
 }
@@ -67,14 +67,15 @@ const UsageRow = ({ percent }: { percent: number }) => {
   )
 }
 
-const AccountPage = ({ account, onPlan, onClose }: { account?: Account; onPlan: () => void; onClose: () => void }) => {
+const AccountPage = ({ account, onPlan }: { account?: Account; onPlan: () => void }) => {
   const me = useMe()
   const settings = useMySettings(true)
   const docs = useChatDocs()
   const save = useUpdateSettings()
   const access = useAccessMode()
   const mode = ACCESS_MODES.find((m) => m.key === access.mode)!
-  const toMy = () => (onClose(), router.navigate('/my'))
+  const leave = useLeaveSidebar()
+  const toMy = () => leave(() => router.navigate('/my'))
   const tone = TONES.find((t) => t.key === settings.data?.defaultTone)
   const days = settings.data?.chatRetentionDays
   const effort = EFFORTS.find((e) => e.key === settings.data?.defaultEffort)

@@ -11,6 +11,7 @@ import { LINK_KIND_LABEL } from '../utils/links'
 import { linkAddPath } from '../utils/sheet-routes'
 import { useAddLink, useDeleteLink, useMyLinks } from '@/features/my'
 import { useStartChat } from '../api/hooks'
+import { useLeaveSidebar } from '../hooks'
 import GroupTitle from './group-title'
 import Note from './note'
 import PageModal from './page-modal'
@@ -40,8 +41,9 @@ const statusOf = (l: UserLink): { label: string; tone: BadgeTone } =>
       : { label: KINDS.find((k) => k.key === l.kind)!.label, tone: 'grey' }
 
 /** 내 링크 modal (MyLinks / MyLinksEmpty / MyLinkMenu / MyLinkAdd). */
-export const LinksModal = ({ onUse }: { onUse: () => void }) => {
+export const LinksModal = () => {
   const start = useStartChat()
+  const leave = useLeaveSidebar()
   const [kind, setKind] = useState<LinkKind | null>(null)
   const q = useMyLinks(true)
   const all = q.data?.data ?? []
@@ -52,16 +54,17 @@ export const LinksModal = ({ onUse }: { onUse: () => void }) => {
   const act = (l: UserLink, what: 'open' | 'copy' | 'use' | 'delete') => {
     if (what === 'open') void openUrl(l.url)
     if (what === 'copy') void copyText(l.url)
-    if (what === 'use') {
-      onUse()
-      void start(
-        l.title,
-        l.kind === 'job' ? `${l.url} 공고에 맞춰 내 서류를 고쳐 주세요` : `${l.url} 내용을 근거로 써 주세요`,
-        undefined,
-        undefined,
-        l.kind === 'job' ? 'match_posting' : undefined,
+    if (what === 'use')
+      leave(
+        () =>
+          void start(
+            l.title,
+            l.kind === 'job' ? `${l.url} 공고에 맞춰 내 서류를 고쳐 주세요` : `${l.url} 내용을 근거로 써 주세요`,
+            undefined,
+            undefined,
+            l.kind === 'job' ? 'match_posting' : undefined,
+          ),
       )
-    }
     if (what === 'delete')
       askConfirm({
         title: '이 링크를 삭제할까요?',

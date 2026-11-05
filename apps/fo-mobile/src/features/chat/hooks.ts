@@ -1,5 +1,20 @@
-import { useEffect, useRef, useState } from 'react'
+import { router, useNavigation } from 'expo-router'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AccessibilityInfo, Animated, Easing } from 'react-native'
+import { CLOSE_DRAWER } from './constants'
+
+/** Leaves a sidebar page for another screen: iOS shows the page over the open drawer, so close both first and back returns to the chat. */
+export const useLeaveSidebar = () => {
+  const navigation = useNavigation()
+  return useCallback(
+    (go: () => void) => {
+      navigation.dispatch(CLOSE_DRAWER)
+      router.back()
+      go()
+    },
+    [navigation],
+  )
+}
 
 export const useReduceMotion = () => {
   const [on, setOn] = useState(false)

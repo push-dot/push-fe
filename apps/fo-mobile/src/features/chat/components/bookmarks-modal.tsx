@@ -7,6 +7,7 @@ import { Button, Chip, Icon, Menu, Text } from '@/shared/components'
 import { spacing } from '../../../theme'
 import { useBookmarkList } from '@/features/my'
 import { useStartChat } from '../api/hooks'
+import { useLeaveSidebar } from '../hooks'
 import { BOOKMARK_EMPTY } from '../constants'
 import Mark from './mark'
 import Note from './note'
@@ -19,13 +20,13 @@ export const logoColor = brandOf
 const soon = (p: Posting) => !!p.deadline && new Date(p.deadline).getTime() - Date.now() < 7 * 86_400_000
 
 /** 북마크한 공고 modal (ChatBookmarks). Tapping a job offers its detail or a conversation tailored to it. */
-export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
+export const BookmarksModal = () => {
   const start = useStartChat()
+  const leave = useLeaveSidebar()
   const [filter, setFilter] = useState<'all' | 'soon' | 'notApplied'>('all')
   const q = useBookmarkList(true)
   const all = q.data?.data ?? []
   const lists = { all, soon: all.filter(soon), notApplied: all.filter((p) => !p.applied) }
-  const go = (fn: () => void) => (onDone(), fn())
   const empty = !!q.data && all.length === 0
 
   return (
@@ -35,7 +36,7 @@ export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
           <Text v="b1" weight="700" color="t2">
             {BOOKMARK_EMPTY}
           </Text>
-          <Button label="채용공고 보기" size="pill" variant="secondary" onPress={() => go(() => (router.back(), router.push('/jobs')))} />
+          <Button label="채용공고 보기" size="pill" variant="secondary" onPress={() => leave(() => router.push('/jobs'))} />
         </View>
       ) : (
         <>
@@ -54,9 +55,9 @@ export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
                   key: 'chat',
                   label: '이 공고에 맞춰 대화 시작',
                   systemImage: 'bubble.left',
-                  onPress: () => go(() => void start(`${p.company} ${p.title}`, `${p.company} ${p.title} 공고에 맞춰 내 이력서를 고쳐 주세요`, undefined, undefined, 'match_posting')),
+                  onPress: () => leave(() => void start(`${p.company} ${p.title}`, `${p.company} ${p.title} 공고에 맞춰 내 이력서를 고쳐 주세요`, undefined, undefined, 'match_posting')),
                 },
-                { key: 'open', label: '공고 보기', systemImage: 'doc.text', onPress: () => go(() => router.push(`/postings/${p.id}`)) },
+                { key: 'open', label: '공고 보기', systemImage: 'doc.text', onPress: () => leave(() => router.push(`/postings/${p.id}`)) },
               ]}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: spacing[3], paddingHorizontal: spacing[5] }}>
