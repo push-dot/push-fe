@@ -56,9 +56,19 @@ tags:
 - repeat:
     times: 6
     commands:
+      # Android: with one link left its row sits at the bottom, under the snackbar of the previous delete, which swallows the ⋯ tap.
+      - runFlow:
+          when:
+            platform: Android
+            visible: "전체 1"
+          commands:
+            - extendedWaitUntil:
+                notVisible: "링크를 삭제했어요"
+                timeout: 30000
       - tapOn:
           text: ".*더 보기"
           index: 0
+          retryTapIfNoChange: true
       - tapOn: "삭제"
       - extendedWaitUntil:
           visible: "이 링크를 삭제할까요?"

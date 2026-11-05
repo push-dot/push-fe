@@ -15,4 +15,7 @@ tags:
       platform: Android
     commands:
       - inputText: ${EN}
+      # The chat composer does not lift above the Android keyboard, so 보내기 is hidden until it is lowered.
+      - hideKeyboard:
+          optional: true
 - tapOn: "보내기"

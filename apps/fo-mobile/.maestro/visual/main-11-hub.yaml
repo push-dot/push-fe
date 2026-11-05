@@ -18,7 +18,19 @@ tags:
     visible: "재직 기간"
     timeout: 10000
 - tapOn: "3.5년"
-- tapOn: "이직/구직중"
+# Android keeps the list's 이직/구직중 badges behind the sheet (a tap on one hits the scrim and closes it), so anchor under the group title.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "이직/구직중"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: "이직/구직중"
+          below: "커리어 상태"
 - extendedWaitUntil:
     visible: "프로필 46개 보기"
     timeout: 10000
