@@ -1,5 +1,5 @@
 import { isValidElement, type ReactElement, type ReactNode } from 'react'
-import { palette, radius, type } from '@/theme/tokens'
+import { palette, radius, spacing, type } from '@/theme/tokens'
 
 type El = ReactElement<Record<string, unknown>>
 
@@ -52,7 +52,9 @@ export const stubs = {
   theme: {
     palette,
     radius,
+    spacing,
     type,
+    hitSlopTo: () => ({}),
     useColors: () => palette.light,
     useThemeMode: () => 'light' as const,
     fontFor: () => ({}),

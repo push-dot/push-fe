@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { Platform, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useColors } from '../../theme'
+import { spacing, useColors } from '../../theme'
 import Button from './button'
+import GlassButton from './glass-button'
 import Text from './text'
 
 type Props = {
@@ -10,25 +11,46 @@ type Props = {
   description?: string
   children: ReactNode
   action?: { label: string; onPress: () => void; disabled?: boolean }
+  /** iOS only: a glass close button left of the title. Android closes by drag or back. */
+  onClose?: () => void
+  gap?: number
 }
 
+const GRAB = { width: 36, height: 5, radius: 3 }
+const SHEET_GAP = 14
+
 /** Body of a native form sheet route (see sheetOptions). iOS draws the grabber; Android gets the Material 3 drag handle. */
-const Sheet = ({ title, description, children, action }: Props) => {
+const Sheet = ({ title, description, children, action, onClose, gap = SHEET_GAP }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const android = Platform.OS === 'android'
+  const close = onClose && !android ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null
   return (
-    <View style={{ paddingTop: android ? 16 : 28, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 14 }}>
-      {android ? <View style={{ width: 32, height: 4, borderRadius: 2, backgroundColor: c.deco, alignSelf: 'center', marginBottom: 4 }} /> : null}
-      {title ? (
-        <View style={{ gap: 2 }}>
-          <Text v="h2" accessibilityRole="header">
-            {title}
-          </Text>
-          {description ? (
-            <Text v="b2" color="t3">
-              {description}
-            </Text>
+    <View
+      style={{
+        paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
+        paddingHorizontal: android ? spacing[5] : spacing[4],
+        paddingBottom: android ? insets.bottom + spacing[3] : Math.max(insets.bottom, spacing[5]),
+        gap,
+      }}
+    >
+      {android ? (
+        <View style={{ width: GRAB.width, height: GRAB.height, borderRadius: GRAB.radius, backgroundColor: c.deco, alignSelf: 'center' }} />
+      ) : null}
+      {title || close ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}>
+          {close}
+          {title ? (
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text v="h2" accessibilityRole="header">
+                {title}
+              </Text>
+              {description ? (
+                <Text v="b2" color="t3">
+                  {description}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
         </View>
       ) : null}
