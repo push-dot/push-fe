@@ -14,9 +14,9 @@ name: AI 채팅 → 빠른 시작(공고 링크) → 변경 확인 → 완료
     env:
       TEXT: "맞추기 시작"
 - extendedWaitUntil:
-    visible: "그대로 두기"
+    visible: "이 수정을 적용할까요?"
     timeout: 60000
 - tapOn: "적용"
 - extendedWaitUntil:
-    visible: "프로필 보기"
+    visible: "Push 프로필에 저장했어요.*"
     timeout: 60000
