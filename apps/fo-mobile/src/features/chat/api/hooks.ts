@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { type ChatIntent } from '@push/api-client'
+import { type ChatIntent, type ListEnvelope } from '@push/api-client'
 import { router } from 'expo-router'
 import { Alert } from 'react-native'
 import { useMyLinks, useMySettings, type PickedFile } from '@/features/my'
@@ -55,6 +55,16 @@ export const useStartChat = () => {
 
 export const useConversationList = () =>
   useQuery({ queryKey: ['conversations', 'all'], queryFn: () => chatApi.conversations({ limit: 100 }) })
+
+/** One conversation by id: the list row when it is already cached, else GET /conversations/:id (the list stops at 100). */
+export const useConversation = (id: string) => {
+  const qc = useQueryClient()
+  return useQuery({
+    queryKey: ['conversations', 'one', id],
+    queryFn: () => chatApi.conversation(id),
+    initialData: () => qc.getQueryData<ListEnvelope<ConversationRow>>(['conversations', 'all'])?.data.find((x) => x.id === id),
+  })
+}
 
 export const useRenameConversation = (id: string, revision: number | undefined) => {
   const qc = useQueryClient()

@@ -1,10 +1,10 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Sheet, TextField } from '@/shared/components'
-import { useConversationList, useRenameConversation } from '../api/hooks'
+import { useConversation, useRenameConversation } from '../api/hooks'
 
 export const RenameSheet = ({ id }: { id: string }) => {
-  const conv = useConversationList().data?.data.find((x) => x.id === id)
+  const conv = useConversation(id).data
   const [title, setTitle] = useState<string>()
   const value = title ?? conv?.title ?? ''
   const rename = useRenameConversation(id, conv?.revision)

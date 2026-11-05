@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { Alert, Platform } from 'react-native'
 import {
+  deepLinkToSubscriptions,
   fetchProducts,
   finishTransaction,
   getAvailablePurchases,
@@ -13,7 +14,7 @@ import {
 } from 'expo-iap'
 import { queryClient } from '@/providers/query-client'
 import { verifyPurchase } from './api/fetchers'
-import { IAP_FAILED_MESSAGE, IAP_PRODUCT_PRO, IAP_PRODUCT_TOPUP, IAP_PRODUCT_ULTRA } from './constants'
+import { ANDROID_PACKAGE, IAP_FAILED_MESSAGE, IAP_PRODUCT_PRO, IAP_PRODUCT_TOPUP, IAP_PRODUCT_ULTRA } from './constants'
 import type { StorePurchase, SubscriptionProduct } from './types'
 import { androidOfferToken, outcomeFromCode, settlePurchase, settleRestored } from './utils/settle'
 
@@ -129,6 +130,9 @@ export const usePersonalPurchase = () => {
     pending: isPending,
     buyPlan: (plan: 'PRO' | 'ULTRA') => {
       void buy(plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, 'subs')
+    },
+    manage: (plan: 'PRO' | 'ULTRA') => {
+      void deepLinkToSubscriptions({ skuAndroid: plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, packageNameAndroid: ANDROID_PACKAGE }).catch(() => Alert.alert(IAP_FAILED_MESSAGE))
     },
     buyCredits: () => {
       void buy(IAP_PRODUCT_TOPUP, 'in-app')
