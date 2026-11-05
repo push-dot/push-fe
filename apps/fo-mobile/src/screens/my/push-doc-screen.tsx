@@ -1,9 +1,9 @@
 import { router } from 'expo-router'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { JOB_CATEGORIES } from '@push/api-client'
+import { isJobSettled, JOB_CATEGORIES } from '@push/api-client'
 import { useStartChat } from '@/features/chat'
 import { ApplySheet } from '@/features/jobs'
 import {
@@ -19,6 +19,7 @@ import {
   Toast,
   useDocument,
   useDocumentVersions,
+  useIngestJob,
   useMyApplications,
   useMyProfile,
   useSetBaseProfile,
@@ -38,11 +39,17 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
   </View>
 )
 
-const PushDocScreen = ({ id }: { id: string }) => {
+const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const doc = useDocument(id)
   const versions = useDocumentVersions(id)
+  const ingest = useIngestJob(jobId).data
+  const making = !!jobId && (!ingest || !isJobSettled(ingest))
+  const refetchVersions = versions.refetch
+  useEffect(() => {
+    if (!making) void refetchVersions()
+  }, [making, refetchVersions])
   const apps = useMyApplications()
   const me = useMyProfile().data
   const start = useStartChat()
@@ -122,7 +129,16 @@ const PushDocScreen = ({ id }: { id: string }) => {
             )}
           </View>
 
-          {intro ? (
+          {making ? (
+            <View style={{ alignItems: 'center', gap: 8, paddingTop: 20 }}>
+              <ActivityIndicator />
+              <Text v="b2" color="t3">
+                만드는 중
+              </Text>
+            </View>
+          ) : null}
+
+          {intro && !making ? (
             <Section title="소개">
               <Text v="b2" color="t2">
                 {intro}

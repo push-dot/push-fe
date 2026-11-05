@@ -21,9 +21,9 @@ import { shareMessage } from '@/shared/infrastructure'
 import { useColors } from '@/theme'
 
 const ToProfileSheet = ({ id, visible, onClose }: { id: string; visible: boolean; onClose: () => void }) => {
-  const convert = useConvertDocument((documentId) => {
+  const convert = useConvertDocument((documentId, jobId) => {
     onClose()
-    router.push(`/docs/push/${documentId}`)
+    router.push(`/docs/push/${documentId}${jobId ? `?jobId=${jobId}` : ''}`)
   })
   return (
     <BottomSheet

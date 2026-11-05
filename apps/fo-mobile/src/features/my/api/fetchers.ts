@@ -127,7 +127,7 @@ export const fetchDocumentVersions = (id: string) =>
   c.get<ListEnvelope<DocVersion>>(`documents/${id}/versions`, { query: { limit: 1 } })
 
 export const convertDocumentProfile = async (id: string) =>
-  (await c.post<DataEnvelope<{ documentId: string }>>(`documents/${id}/profile`, { body: profileConvertBody() })).data
+  (await c.post<DataEnvelope<{ documentId: string; jobId?: string }>>(`documents/${id}/profile`, { body: profileConvertBody() })).data
 
 export const setDocumentBaseProfile = async (id: string) =>
   (await c.post<DataEnvelope<{ documentId: string }>>(setBaseProfilePath(id), { body: {} })).data

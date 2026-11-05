@@ -636,7 +636,7 @@ let receivedOffers: Offer[] = [
   {
     id: 'offer-1',
     sender: { id: 'u-emp', displayName: '모아페이', avatarUrl: null, companyName: '모아페이', headline: '채용 담당' },
-    recipient: { id: 'u1', displayName: '김서준', avatarUrl: null },
+    recipient: { id: 'u1', displayName: '김서준', avatarUrl: null, companyName: null, headline: '' },
     message: '백엔드 엔지니어로 함께하고 싶어요.',
     posting: { id: 'p1', company: '모아페이', title: '백엔드 엔지니어 (Kotlin·Spring)', imageUrl: null },
     status: 'SENT',
@@ -649,7 +649,7 @@ let sentOffers: Offer[] = [
   {
     id: 'offer-2',
     sender: { id: 'u1', displayName: '김서준', avatarUrl: null, companyName: null, headline: '' },
-    recipient: { id: 'u2', displayName: '박민재', avatarUrl: null },
+    recipient: { id: 'u2', displayName: '박민재', avatarUrl: null, companyName: null, headline: '' },
     message: '데이터 지표 이야기를 나누고 싶어요.',
     posting: null,
     status: 'READ',
@@ -943,7 +943,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const created: Offer = {
       id: `offer-${Date.now()}`,
       sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null, companyName: null, headline: meProfile.headline },
-      recipient: { id, displayName: profileById(id).displayName, avatarUrl: null },
+      recipient: { id, displayName: profileById(id).displayName, avatarUrl: null, companyName: null, headline: profileById(id).headline },
       message: String(payload.message ?? ''),
       posting: null,
       status: 'SENT',

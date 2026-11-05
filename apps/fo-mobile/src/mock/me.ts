@@ -421,7 +421,7 @@ const received: Offer[] = [
   offer({
     id: 'o1',
     sender: user('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'),
-    recipient: ME,
+    recipient: ME_SENDER,
     message:
       '서준 님, 안녕하세요! 허브에서 프로필 보고 연락드려요.\n\n결제 승인 API를 다시 설계하신 경험이 지금 저희 결제 플랫폼팀의 고민과 딱 맞아서요. 시니어 포지션으로 30분 정도 가볍게 커피챗 어떠세요?',
     posting: offerPosting,
@@ -431,7 +431,7 @@ const received: Offer[] = [
   offer({
     id: 'o2',
     sender: user('u-doyun', '박도윤', '하루랩스', 'iOS 개발자'),
-    recipient: ME,
+    recipient: ME_SENDER,
     message:
       '주말 사이드 프로젝트를 같이 하실 백엔드 개발자를 찾고 있어요. 정산 쪽 경험이 있으시면 큰 도움이 될 것 같아요.',
     status: 'SENT',
@@ -440,7 +440,7 @@ const received: Offer[] = [
   offer({
     id: 'o3',
     sender: user('u-jiwoo', '최지우', '파도AI', '데이터 엔지니어'),
-    recipient: ME,
+    recipient: ME_SENDER,
     message: '정산 데이터 파이프라인 경험을 듣고 싶어요. 30분 정도 이야기 나눌 수 있을까요?',
     status: 'ACCEPTED',
     createdAt: on(10, 14, 10),
@@ -448,7 +448,7 @@ const received: Offer[] = [
   offer({
     id: 'o4',
     sender: user('u-greenticket', '그린티켓 채용팀', '그린티켓', '서버 개발자 포지션'),
-    recipient: ME,
+    recipient: ME_SENDER,
     message: '서버 개발자 포지션에 관심 있으시면 이야기 나눠 보고 싶어요.',
     status: 'DECLINED',
     createdAt: on(10, 2, 15),

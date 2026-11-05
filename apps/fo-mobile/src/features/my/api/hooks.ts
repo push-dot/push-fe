@@ -83,13 +83,13 @@ export const useDocumentVersions = (id: string) =>
     enabled: !!id,
   })
 
-export const useConvertDocument = (onDone: (documentId: string) => void) => {
+export const useConvertDocument = (onDone: (documentId: string, jobId?: string) => void) => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => convertDocumentProfile(id),
     onSuccess: (data) => {
       void qc.invalidateQueries({ queryKey: ['documents'] })
-      if (data.documentId) onDone(data.documentId)
+      if (data.documentId) onDone(data.documentId, data.jobId)
     },
     onError: () => Alert.alert('지원 서류용 프로필을 만들지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
