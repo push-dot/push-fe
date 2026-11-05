@@ -3,6 +3,7 @@ import { brandOf, careerLabel, matchHangul } from '@push/shared'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
+import Skeleton from '../../shared/ui/skeleton'
 import { isMock } from '../../shared/lib/bridge'
 import { initials } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
@@ -75,6 +76,8 @@ const SearchPage = () => {
   let body: ReactNode = null
   if (gated) {
     body = loginNote
+  } else if (ready && byType[type].isLoading) {
+    body = <Skeleton rows={5} />
   } else if (ready && type === 'postings') {
     const rows = (postings.data?.data ?? []) as Posting[]
     body =

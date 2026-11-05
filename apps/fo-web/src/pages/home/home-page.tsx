@@ -5,12 +5,20 @@ import { useApplications } from '../../entities/application'
 import { useBookmarks, usePostingList } from '../../entities/posting'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
+import Skeleton from '../../shared/ui/skeleton'
 import { HOME_SECTIONS, HOME_SHORTCUTS, OPEN_APPLICATION_STAGES } from './constants'
 
 
 const HomeSection = ({ sort, title }: { sort: 'latest' | 'deadline' | 'popular'; title: string }) => {
   const query = usePostingList(sort)
   const items = query.data?.data ?? []
+  if (query.isLoading) {
+    return (
+      <section className="home-section">
+        <Skeleton rows={1} />
+      </section>
+    )
+  }
   if (!query.data || items.length === 0) return null
   return (
     <section className="home-section">

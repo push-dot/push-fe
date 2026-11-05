@@ -4,7 +4,8 @@ import { useSearchParams } from 'react-router-dom'
 
 import FilterSheet from './filter-sheet'
 import PostingCard from './posting-card'
-import { EMPTY_FILTERS, FILTER_CHIPS, JOB_PAGE_SIZE, JOB_SORTS, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
+import Skeleton from '../../shared/ui/skeleton'
+import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, JOB_PAGE_SIZE, JOB_SORTS, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
 import { usePostingCount, usePostingLocations, usePostingPages } from '../../entities/posting'
 
 
@@ -76,10 +77,12 @@ const JobsPage = () => {
     <main className="page">
       <header className="head">
         <h1 className="h1">채용공고</h1>
-        <div className="jobs-meta">
-          <span className="b2 w7">{`공고 ${total}개`}</span>
-          <span className="c1 t3">{SORT_LABEL[sort]}</span>
-        </div>
+        {listQuery.isLoading ? null : (
+          <div className="jobs-meta">
+            <span className="b2 w7">{`공고 ${total}개`}</span>
+            <span className="c1 t3">{SORT_LABEL[sort]}</span>
+          </div>
+        )}
       </header>
       <div className="chips">
         <button type="button" className="chip" aria-pressed={!filtered} onClick={() => write(EMPTY_FILTERS)}>
@@ -91,10 +94,21 @@ const JobsPage = () => {
           </button>
         ))}
       </div>
+      {listQuery.isLoading ? <Skeleton rows={6} /> : null}
+      {!listQuery.isLoading && filtered && items.length === 0 ? (
+        <div className="empty-block">
+          <p className="b1 w7">{FILTERED_EMPTY}</p>
+          <button type="button" className="btn sec" onClick={() => write(EMPTY_FILTERS)}>
+            {FILTER_RESET}
+          </button>
+        </div>
+      ) : null}
       <div className="job-grid">
-        {items.map((posting) => (
-          <PostingCard key={posting.id} posting={posting} />
-        ))}
+        {listQuery.isLoading
+          ? null
+          : items.map((posting) => (
+              <PostingCard key={posting.id} posting={posting} />
+            ))}
       </div>
       {listQuery.hasNextPage ? (
         <button type="button" className="more" disabled={listQuery.isFetchingNextPage} onClick={() => void listQuery.fetchNextPage()}>

@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <title>Push</title>
+    <script>
+      ;(function () {
+        var params = new URLSearchParams(location.search)
+        var theme = params.get('theme')
+        if (!document.documentElement.hasAttribute('data-theme') && (theme === 'light' || theme === 'dark')) {
+          document.documentElement.dataset.theme = theme
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

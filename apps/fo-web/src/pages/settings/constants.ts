@@ -17,12 +17,12 @@ export const NOTIFY_ROWS: {
   { key: 'notifyDeadline', label: '마감 임박 공고', sub: '북마크한 공고 마감 3일 전' },
   { key: 'notifyOffer', label: '제안 받음', sub: '' },
   { key: 'notifyComment', label: '댓글과 답글', sub: '' },
-  { key: 'notifyAiDone', label: 'AI 작업 완료', sub: '앱을 닫아도 끝나면 알려 드려요' },
+  { key: 'notifyAiDone', label: '에이전트 작업 완료', sub: '앱을 닫아도 끝나면 알려 드려요' },
   { key: 'notifyApplicationStage', label: '지원 상태 변경', sub: '기업이 내 지원 단계를 바꿨을 때' },
 ]
 
 export const SETTINGS_CHANNEL_NOTE = '웹에서는 알림함에 쌓여요. 푸시 알림은 앱에서 받아요.'
-export const LOCALE_NOTE = '화면과 AI 답변 언어가 함께 바뀌어요'
+export const LOCALE_NOTE = '앱 화면과 에이전트 답변 언어가 함께 바뀌어요.'
 export const HIDE_COMPANY_LABEL = '현재 회사 사람에게 숨기기'
 export const CONSENT_TITLE = '참고 데이터로 쓰기'
 export const SETTINGS_LOAD_ERROR = '설정을 불러오지 못했어요.'

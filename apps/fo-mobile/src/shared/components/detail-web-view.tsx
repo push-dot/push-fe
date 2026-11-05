@@ -2,7 +2,8 @@ import { router, type Href } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
-import { useColors } from '../../theme'
+import { useColors, useThemeMode } from '../../theme'
+import { detailUrl } from './detail-url'
 import { API_BASE_URL, API_MOCK, WEB_BASE_URL, openBrowser, useSession } from '../infrastructure'
 import Button from './button'
 import Text from './text'
@@ -14,6 +15,7 @@ type Props = {
 
 const DetailWebView = ({ path, onTitle }: Props) => {
   const c = useColors()
+  const mode = useThemeMode()
   const ref = useRef<WebView<object>>(null)
   const token = useSession((s) => s.session?.accessToken ?? null)
   const [failed, setFailed] = useState(false)
@@ -40,7 +42,8 @@ const DetailWebView = ({ path, onTitle }: Props) => {
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <WebView<object>
         ref={ref}
-        source={{ uri: `${WEB_BASE_URL}${path}${API_MOCK ? '?mock=1' : ''}` }}
+        key={mode}
+        source={{ uri: detailUrl(WEB_BASE_URL, path, mode, API_MOCK) }}
         injectedJavaScriptBeforeContentLoaded={boot}
         onMessage={onMessage}
         onError={() => setFailed(true)}

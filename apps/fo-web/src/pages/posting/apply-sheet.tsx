@@ -2,26 +2,32 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { useSources } from '../../entities/profile'
-import { APPLY_CANCEL, APPLY_LOCK, APPLY_TITLE, SOURCE_AI, SOURCE_ORIGINAL, applyConfirmLabel } from './constants'
 import { applySourceIds, postingsApply } from '../../features/apply-to-posting'
-
+import { APPLY_FAILURE, APPLY_GUIDANCE, APPLY_PENDING, applyPair, keepRadio, kindLine, sourceSub } from './apply-copy'
+import { APPLY_CONFIRM, APPLY_TITLE } from './constants'
 
 const ApplySheet = ({
   postingId,
+  company,
+  title,
   onClose,
   onApplied,
 }: {
   postingId: string
+  company?: string | null
+  title?: string | null
   onClose: () => void
   onApplied: () => void
 }) => {
   const queryClient = useQueryClient()
   const sources = useSources()
-  const [picked, setPicked] = useState<string[] | null>(null)
-  const selected = picked ?? (sources.data?.[0] ? [sources.data[0].id] : [])
+  const [picked, setPicked] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+  const selected = picked ?? sources.data?.[0]?.id ?? null
+  const chosen = (sources.data ?? []).find((source) => source.id === selected)
   const apply = useMutation({
     mutationFn: () => {
-      const { documentIds, sourceIds } = applySourceIds(sources.data ?? [], selected)
+      const { documentIds, sourceIds } = applySourceIds(sources.data ?? [], selected ? [selected] : [])
       return postingsApply(postingId, documentIds, sourceIds)
     },
     onSuccess: async () => {
@@ -29,44 +35,38 @@ const ApplySheet = ({
       await queryClient.invalidateQueries({ queryKey: ['postings'] })
       onApplied()
     },
+    onError: () => setFailed(true),
   })
-  const toggle = (id: string) => {
-    setPicked(selected.includes(id) ? selected.filter((item) => item !== id) : [...selected, id])
+  const choose = (id: string) => {
+    setPicked(keepRadio(selected, id))
+    setFailed(false)
   }
+  const extra = kindLine((chosen as { kind?: string } | undefined)?.kind)
   return (
     <div className="sheet-scrim" role="presentation" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label="지원 서류" onClick={(event) => event.stopPropagation()}>
-        <div className="sheet-head">
-          <h2 className="h2">{APPLY_TITLE}</h2>
-          <button type="button" className="hbtn" aria-label="닫기" onClick={onClose}>
-            <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
-        </div>
+      <div className="sheet apply-sheet" role="dialog" aria-modal="true" aria-label="지원 서류" onClick={(event) => event.stopPropagation()}>
+        <div className="sheet-grabber" aria-hidden="true" />
+        <h2 className="h2">{APPLY_TITLE}</h2>
+        {applyPair(company, title) ? <p className="b2 t2">{applyPair(company, title)}</p> : null}
         <ul className="source-list">
           {(sources.data ?? []).map((source) => (
             <li key={source.id}>
-              <label className="check">
-                <input type="checkbox" checked={selected.includes(source.id)} onChange={() => toggle(source.id)} />
+              <label className="check apply-radio">
+                <input type="radio" name="apply-source" checked={source.id === selected} onChange={() => choose(source.id)} />
                 <span>
                   <span className="b2">{source.fileName}</span>
-                  <span className="c1 t3">{source.origin === 'AI' ? SOURCE_AI : SOURCE_ORIGINAL}</span>
+                  <span className="c1 t3">{sourceSub(source.origin, source.createdAt)}</span>
+                  {source.id === selected && extra ? <span className="c1 t3">{extra}</span> : null}
                 </span>
               </label>
             </li>
           ))}
         </ul>
-        <p className="c1 t3">함께 보낼 수 있어요</p>
-        <p className="c1 t3">{APPLY_LOCK}</p>
-        <div className="apply-row">
-          <button type="button" className="btn sec lg" onClick={onClose}>
-            {APPLY_CANCEL}
-          </button>
-          <button type="button" className="btn pri lg" disabled={selected.length === 0 || apply.isPending} onClick={() => apply.mutate()}>
-            {applyConfirmLabel(selected.length)}
-          </button>
-        </div>
+        <p className="c1 t3">{APPLY_GUIDANCE}</p>
+        {failed ? <p className="c1">{APPLY_FAILURE}</p> : null}
+        <button type="button" className="btn pri lg" disabled={selected === null || apply.isPending} onClick={() => apply.mutate()}>
+          {apply.isPending ? APPLY_PENDING : APPLY_CONFIRM}
+        </button>
       </div>
     </div>
   )

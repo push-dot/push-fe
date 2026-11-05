@@ -684,7 +684,7 @@ let notices: WebNotification[] = [
   {
     id: 'n-ai',
     type: 'AI_DONE',
-    title: 'AI 작업이 끝났어요',
+    title: '에이전트 작업이 끝났어요',
     body: '대화가 준비됐어요.',
     target: { kind: 'conversation', id: 'c1' },
     readAt: null,
