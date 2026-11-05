@@ -20,7 +20,7 @@ const SignedInStack = () => {
       <Stack.Screen name="settings/index" />
       <Stack.Screen name="settings/visibility" />
       <Stack.Screen name="docs/[id]" />
-      <Stack.Screen name="docs/push/index" options={{ presentation: 'fullScreenModal' }} />
+      <Stack.Screen name="docs/push/index" options={{ presentation: 'modal' }} />
       <Stack.Screen name="docs/push/[id]" />
       <Stack.Screen name="activity/follows" />
       <Stack.Screen name="activity/posts" />
@@ -45,6 +45,11 @@ const SignedInStack = () => {
       <Stack.Screen name="proposal" options={sheetOptions(c, 'fitToContents')} />
       <Stack.Screen name="confirm" options={sheetOptions(c)} />
       <Stack.Screen name="activity/add-event" options={sheetOptions(c)} />
+      <Stack.Screen name="settings/pick" options={sheetOptions(c)} />
+      <Stack.Screen name="docs/import" options={sheetOptions(c)} />
+      <Stack.Screen name="docs/[id]/to-profile" options={sheetOptions(c)} />
+      <Stack.Screen name="docs/[id]/more" options={sheetOptions(c)} />
+      <Stack.Screen name="offers/[id]/reply" options={sheetOptions(c)} />
     </Stack>
   )
 }
