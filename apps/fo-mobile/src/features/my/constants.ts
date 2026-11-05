@@ -1,4 +1,5 @@
 import type { Settings, Tone } from '@push/api-client'
+import type { CalendarEventType } from './types'
 
 export const MIN = 60_000
 export const HOUR = 60 * MIN
@@ -9,6 +10,14 @@ export const FOLLOW_PREVIEW = 5
 export const POST_PREVIEW = 4
 
 export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+
+export const EVENT_TYPES: { key: CalendarEventType; label: string }[] = [
+  { key: 'INTERVIEW', label: '면접' },
+  { key: 'DEADLINE', label: '마감' },
+  { key: 'FOLLOW_UP', label: '후속 연락' },
+  { key: 'COFFEE_CHAT', label: '커피챗' },
+  { key: 'CUSTOM', label: '직접 추가' },
+]
 
 export const TINTS = ['#3B5BDB', '#0C8599', '#5F3DC4', '#E8590C', '#2F9E44', '#1F3A8A', '#C2255C', '#1864AB']
 

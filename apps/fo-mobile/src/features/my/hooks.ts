@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { askConfirm } from '@/shared/components'
 import { useRemoveSource } from './api/hooks'
-import { SHEET_SWAP_MS } from './constants'
 import { deleteDocCopy } from './utils'
 
 type ToastAction = { label: string; onPress: () => void }
@@ -38,15 +38,7 @@ export const useUndoRemove = (onRemoved?: () => void) => {
     },
     [],
   )
-  const [asking, setAsking] = useState<{ id: string; fileName: string } | null>(null)
-  const [open, setOpen] = useState(false)
-  const ask = (doc: { id: string; fileName: string }) => {
-    setAsking(doc)
-    setTimeout(() => setOpen(true), SHEET_SWAP_MS)
-  }
-  const confirm = () => {
-    if (!asking) return
-    const doc = asking
+  const confirm = (doc: { id: string; fileName: string }) => {
     const copy = deleteDocCopy(doc.fileName)
     if (timer.current) clearTimeout(timer.current)
     setHiddenId(doc.id)
@@ -65,5 +57,9 @@ export const useUndoRemove = (onRemoved?: () => void) => {
       setHiddenId(null)
     }, 2500)
   }
-  return { hiddenId, ask, asking, open, confirm, cancel: () => setOpen(false), toast }
+  const ask = (doc: { id: string; fileName: string }) => {
+    const copy = deleteDocCopy(doc.fileName)
+    askConfirm({ title: copy.title, body: copy.body, confirm: copy.confirm, cancel: copy.cancel, danger: true, onConfirm: () => confirm(doc) })
+  }
+  return { hiddenId, ask, toast }
 }

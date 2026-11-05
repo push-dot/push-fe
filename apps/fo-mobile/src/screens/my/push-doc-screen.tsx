@@ -9,7 +9,6 @@ import { usePosting } from '@/features/jobs'
 import {
   Avatar,
   careerPeriod,
-  ConfirmSheet,
   FitRing,
   FIX_DOC,
   hubProfile,
@@ -25,7 +24,7 @@ import {
   useSetBaseProfile,
   useToast,
 } from '@/features/my'
-import { Badge, Button, Glass, Text, TopBar } from '@/shared/components'
+import { askConfirm, Badge, Button, Glass, Text, TopBar } from '@/shared/components'
 import { useColors } from '@/theme'
 
 const HUB_BADGE = '지원 서류용 프로필(허브형)'
@@ -54,7 +53,6 @@ const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
   const me = useMyProfile().data
   const start = useStartChat()
   const toast = useToast()
-  const [asking, setAsking] = useState(false)
   const [based, setBased] = useState(false)
   const setBase = useSetBaseProfile(() => {
     setBased(true)
@@ -123,7 +121,15 @@ const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
                 label={setBase.isPending ? '설정하는 중' : SET_BASE_COPY.action}
                 size="sm"
                 disabled={setBase.isPending}
-                onPress={() => setAsking(true)}
+                onPress={() =>
+                  askConfirm({
+                    title: SET_BASE_COPY.title,
+                    body: SET_BASE_COPY.body,
+                    confirm: SET_BASE_COPY.confirm,
+                    cancel: SET_BASE_COPY.cancel,
+                    onConfirm: () => setBase.mutate(id),
+                  })
+                }
                 style={{ marginTop: 10 }}
               />
             )}
@@ -215,15 +221,6 @@ const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
           />
         </View>
       ) : null}
-      <ConfirmSheet
-        visible={asking}
-        title={SET_BASE_COPY.title}
-        body={SET_BASE_COPY.body}
-        confirm={SET_BASE_COPY.confirm}
-        cancel={SET_BASE_COPY.cancel}
-        onConfirm={() => setBase.mutate(id)}
-        onClose={() => setAsking(false)}
-      />
       <Toast text={toast.text} action={toast.action} onHide={toast.hide} />
     </View>
   )

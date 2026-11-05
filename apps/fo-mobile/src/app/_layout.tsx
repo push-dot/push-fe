@@ -65,6 +65,8 @@ const RootLayout = () => {
             <Stack.Screen name="apply" options={sheetOptions(c, [0.5, 1])} />
             <Stack.Screen name="hub-filter" options={sheetOptions(c, 'fitToContents')} />
             <Stack.Screen name="proposal" options={sheetOptions(c, 'fitToContents')} />
+            <Stack.Screen name="confirm" options={sheetOptions(c)} />
+            <Stack.Screen name="activity/add-event" options={sheetOptions(c)} />
           </Stack.Protected>
           <Stack.Protected guard={!session}>
             <Stack.Screen name="sign-in" />

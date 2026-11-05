@@ -22,13 +22,14 @@ import {
 import {
   Avatar,
   careerDeleteBody,
-  ConfirmSheet,
   careerDeleteCopy,
   careerPeriod,
   FieldLabel,
   AVATAR_IMAGE_OPTIONS,
   skillOrderHint,
   parseYm,
+  dateToYm,
+  ymToDate,
   Toast,
   useToast,
   SheetHeader,
@@ -39,7 +40,7 @@ import {
   useSaveProfile,
   type ProfileSection,
 } from '@/features/my'
-import { BottomSheet, Button, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
+import { askConfirm, BottomSheet, Button, DatePicker, Icon, SegmentedControl, Switch, Text, TextField } from '@/shared/components'
 import { pickImage } from '@/shared/infrastructure'
 import { searchHangul } from '@push/shared'
 import { fontFor, radius, useColors } from '@/theme'
@@ -411,12 +412,8 @@ const EditCareer = ({ p }: { p: Profile }) => {
   const toast = useToast()
   const [items, setItems] = useState<CareerDraft[]>(p.careers.map(toDraft))
   const [open, setOpen] = useState<number | null>(items.length ? 0 : null)
-  const [removing, setRemoving] = useState<{ i: number; item: CareerDraft } | null>(null)
-  const [asking, setAsking] = useState(false)
   const parsed = items.map(toCareer)
-  const remove = () => {
-    if (!removing) return
-    const { i, item } = removing
+  const removeAt = (i: number, item: CareerDraft) => {
     setItems((xs) => xs.filter((_, j) => j !== i))
     setOpen(null)
     toast.show(careerDeleteCopy.toast, {
@@ -499,14 +496,14 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     onChangeText={(t) => set(i, { company: t })}
                   />
                   <Input label="직무" value={it.role} onChangeText={(t) => set(i, { role: t })} />
-                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                     <View style={{ flex: 1 }}>
-                      <Input
+                      <DatePicker
                         label="시작"
-                        placeholder="시작 (2022.03)"
-                        keyboardType="numbers-and-punctuation"
-                        value={it.start}
-                        onChangeText={(t) => set(i, { start: t })}
+                        mode="month"
+                        value={ymToDate(it.start)}
+                        max={new Date()}
+                        onChange={(d) => set(i, { start: dateToYm(d) })}
                       />
                     </View>
                     <View
@@ -531,12 +528,13 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     </View>
                   </View>
                   {!it.current ? (
-                    <Input
+                    <DatePicker
                       label="종료"
-                      placeholder="종료 (2024.02)"
-                      keyboardType="numbers-and-punctuation"
-                      value={it.end}
-                      onChangeText={(t) => set(i, { end: t })}
+                      mode="month"
+                      value={ymToDate(it.end)}
+                      min={ymToDate(it.start) ?? undefined}
+                      max={new Date()}
+                      onChange={(d) => set(i, { end: dateToYm(d) })}
                     />
                   ) : null}
                   <Input
@@ -547,10 +545,18 @@ const EditCareer = ({ p }: { p: Profile }) => {
                   />
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => {
-                      setRemoving({ i, item: it })
-                      setAsking(true)
-                    }}
+                    onPress={() =>
+                      askConfirm(
+                        {
+                          title: careerDeleteCopy.title,
+                          body: careerDeleteBody(it),
+                          confirm: careerDeleteCopy.confirm,
+                          danger: true,
+                          onConfirm: () => removeAt(i, it),
+                        },
+                        '/(tabs)/(my)/confirm',
+                      )
+                    }
                     style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
                   >
                     <Text v="b2" weight="600" color="red">
@@ -575,15 +581,6 @@ const EditCareer = ({ p }: { p: Profile }) => {
           }}
         />
       </ScrollView>
-      <ConfirmSheet
-        visible={asking}
-        title={careerDeleteCopy.title}
-        body={removing ? careerDeleteBody(removing.item) : ''}
-        confirm={careerDeleteCopy.confirm}
-        danger
-        onConfirm={remove}
-        onClose={() => setAsking(false)}
-      />
       <Toast text={toast.text} action={toast.action} onHide={toast.hide} />
     </>
   )

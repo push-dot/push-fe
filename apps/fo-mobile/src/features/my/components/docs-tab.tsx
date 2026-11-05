@@ -12,7 +12,6 @@ import { INGEST_TEXT, MAX_BYTES, RESUME_DOCUMENT_OPTIONS } from '../constants'
 import { useToast, useUndoRemove } from '../hooks'
 import type { HubDocument, MySource } from '../types'
 import { PUSH_DOCS_TITLE, pushCardLines, pushSeeAll, RETRY_LABEL, SIZE_LIMIT, UPLOADS_TITLE } from '../utils'
-import DeleteDocSheet from './delete-doc-sheet'
 import DocMenu from './doc-menu'
 import FitRing from './fit-ring'
 import ListTitle from './list-title'
@@ -66,7 +65,7 @@ const PickRow = ({
   )
 }
 
-const DocRow = ({ doc, onMenu }: { doc: MySource; onMenu: () => void }) => {
+const DocRow = ({ doc, onDelete }: { doc: MySource; onDelete: () => void }) => {
   const qc = useQueryClient()
   const job = useIngestJob(doc.jobId).data
   const reading = !!doc.jobId && (!job || !isJobSettled(job))
@@ -97,14 +96,11 @@ const DocRow = ({ doc, onMenu }: { doc: MySource; onMenu: () => void }) => {
         </View>
       </View>
       {failed ? <Button label={RETRY_LABEL} icon="retry" variant="secondary" size="sm" onPress={retry} /> : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="더 보기"
-        onPress={onMenu}
-        style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Icon name="more" size={20} color="t3" />
-      </Pressable>
+      <DocMenu doc={doc} onDelete={onDelete}>
+        <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="more" size={20} color="t3" />
+        </View>
+      </DocMenu>
     </Row>
   )
 }
@@ -156,7 +152,6 @@ const DocsTab = () => {
   const toast = useToast()
   const undo = useUndoRemove()
   const [picking, setPicking] = useState(false)
-  const [menu, setMenu] = useState<MySource | null>(null)
   const { upload, start, cancel } = useUpload(() => toast.show('이력서 파일을 올렸어요'))
 
   const pickFile = async (fromSheet = false) => {
@@ -295,7 +290,7 @@ const DocsTab = () => {
           </Row>
         ) : null}
         {docs.map((d) => (
-          <DocRow key={d.id} doc={d} onMenu={() => setMenu(d)} />
+          <DocRow key={d.id} doc={d} onDelete={() => undo.ask(d)} />
         ))}
         <View style={{ paddingTop: 18, paddingHorizontal: 20 }}>
           <Button
@@ -310,8 +305,6 @@ const DocsTab = () => {
         </Text>
       </ScrollView>
       {sheet}
-      <DocMenu doc={menu} onClose={() => setMenu(null)} onDelete={() => menu && undo.ask(menu)} />
-      <DeleteDocSheet undo={undo} />
       <Toast text={notice.text} action={notice.action} error={notice.error} onHide={notice.hide} />
     </View>
   )
