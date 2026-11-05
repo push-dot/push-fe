@@ -47,7 +47,7 @@ const BottomSheet = ({ visible, onClose, title, description, children, action, f
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <Pressable accessibilityRole="button" accessibilityLabel="닫기" onPress={onClose} style={[notScreenSized, { backgroundColor: c.scrim }]} />
       <KeyboardAvoidingView
-        behavior={ios ? 'padding' : undefined}
+        behavior="padding"
         style={{
           position: 'absolute',
           left: ios ? 8 : 0,
