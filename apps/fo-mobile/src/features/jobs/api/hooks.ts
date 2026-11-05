@@ -57,4 +57,5 @@ export const useApplyDocs = (enabled: boolean) =>
     enabled,
   })
 
-export const usePosting = (id: string) => useQuery({ queryKey: ['postings', 'detail', id], queryFn: () => fetchPosting(id) })
+export const usePosting = (id: string) =>
+  useQuery({ queryKey: ['postings', 'detail', id], queryFn: () => fetchPosting(id), enabled: id.length > 0 })

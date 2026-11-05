@@ -5,7 +5,7 @@ import { ActivityIndicator, Platform, Pressable, ScrollView, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isJobSettled, JOB_CATEGORIES } from '@push/api-client'
 import { useStartChat } from '@/features/chat'
-import { ApplySheet } from '@/features/jobs'
+import { usePosting } from '@/features/jobs'
 import {
   Avatar,
   careerPeriod,
@@ -56,14 +56,14 @@ const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
   const toast = useToast()
   const [asking, setAsking] = useState(false)
   const [based, setBased] = useState(false)
-  const [applying, setApplying] = useState(false)
-  const [applied, setApplied] = useState(false)
   const setBase = useSetBaseProfile(() => {
     setBased(true)
     toast.show(SET_BASE_COPY.toast)
   })
   const item = doc.data?.data
   const application = apps.data?.data.find((a) => a.id === item?.applicationId) ?? null
+  const posting = usePosting(application?.jobId ?? '')
+  const applied = !!application?.appliedAt || !!posting.data?.applied
   const lines = item ? pushCardLines(item, application) : null
   const version = versions.data?.data[0]
   const profile = hubProfile(version?.content)
@@ -208,25 +208,12 @@ const PushDocScreen = ({ id, jobId }: { id: string; jobId?: string }) => {
             onPress={() => void start(FIX_DOC, FIX_DOC, undefined, undefined, undefined, { documentId: id })}
           />
           <Button
-            label={applied || application.appliedAt ? '지원 완료' : '이 공고에 지원'}
-            disabled={applied || !!application.appliedAt}
-            onPress={() => setApplying(true)}
+            label={applied ? '지원 완료' : '이 공고에 지원'}
+            disabled={applied}
+            onPress={() => router.push({ pathname: '/apply', params: { postingId: application.jobId } })}
             style={{ flex: 1 }}
           />
         </View>
-      ) : null}
-      {application ? (
-        <ApplySheet
-          postingId={application.jobId}
-          company={application.company}
-          title={application.title}
-          visible={applying}
-          onClose={() => setApplying(false)}
-          onApplied={() => {
-            setApplying(false)
-            setApplied(true)
-          }}
-        />
       ) : null}
       <ConfirmSheet
         visible={asking}

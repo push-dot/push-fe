@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { palette } from '../../theme'
+import { palette } from '../../theme/tokens'
 import { chipFrame } from './chip-frame'
 
 describe('chipFrame', () => {

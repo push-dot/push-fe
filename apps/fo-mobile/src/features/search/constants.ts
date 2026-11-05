@@ -8,9 +8,7 @@ export const SEARCH_EMPTY_BODY = '다른 말로 찾아보세요.'
 export const SEARCH_CLEAR_LABEL = '검색어 지우기'
 export const SEARCH_RETRY_LABEL = '다시 시도'
 
-export type SearchSort = 'relevance'
-
-export const SEARCH_SORTS: { key: SearchSort; label: string }[] = [{ key: 'relevance', label: '관련도순' }]
+export const SEARCH_SORTS = [{ key: 'relevance' as const, label: '관련도순' }]
 
 export const SEARCH_SKELETON: SkeletonRowsShape = {
   count: 5,

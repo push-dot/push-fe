@@ -12,6 +12,7 @@ const TabsLayout = () => {
     <NativeTabs
       minimizeBehavior="onScrollDown"
       labelVisibilityMode="labeled"
+      tintColor={selected}
       iconColor={{ default: idle, selected }}
       labelStyle={{ default: { color: idle }, selected: { color: selected } }}
     >

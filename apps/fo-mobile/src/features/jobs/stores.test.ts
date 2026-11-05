@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY } from './utils'
+import { EMPTY } from './utils/filters'
 import { useJobListStore } from './stores'
 
 describe('useJobListStore', () => {

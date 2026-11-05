@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { PostingSort } from './types'
-import { EMPTY, type Filters } from './utils'
+import { EMPTY, type Filters } from './utils/filters'
 
 type JobListState = {
   filters: Filters

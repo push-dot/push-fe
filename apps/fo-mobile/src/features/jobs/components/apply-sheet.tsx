@@ -1,6 +1,7 @@
 import { View } from 'react-native'
 import { Text } from '../../../shared/components'
-import { extraNote, type ApplyDoc } from '../utils'
+import type { ApplyDoc } from '../types'
+import { extraNote } from '../utils'
 import DocRow from './doc-row'
 
 type Props = {

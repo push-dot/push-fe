@@ -1,4 +1,4 @@
-import { WEB_BASE_URL } from '../../../shared/infrastructure'
+import { WEB_BASE_URL } from '../../../shared/infrastructure/config'
 import type { Post } from '@push/api-client'
 
 export const postUrl = (id: string) => `${WEB_BASE_URL}/posts/${id}`

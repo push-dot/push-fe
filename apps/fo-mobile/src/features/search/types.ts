@@ -1,1 +1,1 @@
-export type { SearchSort } from './constants'
+export type SearchSort = 'relevance'

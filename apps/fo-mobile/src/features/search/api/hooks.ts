@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { TRENDING_STALE_MS } from '../constants'
 import { fetchSearch, fetchTrending } from './fetchers'
-import type { SearchSort } from '../constants'
+import type { SearchSort } from '../types'
 import type { SearchTab } from '../utils'
 
 export const useSearch = <T extends SearchTab>(q: string, type: T, sort: SearchSort) =>

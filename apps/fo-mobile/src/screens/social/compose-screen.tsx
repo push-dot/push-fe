@@ -45,12 +45,9 @@ const ComposeScreen = () => {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, gap: 14, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
         <Menu
           accessibilityLabel={`카테고리, ${category ? categoryLabel(category) : '고르지 않음'}`}
-          actions={POST_CATEGORIES.filter((x) => x.key).map((x) => ({
-            key: x.key,
-            label: x.label,
-            selected: x.key === category,
-            onPress: () => setCategory(x.key),
-          }))}
+          actions={POST_CATEGORIES.flatMap((x) =>
+            x.key ? [{ key: x.key, label: x.label, selected: x.key === category, onPress: () => setCategory(x.key) }] : [],
+          )}
         >
           <View style={{ minHeight: 56, paddingHorizontal: 16, borderRadius: 16, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text v="b2" color="t3">
