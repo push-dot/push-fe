@@ -35,6 +35,7 @@ export const stubs = {
     'datePickerStyle',
     'labelsHidden',
     'accessibilityLabel',
+    'fixedSize',
   ]),
   compose: {
     Switch: 'CSwitch',
