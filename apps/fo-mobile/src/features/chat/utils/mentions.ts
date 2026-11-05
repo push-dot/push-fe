@@ -26,3 +26,9 @@ export const filterMentions = (groups: MentionGroup[], query: string) =>
       items: searchHangul(g.items, query, (i) => [i.title, i.sub]).map(({ item }) => item),
     }))
     .filter((g) => g.items.length > 0)
+
+// Header bar + its margin + the composer card under the popover.
+const MENTION_RESERVE = 56 + 16 + 130
+
+/** The popover grows to the free space between the header and the composer, whatever sits under it (tab bar or keyboard). */
+export const mentionMaxHeight = (windowHeight: number, insetTop: number, below: number) => Math.max(160, windowHeight - insetTop - below - MENTION_RESERVE)

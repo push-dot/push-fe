@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ERROR_TEXT } from '../constants'
-import { isUsageExhausted, usageExhausted } from '../utils/usage'
+import { composerPlaceholder, isUsageExhausted, usageExhausted } from '../utils/usage'
+import type { ChatItem } from '../types'
 
 const FREE_BODY = '이번 달 사용량을 다 썼어요. 요금제를 올리거나 크레딧을 구매할 수 있어요.'
 const ULTRA_BODY = '이번 달 사용량을 다 썼어요. 크레딧을 구매하면 바로 이어서 쓸 수 있어요.'
@@ -34,5 +35,25 @@ describe('usage exhausted copy', () => {
     expect(isUsageExhausted('INSUFFICIENT_CREDITS')).toBe(true)
     expect(isUsageExhausted('PLAN_REQUIRED')).toBe(false)
     expect(isUsageExhausted('CONSENT_REQUIRED')).toBe(false)
+  })
+})
+
+describe('composerPlaceholder', () => {
+  const run = (items: ChatItem[], working = false) => composerPlaceholder({ items, working: working ? { verbs: [], startedAt: 0 } : null })
+  const user: ChatItem = { type: 'user', id: 'u', text: '모아페이' }
+  const error = (code: string): ChatItem => ({ type: 'error', id: 'e', text: '', code })
+
+  it('asks for a link on an empty chat and after a failed run', () => {
+    expect(run([])).toBe('공고 링크를 붙여넣어 보세요')
+    expect(run([user, error('UNKNOWN')])).toBe('공고 링크를 붙여넣어 보세요')
+  })
+
+  it('keeps the follow-up line after work and after the usage card', () => {
+    expect(run([user, { type: 'agentText', id: 'a', text: '다 됐어요' }])).toBe('더 고칠 부분이 있으면 말해 주세요')
+    expect(run([user, error('INSUFFICIENT_CREDITS')])).toBe('더 고칠 부분이 있으면 말해 주세요')
+  })
+
+  it('lets the person talk while the agent works', () => {
+    expect(run([user], true)).toBe('작업 중에도 말할 수 있어요')
   })
 })

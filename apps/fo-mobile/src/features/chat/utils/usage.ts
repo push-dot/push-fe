@@ -1,3 +1,6 @@
+import { COMPOSER_PLACEHOLDER } from '../constants'
+import type { ChatState } from '../types'
+
 const FREE_BODY = '이번 달 사용량을 다 썼어요. 요금제를 올리거나 크레딧을 구매할 수 있어요.'
 const ULTRA_BODY = '이번 달 사용량을 다 썼어요. 크레딧을 구매하면 바로 이어서 쓸 수 있어요.'
 
@@ -8,3 +11,11 @@ export const usageExhausted = (plan: string) =>
   plan === 'ULTRA' ? { body: ULTRA_BODY, actions: [CREDITS] } : { body: FREE_BODY, actions: [PLAN, CREDITS] }
 
 export const isUsageExhausted = (code?: string) => code === 'FEATURE_DISABLED' || code === 'INSUFFICIENT_CREDITS'
+
+/** A failed first run leaves nothing to fix, so the composer asks for a posting link again; the usage card keeps the follow-up line. */
+export const composerPlaceholder = (chat: Pick<ChatState, 'working' | 'items'>) => {
+  const last = chat.items.at(-1)
+  if (chat.working) return COMPOSER_PLACEHOLDER.working
+  if (!chat.items.length || (last?.type === 'error' && !isUsageExhausted(last.code))) return COMPOSER_PLACEHOLDER.first
+  return COMPOSER_PLACEHOLDER.followUp
+}

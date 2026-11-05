@@ -1,6 +1,6 @@
 import { router, useNavigation } from 'expo-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AccessibilityInfo, Animated, Easing } from 'react-native'
+import { AccessibilityInfo, Animated, Easing, Keyboard, Platform } from 'react-native'
 import { CLOSE_DRAWER } from './constants'
 
 /** Leaves a sidebar page for another screen: iOS shows the page over the open drawer, so close both first and back returns to the chat. */
@@ -24,6 +24,17 @@ export const useReduceMotion = () => {
     return () => sub.remove()
   }, [])
   return on
+}
+
+export const useKeyboardHeight = () => {
+  const [height, setHeight] = useState(0)
+  useEffect(() => {
+    const ios = Platform.OS === 'ios'
+    const show = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (e) => setHeight(e.endCoordinates.height))
+    const hide = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () => setHeight(0))
+    return () => (show.remove(), hide.remove())
+  }, [])
+  return height
 }
 
 export const usePulse = (active: boolean, period = 1000, low = 0.25) => {

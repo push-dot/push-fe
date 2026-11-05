@@ -13,10 +13,12 @@ const ChatHomeScreen = () => {
   const start = useStartChat()
   const [typing, setTyping] = useState(false)
   const navigation = useNavigation()
+  // The floating iOS tab bar is inside the inset; the design keeps the composer a step above it.
+  const lift = Platform.OS === 'ios' && insets.bottom > 0 ? spacing[4] : 0
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={{ paddingTop: insets.top, height: insets.top + 56, justifyContent: 'center', paddingLeft: spacing[3] }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior="padding">
+      <View style={{ paddingTop: insets.top, height: insets.top + 56, justifyContent: 'center', alignItems: 'flex-start', paddingLeft: spacing[3] }}>
         <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: () => navigation.dispatch(OPEN_DRAWER) }]} />
       </View>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none" accessibilityElementsHidden>
@@ -31,7 +33,7 @@ const ChatHomeScreen = () => {
           ))}
         </ScrollView>
       ) : null}
-      <View style={{ paddingHorizontal: spacing[3], paddingBottom: Math.max(insets.bottom, 10) }}>
+      <View style={{ paddingHorizontal: spacing[3], paddingBottom: Math.max(insets.bottom + lift, 10) }}>
         <ComposerArea
           placeholder="공고 링크를 붙여넣어 보세요"
           onTyping={setTyping}
