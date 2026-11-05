@@ -1,6 +1,13 @@
 import { router } from 'expo-router'
-import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native'
+import { useRef, useState, type ComponentRef } from 'react'
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   Avatar,
@@ -19,7 +26,17 @@ import { fontFor, onAccent, radius, spacing, type, useColors } from '@/theme'
 type Box = 'received' | 'sent'
 type Failed = { key: string; body: string }
 
-const Bubble = ({ body, at, mine, faded }: { body: string; at?: string; mine: boolean; faded?: boolean }) => {
+const Bubble = ({
+  body,
+  at,
+  mine,
+  faded,
+}: {
+  body: string
+  at?: string
+  mine: boolean
+  faded?: boolean
+}) => {
   const c = useColors()
   return (
     <View style={{ alignItems: mine ? 'flex-end' : 'flex-start', gap: spacing[1] }}>
@@ -52,6 +69,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [text, setText] = useState('')
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null)
   const [failed, setFailed] = useState<Failed[]>([])
   const { data: o } = useOffer(id)
   const { data, send } = useOfferMessages(id)
@@ -71,9 +89,16 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const who = counterpart(o, box)
   const meId = box === 'received' ? o.recipient.id : o.sender.id
   const sub = personLine(who)
-  const messages = (data?.data ?? []).map((m) => ({ id: m.id, senderId: m.sender.id, body: m.body, createdAt: m.createdAt }))
+  const messages = (data?.data ?? []).map((m) => ({
+    id: m.id,
+    senderId: m.sender.id,
+    body: m.body,
+    createdAt: m.createdAt,
+  }))
   const thread = dayBreaks(
-    messages.length ? [{ id: o.id, senderId: o.sender.id, body: o.message, createdAt: o.createdAt }, ...messages] : [],
+    messages.length
+      ? [{ id: o.id, senderId: o.sender.id, body: o.message, createdAt: o.createdAt }, ...messages]
+      : [],
   )
   const post = (body: string) =>
     send.mutate(body, { onError: () => setFailed((f) => [...f, { key: `${Date.now()}`, body }]) })
@@ -91,7 +116,12 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
             accessibilityRole="button"
             accessibilityLabel={`${who.displayName} 허브 프로필 보기`}
             onPress={() => router.push(`/profiles/${who.id}`)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingLeft: spacing[1] }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: spacing[3],
+              paddingLeft: spacing[1],
+            }}
           >
             <Avatar name={who.displayName} url={who.avatarUrl} size={36} />
             <View style={{ flex: 1, minWidth: 0 }}>
@@ -107,12 +137,28 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
           </Pressable>
         }
       />
-      <ScrollView contentContainerStyle={{ flexGrow: 1, gap: spacing[4], paddingTop: spacing[1], paddingHorizontal: spacing[5], paddingBottom: spacing[5] }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        ref={scroll}
+        onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
+        contentContainerStyle={{
+          flexGrow: 1,
+          gap: spacing[4],
+          paddingTop: spacing[1],
+          paddingHorizontal: spacing[5],
+          paddingBottom: spacing[5],
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {o.posting ? <OfferPostingCard posting={o.posting} compact /> : null}
         {thread.map((m) => (
           <View key={m.id} style={{ gap: spacing[4] }}>
             {m.day ? (
-              <Text v="c2" weight="600" color="t3" style={{ textAlign: 'center', paddingTop: spacing[1] }}>
+              <Text
+                v="c2"
+                weight="600"
+                color="t3"
+                style={{ textAlign: 'center', paddingTop: spacing[1] }}
+              >
                 {m.day}
               </Text>
             ) : null}
@@ -130,7 +176,14 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
         {failed.map((f) => (
           <View key={f.key} style={{ gap: spacing[1] }}>
             <Bubble body={f.body} mine faded />
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: spacing[2] }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: spacing[2],
+              }}
+            >
               <Text v="c2" weight="700" color="red">
                 !
               </Text>
@@ -177,7 +230,19 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
             placeholder="메시지를 입력해 주세요"
             placeholderTextColor={c.t4}
             multiline
-            style={[{ flex: 1, minHeight: 40, maxHeight: 120, paddingTop: 10, paddingBottom: 10, paddingHorizontal: spacing[1], fontSize: type.b1.fontSize, color: c.t1 }, fontFor('400')]}
+            style={[
+              {
+                flex: 1,
+                minHeight: 40,
+                maxHeight: 120,
+                paddingTop: 10,
+                paddingBottom: 10,
+                paddingHorizontal: spacing[1],
+                fontSize: type.b1.fontSize,
+                color: c.t1,
+              },
+              fontFor('400'),
+            ]}
           />
           <Pressable
             accessibilityRole="button"
