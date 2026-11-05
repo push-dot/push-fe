@@ -30,3 +30,9 @@ const given = (name: string) => (/^[가-힣]{3}$/.test(name) ? name.slice(1) : n
 
 export const resultChrome = (card: Pick<ResultFields, 'source' | 'name'>) =>
   card.source === 'external' ? { share: true as const, initials: null } : { share: false as const, initials: given(card.name ?? '') }
+
+/** 프로필 수정 · Push 프로필 · 경력 → the tool line above the card. */
+export const resultTask = (taskLine: string) => {
+  const [action = '', ...rest] = taskLine.split(' · ')
+  return { action, target: rest.length ? rest.join(' · ') : undefined }
+}
