@@ -1,0 +1,29 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><style>
+html,body{margin:0}
+body{width:960px;height:288px;position:relative;overflow:hidden;background:var(--bg);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+.art{position:absolute;left:0;top:0}
+.b-ac{fill:var(--ac)}.b-ink{fill:var(--t1)}.b-tint{fill:var(--ac-soft)}.b-green{fill:var(--green)}.b-orange{fill:var(--orange)}
+.rxl{rx:var(--radius-xl)}.pill{fill:var(--ac-text)}
+.name{position:absolute;left:40px;bottom:40px;width:420px}
+.name h1{margin:0;font-size:120px;line-height:.92;font-weight:800;letter-spacing:-.04em;color:var(--t1)}
+.name p{margin:14px 0 0;font-size:14px;line-height:20px;color:var(--t3);letter-spacing:-.01em}
+</style></head>
+<body>
+<svg class="art" viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
+<!-- blocks: ac 192x208 (space-6 x 8, 8.67), t1 176x120, ac-soft 176x152, green pill 96x48, orange disc 48x48
+     arrangement: one tall violet slab bleeding off the top, an ink block bleeding top-right, a tint bleeding bottom-right, two small signal satellites under the slab
+     pattern: pills (README: generous radii, chips as 34px pills; "soft, friendly, large radii") in ac-text cut over the ac-soft tint
+     scales: gaps space-4 (16), pitch 32 (space-6 + space-2); radii radius-xl (28) on blocks, pills/discs half the short side -->
+<rect class="b-ac rxl" x="576" y="-28" width="192" height="236"/>
+<rect class="b-ink rxl" x="784" y="-28" width="204" height="148"/>
+<rect class="b-tint rxl" x="784" y="136" width="204" height="180"/>
+<rect class="b-green" x="576" y="224" width="112" height="48" rx="24"/>
+<rect class="b-orange" x="704" y="224" width="48" height="48" rx="24"/>
+<rect class="pill" x="800" y="152" width="56" height="24" rx="12"/><rect class="pill" x="864" y="152" width="80" height="24" rx="12"/><rect class="pill" x="800" y="184" width="88" height="24" rx="12"/><rect class="pill" x="896" y="184" width="48" height="24" rx="12"/><rect class="pill" x="800" y="216" width="40" height="24" rx="12"/><rect class="pill" x="848" y="216" width="72" height="24" rx="12"/><rect class="pill" x="928" y="216" width="48" height="24" rx="12"/><rect class="pill" x="800" y="248" width="64" height="24" rx="12"/><rect class="pill" x="872" y="248" width="56" height="24" rx="12"/>
+</svg>
+<div class="name"><h1>Push</h1><p>AI가 공고에 맞춰 서류를 고쳐 주는 채용 앱</p></div>
+</body>
+</html>
