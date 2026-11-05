@@ -11,8 +11,6 @@ import Pick from './pick'
 import { CALENDAR_TASKS, type QuickStart } from '../constants'
 import { initialPicks } from '../utils/quick-start-data'
 
-// The lint rule reads the `4` in spacing[4] as a raw value, so name it once outside any style object.
-const gutter = spacing[4]
 
 /** Ingredient sheet for one quick start (Qs*.html). Collects what the task needs, then starts the conversation. */
 export const QuickStartSheet = ({ qs, onClose }: { qs: QuickStart | null; onClose: () => void }) => {
@@ -105,7 +103,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
                     }}
                   />
                 ) : null}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: gutter, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}>
                   <Icon name="filter" size={20} color="acText" />
                   <Text v="b2" style={{ flex: 1 }}>
                     적합도 7점 이상인 공고만 보여 드려요
@@ -143,7 +141,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
                     <Pressable
                       accessibilityRole="button"
                       onPress={() => setCustom('')}
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: gutter, borderRadius: radius.card, backgroundColor: c.bg2 }}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}
                     >
                       <Icon name="plus" size={20} color="t3" />
                       <Text v="b1" weight="600">
@@ -174,7 +172,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
             {['pick', 'deadline', 'status', 'reply'].includes(qs.layout) && listOpen ? (
               <View>
                 {!visible.length && d.empty?.[seg] ? (
-                  <Text v="b2" color="t3" style={{ paddingVertical: gutter, textAlign: 'center' }}>
+                  <Text v="b2" color="t3" style={{ paddingVertical: spacing[4], textAlign: 'center' }}>
                     {d.empty[seg]}
                   </Text>
                 ) : null}
@@ -213,7 +211,7 @@ const LinkInput = ({ url, setUrl }: { url: string; setUrl: (v: string) => void }
           accessibilityRole="button"
           accessibilityLabel="붙여넣기"
           onPress={() => setUrl(clip)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: gutter, borderRadius: radius.md, backgroundColor: c.acSoft }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[4], borderRadius: radius.md, backgroundColor: c.acSoft }}
         >
           <Icon name="link" size={20} color="acText" />
           <View style={{ flex: 1, minWidth: 0 }}>
@@ -241,7 +239,7 @@ const PickerRow = ({ label, value, lead, trailing, onPress }: { label: string; v
       accessibilityRole="button"
       accessibilityLabel={`${label} ${value}, 변경`}
       onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: gutter, borderRadius: radius.card, backgroundColor: c.bg2 }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}
     >
       {lead}
       <View style={{ flex: 1, minWidth: 0 }}>
@@ -379,7 +377,7 @@ const OptionCard = ({ item, on, grid, onPress }: { item: QsItem; on: boolean; gr
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: spacing[3],
-        padding: gutter,
+        padding: spacing[4],
         borderRadius: radius.md,
         width: grid ? '48.5%' : undefined,
         ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
@@ -409,7 +407,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
   const c = useColors()
   return (
     <>
-      <View style={{ paddingVertical: spacing[1], paddingHorizontal: gutter, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+      <View style={{ paddingVertical: spacing[1], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}>
         <Text v="c1" weight="700" color="t3" style={{ paddingTop: spacing[2] }}>
           이번 주 {items.length}건
         </Text>
@@ -445,7 +443,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
               accessibilityRole="radio"
               accessibilityState={{ selected: on }}
               onPress={() => setTask(i)}
-              style={{ width: '48.5%', gap: 6, padding: gutter, borderRadius: radius.md, ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
+              style={{ width: '48.5%', gap: 6, padding: spacing[4], borderRadius: radius.md, ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
             >
               <Icon name={t.icon} size={20} color={on ? 'acText' : 't2'} />
               <Text v="b2" weight="700">
@@ -458,7 +456,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
           )
         })}
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: gutter, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: connected ? c.green : c.t4 }} />
         <Text v="b2" style={{ flex: 1 }}>
           {connected ? 'Google 캘린더와 연결됨' : 'Google 캘린더와 연결 안 됨'}

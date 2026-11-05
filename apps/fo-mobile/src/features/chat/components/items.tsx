@@ -15,8 +15,6 @@ import Mark from './mark'
 import { UsageExhausted } from './usage-exhausted'
 import type { ChatItem, ToolState } from '../types'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 type Of<K extends ChatItem['type']> = Extract<ChatItem, { type: K }>
 
@@ -201,7 +199,7 @@ const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
 const Card = ({ children, gap = 7, padding }: { children: React.ReactNode; gap?: number; padding?: number }) => {
   const c = useColors()
   return (
-    <Appear style={{ gap, ...(padding === undefined ? { paddingVertical: 14, paddingHorizontal: md } : { padding }), borderRadius: radius.card, backgroundColor: c.bg2 }}>
+    <Appear style={{ gap, ...(padding === undefined ? { paddingVertical: 14, paddingHorizontal: spacing[4] } : { padding }), borderRadius: radius.card, backgroundColor: c.bg2 }}>
       {children}
     </Appear>
   )
@@ -229,7 +227,7 @@ const TodoList = ({ item }: { item: Of<'todo'> }) => {
 const Plan = ({ item }: { item: Of<'plan'> }) => {
   const titled = !!item.title
   return (
-    <Card gap={titled ? spacing[3] : 14} padding={md}>
+    <Card gap={titled ? spacing[3] : 14} padding={spacing[4]}>
       {titled ? (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text v="c1" weight="700" color="t3">
@@ -282,7 +280,7 @@ const Diff = ({ item }: { item: Of<'diff'> }) => {
             duration={300}
             style={{ flexDirection: 'row', gap: 10, paddingVertical: 5, paddingHorizontal: spacing[3], backgroundColor: add ? c.greenSoft : del ? c.redSoft : 'transparent' }}
           >
-            <Text v="c2" color="t3" style={{ width: md, textAlign: 'right', lineHeight: 20, fontVariant: ['tabular-nums'] }}>
+            <Text v="c2" color="t3" style={{ width: spacing[4], textAlign: 'right', lineHeight: 20, fontVariant: ['tabular-nums'] }}>
               {l.n ?? ''}
             </Text>
             <Text v="c1" weight="700" style={{ width: 10, lineHeight: 20, color: add ? c.green : del ? c.red : c.t3 }}>
@@ -352,7 +350,7 @@ const LockedParts = ({ rows, onPlan }: { rows: { label: string }[]; onPlan?: () 
           ))}
         </View>
       </View>
-      <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: md }}>
+      <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing[4] }}>
         <Pressable
           accessibilityRole="button"
           onPress={onPlan}
@@ -372,7 +370,7 @@ const Projected = ({ label, bullets }: { label: string; bullets: string[] }) => 
   const c = useColors()
   const [open, setOpen] = useState(false)
   return (
-    <Appear style={{ gap: spacing[2], paddingHorizontal: md, paddingVertical: open ? md : 11, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+    <Appear style={{ gap: spacing[2], paddingHorizontal: spacing[4], paddingVertical: open ? spacing[4] : 11, borderRadius: radius.card, backgroundColor: c.bg2 }}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
         <Text v="b2" weight="700" style={{ flex: 1 }}>
           {fitProjected(label)}
@@ -444,7 +442,7 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
   )
   return (
     <View style={{ gap: spacing[3] }}>
-      <Appear style={compact ? { gap: spacing[2], padding: md, paddingBottom: spacing[3], borderRadius: radius.card, backgroundColor: c.bg2 } : { gap: 10, padding: md, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+      <Appear style={compact ? { gap: spacing[2], padding: spacing[4], paddingBottom: spacing[3], borderRadius: radius.card, backgroundColor: c.bg2 } : { gap: 10, padding: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}>
         {head}
         {view.locked ? (
           <LockedParts rows={item.rows ?? []} onPlan={onPlan} />
@@ -476,7 +474,7 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
         <Pressable
           accessibilityRole="button"
           onPress={onPlan}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], height: 44, paddingHorizontal: md, borderRadius: radius.card, backgroundColor: c.bg2 }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], height: 44, paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}
         >
           <Icon name="lock" size={16} color="t3" />
           <Text v="b2" weight="600" color="t2">
@@ -598,7 +596,7 @@ const Paper = ({ item }: { item: Of<'paper'> }) => {
   const caret = usePulse(true, 1000, 0)
   const [first, ...rest] = item.lines
   return (
-    <Appear style={{ borderRadius: radius.card, padding: md, gap: 6, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line }}>
+    <Appear style={{ borderRadius: radius.card, padding: spacing[4], gap: 6, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line }}>
       <Text v="c2" weight="700" color="t3">
         {item.label}
       </Text>

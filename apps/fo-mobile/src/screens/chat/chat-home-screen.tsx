@@ -6,8 +6,6 @@ import { fontFor, spacing, useColors } from '@/theme'
 import { Glass, GlassButton, Icon3D, Text } from '@/shared/components'
 import { ComposerArea, ConsentSheet, OPEN_DRAWER, QUICK_STARTS, quickStartPath, useStartChat, type QuickStart } from '@/features/chat'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 const ChatHomeScreen = () => {
   const c = useColors()
@@ -27,7 +25,7 @@ const ChatHomeScreen = () => {
         </Text>
       </View>
       {!typing ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2], padding: md }} style={{ flexGrow: 0 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2], padding: spacing[4] }} style={{ flexGrow: 0 }}>
           {QUICK_STARTS.map((q) => (
             <QuickStartPill key={q.key} qs={q} onPress={() => router.push(quickStartPath(q.key))} />
           ))}

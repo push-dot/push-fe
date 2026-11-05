@@ -10,8 +10,6 @@ import { statusBadge } from './conversations-modal'
 import Mark from './mark'
 import { accountPath, ago, bookmarksPath, conversationsPath, docsPath, linksPath } from '../utils'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 /** Content of the app drawer (see app/(app)/_layout.tsx): full-width chat sidebar over the tab bar. */
 export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
@@ -54,7 +52,7 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
           alignItems: 'center',
           gap: spacing[2],
           height: 60,
-          paddingLeft: md,
+          paddingLeft: spacing[4],
           paddingRight: spacing[3],
         }}
       >
@@ -70,7 +68,7 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
             gap: spacing[3],
             paddingVertical: spacing[2],
             paddingLeft: spacing[2],
-            paddingRight: md,
+            paddingRight: spacing[4],
             borderRadius: radius.xl,
             backgroundColor: pressed ? c.fill : 'transparent',
           })}

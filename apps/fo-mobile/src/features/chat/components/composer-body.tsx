@@ -5,8 +5,6 @@ import { fontFor, onAccent, radius, spacing, type, useColors } from '../../../th
 import { Icon, Text, hitSlopTo } from '@/shared/components'
 import ModePicker from './mode-picker'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 export type ComposerProps = {
   value: string
@@ -33,9 +31,9 @@ export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
   // A bare "@" only opens the suggestions; there is nothing to send yet.
   const canSend = hasText && typed !== '@'
   const round = { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' } as const
-  const chip = { minHeight: 40, paddingHorizontal: md, borderRadius: radius.pill, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', gap: spacing[2] } as const
+  const chip = { minHeight: 40, paddingHorizontal: spacing[4], borderRadius: radius.pill, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', gap: spacing[2] } as const
   return (
-    <View style={{ paddingTop: md, paddingRight: 10, paddingBottom: 10, paddingLeft: 18, gap: 14 }}>
+    <View style={{ paddingTop: spacing[4], paddingRight: 10, paddingBottom: 10, paddingLeft: 18, gap: 14 }}>
       {p.attachment ? (
         <Pressable
           accessibilityRole="button"

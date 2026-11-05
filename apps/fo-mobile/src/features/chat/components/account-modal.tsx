@@ -13,8 +13,6 @@ import { Appear } from './motion'
 import Mark from './mark'
 import PageModal from './page-modal'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 /** 계정 modal (ChatAccount) with the 요금제 page inside it (PlanUpgrade). */
 export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'account' | 'plan' }) => {
@@ -141,7 +139,7 @@ const PlanCard = ({ plan, current, disabled, onPress }: { plan: (typeof PLANS)[n
       accessibilityState={{ selected: current, disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[{ borderRadius: radius.card, padding: md, gap: spacing[2], backgroundColor: c.bg2, borderWidth: 1.5, borderColor: 'transparent' }, current && selectedRing(c)]}
+      style={[{ borderRadius: radius.card, padding: spacing[4], gap: spacing[2], backgroundColor: c.bg2, borderWidth: 1.5, borderColor: 'transparent' }, current && selectedRing(c)]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
         <Text v="h3" weight="800">
@@ -166,7 +164,7 @@ const PlanCard = ({ plan, current, disabled, onPress }: { plan: (typeof PLANS)[n
 
 const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnType<typeof usePersonalPurchase> }) => (
   <Appear kind="fade">
-    <Text v="h1" style={{ paddingTop: 6, paddingHorizontal: spacing[6], paddingBottom: md }}>
+    <Text v="h1" style={{ paddingTop: 6, paddingHorizontal: spacing[6], paddingBottom: spacing[4] }}>
       {PLAN_HEADER}
     </Text>
     <View style={{ paddingHorizontal: spacing[5], gap: spacing[2] }}>

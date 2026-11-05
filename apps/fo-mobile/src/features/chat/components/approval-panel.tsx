@@ -165,9 +165,8 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
     }
   }
 
-  const gutter = spacing[4]
   const body = (
-    <View style={{ gap: 6, paddingTop: ios ? 22 : spacing[5], paddingHorizontal: ios ? 14 : gutter, paddingBottom: ios ? 18 : insets.bottom + spacing[3] }}>
+    <View style={{ gap: 6, paddingTop: ios ? 22 : spacing[5], paddingHorizontal: ios ? 14 : spacing[4], paddingBottom: ios ? 18 : insets.bottom + spacing[3] }}>
       <Text v="h3" accessibilityRole="header" style={{ fontSize: 18, lineHeight: 26, paddingHorizontal: spacing[1], paddingBottom: spacing[2] }}>
         {approval.question}
       </Text>

@@ -17,8 +17,6 @@ import { ago, renamePath } from '../utils'
 import { ARCHIVED_NOTE, ARCHIVED_TITLE, DELETE_CONFIRM, UNARCHIVE_LABEL, conversationRowMenu } from '../utils/conversation-menu'
 import PageModal from './page-modal'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 export const statusBadge = (s: ConversationRow['status']) =>
   s === 'NEEDS_APPROVAL' ? <Badge label="확인 필요" tone="orange" /> : s === 'RUNNING' ? <Badge label="작업 중" tone="ac" /> : null
@@ -63,7 +61,7 @@ const RowBody = ({ row: r, archived }: { row: ConversationRow; archived?: boolea
   </View>
 )
 
-const ROW = { paddingVertical: md, paddingHorizontal: spacing[5] } as const
+const ROW = { paddingVertical: spacing[4], paddingHorizontal: spacing[5] } as const
 
 const startNew = (onClose: () => void) => {
   onClose()
@@ -129,7 +127,7 @@ export const ConversationList = ({
             <Button label={UNARCHIVE_LABEL} variant="secondary" size="sm" onPress={() => unarchive.mutate(r)} />
           </View>
         ))}
-        <Text v="c1" color="t3" style={{ paddingTop: md, paddingHorizontal: spacing[6] }}>
+        <Text v="c1" color="t3" style={{ paddingTop: spacing[4], paddingHorizontal: spacing[6] }}>
           {ARCHIVED_NOTE}
         </Text>
       </PageModal>
@@ -146,7 +144,7 @@ export const ConversationList = ({
       {grouped.map((g) => (
         <View key={g.title ?? 'pinned'}>
           {g.title ? (
-            <Text v="c1" weight="700" color="t3" style={{ paddingTop: g === firstTitled ? md : 22, paddingHorizontal: spacing[6], paddingBottom: spacing[2] }}>
+            <Text v="c1" weight="700" color="t3" style={{ paddingTop: g === firstTitled ? spacing[4] : 22, paddingHorizontal: spacing[6], paddingBottom: spacing[2] }}>
               {g.title}
             </Text>
           ) : null}

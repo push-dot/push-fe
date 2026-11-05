@@ -5,15 +5,13 @@ import { useChatAccount } from '../api/hooks'
 import { usageExhausted } from '../utils/usage'
 import { Appear } from './motion'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 export const UsageExhausted = ({ onPlan, onCredits }: { onPlan: () => void; onCredits: () => void }) => {
   const c = useColors()
   const account = useChatAccount(true)
   const u = usageExhausted(account.data?.plan ?? 'FREE')
   return (
-    <Appear style={{ gap: md, padding: spacing[5], borderRadius: radius.card, backgroundColor: c.bg2 }}>
+    <Appear style={{ gap: spacing[4], padding: spacing[5], borderRadius: radius.card, backgroundColor: c.bg2 }}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing[3] }}>
         <View style={{ width: 36, height: 36, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: c.orangeSoft }}>
           <Icon name="credit" size={20} color="orange" />

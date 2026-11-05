@@ -10,8 +10,6 @@ import PageModal from './page-modal'
 import { docAiSub } from '../constants'
 import { ago } from '../utils'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 const size = (b: number) => (b >= 1_000_000 ? `${(b / 1_000_000).toFixed(1)}MB` : `${Math.round(b / 1000)}KB`)
 const meta = (d: ChatDoc) => (d.aiMade ? docAiSub(ago(d.createdAt)) : `${size(d.size)} · ${ago(d.createdAt)}`)
@@ -29,7 +27,7 @@ export const DocsModal = () => {
   return (
     <PageModal title="내 서류" right={<GlassButton actions={[{ icon: 'plus', label: '서류 올리기', onPress: () => upload.mutate() }]} />}>
       {empty ? (
-        <View style={{ alignItems: 'center', gap: md, paddingTop: 120, paddingHorizontal: spacing[6] }}>
+        <View style={{ alignItems: 'center', gap: spacing[4], paddingTop: 120, paddingHorizontal: spacing[6] }}>
           <Text v="b1" weight="700" color="t2">
             아직 등록한 서류가 없어요.
           </Text>

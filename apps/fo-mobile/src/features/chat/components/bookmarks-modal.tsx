@@ -12,8 +12,6 @@ import Mark from './mark'
 import Note from './note'
 import PageModal from './page-modal'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 // Same company colour as JobCard so a company looks the same across screens.
 export const logoColor = brandOf
@@ -33,7 +31,7 @@ export const BookmarksModal = ({ onDone }: { onDone: () => void }) => {
   return (
     <PageModal title="북마크한 공고">
       {empty ? (
-        <View style={{ alignItems: 'center', gap: md, paddingTop: 120, paddingHorizontal: spacing[6] }}>
+        <View style={{ alignItems: 'center', gap: spacing[4], paddingTop: 120, paddingHorizontal: spacing[6] }}>
           <Text v="b1" weight="700" color="t2">
             {BOOKMARK_EMPTY}
           </Text>

@@ -5,8 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GlassButton, Text, ToastHost } from '@/shared/components'
 import { spacing, useColors } from '@/theme'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 /** Body of a sidebar page route presented as a native modal (iOS page sheet, Android full screen). */
 const PageModal = ({
@@ -37,7 +35,7 @@ const PageModal = ({
         <View style={{ minWidth: 44, alignItems: 'flex-end' }}>{right}</View>
       </View>
       <ScrollView keyboardDismissMode="on-drag" contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + spacing[6] + (footer ? 80 : 0) }}>{children}</ScrollView>
-      {footer ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: md, paddingTop: 14, paddingBottom: insets.bottom + 10, backgroundColor: c.bg }}>{footer}</View> : null}
+      {footer ? <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing[4], paddingTop: 14, paddingBottom: insets.bottom + 10, backgroundColor: c.bg }}>{footer}</View> : null}
       {/* iOS: the root ToastHost sits under this sheet; Android shows the root one. */}
       {ios ? <ToastHost /> : null}
     </View>

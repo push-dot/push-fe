@@ -38,8 +38,6 @@ import {
   useReduceMotion,
 } from '@/features/chat'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 const ConversationScreen = ({ id }: { id: string }) => {
   const c = useColors()
@@ -100,7 +98,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
         ref={scroll}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: bottomH + md }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: bottomH + spacing[4] }}
         onScroll={(e) => {
           const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent
           atBottom.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - 48
@@ -187,7 +185,7 @@ const Header = ({ onDrawer, title, menu }: { onDrawer: () => void; title?: strin
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
   const pill = (
-    <View style={{ height: 44, minWidth: 76, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingLeft: title ? spacing[3] : 0, paddingRight: title ? md : 0 }}>
+    <View style={{ height: 44, minWidth: 76, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingLeft: title ? spacing[3] : 0, paddingRight: title ? spacing[4] : 0 }}>
       <Mascot size={36} />
       {title ? (
         <Text v="b2" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>

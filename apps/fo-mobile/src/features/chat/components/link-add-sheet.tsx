@@ -8,8 +8,6 @@ import { useAddLink } from '@/features/my'
 import { LINK_ADD_NOTE } from '../constants'
 import { LINK_KIND_LABEL, kindOf } from '../utils/links'
 
-// spacing[4] trips the literal-token lint rule (4 is also a spacing value).
-const md = spacing[4]
 
 /** 링크 추가 (MyLinkAdd), a native form sheet route over the 내 링크 page. */
 export const LinkAddSheet = () => {
@@ -38,7 +36,7 @@ export const LinkAddSheet = () => {
           ))}
         </View>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: md, borderRadius: radius.card, backgroundColor: c.bg2 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2 }}>
         <Icon name="spark" size={20} color="acText" />
         <Text v="b2" style={{ flex: 1 }}>
           {LINK_ADD_NOTE}
