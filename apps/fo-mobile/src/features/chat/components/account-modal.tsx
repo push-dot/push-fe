@@ -1,27 +1,19 @@
-import type { Tone } from '@push/api-client'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { fontFor, useColors } from '../../../theme'
-import { Badge, BottomSheet, Button, GlassButton, Icon, SettingsGroup, SettingsRow, Text } from '@/shared/components'
+import { Badge, BottomSheet, Button, GlassButton, Icon, Menu, SettingsGroup, SettingsRow, Text } from '@/shared/components'
 import { usePersonalPurchase } from '@/features/billing'
 import { type Account } from '../api/schemas'
-import { useMySettings, useUpdateSettings } from '@/features/my'
+import { TONES, useMySettings, useUpdateSettings } from '@/features/my'
 import { useAccessMode, useChatAccount, useChatDocs, useMe } from '../api/hooks'
-import { ACCESS_MODE_TITLE, ACCESS_MODES, ACCOUNT_REFERENCE_NOTE, ACCOUNT_REFERENCE_TITLE, PLAN_FOOTER, PLAN_HEADER } from '../constants'
+import { ACCESS_MODES, ACCOUNT_REFERENCE_NOTE, ACCOUNT_REFERENCE_TITLE, PLAN_FOOTER, PLAN_HEADER } from '../constants'
+import { accessMenu, toneMenu } from '../utils/account-menus'
 import { Appear } from './motion'
 import Mark from './mark'
 import PageModal from './page-modal'
 import Pick from './pick'
 
-const TONES: { key: Tone; label: string }[] = [
-  { key: 'as_is', label: '그대로' },
-  { key: 'professional', label: '전문적인' },
-  { key: 'confident', label: '자신감 있는' },
-  { key: 'concise', label: '간결한' },
-  { key: 'technical', label: '기술 중심' },
-  { key: 'friendly', label: '친근한' },
-]
 const EFFORTS = [
   { key: 'LOW', label: '가볍게' },
   { key: 'MEDIUM', label: '보통 강도로' },
@@ -105,25 +97,22 @@ const AccountPage = ({ visible, account, onPlan, onClose }: { visible: boolean; 
           </SettingsGroup>
         </View>
         <SettingsGroup title="대화">
-          <SettingsRow
-            label={tone ? `${tone.label} 말투` : '그대로'}
-            onPress={() =>
-              setPicker({ title: '어떤 말투로 답할까요?', options: TONES.map((t) => t.label), value: TONES.indexOf(tone ?? TONES[0]!), onPick: (i) => save.mutate({ defaultTone: TONES[i]!.key }) })
-            }
-          />
+          <Menu stretch accessibilityLabel="말투" actions={toneMenu(tone?.key, (defaultTone) => save.mutate({ defaultTone }))}>
+            <View>
+              <SettingsRow label={tone ? `${tone.label} 말투` : '그대로'} right={<Icon name="chev" size={18} color="t4" />} />
+            </View>
+          </Menu>
           <SettingsRow
             label={effort ? `${effort.label} 작업` : '작업 강도'}
             onPress={() =>
               setPicker({ title: '얼마나 꼼꼼히 할까요?', options: EFFORTS.map((e) => e.label), value: EFFORTS.indexOf(effort ?? EFFORTS[1]), onPick: (i) => save.mutate({ defaultEffort: EFFORTS[i]!.key }) })
             }
           />
-          <SettingsRow
-            label={mode.label}
-            sub={mode.desc}
-            onPress={() =>
-              setPicker({ title: ACCESS_MODE_TITLE, options: ACCESS_MODES.map((m) => m.label), value: ACCESS_MODES.indexOf(mode), onPick: (i) => access.pick(ACCESS_MODES[i]!.key) })
-            }
-          />
+          <Menu stretch accessibilityLabel="실행 방식" actions={accessMenu(mode.key, access.pick)}>
+            <View>
+              <SettingsRow label={mode.label} sub={mode.desc} right={<Icon name="chev" size={18} color="t4" />} />
+            </View>
+          </Menu>
           <SettingsRow
             label={days ? `대화 기록 ${days}일 보관` : '대화 기록 보관'}
             onPress={() =>
