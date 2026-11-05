@@ -18,14 +18,21 @@ tags:
       - extendedWaitUntil:
           visible: ".*Google 계정으로 로그인.*"
           timeout: 10000
+      # 연락처 sits under the first screen.
+      - scrollUntilVisible:
+          element: "연락처.*"
+          direction: DOWN
       - tapOn: "연락처.*"
       - extendedWaitUntil:
           visible: "누구에게 연락처를 보여 줄까요?"
           timeout: 5000
       - waitForAnimationToEnd
       - takeScreenshot: SettingsStates.3
-      # The sheet's scrim is a button labelled 닫기 (a tap at the top edge left the sheet open).
-      - tapOn: "닫기"
+      # These sheets have no 닫기 button of their own (iOS only labels the scrim 팝업 닫기).
+      - runFlow:
+          file: _close_sheet.yaml
+          env:
+            TITLE: "누구에게 연락처를 보여 줄까요?"
       - extendedWaitUntil:
           notVisible: "누구에게 연락처를 보여 줄까요?"
           timeout: 5000
@@ -39,7 +46,10 @@ tags:
           timeout: 5000
       - waitForAnimationToEnd
       - takeScreenshot: SettingsStates.4
-      - tapOn: "닫기"
+      - runFlow:
+          file: _close_sheet.yaml
+          env:
+            TITLE: "에이전트가 어떤 말투로 쓸까요?"
       - extendedWaitUntil:
           notVisible: "에이전트가 어떤 말투로 쓸까요?"
           timeout: 5000

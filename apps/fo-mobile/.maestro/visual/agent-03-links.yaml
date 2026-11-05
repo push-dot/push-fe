@@ -22,17 +22,16 @@ tags:
 - inputText: "github.com/seojun-kim/payment-gateway"
 - waitForAnimationToEnd
 - takeScreenshot: MyLinkAdd
-# Dismiss the add sheet through its scrim (the page's top strip is not tappable on iOS); retry once.
+# Dismiss the add sheet through its scrim; with the keyboard up it reaches y=11% on iOS, so 15-25% is inside it and _close_sheet taps higher.
 - tapOn:
     point: "50%,25%"
 - waitForAnimationToEnd
 - runFlow:
     when:
       visible: "추가하기"
-    commands:
-      - tapOn:
-          point: "50%,15%"
-      - waitForAnimationToEnd
+    file: _close_sheet.yaml
+    env:
+      TITLE: "추가하기"
 - tapOn:
     text: ".*더 보기"
     index: 0

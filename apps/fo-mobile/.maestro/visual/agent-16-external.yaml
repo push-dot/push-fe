@@ -21,7 +21,7 @@ tags:
     timeout: 5000
 - waitForAnimationToEnd
 - takeScreenshot: ChatMore
-- runFlow: _dismiss_menu.yaml
+- runFlow: _agent-dismiss-menu.yaml
 - runFlow: _back_home.yaml
 - runFlow:
     file: _say.yaml

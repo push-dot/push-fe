@@ -15,13 +15,13 @@ tags:
     file: _qs.yaml
     env:
       LABEL: "제안 답장 쓰기"
-      WAIT: "결제 플랫폼팀 시니어 포지션으로.*"
+      WAIT: ".*결제 플랫폼팀 시니어 포지션으로.*"
       SHOT: QsReply
 - runFlow:
     file: _qs.yaml
     env:
       LABEL: "커피챗 제안 쓰기"
-      WAIT: "김태윤"
+      WAIT: ".*김태윤.*"
       SHOT: QsCoffee
 - runFlow:
     file: _qs.yaml

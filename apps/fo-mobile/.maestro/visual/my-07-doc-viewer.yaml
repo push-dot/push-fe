@@ -27,8 +27,21 @@ tags:
 - waitForAnimationToEnd
 - takeScreenshot: DocToProfile
 
-# The sheet's button reads 지원 서류용 프로필로 만들기 today and N개 항목 반영하기 on the board.
-- tapOn: "지원 서류용 프로필로 만들기|3개 항목 반영하기"
+# Applying the picked sections lands on the 프로필 tab; the 지원 서류용 프로필 detail only opens from the chat result card.
+- tapOn: "3개 항목 반영하기"
+- extendedWaitUntil:
+    visible: "기본 정보 편집"
+    timeout: 15000
+- runFlow: _agent_tab.yaml
+- runFlow:
+    file: _say.yaml
+    env:
+      KO: "ext-done"
+      EN: "ext-done"
+- extendedWaitUntil:
+    visible: ".* 동안 작업했어요"
+    timeout: 30000
+- tapOn: "프로필로 전환"
 - extendedWaitUntil:
     visible: "기본 프로필로 설정"
     timeout: 15000

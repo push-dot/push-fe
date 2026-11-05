@@ -286,7 +286,7 @@ const ph0Start: Step[] = [
   ask(numbered('ph0-start', '이대로 분석을 시작할까요?', ['네, 시작해 주세요', '자료를 바꿀래요', '그만할게요'])),
 ]
 // The analysis card by plan: FREE locks the part rows, PRO teases ULTRA, ULTRA unfolds the projection.
-const ph1Fit = (plan: 'FREE' | 'PRO' | 'ULTRA'): Step[] => [
+const ph1Fit = (plan: 'FREE' | 'PRO' | 'ULTRA', gateWait = 500): Step[] => [
   s(300, {
     type: 'fit', id: 'fit1', score: 6.9, caption: '보통 · 개선 여지 있어요', plan, summary: '기술 스택은 잘 맞아요. 키워드와 정산 도메인이 약해요.',
     rows: [
@@ -299,11 +299,11 @@ const ph1Fit = (plan: 'FREE' | 'PRO' | 'ULTRA'): Step[] => [
     ],
     ...(plan === 'ULTRA' ? { projected: { label: '8점대', bullets: ['승인 API 성과를 숫자로 보여 주기', 'Kafka를 기술 스택 맨 앞으로 옮기기', '정산 도메인 경험을 한 줄 추가하기'] } } : {}),
   }),
-  ask(numbered('ph1-fit', '이 공고에 맞춰 이력서를 고칠까요?', ['네, 맞춰서 고쳐 주세요', '피드백만 받을게요', '점수만 보고 끝낼게요'])),
+  { ...ask(numbered('ph1-fit', '이 공고에 맞춰 이력서를 고칠까요?', ['네, 맞춰서 고쳐 주세요', '피드백만 받을게요', '점수만 보고 끝낼게요'])), wait: gateWait },
 ]
-const ph1Plan = (plan: 'FREE' | 'ULTRA'): Step[] => [
+const ph1Plan = (plan: 'FREE' | 'ULTRA', gateWait?: number): Step[] => [
   s(200, tool('fit', '적합도 계산', '5개 항목 · 가중치 반영', 'ok', '6.9점')),
-  ...ph1Fit(plan),
+  ...ph1Fit(plan, gateWait),
 ]
 const PH1 = ['이력서 읽기', 'GitHub 살펴보기', '공고 분석', '적합도 계산']
 const ph1: Step[] = [
@@ -568,6 +568,8 @@ const TOKENS: Record<string, Step[]> = {
   'ext-fail': ext({ josa: '으로', saved: false, gate: '내 서류에 저장하지 못했어요. 결과를 확인할까요?' }),
   'ph1-free': ph1Plan('FREE'),
   'ph1-ultra': ph1Plan('ULTRA'),
+  // The open gate hides the chat from accessibility, so hold it back until a tour has tapped the card open.
+  'ph1-ultra-open': ph1Plan('ULTRA', DWELL + 4000),
   'auto-pick': autoPick,
   // Jump straight to a phase: the design draws each phase under its own user line.
   analyze: ph1,
@@ -787,11 +789,12 @@ const quick: Record<string, QsData> = {
       job('s-dotori', '도토리증권', '서버 개발자 (Go)', '', '도', '#343A40', { badge: { label: '서류', tone: 'ac' }, selected: true }),
       job('s-star', '별빛게임즈', 'DevOps 엔지니어', '', '별', '#1864AB', { badge: { label: '지원함', tone: 'grey' }, selected: true }),
       job('s-raon', '라온헬스', '백엔드 개발자 (Java)', '', '라', '#364FC7', { badge: { label: '합격', tone: 'green' } }),
+      // Same ids as the 진행 중 rows, as the real list has (one application listed under both tabs is one pick).
       ...[
-        job('a-moa', '모아페이', '결제 플랫폼 시니어 엔지니어', '', '모', '#1F3A8A', { badge: { label: '면접', tone: 'orange' }, seg: 1, selected: true }),
-        job('a-dotori', '도토리증권', '서버 개발자 (Go)', '', '도', '#343A40', { badge: { label: '서류', tone: 'ac' }, seg: 1, selected: true }),
-        job('a-star', '별빛게임즈', 'DevOps 엔지니어', '', '별', '#1864AB', { badge: { label: '지원함', tone: 'grey' }, seg: 1, selected: true }),
-        job('a-raon', '라온헬스', '백엔드 개발자 (Java)', '', '라', '#364FC7', { badge: { label: '합격', tone: 'green' }, seg: 1 }),
+        job('s-moa', '모아페이', '결제 플랫폼 시니어 엔지니어', '', '모', '#1F3A8A', { badge: { label: '면접', tone: 'orange' }, seg: 1, selected: true }),
+        job('s-dotori', '도토리증권', '서버 개발자 (Go)', '', '도', '#343A40', { badge: { label: '서류', tone: 'ac' }, seg: 1, selected: true }),
+        job('s-star', '별빛게임즈', 'DevOps 엔지니어', '', '별', '#1864AB', { badge: { label: '지원함', tone: 'grey' }, seg: 1, selected: true }),
+        job('s-raon', '라온헬스', '백엔드 개발자 (Java)', '', '라', '#364FC7', { badge: { label: '합격', tone: 'green' }, seg: 1 }),
         job('a-nuri', '누리클라우드', '백엔드 개발자', '', '누', '#2B8A3E', { badge: { label: '불합격', tone: 'grey' }, seg: 1 }),
         job('a-pado', '파도AI', '데이터 엔지니어', '', '파', '#862E9C', { badge: { label: '지원 취소', tone: 'grey' }, seg: 1 }),
       ],

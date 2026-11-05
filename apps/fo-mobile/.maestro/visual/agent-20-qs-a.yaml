@@ -15,19 +15,19 @@ tags:
     file: _qs.yaml
     env:
       LABEL: "부족한 점 찾기"
-      WAIT: "비교할 서류"
+      WAIT: ".*비교할 서류.*"
       SHOT: QsGap
 - runFlow:
     file: _qs.yaml
     env:
       LABEL: "적합도 보기"
-      WAIT: "비교할 서류"
+      WAIT: ".*비교할 서류.*"
       SHOT: QsFit
 - runFlow:
     file: _qs.yaml
     env:
       LABEL: "점수 올리기"
-      WAIT: "올릴 서류"
+      WAIT: ".*올릴 서류.*"
       SHOT: QsBoost
 # The link sheet autofocuses its field, so it goes last and is left open.
 - runFlow:

@@ -36,9 +36,9 @@ tags:
     when:
       platform: iOS
     commands:
-      # The row's own accessibility label hides its ⋯ menu from iOS accessibility, so tap the ⋯ of the first file by position.
+      # The row's own accessibility label hides its ⋯ menu from iOS accessibility, so tap the ⋯ of the first file by position (its row spans 51-60% of the screen).
       - tapOn:
-          point: "90%,52%"
+          point: "90%,56%"
       - extendedWaitUntil:
           visible: "서류 삭제하기"
           timeout: 5000

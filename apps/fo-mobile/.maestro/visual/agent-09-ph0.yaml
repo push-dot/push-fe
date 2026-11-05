@@ -29,8 +29,9 @@ tags:
 - waitForAnimationToEnd
 - takeScreenshot: ChatPh0Start
 - tapOn: ".*네, 시작해 주세요"
-- extendedWaitUntil:
-    visible: ".*필수·우대 스택을 뽑는 중.*"
+# The list stops following the stream (a 새 내용 pill shows), so the running line sits below the fold until it is scrolled to.
+- scrollUntilVisible:
+    element: ".*필수·우대 스택을 뽑는 중.*"
     timeout: 40000
 - waitForAnimationToEnd
 - takeScreenshot: ChatPh1

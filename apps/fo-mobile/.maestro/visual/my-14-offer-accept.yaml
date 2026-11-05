@@ -63,12 +63,12 @@ tags:
 - extendedWaitUntil:
     visible: ".*메시지를 보내지 못했어요.*"
     timeout: 10000
-# hideKeyboard fails on iOS; a tap on the static date label dismisses the keyboard there.
+# hideKeyboard fails on iOS; a tap on a static bubble dismisses the keyboard there (the date labels have scrolled off by now).
 - runFlow:
     when:
       platform: iOS
     commands:
-      - tapOn: "10월 20일"
+      - tapOn: ".*목요일 저녁 7시.*"
 - runFlow:
     when:
       platform: Android

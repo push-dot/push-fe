@@ -49,7 +49,8 @@ tags:
     when:
       platform: iOS
     commands:
-      - tapOn: "일정 추가하기"
+      # "일정 추가" is the + button; "일정 추가하기" is the sheet's own submit button.
+      - tapOn: "일정 추가"
       - extendedWaitUntil:
           visible: "어떤 일정을 추가할까요?"
           timeout: 10000

@@ -3,6 +3,7 @@ tags:
   - subflow
 # Applies a tall filter sheet (지역, 기술 스택). On iOS the sheet's button is cut off by the screen bottom (only y 843-865 of 874 shows),
 # so a tap at its hierarchy center lands below the sheet and dismisses it unapplied: tap the visible strip instead.
+# Maestro takes whole percents only ("97.5%" fails to parse), 98% is the middle of the strip.
 # Needs ${TEXT}, the button's label.
 ---
 - extendedWaitUntil:
@@ -13,7 +14,7 @@ tags:
       platform: iOS
     commands:
       - tapOn:
-          point: "50%,97.5%"
+          point: "50%,98%"
 - runFlow:
     when:
       platform: Android
