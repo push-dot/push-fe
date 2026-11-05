@@ -1,6 +1,6 @@
 import { useIsFocused } from 'expo-router'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { askConfirm, showToast } from '@/shared/components'
+import { askConfirm, showToast, type ConfirmRequest } from '@/shared/components'
 import { pickDocument } from '@/shared/infrastructure'
 import { useRemoveSource } from './api/hooks'
 import { MAX_BYTES, RESUME_DOCUMENT_OPTIONS, SHEET_SWAP_MS, UNDO_MS } from './constants'
@@ -8,8 +8,8 @@ import type { PickedFile } from './types'
 import { useDocDelete, useDocImport } from './stores'
 import { createUndo, deleteDocCopy, SIZE_LIMIT } from './utils'
 
-// A sheet only files the request; the screen under it acts on it SHEET_SWAP_MS after regaining focus, and drops it if it loses focus first.
-const useSheetHandoff = <T,>(request: T | null | false, clear: () => void, fire: (request: T) => void) => {
+// A sheet only files the request; the screen under it acts on it `ms` after regaining focus, and drops it if it loses focus first.
+const useSheetHandoff = <T,>(request: T | null | false, clear: () => void, fire: (request: T) => void, ms: number) => {
   const focused = useIsFocused()
   const onClear = useEffectEvent(clear)
   const onFire = useEffectEvent(fire)
@@ -18,16 +18,21 @@ const useSheetHandoff = <T,>(request: T | null | false, clear: () => void, fire:
     const timer = setTimeout(() => {
       onClear()
       onFire(request)
-    }, SHEET_SWAP_MS)
+    }, ms)
     return () => {
       clearTimeout(timer)
       onClear()
     }
-  }, [focused, request])
+  }, [focused, request, ms])
 }
 
 export const useImportRequest = (onPick: () => void) =>
-  useSheetHandoff(useDocImport((st) => st.requested), () => useDocImport.setState({ requested: false }), onPick)
+  useSheetHandoff(useDocImport((st) => st.requested), () => useDocImport.setState({ requested: false }), onPick, SHEET_SWAP_MS)
+
+export const deleteConfirm = (doc: { fileName: string }, onConfirm: () => void): ConfirmRequest => {
+  const { title, body, confirm, cancel } = deleteDocCopy(doc.fileName)
+  return { title, body, confirm, cancel, danger: true, onConfirm }
+}
 
 export const useUndoRemove = (onRemoved?: () => void) => {
   const alive = useRef(true)
@@ -63,11 +68,8 @@ export const useUndoRemove = (onRemoved?: () => void) => {
       },
     })
   }
-  const ask = (doc: { id: string; fileName: string }) => {
-    const copy = deleteDocCopy(doc.fileName)
-    askConfirm({ title: copy.title, body: copy.body, confirm: copy.confirm, cancel: copy.cancel, danger: true, onConfirm: () => confirm(doc) })
-  }
-  useSheetHandoff(useDocDelete((st) => st.doc), () => useDocDelete.setState({ doc: null }), ask)
+  const ask = (doc: { id: string; fileName: string }) => askConfirm(deleteConfirm(doc, () => confirm(doc)))
+  useSheetHandoff(useDocDelete((st) => st.doc), () => useDocDelete.setState({ doc: null }), confirm, 0)
   return { hiddenId, ask }
 }
 
