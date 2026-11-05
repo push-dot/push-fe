@@ -3,10 +3,16 @@ name: 소셜 → 빈 피드
 tags:
   - visual
 ---
-# The mock serves no posts after this link, so 전체 shows the feed's empty state.
+# The mock serves no posts after this link; the tab already loaded its feed, so pull to refresh to see 전체 empty.
 - runFlow: ../flows/_login.yaml
 - runFlow: ../flows/_dismiss_logbox.yaml
 - openLink: push://social?mock=empty-feed
+- extendedWaitUntil:
+    visible: "직장 생활"
+    timeout: 10000
+- swipe:
+    start: "50%,35%"
+    end: "50%,80%"
 - extendedWaitUntil:
     visible: "아직 올라온 글이 없어요"
     timeout: 10000
