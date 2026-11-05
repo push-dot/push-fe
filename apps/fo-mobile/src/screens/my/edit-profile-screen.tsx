@@ -512,6 +512,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
                       <DatePicker
                         label="시작"
                         mode="month"
+                        surface="bg"
                         value={ymToDate(it.start)}
                         max={new Date()}
                         onChange={(d) => set(i, { start: dateToYm(d) })}
@@ -542,6 +543,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     <DatePicker
                       label="종료"
                       mode="month"
+                      surface="bg"
                       value={ymToDate(it.end)}
                       min={ymToDate(it.start) ?? undefined}
                       max={new Date()}
