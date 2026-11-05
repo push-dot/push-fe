@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { Pressable, View } from 'react-native'
-import { SHEET_SWAP_MS, useDocDelete, useSource } from '@/features/my'
+import { useDocDelete, useSource } from '@/features/my'
 import { Icon, Sheet, Text, type IconName } from '@/shared/components'
 import { spacing } from '@/theme'
 
@@ -30,8 +30,8 @@ const DocMoreSheetScreen = () => {
   }
   const remove = () => {
     if (!doc) return
+    useDocDelete.setState({ doc })
     router.back()
-    setTimeout(() => useDocDelete.setState({ doc }), SHEET_SWAP_MS)
   }
   return (
     <Sheet gap={spacing[3]}>
