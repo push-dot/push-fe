@@ -138,7 +138,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                         accessibilityLabel={`정렬, ${SEARCH_SORTS.find((s) => s.key === sort)?.label}`}
                         actions={SEARCH_SORTS.map((s) => ({ key: s.key, label: s.label, selected: s.key === sort, onPress: () => setSort(s.key) }))}
                       >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 44 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[1], minHeight: 44 }}>
                           <Text v="c1" weight="600" color="t2">
                             {SEARCH_SORTS.find((s) => s.key === sort)?.label}
                           </Text>
@@ -146,7 +146,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                         </View>
                       </Menu>
                     ) : (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[1] }}>
                         <Text v="c1" weight="600" color="t2">
                           {SEARCH_SORTS[0]?.label}
                         </Text>

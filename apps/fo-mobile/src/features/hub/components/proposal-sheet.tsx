@@ -21,6 +21,8 @@ type Props = {
   onClose: () => void
 }
 
+const bleed = Platform.OS === 'android' ? spacing[5] : spacing[4]
+
 const ProposalSheet = ({ userId, name, subtitle, message, postingId, postings, error, onMessage, onPosting, onError, onClose }: Props) => {
   const c = useColors()
   return (
@@ -59,7 +61,7 @@ const ProposalSheet = ({ userId, name, subtitle, message, postingId, postings, e
           <Text v="b2" weight="700">
             함께 보낼 공고 (선택)
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -spacing[4] }} contentContainerStyle={{ gap: spacing[2], paddingRight: spacing[4] }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginRight: -bleed }} contentContainerStyle={{ gap: spacing[2], paddingRight: bleed }}>
             {postings.map((p) => (
               <Chip
                 key={p.id}
