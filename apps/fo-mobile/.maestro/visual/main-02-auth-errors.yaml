@@ -4,6 +4,7 @@ tags:
   - visual
 ---
 # The boards draw each error over a code cut back to 3 digits, so the tour erases after the error shows.
+# The code input is transparent over the boxes and has no hit box for Maestro, so the boxes are tapped by point.
 # The mock reads the code's tail: 482111 wrong, 482222 expired, 482333 too many tries (mock/home.ts).
 - runFlow: _phone_code.yaml
 - inputText: "482111"
@@ -17,7 +18,8 @@ tags:
     when:
       platform: iOS
     commands:
-      - tapOn: "인증번호"
+      - tapOn:
+          point: "50%,29%"
       - eraseText: 3
       - runFlow: _hide_kbd.yaml
       - takeScreenshot: SignInErrors.1
@@ -37,7 +39,8 @@ tags:
     when:
       platform: iOS
     commands:
-      - tapOn: "인증번호"
+      - tapOn:
+          point: "50%,29%"
       - eraseText: 3
       - runFlow: _hide_kbd.yaml
       - takeScreenshot: SignInErrors.2
