@@ -69,7 +69,7 @@ export const typography = {
 } as const
 
 export const fontFamily = {
-  sans: 'Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif',
+  sans: '"Noto Sans KR", "Noto Sans", system-ui, sans-serif',
   mono: '"JetBrains Mono", ui-monospace, monospace',
 } as const
 

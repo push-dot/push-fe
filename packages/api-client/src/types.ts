@@ -2,6 +2,7 @@ export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: nu
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
+export type SearchTrending = { terms: { term: string; count: number }[]; skills: { id: string; count: number }[] }
 
 export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sales' | 'hr' | 'ops'
 export type CareerYears = '0' | '1-3' | '4-6' | '7-9' | '10+'
@@ -77,7 +78,7 @@ export type ProfileFilters = PageParams & {
   category?: JobCategory[]
   tenure?: Tenure[]
   status?: CareerStatus[]
-  explore?: 'recommended' | 'offers'
+  explore?: 'recommended' | 'offers' | 'received'
 }
 
 export type UserRef = { id: string; displayName: string; avatarUrl?: string | null }
@@ -88,7 +89,7 @@ export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'
 export type Offer = {
   id: string
   sender: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
-  recipient: UserRef
+  recipient: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
   message: string
   posting: OfferPosting | null
   status: OfferStatus
@@ -161,6 +162,24 @@ export type ResumeDocument = {
   kind: string
   status: string
   updatedAt: string
+  applicationId: string | null
+  latestVersionId: string | null
+}
+
+export type DocumentExport = {
+  id: string
+  documentId: string
+  versionId: string
+  format: 'PDF' | 'DOCX'
+  status: 'READY_TO_RENDER' | 'SUCCEEDED' | 'FAILED'
+}
+
+export type DocumentExportResult = {
+  sha256: string
+  byteLength: number
+  pageCount?: number | null
+  status: 'SUCCEEDED' | 'FAILED'
+  errorCode?: string | null
 }
 export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string; kind?: string }
 export type UploadedSource = Source & { jobId?: string }
@@ -168,7 +187,7 @@ export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> &
   pageCount: number | null
   createdAt: string | null
   origin: string
-  kind?: string
+  kind?: string | null
 }
 export type ProfileDraft = {
   displayName: string

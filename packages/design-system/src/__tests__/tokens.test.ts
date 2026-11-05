@@ -94,7 +94,7 @@ describe('css', () => {
 
 describe('icons', () => {
   it('register every svg file by name', () => {
-    expect(Object.keys(LINE_ICONS)).toHaveLength(38)
+    expect(Object.keys(LINE_ICONS)).toHaveLength(39)
     expect(Object.keys(ICONS_3D)).toHaveLength(13)
   })
 

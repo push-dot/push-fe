@@ -1,6 +1,6 @@
 import { router, type Href } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import { View } from 'react-native'
+import { Platform, useWindowDimensions, View } from 'react-native'
 import { WebView, type WebViewMessageEvent } from 'react-native-webview'
 import { useColors, useThemeMode } from '../../theme'
 import { detailUrl } from './detail-url'
@@ -11,22 +11,33 @@ import Text from './text'
 type Props = {
   path: string
   onTitle?: (title: string) => void
+  onBridge?: (message: Record<string, unknown>) => void
 }
 
-const DetailWebView = ({ path, onTitle }: Props) => {
+const DetailWebView = ({ path, onTitle, onBridge }: Props) => {
   const c = useColors()
   const mode = useThemeMode()
   const ref = useRef<WebView<object>>(null)
   const token = useSession((s) => s.session?.accessToken ?? null)
   const [failed, setFailed] = useState(false)
-  const [boot] = useState(() => `window.__PUSH__=${JSON.stringify({ token, apiBaseUrl: API_BASE_URL, mock: API_MOCK })};true;`)
+  const zoom = Math.round(useWindowDimensions().fontScale * 100)
+  const applyZoom = Platform.OS === 'ios' ? `document.documentElement.style.webkitTextSizeAdjust='${zoom}%';true;` : undefined
+  const [boot] = useState(() => `window.__PUSH__=${JSON.stringify({ token, apiBaseUrl: API_BASE_URL, mock: API_MOCK, theme: mode })};true;`)
 
   useEffect(() => {
     ref.current?.injectJavaScript(`window.dispatchEvent(new CustomEvent('push:token',{detail:{token:${JSON.stringify(token)}}}));true;`)
   }, [token])
 
+  useEffect(() => {
+    ref.current?.injectJavaScript(`window.dispatchEvent(new CustomEvent('push:theme',{detail:{theme:${JSON.stringify(mode)}}}));true;`)
+  }, [mode])
+
+  useEffect(() => {
+    if (applyZoom) ref.current?.injectJavaScript(applyZoom)
+  }, [applyZoom])
+
   const onMessage = (e: WebViewMessageEvent) => {
-    let m: { type?: string; title?: unknown; path?: unknown; url?: unknown; status?: unknown }
+    let m: { type?: string; title?: unknown; path?: unknown; url?: unknown; status?: unknown } & Record<string, unknown>
     try {
       m = JSON.parse(e.nativeEvent.data)
     } catch {
@@ -36,6 +47,7 @@ const DetailWebView = ({ path, onTitle }: Props) => {
     else if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path as Href)
     else if (m.type === 'external' && typeof m.url === 'string' && /^https?:\/\//.test(m.url)) void openBrowser(m.url)
     else if (m.type === 'error') setFailed(true)
+    else onBridge?.(m)
   }
 
   return (
@@ -45,6 +57,8 @@ const DetailWebView = ({ path, onTitle }: Props) => {
         key={mode}
         source={{ uri: detailUrl(WEB_BASE_URL, path, mode, API_MOCK) }}
         injectedJavaScriptBeforeContentLoaded={boot}
+        injectedJavaScript={applyZoom}
+        textZoom={zoom}
         onMessage={onMessage}
         onError={() => setFailed(true)}
         style={{ backgroundColor: c.bg }}

@@ -9,6 +9,7 @@ import { useDetail } from '../../shared/lib/use-detail'
 import BrowserProfile from './browser-profile'
 import Status from '../../shared/ui/status'
 import { profilesGet } from '../../entities/profile'
+import { profileStats } from './profile-stats'
 
 const PROFILE_EDITS = [
   { section: 'basic', label: '기본 정보 편집' },
@@ -26,6 +27,7 @@ const ProfilePage = () => {
   if (!isWebView()) return <BrowserProfile profile={p} />
   const mine = me.data?.id === p.userId
   const status = CAREER_STATUSES.find((s) => s.key === p.careerStatus)?.label
+  const stats = profileStats(p)
   return (
     <>
       <main className="page profile">
@@ -43,6 +45,15 @@ const ProfilePage = () => {
           {p.jobCategory || p.tenureYears != null ? <span className="badge grey">{roleLabel(p.jobCategory, p.tenureYears)}</span> : null}
           {status ? <span className={`badge ${p.careerStatus === 'seeking' ? 'ac' : 'grey'}`}>{status}</span> : null}
         </span>
+        {stats.length ? (
+          <span className="stats">
+            {stats.map((stat) => (
+              <span className="b2" key={stat.label}>
+                <b className="w7">{stat.value}</b> <span className="t2">{stat.label}</span>
+              </span>
+            ))}
+          </span>
+        ) : null}
         {mine ? (
           <span className="badges">
             {PROFILE_EDITS.map((item) => (
