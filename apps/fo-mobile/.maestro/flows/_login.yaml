@@ -23,6 +23,7 @@ tags:
             visible: "열기"
           commands:
             - tapOn: "열기"
+- runFlow: _dismiss_logbox.yaml
 - tapOn: "개발 토큰으로 들어가기"
 - extendedWaitUntil:
     visible: "새로 올라온 공고"
