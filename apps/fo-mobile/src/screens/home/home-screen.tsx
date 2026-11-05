@@ -14,19 +14,10 @@ const HomeScreen = () => {
   const kinds: SectionKind[] = useHomeSections()
   const [scrolled, setScrolled] = useState(false)
   return (
-    <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <TopBar
-        left={<Wordmark size={scrolled ? 20 : 24} />}
-        right={
-          <>
-            <GlassButton actions={[{ icon: 'search', label: '검색', onPress: () => router.push('/search') }]} />
-            <GlassButton
-              actions={[{ icon: 'bell', label: unread ? `알림 ${unread}개` : '알림', badge: unread, onPress: () => router.push('/notifications') }]}
-            />
-          </>
-        }
-      />
+    // The scroll view goes first: the iOS tab bar only minimizes on a scroll view in the first-subview chain.
+    <View style={{ flex: 1, flexDirection: 'column-reverse', backgroundColor: c.bg }} experimental_accessibilityOrder={['home-bar', 'home-feed']}>
       <ScrollView
+        nativeID="home-feed"
         contentInsetAdjustmentBehavior="automatic"
         scrollEventThrottle={16}
         onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > 0)}
@@ -41,6 +32,19 @@ const HomeScreen = () => {
           <Section key={kind} kind={kind} title={SECTIONS[kind].title} onBookmark={toggleBookmark} />
         ))}
       </ScrollView>
+      <View nativeID="home-bar">
+        <TopBar
+          left={<Wordmark size={scrolled ? 20 : 24} />}
+          right={
+            <>
+              <GlassButton actions={[{ icon: 'search', label: '검색', onPress: () => router.push('/search') }]} />
+              <GlassButton
+                actions={[{ icon: 'bell', label: unread ? `알림 ${unread}개` : '알림', badge: unread, onPress: () => router.push('/notifications') }]}
+              />
+            </>
+          }
+        />
+      </View>
     </View>
   )
 }
