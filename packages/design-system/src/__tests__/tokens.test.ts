@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { outputs, readSource } from '../../scripts/sources.ts'
-import { ICONS_3D, LINE_ICONS } from '../icons'
+import { BRAND, ICONS_3D, LINE_ICONS } from '../icons'
 import {
   colors,
   fontFamily,
@@ -124,19 +124,24 @@ describe('css', () => {
 
 describe('icons', () => {
   it('register every svg file by name', () => {
-    expect(Object.keys(LINE_ICONS)).toHaveLength(40)
-    expect(LINE_ICONS.lock).toContain('stroke="currentColor"')
-    expect(Object.keys(ICONS_3D)).toHaveLength(13)
+    expect(Object.keys(LINE_ICONS)).toHaveLength(61)
+    expect(Object.keys(ICONS_3D)).toHaveLength(32)
+    expect(Object.keys(BRAND)).toEqual(['push-mascot-on-dark', 'push-mascot-on-light'])
   })
 
   it('draw line icons in the current text colour at any size', () => {
-    expect(LINE_ICONS.back).toBe(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5 7.5 12l7.5 7.5"></path></svg>',
-    )
-    expect(
-      ICONS_3D.star.startsWith(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><defs>',
-      ),
-    ).toBe(true)
+    for (const svg of Object.values(LINE_ICONS)) {
+      expect(svg).toContain('currentColor')
+      expect(svg).not.toMatch(/ (width|height|style)="/)
+    }
+    expect(LINE_ICONS.back).toContain('<path d="M15 4.5 7.5 12l7.5 7.5"></path>')
+    expect(LINE_ICONS.back).toContain('stroke-width="2.2"')
+  })
+
+  it('keep colour icons and the mascot sizeless', () => {
+    for (const svg of [...Object.values(ICONS_3D), ...Object.values(BRAND)]) {
+      expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" viewBox=')).toBe(true)
+      expect(svg).not.toMatch(/^<svg[^>]* (width|height)="/)
+    }
   })
 })

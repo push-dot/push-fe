@@ -13,6 +13,7 @@ export const SOURCES = {
   app: 'tokens/push-app.json',
   icons: 'assets/icons',
   icons3d: 'assets/icons-3d',
+  brand: 'assets/brand',
 }
 
 export const OUTPUTS = {

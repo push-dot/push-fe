@@ -22,6 +22,6 @@ export const outputs = () => {
   return {
     [OUTPUTS.tokens]: renderTokens(model),
     [OUTPUTS.css]: renderCss(model),
-    [OUTPUTS.icons]: renderIcons(readSvgs(SOURCES.icons), readSvgs(SOURCES.icons3d)),
+    [OUTPUTS.icons]: renderIcons(readSvgs(SOURCES.icons), readSvgs(SOURCES.icons3d), readSvgs(SOURCES.brand)),
   }
 }
