@@ -1,4 +1,4 @@
-import { tile } from '@/theme/tokens'
+import { palette, tile } from '@/theme/tokens'
 
 export const MAX_COMMENT = 1000
 export const TITLE_MAX = 100
@@ -14,7 +14,7 @@ export const POST_IMAGE_OPTIONS = {
   allowsMultipleSelection: true,
   quality: 0.85,
 }
-export const AVATAR_COLORS = [tile.blue, tile.pink, tile.green, tile.orange, tile.rose, tile.cyan]
+export const AVATAR_COLORS = [tile.blue, tile.pink, tile.green, tile.orange, tile.rose, palette.light.ac, tile.cyan]
 export const MIN = 60_000
 export const HOUR = 60 * MIN
 export const DAY = 24 * HOUR
