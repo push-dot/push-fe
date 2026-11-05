@@ -21,6 +21,9 @@ const load: { [K in keyof QsSources]-?: () => Promise<QsSources[K]> } = {
   applications: async () => (await api.applications.list({ limit: 50 })).data,
   offers: async () => (await api.me.offers('received', { limit: 50 })).data,
   follows: async () => (await api.me.follows({ limit: 50 })).data,
+  recent: async () => (await api.me.postingViews({ limit: 50 })).data,
+  recommended: async () => (await api.profiles.list({ explore: 'recommended', limit: 50 })).data,
+  profile: () => api.me.profile(),
   doc: async () => (await realDocs())[0]?.fileName,
   connected: () => myApi.googleConnected(),
 }

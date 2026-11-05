@@ -42,7 +42,8 @@ const Body = ({ qs, onClose, embedded }: { qs: QuickStart; onClose: () => void; 
   }
 
   const visible = d?.items.filter((i) => (i.seg ?? 0) === seg) ?? []
-  const picked = qs.layout === 'deadline' || qs.layout === 'calendar' ? (d?.items ?? []) : (d?.items ?? []).filter((i) => sel.includes(i.id))
+  // 지원 현황 lists an active application under both tabs; pick it once.
+  const picked = qs.layout === 'deadline' || qs.layout === 'calendar' ? (d?.items ?? []) : (d?.items ?? []).filter((i, k, all) => sel.includes(i.id) && all.findIndex((x) => x.id === i.id) === k)
   const documentId = docs.data?.find((x) => x.fileName === doc)?.id
   const input = { picked, url, chips, option, doc, documentId, task: CALENDAR_TASKS[task]!.label, custom: custom ?? '' }
 
@@ -177,6 +178,11 @@ const Body = ({ qs, onClose, embedded }: { qs: QuickStart; onClose: () => void; 
 
           {['pick', 'deadline', 'status', 'reply'].includes(qs.layout) ? (
             <View>
+              {!visible.length && d.empty?.[seg] ? (
+                <Text v="b2" color="t3" style={{ paddingVertical: 16, textAlign: 'center' }}>
+                  {d.empty[seg]}
+                </Text>
+              ) : null}
               {visible.map((it) => (
                 <ItemRow
                   key={it.id}

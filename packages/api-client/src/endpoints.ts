@@ -99,6 +99,7 @@ export const createApi = (c: Client) => ({
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
     bookmarks: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/bookmarks', { query: p }),
+    postingViews: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/posting-views', { query: p }),
     follows: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/follows', { query: p }),
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
     posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),

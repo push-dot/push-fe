@@ -33,6 +33,8 @@ export type QsItem = {
 /** Ingredients for one quick-start sheet; copy and layout live in constants.ts. */
 export type QsData = {
   segments?: string[]
+  /** One line per segment shown when that segment has no items. */
+  empty?: (string | undefined)[]
   items: QsItem[]
   doc?: string
   chips?: string[]
