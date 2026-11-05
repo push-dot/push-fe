@@ -112,12 +112,14 @@ export const shadows = {
     glass:
       '0 6px 24px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)',
     icon: '0 6px 10px rgba(0,0,0,.18)',
+    panel: '0 -4px 30px rgba(0,0,0,.12)',
   },
   dark: {
     pop: '0 8px 28px rgba(0,0,0,.5)',
     glass:
       '0 6px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)',
     icon: '0 6px 10px rgba(0,0,0,.18)',
+    panel: '0 -4px 30px rgba(0,0,0,.12)',
   },
 } as const
 

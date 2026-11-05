@@ -29,6 +29,7 @@
     "shade": "rgba(0,0,0,.28)"
   },
   "shadow": {
-    "icon": "0 6px 10px rgba(0,0,0,.18)"
+    "icon": "0 6px 10px rgba(0,0,0,.18)",
+    "panel": "0 -4px 30px rgba(0,0,0,.12)"
   }
 }

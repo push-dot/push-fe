@@ -9,7 +9,7 @@ const SettingsGroup = ({ title, note, children }: { title?: string; note?: strin
   return (
     <View>
       {title ? (
-        <Text v="c1" weight="700" color="t3" style={{ paddingHorizontal: spacing[2], paddingBottom: spacing[2] }}>
+        <Text v="c1" weight="700" color="t3" style={{ paddingHorizontal: spacing[1], paddingBottom: spacing[2] }}>
           {title}
         </Text>
       ) : null}
@@ -21,7 +21,7 @@ const SettingsGroup = ({ title, note, children }: { title?: string; note?: strin
         ))}
       </View>
       {note ? (
-        <Text v="c2" color="t3" style={{ paddingHorizontal: spacing[2], paddingTop: spacing[2] }}>
+        <Text v="c2" color="t3" style={{ paddingHorizontal: spacing[1], paddingTop: spacing[2] }}>
           {note}
         </Text>
       ) : null}
