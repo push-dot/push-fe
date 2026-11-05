@@ -6,4 +6,7 @@ export const COMMENT_MAX = 1000
 export const EMPLOYER_BADGE = '기업'
 export const COMPOSER_ACTION = '글쓰기'
 export const POPULAR_TITLE = '이번 주 많이 본 글'
+export const SOCIAL_EMPTY = '아직 올라온 글이 없어요'
+export const SOCIAL_ERROR = '글을 불러오지 못했어요'
+export const SOCIAL_RETRY = '다시 불러오기'
 export const COMMENT_PLACEHOLDER = '댓글을 남겨 주세요'

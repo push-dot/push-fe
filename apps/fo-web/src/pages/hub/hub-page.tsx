@@ -2,6 +2,7 @@ import { CAREER_STATUSES, HUB_CATEGORIES, TENURES, type JobCategory } from '@pus
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import Skeleton from '../../shared/ui/skeleton'
 import { HUB_PAGE_SIZE } from './constants'
 import HubFilterSheet, { type HubDraft } from './hub-filter-sheet'
 import ProfileCard from './profile-card'
@@ -66,7 +67,23 @@ const HubPage = () => {
           ))}
         </div>
         {listQuery.isError ? <p className="b2 t3">프로필을 불러오지 못했어요.</p> : null}
-        {!listQuery.isLoading && items.length === 0 ? <p className="b2 t3">조건에 맞는 프로필이 없어요.</p> : null}
+        {listQuery.isLoading ? <Skeleton rows={5} /> : null}
+        {!listQuery.isLoading && items.length === 0 ? (
+          <div className="empty-block">
+            <p className="b1 w7">조건에 맞는 프로필이 없어요.</p>
+            <button
+              type="button"
+              className="btn sec"
+              onClick={() => {
+                setCategories([])
+                setApplied({ explore: 'recommended' })
+                setDraft({ explore: 'recommended' })
+              }}
+            >
+              필터 초기화
+            </button>
+          </div>
+        ) : null}
       </section>
       {listQuery.hasNextPage ? (
         <button type="button" className="more" disabled={listQuery.isFetchingNextPage} onClick={() => void listQuery.fetchNextPage()}>

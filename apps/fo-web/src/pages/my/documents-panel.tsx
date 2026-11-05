@@ -3,6 +3,7 @@ import { useRef } from 'react'
 
 import { useDocuments } from '../../entities/profile'
 import { resumeFileError, uploadResume } from '../../features/upload-resume'
+import Skeleton from '../../shared/ui/skeleton'
 import Toast, { useToast } from '../../shared/ui/toast'
 import DocumentFileRow from './document-file-row'
 import { DOCUMENT_AI_LABEL, DOCUMENT_EMPTY, DOCUMENT_UPLOADED, DROP_HINT, DROP_TITLE } from './constants'
@@ -39,6 +40,7 @@ const DocumentsPanel = () => {
         </button>
       </div>
       <p className="c1 t3">{DOCUMENT_AI_LABEL}</p>
+      {query.isLoading ? <Skeleton rows={4} /> : null}
       {query.isError ? <p className="b2 t3">서류를 불러오지 못했어요.</p> : null}
       {!query.isLoading && files.length === 0 ? <p className="b2 t3">{DOCUMENT_EMPTY}</p> : null}
       {files.length ? (

@@ -181,7 +181,7 @@ export type DocumentExportResult = {
   status: 'SUCCEEDED' | 'FAILED'
   errorCode?: string | null
 }
-export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string }
+export type Source = { id: string; fileName: string; mimeType: string; size: number; sha256: string; status: string; createdAt?: string; kind?: string }
 export type UploadedSource = Source & { jobId?: string }
 export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> & {
   pageCount: number | null

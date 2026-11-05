@@ -13,6 +13,8 @@ export const SORT_LABEL: Record<JobSort, string> = {
 export const SKILL_OPTIONS = ['Kotlin', 'Java', 'Spring', 'React', 'TypeScript', 'Python', 'AWS'] as const
 
 export const JOB_PAGE_SIZE = 4
+export const FILTERED_EMPTY = '조건에 맞는 공고가 없어요.\n필터를 줄여 보세요.'
+export const FILTER_RESET = '필터 초기화'
 
 export const FILTER_CHIPS = [
   { key: 'category', label: '직군' },

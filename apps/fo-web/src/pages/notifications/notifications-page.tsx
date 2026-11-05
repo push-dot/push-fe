@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
 import { relativeTime } from '../../shared/lib/format'
+import Skeleton from '../../shared/ui/skeleton'
 import { NOTIFICATION_EMPTY, NOTIFICATION_ERROR, NOTIFICATION_NOTE, NOTIFICATION_READ_ALL } from './constants'
 import { notificationPath, useNotifications } from '../../entities/notification'
 import { meReadNotifications } from '../../features/read-notifications'
@@ -32,8 +33,18 @@ const NotificationsPage = () => {
           {NOTIFICATION_READ_ALL}
         </button>
       </header>
-      {query.isError ? <p className="b2 t3">{NOTIFICATION_ERROR}</p> : null}
-      {!query.isLoading && items.length === 0 ? <p className="b2 t3">{NOTIFICATION_EMPTY}</p> : null}
+      {query.isLoading ? <Skeleton rows={5} /> : null}
+      {query.isError ? <p className="b1 w7">{NOTIFICATION_ERROR}</p> : null}
+      {!query.isLoading && items.length === 0 ? (
+        <div className="empty-block">
+          <span className="bell-tile" aria-hidden="true">
+            <svg className="ic" viewBox="0 0 24 24">
+              <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15ZM10 20.5a2 2 0 0 0 4 0" />
+            </svg>
+          </span>
+          <p className="b1 w7">{NOTIFICATION_EMPTY}</p>
+        </div>
+      ) : null}
       {items.length > 0 ? (
         <div className="box notice-list">
           {items.map((notice) => (

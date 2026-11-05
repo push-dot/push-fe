@@ -7,7 +7,8 @@ import { compactCount, initials } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
 import ComposerSheet from './composer-sheet'
 import { composerPrompt } from '../../features/compose-post'
-import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE } from './constants'
+import Skeleton from '../../shared/ui/skeleton'
+import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE, SOCIAL_EMPTY, SOCIAL_ERROR, SOCIAL_RETRY } from './constants'
 import PostCard from './post-card'
 import { usePostPages } from '../../entities/post'
 
@@ -42,8 +43,16 @@ const SocialPage = () => {
             <PostCard key={post.id} post={post} />
           ))}
         </div>
-        {listQuery.isError ? <p className="b2 t3">글을 불러오지 못했어요.</p> : null}
-        {!listQuery.isLoading && items.length === 0 ? <p className="b2 t3">아직 글이 없어요.</p> : null}
+        {listQuery.isLoading ? <Skeleton rows={3} /> : null}
+        {listQuery.isError ? (
+          <div className="empty-block">
+            <p className="b1 w7">{SOCIAL_ERROR}</p>
+            <button type="button" className="btn sec" onClick={() => void listQuery.refetch()}>
+              {SOCIAL_RETRY}
+            </button>
+          </div>
+        ) : null}
+        {!listQuery.isLoading && items.length === 0 ? <p className="b1 w7">{SOCIAL_EMPTY}</p> : null}
         {listQuery.hasNextPage ? (
           <button type="button" className="btn sec" disabled={listQuery.isFetchingNextPage} onClick={() => void listQuery.fetchNextPage()}>
             더 보기

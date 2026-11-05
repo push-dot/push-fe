@@ -149,6 +149,8 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
       {applyOpen ? (
         <ApplySheet
           postingId={posting.id}
+          company={posting.company}
+          title={posting.title}
           onClose={() => setApplyOpen(false)}
           onApplied={() => {
             setApplyOpen(false)

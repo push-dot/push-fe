@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { applyConfirmLabel, guestApplyAction } from './constants'
+import { APPLY_CONFIRM, guestApplyAction } from './constants'
 import { postingActionMode } from '../../entities/posting'
 
 describe('apply label', () => {
-  it('names the selected document count', () => {
-    expect(applyConfirmLabel(2)).toBe('서류 2개로 지원하기')
+  it('uses one confirm label for any count', () => {
+    expect(APPLY_CONFIRM).toBe('이 서류로 지원하기')
+    expect([0, 1, 2].map(() => APPLY_CONFIRM)).toEqual(['이 서류로 지원하기', '이 서류로 지원하기', '이 서류로 지원하기'])
   })
 })
 

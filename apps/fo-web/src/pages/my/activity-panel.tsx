@@ -7,6 +7,7 @@ import { useApplications, useCalendar } from '../../entities/application'
 import { useMyPosts } from '../../entities/post'
 import { useFollows } from '../../entities/profile'
 import { useBookmarks } from '../../entities/posting'
+import Skeleton from '../../shared/ui/skeleton'
 import { ACTIVITY_CHIP_KEY, APPLICATION_EMPTY, BOOKMARK_EMPTY, CALENDAR_EMPTY, FIT_NOTE, FOLLOW_EMPTY, POST_EMPTY } from './constants'
 
 
@@ -39,11 +40,18 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
     const date = new Date(event.startsAt)
     return date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth() && date.getDate() === selected
   })
+  const loading =
+    (key === 'applications' && applications.isLoading) ||
+    (key === 'calendar' && events.isLoading) ||
+    (key === 'bookmarks' && bookmarks.isLoading) ||
+    (key === 'follows' && follows.isLoading) ||
+    (key === 'posts' && posts.isLoading)
   return (
     <section className="stack">
-      {key === 'applications' ? (
+      {loading ? <Skeleton rows={4} /> : null}
+      {!loading && key === 'applications' ? (
         applications.data && applications.data.data.length === 0 ? (
-          <p className="b2 t3">{APPLICATION_EMPTY}</p>
+          <p className="b1 w7">{APPLICATION_EMPTY}</p>
         ) : (
           <ul className="activity-list">
             {(applications.data?.data ?? []).map((item) => (
@@ -57,8 +65,8 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
           </ul>
         )
       ) : null}
-      {key === 'applications' ? <p className="c1 t3">{FIT_NOTE}</p> : null}
-      {key === 'calendar' ? (
+      {!loading && key === 'applications' ? <p className="c1 t3">{FIT_NOTE}</p> : null}
+      {!loading && key === 'calendar' ? (
         <>
           <div className="month-bar">
             <button type="button" className="hbtn" aria-label="이전 달" onClick={() => { setDay(null); setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1)) }}>
@@ -109,9 +117,9 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
           </ul>
         </>
       ) : null}
-      {key === 'bookmarks' ? (
+      {!loading && key === 'bookmarks' ? (
         bookmarks.data && bookmarks.data.data.length === 0 ? (
-          <p className="b2 t3">{BOOKMARK_EMPTY}</p>
+          <p className="b1 w7">{BOOKMARK_EMPTY}</p>
         ) : (
           <ul className="activity-list">
             {(bookmarks.data?.data ?? []).map((posting) => (
@@ -128,9 +136,9 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
           </ul>
         )
       ) : null}
-      {key === 'follows' ? (
+      {!loading && key === 'follows' ? (
         follows.data && follows.data.data.length === 0 ? (
-          <p className="b2 t3">{FOLLOW_EMPTY}</p>
+          <p className="b1 w7">{FOLLOW_EMPTY}</p>
         ) : (
           <ul className="activity-list">
             {(follows.data?.data ?? []).map((profile) => (
@@ -144,9 +152,9 @@ const ActivityPanel = ({ chip }: { chip: string }) => {
           </ul>
         )
       ) : null}
-      {key === 'posts' ? (
+      {!loading && key === 'posts' ? (
         posts.data && posts.data.data.length === 0 ? (
-          <p className="b2 t3">{POST_EMPTY}</p>
+          <p className="b1 w7">{POST_EMPTY}</p>
         ) : (
           <ul className="activity-list">
             {(posts.data?.data ?? []).map((post) => (
