@@ -1,6 +1,7 @@
 import { colors } from '@push/design-system'
 import { describe, expect, it } from 'vitest'
 import { NATIVE_FONTS } from './fonts'
+import { designFontsReady } from './fonts-ready'
 import { navigationColors } from './navigation-colors'
 import { onAccent } from './on-accent'
 import { tabColor } from './tab-color'
@@ -41,5 +42,11 @@ describe('design system wiring', () => {
 
   it('on-accent ink is the design-system paper', () => {
     expect(onAccent).toBe(colors.light.bg)
+  })
+
+  it('paints after a font load failure instead of waiting forever', () => {
+    expect(designFontsReady(false, null)).toBe(false)
+    expect(designFontsReady(true, null)).toBe(true)
+    expect(designFontsReady(false, new Error('already loaded'))).toBe(true)
   })
 })
