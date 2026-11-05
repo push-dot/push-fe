@@ -1,7 +1,7 @@
 <h1 align="center">Push FE</h1>
 
 <p align="center">
-  <strong>Push의 모바일 앱과 웹. 공고·허브·소셜, 그리고 모바일 AI 채팅</strong>
+  <strong>Push의 모바일 앱과 웹. 공고·허브·소셜, 그리고 모바일 에이전트</strong>
 </p>
 
 <p align="center">
@@ -12,11 +12,11 @@
 
 **push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/design-system`, `packages/shared`예요.
 
-화면 문구는 한국어이고, 시안 HTML은 `docs/design/`에 있어요. `docs/plans/`는 구현 계획이에요.
+화면 문구는 한국어예요. Claude Design 내보내기와 FE 태스크 스펙은 `docs/design-handoff/`, 웹 시안 HTML은 `docs/design/`, 구현 계획은 `docs/plans/`에 있어요.
 
 | 패키지 | 하는 일 |
 | --- | --- |
-| `apps/fo-mobile` (`@push/fo-mobile`) | 개인용 iOS·Android 앱. 탭은 홈, 허브, 소셜, AI 채팅, 마이예요. |
+| `apps/fo-mobile` (`@push/fo-mobile`) | 개인용 iOS·Android 앱. 탭은 홈, 허브, 소셜, 에이전트, 마이예요. |
 | `apps/fo-web` (`@push/fo-web`) | 개인 웹과 기업 웹. 개발 서버는 5174예요. 모바일 WebView도 이 앱의 공고·프로필 상세를 열어요. |
 | `packages/api-client` (`@push/api-client`) | push-be `/api/v1` 클라이언트. ky, 타입, SSE 파서, 작업 폴링. |
 | `packages/design-system` (`@push/design-system`) | Claude Design 디자인 시스템의 색, 타입, 간격, 반경, 그림자 토큰과 아이콘. 웹은 `tokens.css`를 가져다 써요. |
@@ -26,11 +26,11 @@
 
 개인 웹과 모바일은 공고를 보고, 검색하고, 허브 프로필과 소셜, 제안, 알림, 내 정보를 다뤄요. 웹에서 로그인 없이 열리는 경로는 `/`, `/jobs`, `/search`, `/postings/:id`예요.
 
-AI 채팅 화면은 모바일에 있어요. 메시지는 SSE로 받고, 진행 중인 응답은 다시 이어 받아요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
+에이전트(AI 채팅) 화면은 모바일에 있어요. 메시지는 SSE(스트림 v3)로 받고, 진행 중인 응답은 다시 이어 받아요. 대화 목록 사이드바는 `expo-router/drawer`로 열려서 탭 바까지 덮어요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
 
 기업 웹은 사업자 확인, 공고 작성, 지원자, 담당자 초대, 요금제 화면을 가져요. 계정 종류는 `PERSONAL`과 `EMPLOYER`이고, 로그인 화면에서 고른 뒤 바뀌지 않아요.
 
-모바일 로그인은 Google과 GitHub OAuth(PKCE, 콜백 `push://auth/callback`)예요. 개발 빌드에서만 `EXPO_PUBLIC_DEV_AUTH_TOKEN`으로 들어갈 수 있어요. 웹 개인 로그인은 Google, GitHub, 이메일이에요. 기업 로그인은 Google과 이메일이에요. 이메일 가입·인증·비밀번호 재설정 경로는 `/signup`, `/auth/verify`, `/auth/reset`이에요.
+모바일 로그인은 Google, Apple(iOS만), GitHub, 휴대폰 번호예요. OAuth는 PKCE이고 콜백은 `push://auth/callback`이에요. 개발 빌드에서만 `EXPO_PUBLIC_DEV_AUTH_TOKEN`으로 들어갈 수 있어요. 웹 개인 로그인은 Google, GitHub, 이메일이에요. 기업 로그인은 Google과 이메일이에요. 이메일 가입·인증·비밀번호 재설정 경로는 `/signup`, `/auth/verify`, `/auth/reset`이에요.
 
 ## 아키텍처
 
@@ -55,7 +55,7 @@ expo-secure-store                 브라우저 세션 (push-web-session)
 | --- | --- |
 | 워크스페이스 | pnpm 11.0.4 (`packageManager`), Turborepo 2.11, TypeScript 5.8 (모바일만 6.0) |
 | Node | CI는 Node 22 |
-| 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58, Native Tabs, Zustand 5, React Native WebView 14, `@expo/ui` |
+| 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58(Native Tabs, Drawer), Zustand 5, React Native WebView 14, `@expo/ui`(SwiftUI·Jetpack Compose 시트, 메뉴, 피커), Noto Sans KR |
 | 웹 | Vite 6, React 19.1, React Router 7, TanStack Query 5, Noto Sans KR |
 | HTTP | `@push/api-client` (ky 1) |
 | 한글 검색 | `@push/shared`가 `es-hangul` 2.4를 감싸요 |
@@ -89,7 +89,8 @@ pnpm --filter @push/fo-web typecheck
 ### fo-mobile
 
 ```bash
-pnpm --filter @push/fo-mobile start      # Expo 개발 서버
+pnpm --filter @push/fo-mobile start      # Expo 개발 서버 (운영 API)
+pnpm --filter @push/fo-mobile start:test # 스테이징 API
 pnpm --filter @push/fo-mobile ios        # expo run:ios
 pnpm --filter @push/fo-mobile android    # expo run:android
 pnpm --filter @push/fo-mobile test
@@ -99,9 +100,11 @@ pnpm --filter @push/fo-mobile typecheck
 
 Expo 패키지를 더할 때는 앱 디렉터리에서 `npx expo install <package>`를 써요. 규칙이 더 있으면 `apps/fo-mobile/AGENTS.md`에 있어요.
 
+`expo-router` 58.0.24에는 pnpm 패치(`patches/expo-router@58.0.24.patch`)가 있어요. Android 탭 아이콘이 `renderingMode="original"`이면 색을 입히지 않게 하는 한 줄이에요. expo-router를 올릴 때 이 패치가 아직 필요한지 확인하세요.
+
 목업 API는 `EXPO_PUBLIC_API_MOCK`가 `1`일 때 `src/mock`을 써요. 예시는 `apps/fo-mobile/.env.example`이고, 복사 대상은 `.env.local`이에요.
 
-Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요. npm 스크립트와 CI에는 연결되어 있지 않아요.
+Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요(00–07, 목업 API 기준). iOS 시뮬레이터와 Android 에뮬레이터에서 돌려요. `.env.local`에 `EXPO_PUBLIC_API_MOCK=1`과 `EXPO_PUBLIC_DEV_AUTH_TOKEN`을 넣고 Metro를 띄운 뒤 `maestro test apps/fo-mobile/.maestro`를 실행해요. npm 스크립트와 CI에는 연결되어 있지 않아요.
 
 ### 웹·모바일 함께
 
@@ -158,9 +161,11 @@ WebView에서는 `/postings/:id`와 `/profiles/:id`만 있어요.
 
 ### fo-mobile
 
-Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요.
+Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sign-in`, `phone`, `verify-phone`, `signup-terms`, `phone-registered`)은 루트에 있어요. 로그인 뒤 화면은 `(app)/(stack)` 아래에 있고, `(app)`은 에이전트 사이드바를 여는 Drawer예요. 그룹은 URL에 들어가지 않지만, typed routes 때문에 그룹을 쓰는 href는 `/(app)/(stack)/(tabs)/…` 전체를 적어요.
 
-화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
+탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 실행 방식, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `access-mode`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
+
+화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `billing`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
 
 ## API 클라이언트
 
@@ -179,6 +184,7 @@ pnpm --filter @push/api-client test
 pnpm --filter @push/api-client typecheck
 pnpm --filter @push/shared test
 pnpm --filter @push/shared typecheck
+pnpm --filter @push/design-system test
 ```
 
 `.github/workflows/ci.yml`은 PR과 `develop`·`main` push, `workflow_dispatch`에서 `pnpm install --frozen-lockfile` 뒤에 `turbo run typecheck lint test`를 실행해요. 웹 프로덕션 빌드는 `pnpm --filter @push/fo-web build`예요. 웹 호스팅이나 스토어 제출 워크플로는 이 저장소에 없어요.
@@ -193,8 +199,10 @@ packages/
   api-client/         @push/api-client
   design-system/      @push/design-system
   shared/             @push/shared
+patches/              pnpm 패치 (expo-router)
 docs/
-  design/             Claude Design 시안
+  design/             웹 시안 HTML
+  design-handoff/     Claude Design 앱 내보내기, gap 분석, FE 태스크 스펙
   plans/              구현 계획
 ```
 
