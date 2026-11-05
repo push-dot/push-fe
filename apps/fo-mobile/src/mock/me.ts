@@ -624,14 +624,14 @@ mock('GET', 'me/offers/:id', ({ params }) => {
     })
   return { data: o }
 })
-// shortcut: accepting o1 lands in the thread the 제안함 board draws, whatever reply was typed (the
-// board's text can't be typed on Android); the 3s wait keeps the 보내는 중 button on screen.
-const o1Thread: OfferMessage[] = [
+// Accepting o1 lands in the thread the 제안함 board draws, opened by the typed reply; the 3s wait
+// keeps the 보내는 중 button on screen.
+const o1Thread = (reply?: string): OfferMessage[] => [
   {
     id: 'm-o1-1',
     offerId: 'o1',
     sender: ME,
-    body: '제안 감사해요, 지현 님! 다음 주 화요일이나 목요일 저녁이면 좋아요.',
+    body: reply || '제안 감사해요, 지현 님! 다음 주 화요일이나 목요일 저녁이면 좋아요.',
     createdAt: on(10, 20, 9, 10),
   },
   {
@@ -645,7 +645,7 @@ const o1Thread: OfferMessage[] = [
 mock('POST', 'me/offers/:id/accept', async ({ params, body }) => {
   await new Promise((r) => setTimeout(r, 3000))
   const reply = (body as { reply?: string } | undefined)?.reply
-  if (params.id === 'o1') messages.o1 = [...o1Thread]
+  if (params.id === 'o1') messages.o1 = o1Thread(reply)
   else if (reply)
     (messages[params.id!] ??= []).push({
       id: `m${Date.now()}`,

@@ -21,7 +21,7 @@ tags:
 - extendedWaitUntil:
     visible: "어떻게 답장할까요?"
     timeout: 10000
-# iOS types the board's Korean text; Android inputText is ASCII only and the mock ignores the reply text for this offer.
+# iOS types the board's Korean text; Android inputText is ASCII only, so its first bubble reads "Thank you".
 - tapOn: "답장.*"
 - runFlow:
     when:
