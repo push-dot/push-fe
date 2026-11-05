@@ -12,7 +12,6 @@ export const usageExhausted = (plan: string) =>
 
 export const isUsageExhausted = (code?: string) => code === 'FEATURE_DISABLED' || code === 'INSUFFICIENT_CREDITS'
 
-/** A failed first run leaves nothing to fix, so the composer asks for a posting link again; the usage card keeps the follow-up line. */
 export const composerPlaceholder = (chat: Pick<ChatState, 'working' | 'items'>) => {
   const last = chat.items.at(-1)
   if (chat.working) return COMPOSER_PLACEHOLDER.working

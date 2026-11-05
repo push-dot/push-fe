@@ -10,7 +10,6 @@ const ago = (min: number) => new Date(Date.now() - min * 60_000).toISOString()
 
 // ---------- conversations ----------
 
-// `at` pins a date; otherwise it is `min` minutes ago.
 const conv = (id: string, title: string, min: number, lastLine: string, status: ConversationRow['status'] = null, at?: string): ConversationRow => ({
   id,
   revision: 1,
@@ -673,7 +672,6 @@ const storedTurns: Record<string, ConversationTurn['events']> = {
       seq: 7,
     },
   ],
-  // ChatResume: the draft stopped at its review gate, which expired unanswered.
   'c-dotori': [
     { type: 'tool', name: 'write_draft', state: 'ok', summary: '초안 쓰기', target: '이력서 v1', resultLine: '1쪽 · 섹션 5개 · 말투 그대로', seq: 1 },
     {

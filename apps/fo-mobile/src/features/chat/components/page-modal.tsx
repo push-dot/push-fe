@@ -21,7 +21,6 @@ const PageModal = ({
   left?: ReactNode
   children: ReactNode
   footer?: ReactNode
-  /** The 계정/요금제 artboards leave no padding under the title row. */
   tight?: boolean
 }) => {
   const c = useColors()

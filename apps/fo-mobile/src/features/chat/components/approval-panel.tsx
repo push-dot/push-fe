@@ -254,7 +254,6 @@ const Sub = ({ label }: { label: string }) => (
 const ChoiceRow = ({ n, choice, on, square, bare, center, onPress }: { n?: number; choice: Choice; on: boolean; square: boolean; bare?: boolean; center?: boolean; onPress: () => void }) => {
   const c = useColors()
   const two = !!choice.desc
-  // The iOS design keeps the numbered chip pale when selected (.ios .ch .k); Android and checkboxes turn solid.
   const paleNumber = Platform.OS === 'ios' && !square
   return (
     <Pressable

@@ -15,9 +15,7 @@ export const accessMenu = (current: AccessMode, onPick: (mode: AccessMode) => vo
 export const usagePercent = (credits: Account['credits'] | undefined) =>
   credits && credits.total > 0 ? Math.min(100, Math.max(0, Math.round((credits.used / credits.total) * 100))) : null
 
-/** 계정 › 대화 row: the artboard shows 그대로 for the default tone, other tones read as "친근한 말투". */
 export const toneLabel = (tone?: { key: Tone; label: string }) => (tone && tone.key !== 'as_is' ? `${tone.label} 말투` : '그대로')
 
-/** 계정 › 에이전트가 참고하는 내 정보: the role of the job the user holds now, else the headline. */
 export const currentRole = (profile?: { headline: string; careers: { role: string; endedOn?: string | null }[] }) =>
   profile?.careers.find((c) => !c.endedOn)?.role ?? profile?.headline
