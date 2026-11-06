@@ -22,7 +22,7 @@ const GRAB = { width: 36, height: 5, radius: 3 }
 const SHEET_GAP = 14
 const NO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 }
 
-const Body = ({ title, description, children, action, secondary, onClose, gap = SHEET_GAP, onLayout }: Props) => {
+const Body = ({ title, description, children, action, secondary, onClose, gap = SHEET_GAP, onLayout, homeInset = 0 }: Props & { homeInset?: number }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const android = Platform.OS === 'android'
@@ -34,6 +34,7 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
         paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
         paddingHorizontal: android ? spacing[5] : spacing[4],
         paddingBottom: android ? insets.bottom + spacing[3] : Math.max(insets.bottom, spacing[5]),
+        marginBottom: insets.bottom === 0 ? -homeInset : 0,
         gap,
       }}
     >
@@ -65,11 +66,16 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
 }
 
 // iOS 26 floats partial sheets clear of the home indicator and attaches large ones; a provider inside the sheet reads which.
-const IosSheet = (props: Props) => (
-  <SafeAreaProvider initialMetrics={{ frame: useSafeAreaFrame(), insets: NO_INSETS }} style={{ flex: 0 }}>
-    <Body {...props} />
-  </SafeAreaProvider>
-)
+// A floating fit-to-contents sheet is also drawn one home-indicator inset taller than its content, so that inset is pulled back.
+const IosSheet = (props: Props) => {
+  const frame = useSafeAreaFrame()
+  const { bottom } = useSafeAreaInsets()
+  return (
+    <SafeAreaProvider initialMetrics={{ frame, insets: NO_INSETS }} style={{ flex: 0 }}>
+      <Body {...props} homeInset={bottom} />
+    </SafeAreaProvider>
+  )
+}
 
 /** Body of a native form sheet route (see sheetOptions). iOS draws the grabber; Android gets the Material 3 drag handle. */
 const Sheet = Platform.OS === 'android' ? Body : IosSheet
