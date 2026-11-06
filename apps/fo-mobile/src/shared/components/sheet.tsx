@@ -4,6 +4,7 @@ import { SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-nat
 import { spacing, useColors } from '../../theme'
 import Button from './button'
 import { floatingSheet } from './sheet-scale'
+import { useKeyboardHeight } from './use-keyboard-height'
 import GlassButton from './glass-button'
 import Text from './text'
 
@@ -70,7 +71,7 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
 const IosSheet = (props: Props) => {
   const frame = useSafeAreaFrame()
   const { bottom } = useSafeAreaInsets()
-  const float = floatingSheet(frame.width, Platform.Version, bottom)
+  const float = floatingSheet(frame.width, Platform.Version, bottom, useKeyboardHeight() > 0)
   return (
     <SafeAreaProvider initialMetrics={{ frame, insets: NO_INSETS }} style={{ flex: 0 }}>
       {float ? (
