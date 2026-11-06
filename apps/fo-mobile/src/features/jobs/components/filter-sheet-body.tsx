@@ -43,7 +43,7 @@ const FilterSheetBody = ({ kind, draft, trending, onChange, scroll }: Props) => 
         </Pressable>
       </View>
       {scroll ? (
-        <SheetScroll keyboardShouldPersistTaps="handled" style={{ maxHeight: scroll.maxHeight }} onLayout={scroll.onLayout}>
+        <SheetScroll keyboardShouldPersistTaps="handled" style={{ maxHeight: scroll.maxHeight }} onLayout={scroll.onLayout} contentContainerStyle={{ gap: 14 }}>
           {options}
         </SheetScroll>
       ) : (
