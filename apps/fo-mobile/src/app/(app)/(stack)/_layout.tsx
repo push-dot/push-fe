@@ -11,6 +11,7 @@ const SignedInStack = () => {
       <Stack.Screen name="postings/[id]" />
       <Stack.Screen name="profiles/[id]" />
       <Stack.Screen name="posts/[id]" />
+      <Stack.Screen name="compose" options={{ presentation: 'modal' }} />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="search" />
       <Stack.Screen name="offers/index" />

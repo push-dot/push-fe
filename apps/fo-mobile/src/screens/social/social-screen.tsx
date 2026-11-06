@@ -31,7 +31,7 @@ const SocialScreen = () => {
                 },
               ]}
             />
-            <GlassButton actions={[{ icon: 'edit', label: '글쓰기', onPress: () => router.push('/(app)/(stack)/(tabs)/(social)/compose') }]} />
+            <GlassButton actions={[{ icon: 'edit', label: '글쓰기', onPress: () => router.push('/(app)/(stack)/compose') }]} />
           </>
         }
       />
@@ -67,7 +67,7 @@ const SocialScreen = () => {
                 action={
                   q.isError
                     ? { label: '다시 불러오기', onPress: () => q.refetch() }
-                    : { label: '글쓰기', onPress: () => router.push('/(app)/(stack)/(tabs)/(social)/compose') }
+                    : { label: '글쓰기', onPress: () => router.push('/(app)/(stack)/compose') }
                 }
               />
             </View>
