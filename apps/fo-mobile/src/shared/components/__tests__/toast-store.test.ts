@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { activeToastHost, hideToast, mountToastHost, showToast, toastDuration, useToastStore } from '../toast-store'
+import { platformTokens } from '../../../theme/platform'
+import { activeToastHost, hideToast, mountToastHost, showToast, toastDuration, toastOffsets, useToastStore } from '../toast-store'
 
 beforeEach(() => useToastStore.setState({ current: null, hosts: [] }))
 
@@ -36,5 +37,12 @@ describe('toast hosts', () => {
     expect(activeToastHost(useToastStore.getState())).toBe('root')
     unmountRoot()
     expect(activeToastHost(useToastStore.getState())).toBeUndefined()
+  })
+})
+
+describe('toast offsets', () => {
+  it('match the artboard bottoms above each platform tab bar', () => {
+    expect(toastOffsets(platformTokens('ios'))).toEqual({ tabs: 74, docsCta: 160, docsError: 210, cta: 92 })
+    expect(toastOffsets(platformTokens('android'))).toEqual({ tabs: 72, docsCta: 158, docsError: 208, cta: 92 })
   })
 })

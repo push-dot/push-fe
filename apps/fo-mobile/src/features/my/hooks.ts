@@ -48,7 +48,7 @@ export const pickResume = async (): Promise<PickedFile | null> => {
   const file = res.canceled ? null : res.assets[0]
   if (!file) return null
   if ((file.size ?? 0) > MAX_BYTES) {
-    showToast({ message: SIZE_LIMIT.title, tone: 'error', bottom: TOAST_ABOVE.tabs })
+    showToast({ message: SIZE_LIMIT.title, tone: 'error', bottom: TOAST_ABOVE.docsError })
     return null
   }
   return file

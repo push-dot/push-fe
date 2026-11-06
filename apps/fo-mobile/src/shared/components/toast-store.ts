@@ -13,8 +13,11 @@ export type ToastInput = {
 }
 export type Toast = ToastInput & { id: number }
 
-// Offsets the 2026-11-05 artboards draw above the safe inset: over the tab bar, over a CTA bar, over the 마이 서류 파일 등록 CTA.
-export const TOAST_ABOVE = { tabs: 74, cta: 92, docsCta: 160 } as const
+/** Artboard toast bottoms, as offsets above the safe inset. */
+export const toastOffsets = ({ tabBarHeight, safeBottom }: { tabBarHeight: number; safeBottom: number }) => {
+  const tabs = tabBarHeight - safeBottom
+  return { tabs: tabs + 14, docsCta: tabs + 100, docsError: tabs + 150, cta: 92 } as const
+}
 
 type State = { current: Toast | null; hosts: string[] }
 
