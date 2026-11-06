@@ -90,7 +90,7 @@ const HubScreen = () => {
             <StatusNote
               lines={['조건에 맞는 프로필이 없어요.']}
               action={{ label: '필터 초기화', onPress: reset }}
-              style={emptyNoteStyle(140)}
+              style={emptyNoteStyle(140, false)}
             />
           )
         }

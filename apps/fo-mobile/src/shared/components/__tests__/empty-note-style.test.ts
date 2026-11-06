@@ -17,6 +17,11 @@ describe('empty note style', () => {
     expect((await load())(140).paddingBottom).toBe(106)
   })
 
+  it('keeps the drawn lift for tab-root lists, which run to the screen bottom', async () => {
+    platform.OS = 'ios'
+    expect((await load())(140, false).paddingBottom).toBe(140)
+  })
+
   it('keeps the drawn lift on Android', async () => {
     platform.OS = 'android'
     expect((await load())(160).paddingBottom).toBe(160)

@@ -68,7 +68,7 @@ const SocialScreen = () => {
                   ? { label: '다시 불러오기', onPress: () => q.refetch() }
                   : { label: '글쓰기', onPress: () => router.push('/(app)/(stack)/compose') }
               }
-              style={emptyNoteStyle(140)}
+              style={emptyNoteStyle(140, false)}
             />
           )
         }
