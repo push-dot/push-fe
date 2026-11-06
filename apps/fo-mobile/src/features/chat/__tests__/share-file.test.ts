@@ -11,6 +11,8 @@ vi.mock('@/shared/infrastructure', async () => {
 vi.mock('@/features/my', () => ({ myApi: {} }))
 
 const { fetchDocumentPdf, fetchSourceBytes } = await import('../api/fetchers')
+const { exclusive, pdfName, shareErrorText } = await import('../utils/share')
+const { FILE_SHARE_FAILED, FILE_SHARE_NOT_FINALIZED } = await import('../constants')
 const head = (bytes: Uint8Array) => String.fromCharCode(...bytes.slice(0, 5))
 
 describe('result file share', () => {
@@ -26,8 +28,45 @@ describe('result file share', () => {
     expect(head(await fetchSourceBytes('s1'))).toBe('%PDF-')
   })
 
-  it('fails instead of sharing a name when the card has no document', async () => {
-    await expect(fetchDocumentPdf('')).rejects.toThrow()
-    await expect(fetchDocumentPdf('missing')).rejects.toThrow()
+  it('says a document that is not finalized cannot be shared, from the server 422', async () => {
+    const error = await fetchDocumentPdf('d-draft').catch((e: unknown) => e)
+    expect(error).toMatchObject({ status: 422, code: 'DOCUMENT_NOT_FINALIZED' })
+    expect(shareErrorText(error)).toBe(FILE_SHARE_NOT_FINALIZED)
+  })
+
+  it('fails with the retry message when the card has no document', async () => {
+    for (const id of ['', 'missing']) expect(shareErrorText(await fetchDocumentPdf(id).catch((e: unknown) => e))).toBe(FILE_SHARE_FAILED)
+  })
+
+  it('names an export as the PDF it is', () => {
+    expect(pdfName('김서준_모아페이_백엔드')).toBe('김서준_모아페이_백엔드.pdf')
+    expect(pdfName('이력서.pdf')).toBe('이력서.pdf')
+    expect(pdfName('경력기술서.DOCX')).toBe('경력기술서.pdf')
+    expect(pdfName('v1.2_이력서')).toBe('v1.2_이력서.pdf')
+  })
+})
+
+describe('double tap on 공유', () => {
+  it('runs the share once while one is in flight, and again after it settles', async () => {
+    const once = exclusive()
+    let finish = () => {}
+    const job = vi.fn(() => new Promise<void>((r) => (finish = r)))
+    const first = once(job)
+    await once(job)
+    expect(job).toHaveBeenCalledTimes(1)
+    finish()
+    await first
+    const again = once(job)
+    expect(job).toHaveBeenCalledTimes(2)
+    finish()
+    await again
+  })
+
+  it('frees the lock after a failed share', async () => {
+    const once = exclusive()
+    await expect(once(() => Promise.reject(new Error('x')))).rejects.toThrow('x')
+    const job = vi.fn(async () => {})
+    await once(job)
+    expect(job).toHaveBeenCalledTimes(1)
   })
 })

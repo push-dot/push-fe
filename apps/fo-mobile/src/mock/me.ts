@@ -243,9 +243,12 @@ let documents: HubDocument[] = [
   pushDoc('d5', 'a10', '서버 엔지니어 이력서', on(9, 11)),
 ]
 
-// The document the agent saved for the chat upload result card (its documentId), outside 마이's list.
+// The document the agent saved for the chat upload result card (its documentId), and a tailored draft never finalized; both outside 마이's list.
 const agentDoc: HubDocument = { ...pushDoc('src-upload', '', '김서준_모아페이_백엔드', on(10, 20)), applicationId: null }
-const findDoc = (id?: string) => [...documents, agentDoc].find((d) => d.id === id)
+const draftDoc: HubDocument = { ...pushDoc('d-draft', '', '모아페이 맞춤 이력서', on(10, 21)), applicationId: null, kind: 'TAILORED' }
+const findDoc = (id?: string) => [...documents, agentDoc, draftDoc].find((d) => d.id === id)
+// push-be exports a HUB_PROFILE's latest version before finalize; no mock document is finalized.
+const exportable = (d: HubDocument | undefined, versionId?: string) => d?.kind === 'HUB_PROFILE' && d.latestVersionId === versionId
 
 mock('GET', 'documents', ({ query }) => page(documents, query))
 mock('GET', 'documents/:id', ({ params }) => {
@@ -255,7 +258,7 @@ mock('GET', 'documents/:id', ({ params }) => {
     : { status: 404, body: { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } } }
 })
 mock('GET', 'documents/:id/versions/:versionId/export', ({ params }) =>
-  findDoc(params.id)?.latestVersionId === params.versionId
+  exportable(findDoc(params.id), params.versionId)
     ? pdfResponse()
     : { status: 422, body: { error: { code: 'DOCUMENT_NOT_FINALIZED', message: 'only the finalized version can be exported' } } },
 )
