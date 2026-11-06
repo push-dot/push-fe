@@ -14,7 +14,7 @@ import {
 } from '../api/hooks'
 import { FOLLOW_PREVIEW, POST_PREVIEW } from '../constants'
 import type { ActivitySub } from '../types'
-import { commentedSee, emptyCta, followSeeAll, followerSee, postsSeeAll, postedAt, stageTone } from '../utils'
+import { appliedOnly, commentedSee, emptyCta, followSeeAll, followerSee, postsSeeAll, postedAt, stageTone } from '../utils'
 import CalendarView from './calendar-view'
 import Empty from './empty'
 import ListSkeleton from './list-skeleton'
@@ -36,7 +36,7 @@ const SUBS: { key: ActivitySub; label: string }[] = [
 const Applications = () => {
   const { data, isLoading } = useMyApplications()
   if (isLoading) return <ListSkeleton />
-  const list = data?.data ?? []
+  const list = appliedOnly(data?.data ?? [])
   return (
     <>
       {list.length === 0 ? (
@@ -46,7 +46,7 @@ const Applications = () => {
           onAction={() => router.push(emptyCta('applications').href)}
         />
       ) : (
-        <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
+        <ListTitle title="지원한 공고" count={list.length} />
       )}
       {list.map((a) => (
         <Row
@@ -63,7 +63,9 @@ const Applications = () => {
               {a.company} · {monthDay(a.appliedAt ?? a.createdAt)}
             </Text>
           </View>
-          <Badge label={stageBadge(a.stage)} tone={stageTone(a.stage)} />
+          <View>
+            <Badge label={stageBadge(a.stage)} tone={stageTone(a.stage)} />
+          </View>
         </Row>
       ))}
     </>
@@ -120,7 +122,8 @@ const Bookmarks = () => {
             accessibilityLabel="북마크 해제"
             accessibilityState={{ selected: true }}
             onPress={() => unbookmark.mutate(p)}
-            style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+            hitSlop={12}
+            style={{ width: 20, height: 20 }}
           >
             <Icon name="bookmark" size={20} color={c.acText} filled />
           </Pressable>
