@@ -164,6 +164,7 @@ export type ResumeDocument = {
   updatedAt: string
   applicationId: string | null
   latestVersionId: string | null
+  finalizedVersionId: string | null
 }
 
 export type DocumentExport = {

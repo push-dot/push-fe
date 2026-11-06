@@ -73,6 +73,9 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
     setBaseProfile: (id: string) =>
       unwrap(c.post<DataEnvelope<{ documentId: string; profileUserId: string }>>(`documents/${id}/base-profile`, { body: {} })),
+    get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${id}`)),
+    exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
+      c.raw('GET', `documents/${id}/versions/${versionId}/export`, { query: { format } }),
   },
 
   jobs: {
@@ -169,6 +172,7 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     profileDraft: (id: string) => unwrap(c.get<DataEnvelope<ProfileDraft>>(`sources/${id}/profile-draft`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
+    content: (id: string) => c.raw('GET', `sources/${id}/content`),
   },
   applications: {
     list: (p: PageParams & { stage?: string; query?: string } = {}) =>

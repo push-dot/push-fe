@@ -5,7 +5,8 @@ import { router } from 'expo-router'
 import { Alert } from 'react-native'
 import { useMyLinks, useMySettings, type PickedFile } from '@/features/my'
 import { pickDocument, saveToCache, shareFile, useSession } from '../../../shared/infrastructure'
-import { CHAT_DOC_OPTIONS, CHAT_DOCS_KEY, MENTION_SHORTCUT_KEYS, QUICK_STARTS, docAiSub, linkMentionSub } from '../constants'
+import { showToast } from '@/shared/components'
+import { CHAT_DOC_OPTIONS, CHAT_DOCS_KEY, FILE_SHARE_FAILED, MENTION_SHORTCUT_KEYS, QUICK_STARTS, docAiSub, linkMentionSub } from '../constants'
 import { ago } from '../utils/ago'
 import { LINK_KIND_LABEL } from '../utils/links'
 import { cacheName } from '../utils/cache-name'
@@ -19,6 +20,8 @@ import {
   createConversation,
   deleteConversation,
   fetchArtifactBytes,
+  fetchDocumentPdf,
+  fetchSourceBytes,
   fetchMentionBookmarks,
   fetchMyProfile,
   pinConversation,
@@ -151,13 +154,25 @@ export const useChatAccount = (enabled: boolean) =>
 export const useRecentConversations = (enabled: boolean) =>
   useQuery({ queryKey: ['conversations', 'recent'], queryFn: () => chatApi.conversations({ limit: 4 }), enabled })
 
+const shareBytes = async (name: string, bytes: Uint8Array) => shareFile(await saveToCache(cacheName(name), bytes), name)
+
 export const useOpenArtifact = () =>
   useMutation({
-    mutationFn: async ({ url, name }: { url: string; name: string }) => {
-      const uri = await saveToCache(cacheName(name), await fetchArtifactBytes(url))
-      await shareFile(uri, name)
-    },
+    mutationFn: async ({ url, name }: { url: string; name: string }) => shareBytes(name, await fetchArtifactBytes(url)),
     onError: () => Alert.alert('파일을 열지 못했어요', '잠시 뒤에 다시 해 주세요.'),
+  })
+
+export type SharedFile = { documentId: string; name?: string } | { sourceId: string; name: string }
+
+/** Shares the file itself: a document through its authenticated PDF export, an upload as its stored bytes. */
+export const useShareFile = () =>
+  useMutation({
+    mutationFn: async (f: SharedFile) => {
+      if ('sourceId' in f) return shareBytes(f.name, await fetchSourceBytes(f.sourceId))
+      const pdf = await fetchDocumentPdf(f.documentId)
+      return shareBytes(f.name ?? `${pdf.title}.pdf`, pdf.bytes)
+    },
+    onError: () => showToast({ message: FILE_SHARE_FAILED }),
   })
 
 export const useAccessMode = () => {
