@@ -73,6 +73,9 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
     setBaseProfile: (id: string) =>
       unwrap(c.post<DataEnvelope<{ documentId: string; profileUserId: string }>>(`documents/${id}/base-profile`, { body: {} })),
+    get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`)),
+    exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
+      c.raw('GET', `documents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/export`, { query: { format } }),
   },
 
   jobs: {
@@ -120,6 +123,7 @@ export const createApi = (c: Client) => ({
     addLink: (body: { url: string; kind?: LinkKind; title?: string; aiRead?: boolean }) =>
       unwrap(c.post<DataEnvelope<UserLink>>('me/links', { body })),
     deleteLink: (id: string) => c.delete<void>(`me/links/${id}`),
+    restoreLink: (id: string) => unwrap(c.post<DataEnvelope<UserLink>>(`me/links/${encodeURIComponent(id)}/restore`)),
     notifications: (p: PageParams = {}) => c.get<ListEnvelope<AppNotification>>('me/notifications', { query: p }),
     webNotifications: (p: PageParams = {}) => c.get<ListEnvelope<WebNotification>>('me/notifications', { query: p }),
     readNotifications: (ids: string[] | 'all') =>
@@ -168,6 +172,7 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     profileDraft: (id: string) => unwrap(c.get<DataEnvelope<ProfileDraft>>(`sources/${id}/profile-draft`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
+    content: (id: string) => c.raw('GET', `sources/${encodeURIComponent(id)}/content`),
   },
   applications: {
     list: (p: PageParams & { stage?: string; query?: string } = {}) =>
