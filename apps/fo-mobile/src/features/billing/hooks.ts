@@ -12,9 +12,10 @@ import {
   restorePurchases,
   type Purchase,
 } from 'expo-iap'
+import Constants from 'expo-constants'
 import { queryClient } from '@/providers/query-client'
 import { verifyPurchase } from './api/fetchers'
-import { ANDROID_PACKAGE, IAP_FAILED_MESSAGE, IAP_PRODUCT_PRO, IAP_PRODUCT_TOPUP, IAP_PRODUCT_ULTRA } from './constants'
+import { IAP_FAILED_MESSAGE, IAP_PRODUCT_PRO, IAP_PRODUCT_TOPUP, IAP_PRODUCT_ULTRA } from './constants'
 import type { StorePurchase, SubscriptionProduct } from './types'
 import { androidOfferToken, outcomeFromCode, settlePurchase, settleRestored } from './utils/settle'
 
@@ -132,7 +133,7 @@ export const usePersonalPurchase = () => {
       void buy(plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, 'subs')
     },
     manage: (plan: 'PRO' | 'ULTRA') => {
-      void deepLinkToSubscriptions({ skuAndroid: plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, packageNameAndroid: ANDROID_PACKAGE }).catch(() => Alert.alert(IAP_FAILED_MESSAGE))
+      void deepLinkToSubscriptions({ skuAndroid: plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, packageNameAndroid: Constants.expoConfig?.android?.package }).catch(() => Alert.alert(IAP_FAILED_MESSAGE))
     },
     buyCredits: () => {
       void buy(IAP_PRODUCT_TOPUP, 'in-app')
