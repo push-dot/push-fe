@@ -25,12 +25,13 @@ const choiceOf = (o: StreamOption): Choice => ({
   ...(o.badge ? { badge: { label: o.badge, tone: 'ac' as const } } : {}),
 })
 
-// A submit gate answers with its sections' selected ids, any other gate with recommended.
+// A submit gate answers with its sections' selected ids, any other gate (or an empty pick with no zero label) with recommended.
 const autoPicks = (ev: Extract<StreamEvent, { type: 'choice' }>) => {
-  if (!ev.sections?.length || !ev.submit) return ev.options.find((o) => o.id === ev.recommended)?.label
+  const recommended = ev.options.find((o) => o.id === ev.recommended)?.label
+  if (!ev.sections?.length || !ev.submit) return recommended
   const ids = ev.sections.flatMap((s) => ('selected' in s ? s.selected : []))
   const labels = ev.sections.flatMap((s) => s.options).filter((o) => ids.includes(o.id)).map((o) => o.label)
-  return labels.length ? labels.join(', ') : ev.submit.zeroLabel
+  return labels.length ? labels.join(', ') : (ev.submit.zeroLabel ?? recommended)
 }
 
 const ask = ({ id, question, options, multiple, warning, hint = true, recommended }: Ask): ChatEvent => {
