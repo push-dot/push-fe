@@ -7,8 +7,8 @@ describe('floating sheet', () => {
     expect(floatingSheet(440, 26, 34, false)?.width).toBe(424)
   })
 
-  it('draws 1:1 while the keyboard attaches the sheet', () => {
-    expect(floatingSheet(402, '26.3', 34, true)).toBeNull()
+  it('keeps the layout width but draws 1:1 while the keyboard attaches the sheet', () => {
+    expect(floatingSheet(402, '26.3', 34, true)).toEqual({ width: 386, scale: 1 })
   })
 
   it('draws 1:1 below iOS 26 and on home-button phones', () => {
