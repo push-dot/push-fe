@@ -42,6 +42,7 @@ const DetailWebView = ({ path, onBridge }: Props) => {
     } catch {
       return
     }
+    // fo-web still posts its page title; the design draws no native header title, so it is dropped here.
     if (m.type === 'title') return
     if (m.type === 'open' && typeof m.path === 'string' && m.path.startsWith('/')) router.push(m.path as Href)
     else if (m.type === 'external' && typeof m.url === 'string' && /^https?:\/\//.test(m.url)) void openBrowser(m.url)

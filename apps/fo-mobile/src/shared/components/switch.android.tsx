@@ -14,7 +14,7 @@ const Switch = ({
   label: string
 }) => {
   const c = useColors()
-  // M3 pads the 32dp switch to a 48dp touch target; -8 returns that padding so layout height is 32 and the target stays 48
+  // M3 pads the 32dp switch to a 48dp touch target; the negative margin keeps the target but lays out 32dp
   return (
     <NativeHost matchContents style={{ marginVertical: -spacing[2] }}>
       <ComposeSwitch
