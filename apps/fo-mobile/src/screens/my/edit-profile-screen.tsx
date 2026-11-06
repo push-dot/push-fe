@@ -300,7 +300,6 @@ const EditBasic = ({ p }: { p: Profile }) => {
             borderRadius: radius.md,
             backgroundColor: c.fill,
             paddingHorizontal: spacing[4],
-            paddingVertical: spacing[3],
             flexDirection: 'row',
             alignItems: 'center',
             gap: spacing[3],
@@ -392,6 +391,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
   const save = useSaveProfile()
   const [items, setItems] = useState<CareerDraft[]>(p.careers.map(toDraft))
   const [open, setOpen] = useState<number | null>(items.length ? 0 : null)
+  const [tried, setTried] = useState(false)
   const parsed = items.map(toCareer)
   const removeAt = (i: number, item: CareerDraft) => {
     setItems((xs) => xs.filter((_, j) => j !== i))
@@ -429,7 +429,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
       <SheetHeader
         title={TITLES.career}
         saving={save.isPending}
-        onSave={() => parsed.every(Boolean) && save.mutate({ careers: parsed as Career[] })}
+        onSave={() => (parsed.every(Boolean) ? save.mutate({ careers: parsed as Career[] }) : setTried(true))}
       />
       <ScrollView
         contentContainerStyle={FORM}
@@ -541,11 +541,11 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     value={it.description}
                     onChangeText={(t) => set(i, { description: t })}
                   />
-                  {valid ? null : (
+                  {!valid && (tried || !it.company.trim() || !it.role.trim()) ? (
                     <Text v="c1" weight="600" color="red">
                       {CAREER_MISSING}
                     </Text>
-                  )}
+                  ) : null}
                   <Pressable
                     accessibilityRole="button"
                     onPress={() =>
