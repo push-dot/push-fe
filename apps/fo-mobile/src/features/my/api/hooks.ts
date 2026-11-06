@@ -5,7 +5,7 @@ import { Alert } from 'react-native'
 import { type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
 import { DAY, NEXT_EVENT_DAYS } from '../constants'
 import type { CalendarEvent, PickedFile } from '../types'
-import { nextEventFor } from '../utils'
+import { nextEventFor, restoreLinkFailure } from '../utils'
 import {
   acceptOffer,
   addLink,
@@ -168,8 +168,8 @@ export const useRestoreLink = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: restoreLink,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
-    onError: () => Alert.alert('되돌리지 못했어요', '잠시 뒤에 다시 해 주세요.'),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
+    onError: (e) => Alert.alert(...restoreLinkFailure(e)),
   })
 }
 
