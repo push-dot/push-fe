@@ -33,7 +33,7 @@ const PhoneField = ({ value, onChange }: { value: string; onChange: (next: strin
           placeholderTextColor={c.t4}
           maxLength={13}
           selectionColor={c.ac}
-          style={[{ fontSize: 19, letterSpacing: 0.4, color: c.t1, fontVariant: ['tabular-nums'], minHeight: 28, paddingVertical: 0, textAlignVertical: 'center' }, fontFor('700')]}
+          style={[{ fontSize: 19, letterSpacing: 0.4, color: c.t1, fontVariant: ['tabular-nums'] }, fontFor('700')]}
         />
       </View>
     </View>

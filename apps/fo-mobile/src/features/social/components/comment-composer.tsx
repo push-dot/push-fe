@@ -38,7 +38,7 @@ const CommentComposer = ({
         accessibilityLabel="댓글"
         placeholder={replyTo ? '답글을 남겨 주세요' : '댓글을 남겨 주세요'}
         placeholderTextColor={c.t4}
-        style={[{ flex: 1, fontSize: type.b1.fontSize, color: c.t1, paddingHorizontal: spacing[1], paddingVertical: ios ? 9 : 0, minHeight: 40, maxHeight: 120, textAlignVertical: 'center' }, fontFor('400')]}
+        style={[{ flex: 1, fontSize: type.b1.fontSize, color: c.t1, paddingHorizontal: spacing[1], paddingVertical: 9, minHeight: 40, maxHeight: 120 }, fontFor('400')]}
       />
       <GlassPressable
         accessibilityRole="button"
