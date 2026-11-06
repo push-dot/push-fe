@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Platform, View } from 'react-native'
+import { Platform, View, type ViewProps } from 'react-native'
 import { SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { spacing, useColors } from '../../theme'
 import Button from './button'
@@ -15,19 +15,21 @@ type Props = {
   /** iOS only: a glass close button left of the title. Android closes by drag or back. */
   onClose?: () => void
   gap?: number
+  onLayout?: ViewProps['onLayout']
 }
 
 const GRAB = { width: 36, height: 5, radius: 3 }
 const SHEET_GAP = 14
 const NO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 }
 
-const Body = ({ title, description, children, action, secondary, onClose, gap = SHEET_GAP }: Props) => {
+const Body = ({ title, description, children, action, secondary, onClose, gap = SHEET_GAP, onLayout }: Props) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const android = Platform.OS === 'android'
   const close = onClose && !android ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null
   return (
     <View
+      onLayout={onLayout}
       style={{
         paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
         paddingHorizontal: android ? spacing[5] : spacing[4],

@@ -145,6 +145,7 @@ export const tile = {
   pink: '#D6336C',
   rose: '#C2255C',
   slate: '#343A40',
+  github: '#24292F',
 } as const
 
 export const glow = { ac: '#6C5CF5', orange: '#FF8A2A', green: '#12A866' } as const
