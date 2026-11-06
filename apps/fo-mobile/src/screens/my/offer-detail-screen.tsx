@@ -1,5 +1,5 @@
 import { Redirect, router } from 'expo-router'
-import { Alert, Pressable, ScrollView, View } from 'react-native'
+import { Alert, Platform, Pressable, ScrollView, View } from 'react-native'
 import { monthDay } from '@push/shared'
 import {
   Avatar,
@@ -16,6 +16,8 @@ import { CtaBar, Badge, Button, Chip, GlassButton, Icon, Skeleton, Text, TopBar 
 import { radius, spacing, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
+
+const DECLINE_INSET = Platform.OS === 'ios' ? spacing[1] : 0
 
 const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) => {
   const c = useColors()
@@ -136,7 +138,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
             label="거절"
             variant="secondary"
             disabled={decline.isPending}
-            style={{ paddingHorizontal: spacing[1] }}
+            style={{ paddingHorizontal: DECLINE_INSET }}
             onPress={() =>
               Alert.alert('이 제안을 거절할까요?', `${who.displayName} 님에게 거절했다고 알려요.`, [
                 { text: '취소', style: 'cancel' },

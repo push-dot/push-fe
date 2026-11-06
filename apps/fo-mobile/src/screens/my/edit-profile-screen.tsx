@@ -542,7 +542,7 @@ const EditCareer = ({ p }: { p: Profile }) => {
                     value={it.description}
                     onChangeText={(t) => set(i, { description: t })}
                   />
-                  {!valid && (tried || !it.company.trim() || !it.role.trim()) ? (
+                  {!valid && tried ? (
                     <Text v="c1" weight="600" color="red">
                       {CAREER_MISSING}
                     </Text>
