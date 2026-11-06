@@ -13,10 +13,14 @@ tags:
     timeout: 60000
 - waitForAnimationToEnd
 - takeScreenshot: SignIn
-- tapOn: "휴대폰 번호로 시작하기"
-- extendedWaitUntil:
-    visible: "인증번호 받기"
-    timeout: 10000
+# The first tap after a cleared launch is sometimes dropped (screen stays on sign-in); tap until the form shows.
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn: "휴대폰 번호로 시작하기"
+      - extendedWaitUntil:
+          visible: "인증번호 받기"
+          timeout: 6000
 - tapOn: "휴대폰 번호"
 - inputText: "01012345678"
 - waitForAnimationToEnd
