@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import type { ReactElement } from 'react'
 import { ActivityIndicator, FlatList, useWindowDimensions, View } from 'react-native'
 import type { PostingFilters } from '@push/api-client'
-import { JobCard, StatusNote, EMPTY_NOTE_STYLE } from '../../../shared/components'
+import { JobCard, StatusNote, emptyNoteStyle } from '../../../shared/components'
 import { usePostingPages, useToggleBookmark } from '../api/hooks'
 import { JOBS_EMPTY_LINES, RESET_FILTERS_LABEL } from '../constants'
 import { spacing } from '../../../theme'
@@ -41,12 +41,12 @@ const PostingGrid = ({ filters, header, onReset }: Props) => {
         q.isPending ? (
           <PostingGridSkeleton cardWidth={cardWidth} />
         ) : q.isError ? (
-          <StatusNote lines={['공고를 불러오지 못했어요.', '잠시 후 다시 열어 주세요.']} style={EMPTY_NOTE_STYLE} />
+          <StatusNote lines={['공고를 불러오지 못했어요.', '잠시 후 다시 열어 주세요.']} style={emptyNoteStyle(160)} />
         ) : (
           <StatusNote
             lines={JOBS_EMPTY_LINES}
             action={onReset ? { label: RESET_FILTERS_LABEL, onPress: onReset } : undefined}
-            style={EMPTY_NOTE_STYLE}
+            style={emptyNoteStyle(160)}
           />
         )
       }
