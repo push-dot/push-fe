@@ -20,7 +20,7 @@ export const useConfirmStore = create<ConfirmState>()((set) => ({
   set: (request) => set({ request }),
 }))
 
-// Android draws toasts above native sheets, so a lingering undo snackbar would cover the confirm button.
+// Android draws toasts above native sheets; a cleared toast stops catching taps, so a lingering undo snackbar cannot block the confirm button.
 export const askConfirm = (request: ConfirmRequest, href: ConfirmHref = '/confirm') => {
   clearToast()
   useConfirmStore.getState().set(request)
