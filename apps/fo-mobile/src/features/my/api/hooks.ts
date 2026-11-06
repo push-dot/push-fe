@@ -11,6 +11,7 @@ import {
   addLink,
   declineOffer,
   deleteLink,
+  restoreLink,
   fetchAuthMe,
   fetchBookmarkList,
   fetchCommentedPosts,
@@ -160,6 +161,15 @@ export const useDeleteLink = () => {
     mutationFn: deleteLink,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
     onError: () => Alert.alert('지우지 못했어요', '잠시 뒤에 다시 해 주세요.'),
+  })
+}
+
+export const useRestoreLink = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: restoreLink,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['me', 'links'] }),
+    onError: () => Alert.alert('되돌리지 못했어요', '잠시 뒤에 다시 해 주세요.'),
   })
 }
 

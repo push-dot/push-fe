@@ -120,6 +120,7 @@ export const createApi = (c: Client) => ({
     addLink: (body: { url: string; kind?: LinkKind; title?: string; aiRead?: boolean }) =>
       unwrap(c.post<DataEnvelope<UserLink>>('me/links', { body })),
     deleteLink: (id: string) => c.delete<void>(`me/links/${id}`),
+    restoreLink: (id: string) => unwrap(c.post<DataEnvelope<UserLink>>(`me/links/${id}/restore`)),
     notifications: (p: PageParams = {}) => c.get<ListEnvelope<AppNotification>>('me/notifications', { query: p }),
     webNotifications: (p: PageParams = {}) => c.get<ListEnvelope<WebNotification>>('me/notifications', { query: p }),
     readNotifications: (ids: string[] | 'all') =>
