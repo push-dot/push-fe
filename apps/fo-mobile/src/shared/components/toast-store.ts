@@ -24,8 +24,6 @@ let seq = 0
 
 export const showToast = (toast: ToastInput) => useToastStore.setState({ current: { ...toast, id: ++seq } })
 
-export const clearToast = () => useToastStore.setState({ current: null })
-
 export const hideToast = (id: number) => useToastStore.setState((s) => (s.current?.id === id ? { current: null } : s))
 
 export const toastDuration = (toast: ToastInput) => (toast.action ? TOAST_MS.action : TOAST_MS.plain)
