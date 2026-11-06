@@ -33,7 +33,7 @@ const Chip = ({ label, on, onPress, onLongPress, menu, check, removable, lead, i
       hitSlop={hitSlopTo(CHIP_HEIGHT)}
       glass={!on}
       fill={on ? 't1' : 'fill'}
-      style={{ flexGrow: 0, minHeight: CHIP_HEIGHT, borderRadius: radius.chip, maxWidth: '100%' }}
+      style={{ minHeight: CHIP_HEIGHT, borderRadius: radius.chip, maxWidth: '100%' }}
       contentStyle={{ paddingLeft: lead ? 5 : 14, paddingRight: 14, gap: lead || removable ? spacing[2] : spacing[1] }}
     >
       {lead}

@@ -13,7 +13,7 @@ type Props = Omit<PressableProps, 'style' | 'children'> & {
   pressedFill?: keyof Colors
 }
 
-const CONTENT: ViewStyle = { flexGrow: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }
+const CONTENT: ViewStyle = { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }
 
 // iOS glass answers presses natively (isInteractive); a JS scale around it would move the shape apart from its glass.
 const GlassPressable = ({ children, style, contentStyle, glass = true, fill = 'fill', pressedFill, disabled, ...press }: Props) => {
@@ -23,7 +23,7 @@ const GlassPressable = ({ children, style, contentStyle, glass = true, fill = 'f
   if (native) {
     return (
       <Glass interactive style={style}>
-        <Pressable {...press} disabled={disabled} style={[CONTENT, contentStyle, dim]}>
+        <Pressable {...press} disabled={disabled} style={[CONTENT, { flexGrow: 1 }, contentStyle, dim]}>
           {children}
         </Pressable>
       </Glass>
