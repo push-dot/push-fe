@@ -2,6 +2,7 @@ import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
 import Icon from './icon'
+import { inputMetrics } from './text-field-metrics'
 import Text from './text'
 
 type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; variant?: 'field' | 'search' }
@@ -34,7 +35,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
           multiline={multiline}
           maxLength={max}
           placeholderTextColor={c.t4}
-          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, minHeight: (multiline ? 96 : type.b1.lineHeight) * fontScale, textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
+          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
           {...rest}
         />
       </View>
