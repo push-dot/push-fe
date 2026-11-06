@@ -8,10 +8,13 @@ export type ToastInput = {
   action?: { label: string; onPress: () => void }
   /** Leading status icon (iOS only; Material snackbars carry no icon). Leave unset on undo/action toasts. */
   tone?: ToastTone
-  /** Distance above the bottom safe inset, to clear a CTA bar. Defaults to TOAST_BOTTOM_GAP. */
+  /** Distance above the bottom safe inset, to clear a tab bar or CTA (see TOAST_ABOVE). Defaults to TOAST_BOTTOM_GAP. */
   bottom?: number
 }
 export type Toast = ToastInput & { id: number }
+
+// Offsets the 2026-11-05 artboards draw above the safe inset: over the tab bar, over a CTA bar, over the 마이 서류 파일 등록 CTA.
+export const TOAST_ABOVE = { tabs: 74, cta: 92, docsCta: 160 } as const
 
 type State = { current: Toast | null; hosts: string[] }
 
