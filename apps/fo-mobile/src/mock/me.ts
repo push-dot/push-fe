@@ -560,7 +560,7 @@ const received: Offer[] = [
   }),
   offer({
     id: 'o4',
-    sender: { ...user('u-greenticket', '그린티켓 채용팀', '그린티켓', '서버 개발자 포지션'), employer: true },
+    sender: { ...user('u-greenticket', '그린티켓 채용팀', '그린티켓', '서버 개발자 포지션'), kind: 'COMPANY' as const },
     recipient: ME_SENDER,
     message: '서버 개발자 포지션에 관심 있으시면 이야기 나눠 보고 싶어요.',
     status: 'DECLINED',

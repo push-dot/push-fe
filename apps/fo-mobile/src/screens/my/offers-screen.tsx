@@ -29,7 +29,7 @@ const OfferRow = ({ o, box }: { o: Offer; box: Box }) => {
       label={`${who.displayName}, ${badge.label}${unread ? ', 안 읽음' : ''}`}
       onPress={() => router.push(`/offers/${o.id}${o.status === 'ACCEPTED' ? '/messages' : ''}?box=${box}`)}
     >
-      {who.employer ? (
+      {who.kind === 'COMPANY' ? (
         <Logo name={who.companyName ?? who.displayName} />
       ) : (
         <Avatar name={who.displayName} url={who.avatarUrl} />

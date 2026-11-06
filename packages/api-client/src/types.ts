@@ -90,7 +90,7 @@ export type OfferParty = UserRef & {
   companyName: string | null
   headline: string
   avatarUrl: string | null
-  employer?: boolean
+  kind?: 'PERSON' | 'COMPANY'
 }
 export type Offer = {
   id: string
