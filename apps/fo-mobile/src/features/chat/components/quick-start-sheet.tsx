@@ -1,11 +1,12 @@
 import { router } from 'expo-router'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Platform, Pressable, useWindowDimensions, View } from 'react-native'
+import { Platform, Pressable, View } from 'react-native'
 import { hitSlopTo, radius, selectedRing, spacing, useColors } from '@/theme'
 import { Badge, Chip, GlassButton, Icon, SegmentedControl, Sheet, Switch, Text, TextField } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
 import { useChatDocs, useQuickStart, useStartChat } from '../api/hooks'
+import { useSheetScrollMax } from '../hooks'
 import Mark from './mark'
 import Pick from './pick'
 import SheetScroll from './sheet-scroll'
@@ -20,7 +21,7 @@ export const QuickStartSheet = ({ qs, onClose }: { qs: QuickStart | null; onClos
 
 const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
   const c = useColors()
-  const { height } = useWindowDimensions()
+  const bound = useSheetScrollMax(0.55)
   const start = useStartChat()
   const q = useQuickStart(qs.key)
   const docs = useChatDocs(!!qs.docLabel)
@@ -72,7 +73,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
     <DocField label={qs.docLabel} doc={doc} picking={pickingDoc} chevron={!!qs.listLabel} docs={docs.data} onToggle={() => setPickingDoc((v) => !v)} onPick={(name) => (setDoc(name), setPickingDoc(false))} />
   )
   return (
-    <Sheet gap={spacing[3]} action={action}>
+    <Sheet gap={spacing[3]} action={action} onLayout={bound.onSheetLayout}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2] }}>
         <View style={{ flex: 1, gap: spacing[1] }}>
           <Text v="h2" accessibilityRole="header">
@@ -88,7 +89,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
           </View>
         ) : null}
       </View>
-      <SheetScroll style={{ maxHeight: height * 0.55 }} contentContainerStyle={{ gap: spacing[3] }} keyboardShouldPersistTaps="handled">
+      <SheetScroll style={{ maxHeight: bound.maxHeight }} onLayout={bound.onScrollLayout} contentContainerStyle={{ gap: spacing[3] }} keyboardShouldPersistTaps="handled">
         {!d ? (
           <Text v="b2" color="t3" style={{ paddingVertical: spacing[6], textAlign: 'center' }}>
             {q.isError ? '불러오지 못했어요. 닫았다가 다시 열어 주세요.' : '불러오는 중이에요'}
