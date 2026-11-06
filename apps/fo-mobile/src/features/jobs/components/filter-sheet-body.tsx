@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
 import { CAREER_YEARS, EMPLOYMENT_TYPES, JOB_CATEGORIES } from '@push/api-client'
 import { Text } from '../../../shared/components'
 import { hitSlopTo, type } from '../../../theme'
@@ -13,10 +13,23 @@ type Props = {
   draft: Filters
   trending: string[]
   onChange: (filters: Filters) => void
+  scrollMax?: number
 }
 
-const FilterSheetBody = ({ kind, draft, trending, onChange }: Props) => {
+const FilterSheetBody = ({ kind, draft, trending, onChange, scrollMax }: Props) => {
   const set = (list: Filters[FilterKey]) => onChange({ ...draft, [kind]: list })
+  const options =
+    kind === 'category' ? (
+      <FilterOptions options={JOB_CATEGORIES} selected={draft.category} onToggle={(k) => set(toggle(draft.category, k))} />
+    ) : kind === 'careerYears' ? (
+      <FilterOptions options={CAREER_YEARS} selected={draft.careerYears} onToggle={(k) => set(toggle(draft.careerYears, k))} />
+    ) : kind === 'employmentType' ? (
+      <FilterOptions options={EMPLOYMENT_TYPES} selected={draft.employmentType} onToggle={(k) => set(toggle(draft.employmentType, k))} />
+    ) : kind === 'skills' ? (
+      <FilterSkills selected={draft.skills} trending={trending} onToggle={(s) => set(toggle(draft.skills, s))} />
+    ) : (
+      <FilterRegions draft={draft} onToggle={(v) => set(toggleRegion(draft.location, v))} />
+    )
   return (
     <View style={{ gap: 14 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -29,16 +42,12 @@ const FilterSheetBody = ({ kind, draft, trending, onChange }: Props) => {
           </Text>
         </Pressable>
       </View>
-      {kind === 'category' ? (
-        <FilterOptions options={JOB_CATEGORIES} selected={draft.category} onToggle={(k) => set(toggle(draft.category, k))} />
-      ) : kind === 'careerYears' ? (
-        <FilterOptions options={CAREER_YEARS} selected={draft.careerYears} onToggle={(k) => set(toggle(draft.careerYears, k))} />
-      ) : kind === 'employmentType' ? (
-        <FilterOptions options={EMPLOYMENT_TYPES} selected={draft.employmentType} onToggle={(k) => set(toggle(draft.employmentType, k))} />
-      ) : kind === 'skills' ? (
-        <FilterSkills selected={draft.skills} trending={trending} onToggle={(s) => set(toggle(draft.skills, s))} />
+      {scrollMax === undefined ? (
+        options
       ) : (
-        <FilterRegions draft={draft} onToggle={(v) => set(toggleRegion(draft.location, v))} />
+        <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: scrollMax }}>
+          {options}
+        </ScrollView>
       )}
     </View>
   )

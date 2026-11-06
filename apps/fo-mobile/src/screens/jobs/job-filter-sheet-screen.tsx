@@ -1,12 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Keyboard, ScrollView, useWindowDimensions } from 'react-native'
+import { Keyboard, useWindowDimensions } from 'react-native'
 import { FILTER_KEYS, FilterSheetBody, LONG_FILTER_KINDS, formatCount, useJobListStore, usePostingCount, type FilterKey } from '@/features/jobs'
 import { useTrending } from '@/features/search'
 import { Sheet } from '@/shared/components'
 
-// Grabber, title gap, CTA and the sheet's own top and bottom margins: the body scrolls in what is left.
-const SHEET_CHROME = 240
+// Grabber, header row, CTA and the sheet's own top and bottom margins: the list scrolls in what is left.
+const SHEET_CHROME = 282
 
 const useKeyboardHeight = () => {
   const [height, setHeight] = useState(0)
@@ -43,7 +43,6 @@ const JobFilterSheetScreen = () => {
 
   if (!kind) return null
 
-  const body = <FilterSheetBody kind={kind} draft={draft} trending={trending} onChange={setDraft} />
   return (
     <Sheet
       action={{
@@ -54,7 +53,13 @@ const JobFilterSheetScreen = () => {
         },
       }}
     >
-      {LONG_FILTER_KINDS.includes(kind) ? <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: screen.height - keyboard - SHEET_CHROME }}>{body}</ScrollView> : body}
+      <FilterSheetBody
+        kind={kind}
+        draft={draft}
+        trending={trending}
+        onChange={setDraft}
+        scrollMax={LONG_FILTER_KINDS.includes(kind) ? screen.height - keyboard - SHEET_CHROME : undefined}
+      />
     </Sheet>
   )
 }
