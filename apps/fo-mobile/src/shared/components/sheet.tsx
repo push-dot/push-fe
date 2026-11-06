@@ -74,13 +74,9 @@ const IosSheet = (props: Props) => {
   const float = floatingSheet(frame.width, Platform.Version, bottom, useKeyboardHeight() > 0)
   return (
     <SafeAreaProvider initialMetrics={{ frame, insets: NO_INSETS }} style={{ flex: 0 }}>
-      {float ? (
-        <View style={{ width: float.width, alignSelf: 'center', transform: [{ scale: float.scale }] }}>
-          <Body {...props} homeInset={bottom} />
-        </View>
-      ) : (
+      <View style={float ? { width: float.width, alignSelf: 'center', transform: [{ scale: float.scale }] } : null}>
         <Body {...props} homeInset={bottom} />
-      )}
+      </View>
     </SafeAreaProvider>
   )
 }
