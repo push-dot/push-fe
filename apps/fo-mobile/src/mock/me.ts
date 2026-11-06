@@ -12,6 +12,7 @@ import type {
   UserRef,
 } from '@push/api-client'
 import type { CalendarEvent, HubDocument, ResumeDraft } from '@/features/my'
+import { appliedOnly } from '@/features/my/utils/applied-only'
 import { removeChatDoc } from './chat'
 import { mock, page, pdfResponse } from './server'
 
@@ -223,7 +224,10 @@ const applications: Application[] = [
     fitScore,
   })),
 ]
-mock('GET', 'applications', ({ query }) => page(applications, query))
+mock('GET', 'applications', ({ query }) => {
+  const applied = query.get('applied') === 'true'
+  return page(applied ? appliedOnly(applications) : applications, query, applied)
+})
 
 const pushDoc = (id: string, applicationId: string, title: string, updatedAt: string): HubDocument => ({
   id,

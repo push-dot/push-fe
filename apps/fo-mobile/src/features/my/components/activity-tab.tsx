@@ -5,7 +5,7 @@ import { careerLabel, monthDay } from '@push/shared'
 import { Badge, Chip, Icon, Text } from '@/shared/components'
 import { hitSlopTo, spacing, useColors } from '../../../theme'
 import {
-  useMyApplications,
+  useAppliedApplications,
   useMyBookmarks,
   useMyCommentedPosts,
   useMyFollowers,
@@ -34,7 +34,7 @@ const SUBS: { key: ActivitySub; label: string }[] = [
 ]
 
 const Applications = () => {
-  const { data, isLoading } = useMyApplications()
+  const { data, isLoading } = useAppliedApplications()
   if (isLoading) return <ListSkeleton />
   const list = appliedOnly(data?.data ?? [])
   return (
@@ -46,7 +46,7 @@ const Applications = () => {
           onAction={() => router.push(emptyCta('applications').href)}
         />
       ) : (
-        <ListTitle title="지원한 공고" count={list.length} />
+        <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
       )}
       {list.map((a) => (
         <Row
