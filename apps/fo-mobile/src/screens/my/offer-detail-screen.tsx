@@ -12,7 +12,7 @@ import {
   useOffer,
   useOfferDecision,
 } from '@/features/my'
-import { CtaBar, Badge, Button, Chip, Icon, Skeleton, Text, TopBar } from '@/shared/components'
+import { CtaBar, Badge, Button, Chip, GlassButton, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
@@ -45,7 +45,20 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <TopBar onBack={() => router.back()} />
+      <TopBar
+        onBack={() => router.back()}
+        right={
+          <GlassButton
+            actions={[
+              {
+                icon: 'menu',
+                label: '더 보기',
+                menu: [{ key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) }],
+              },
+            ]}
+          />
+        }
+      />
       <ScrollView
         contentContainerStyle={{ gap: spacing[5], paddingTop: spacing[1], paddingHorizontal: spacing[5], paddingBottom: 120 }}
         keyboardShouldPersistTaps="handled"
@@ -57,7 +70,9 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
               <Text v="h3" accessibilityRole="header" numberOfLines={1} style={{ flexShrink: 1 }}>
                 {who.displayName}
               </Text>
-              <Badge label={badge.label} tone={badge.tone} />
+              <View>
+                <Badge label={badge.label} tone={badge.tone} />
+              </View>
             </View>
             {personLine(who) ? (
               <Text v="c1" color="t3">
@@ -121,7 +136,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
             label="거절"
             variant="secondary"
             disabled={decline.isPending}
-            style={{ paddingHorizontal: spacing[6] }}
+            style={{ paddingHorizontal: spacing[1] }}
             onPress={() =>
               Alert.alert('이 제안을 거절할까요?', `${who.displayName} 님에게 거절했다고 알려요.`, [
                 { text: '취소', style: 'cancel' },
