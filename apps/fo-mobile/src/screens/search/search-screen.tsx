@@ -21,12 +21,11 @@ import {
   type SearchSort,
   type SearchTab,
 } from '@/features/search'
-import { Chip, Icon, Menu, Skeleton, SkeletonRows, StatusNote, Text, useEmptyNoteStyle } from '@/shared/components'
+import { Chip, Icon, Menu, Skeleton, SkeletonRows, StatusNote, Text, EMPTY_NOTE_STYLE } from '@/shared/components'
 import { spacing, useColors } from '@/theme'
 
 const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) => {
   const c = useColors()
-  const emptyNote = useEmptyNoteStyle()
   const [text, setText] = useState('')
   const [tab, setTab] = useState<SearchTab>(initialTab)
   const [sort, setSort] = useState<SearchSort>('relevance')
@@ -177,7 +176,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
               <StatusNote
                 lines={[searchEmptyTitle(q), SEARCH_EMPTY_BODY]}
                 action={{ label: SEARCH_CLEAR_LABEL, onPress: () => setText('') }}
-                style={emptyNote}
+                style={EMPTY_NOTE_STYLE}
               />
             )
           }
