@@ -103,11 +103,7 @@ const runs = new Map<string, AbortController>()
 const dispatch = (id: string, e: ChatEvent) => {
   useChatStore.setState((s) => ({ chats: { ...s.chats, [id]: applyEvent(s.chats[id] ?? emptyChat, e) } }))
   if (e.type === 'approval') void hapticImpactLight()
-  if (e.type === 'done') {
-    void hapticNotify('success')
-    // The server attaches the posting's company to the conversation during the first turn (header pill).
-    void queryClient.invalidateQueries({ queryKey: ['conversations'] })
-  }
+  if (e.type === 'done') void hapticNotify('success')
   if (e.type === 'error') void hapticNotify('warning')
 }
 
