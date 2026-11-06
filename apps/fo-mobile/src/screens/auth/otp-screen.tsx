@@ -16,6 +16,7 @@ import {
   countdownLabel,
   formatNational,
   mapPhoneAuthError,
+  otpErrorAfterInput,
   needsTerms,
   phoneFailureLine,
   readConsents,
@@ -55,6 +56,7 @@ const OtpScreen = () => {
     if (!e164) return
     setBusy(true)
     setError(null)
+    const before = otpError
     setOtpError(null)
     sendPhoneCode(e164)
       .then((sent) => {
@@ -63,6 +65,7 @@ const OtpScreen = () => {
         setCode('')
       })
       .catch((caught: unknown) => {
+        setOtpError(before)
         const mapped = mapPhoneAuthError(caught)
         if (mapped.kind === 'cooldown') {
           setCooldown(Date.now() + mapped.retryAfterSec * 1000)
@@ -165,7 +168,10 @@ const OtpScreen = () => {
           <OtpCells
             value={code}
             error={otpError === 'invalid'}
-            onChange={setCode}
+            onChange={(next) => {
+              setOtpError((e) => otpErrorAfterInput(e, code, next))
+              setCode(next)
+            }}
           />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], marginTop: spacing[4] }}>
