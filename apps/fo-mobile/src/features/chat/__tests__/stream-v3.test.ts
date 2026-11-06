@@ -9,7 +9,6 @@ const profile = (): ChatItem => ({
   type: 'result',
   id: 'result-d1',
   source: 'profile',
-  taskLine: '프로필 수정',
   checklist: [],
   documentId: 'd1',
   actions: [{ id: 'view', label: '프로필 보기' }],

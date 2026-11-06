@@ -8,7 +8,7 @@ import { usePop, usePulse, useReduceMotion } from '../hooks'
 import { isUsageExhausted } from '../utils/usage'
 import { formatElapsed } from '../utils/reducer'
 import { isVerdictPlan } from '../utils/stream-v3'
-import { RESULT_VARIANT, applyText, profileSaveCopy, resultActionsFor, resultChrome, resultMeta, resultTask, resultTitle, type ResultActionId } from '../utils/result-card'
+import { RESULT_VARIANT, applyText, profileSaveCopy, resultActionsFor, resultChrome, resultMeta, resultTitle, type ResultActionId } from '../utils/result-card'
 import { LOCKED_KEYWORDS, fitChrome } from '../utils/fit-card'
 import { FIT_LOCKED, FIT_LOCKED_PCT, STALE_GATE, fitProjected } from '../constants'
 import { Appear } from './motion'
@@ -573,7 +573,6 @@ const ResultCard = ({
   const actions = resultActionsFor(item, awaiting)
   return (
     <Appear style={{ gap: 18 }}>
-      {item.taskLine ? <ToolLine item={{ type: 'tool', id: `${item.id}-task`, state: 'ok', ...resultTask(item.taskLine) }} /> : null}
       <Surface>
         {chrome.initials ? <Mark text={chrome.initials} color={tile.indigo} size={40} round /> : null}
         <View style={{ flex: 1, minWidth: 0 }}>

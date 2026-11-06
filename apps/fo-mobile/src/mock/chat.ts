@@ -114,6 +114,7 @@ const numbered = (id: string, question: string, items: (string | Choice)[], foot
   foot,
 })
 const done = s(200, { type: 'done', at: 0 })
+const awaitingDone = s(200, { type: 'done', at: 0, awaiting: 'approval' })
 
 const RESUME = '김서준_백엔드_이력서_2026.pdf'
 const MOA = '모아페이 · 백엔드 엔지니어'
@@ -167,15 +168,15 @@ const tailorFit = (labels: string[], added = -1): Step[] => [
   ask({ id: 'tailor-apply', question: '이 수정을 적용할까요?', sections: [], submit: '적용', secondary: '그대로 두기', foot: PICK_HINT }),
 ]
 
-// The to-do list closes before the summary, and the edit line already says what changed, so the card draws no task line of its own.
+// What the mapper makes of the server's result frame: the task line, the summary, then the card.
 const finish = (score: string, josa = '로'): Step[] => [
   s(400, todo('todo', PROFILE_TODO, PROFILE_TODO.length)),
+  s(200, tool('task', '프로필 수정', 'Push 프로필 · 경력', 'ok')),
   s(200, agent('done', `다 됐어요! 적합도를 **${score}**${josa} 올렸어요.`, BULLETS)),
   s(200, {
     type: 'result',
     id: 'result',
     source: 'profile',
-    taskLine: '',
     checklist: PROFILE_TODO,
     name: '김서준',
     headline: '백엔드 엔지니어',
@@ -189,6 +190,7 @@ const finish = (score: string, josa = '로'): Step[] => [
     ],
   }),
   ask({ ...numbered('present', 'Push 프로필에 저장했어요. 결과를 확인할까요?', ['확인했어요', '그만하기']), pendingNote: 'PDF는 Push 프로필에서 내보낼 수 있어요.' }),
+  awaitingDone,
 ]
 
 // Upload scenarios (ChatDone, ChatDoneNoJob, ChatDoneSaveFail, ChatPh6ResultFile, ChatPh6ResultFail).
@@ -198,15 +200,13 @@ const ext = (o: { todo?: string[]; text?: string; fileName?: string; saved?: boo
   const job = o.job ?? true
   const saved = o.saved ?? true
   return [
-    s(200, tool('edit', '이력서 수정', '올린 파일 · 경력', 'ok', '반영했어요 · 2줄 추가, 1줄 삭제')),
-    s(200, tool('pdf', 'PDF 만들기', '모던 템플릿', 'ok', FILE_PAGE)),
     s(200, todo('todo', labels, labels.length)),
+    s(200, tool('task', '이력서 수정', '올린 파일 · 경력', 'ok')),
     s(300, agent('done', o.text ?? `다 됐어요! 적합도를 **6.9 → 8.1**${o.josa ?? '로'} 올렸어요.`, BULLETS)),
     s(200, {
       type: 'result',
       id: 'result',
       source: 'external',
-      taskLine: '',
       checklist: labels,
       fileName: o.fileName ?? EXT_FILE,
       pageLine: FILE_PAGE,
@@ -221,14 +221,13 @@ const ext = (o: { todo?: string[]; text?: string; fileName?: string; saved?: boo
             ...(saved ? [{ id: 'convert', label: '프로필로 전환', method: 'POST', path: '/api/v1/documents/src-upload/profile' }] : []),
           ],
     }),
-    o.gate ? ask(numbered('ext-gate', o.gate, ['확인했어요', '그만하기'])) : done,
+    ...(o.gate ? [ask(numbered('ext-gate', o.gate, ['확인했어요', '그만하기'])), awaitingDone] : [done]),
   ]
 }
 const fileRun = (): Step[] => ext({})
 
 const tailorDone = (labels: string[]): Step[] => [
-  s(300, tool('edit', '프로필 수정', 'Push 프로필 · 경력', 'ok', '반영했어요 · 2줄 추가, 1줄 삭제')),
-  s(200, todo('todo', labels, labels.length - 1)),
+  s(300, todo('todo', labels, labels.length - 1)),
   s(200, status('Push 프로필에 저장하는 중…')),
   s(200, todo('todo', labels, labels.length)),
   ...finish('6.9 → 8.1'),
@@ -555,7 +554,7 @@ const autoPick: Step[] = [
 const awaitReply: Step[] = [
   s(300, tool('resume', '이력서 읽기', RESUME, 'ok', '2쪽 · 경력 2건')),
   s(400, agent('await', '경력 섹션을 이렇게 바꿀게요. 승인 API 성과를 숫자로 보여 주고, Kafka 경험을 맨 앞으로 옮겨요.')),
-  s(200, { type: 'done', at: 0, awaiting: 'approval' }),
+  awaitingDone,
 ]
 const fail = (id: string, code: string, text: string): Step[] => [s(300, { type: 'error', id, text, code })]
 

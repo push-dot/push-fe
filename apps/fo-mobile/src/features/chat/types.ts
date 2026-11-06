@@ -42,7 +42,6 @@ export type ChatItem =
       type: 'result'
       id: string
       source: 'external'
-      taskLine: string
       checklist: string[]
       documentId: string
       company?: string
@@ -56,7 +55,6 @@ export type ChatItem =
       type: 'result'
       id: string
       source: 'profile'
-      taskLine: string
       checklist: string[]
       documentId: string
       company?: string
