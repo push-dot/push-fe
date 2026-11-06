@@ -25,6 +25,14 @@ const choiceOf = (o: StreamOption): Choice => ({
   ...(o.badge ? { badge: { label: o.badge, tone: 'ac' as const } } : {}),
 })
 
+// A submit gate answers with its sections' selected ids, any other gate with recommended.
+const autoPicks = (ev: Extract<StreamEvent, { type: 'choice' }>) => {
+  if (!ev.sections?.length || !ev.submit) return ev.options.find((o) => o.id === ev.recommended)?.label
+  const ids = ev.sections.flatMap((s) => ('selected' in s ? s.selected : []))
+  const labels = ev.sections.flatMap((s) => s.options).filter((o) => ids.includes(o.id)).map((o) => o.label)
+  return labels.length ? labels.join(', ') : ev.submit.zeroLabel
+}
+
 const ask = ({ id, question, options, multiple, warning, hint = true, recommended }: Ask): ChatEvent => {
   const first = Math.max(0, options.findIndex((o) => o.id === recommended))
   const approval: Approval = {
@@ -132,8 +140,8 @@ export const mapEvent = (ev: StreamEvent): ChatEvent[] => {
         if (event.type === 'approval' && pending) event.approval.pendingNote = pending
         return [event]
       }
-      const picked = ev.options.find((o) => o.id === ev.recommended)
-      return picked ? [{ type: 'agentText', id: `auto-${ev.id}`, text: `자동으로 골랐어요: ${picked.label}` }] : []
+      const picked = autoPicks(ev)
+      return picked ? [{ type: 'agentText', id: `auto-${ev.id}`, text: `자동으로 골랐어요: ${picked}` }] : []
     }
     case 'think':
       return [mapThink(ev)]

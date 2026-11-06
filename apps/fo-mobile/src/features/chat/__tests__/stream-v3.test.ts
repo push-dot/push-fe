@@ -137,6 +137,18 @@ describe('stream v3', () => {
     ).toEqual([{ type: 'agentText', id: 'auto-q', text: '자동으로 골랐어요: 숫자로 성과 쓰기' }])
   })
 
+  it('auto quality gate lists the selected recommendations, not recommended', () => {
+    const recs = [{ id: 'rec1', label: '숫자로 성과 쓰기' }, { id: 'rec2', label: '기술 스택 순서 바꾸기' }, { id: 'rec3', label: '요약 한 줄 더하기' }]
+    const quality = (selected: string[]) =>
+      mapEvent({
+        type: 'choice', kind: 'RESUME_GATE', gate: 'quality', id: 'q', title: '추천 수정도 반영할까요?', multiple: true, recommended: 'rec1', auto: true,
+        options: recs, sections: [{ id: 'recs', kind: 'toggle', options: recs, selected }],
+        submit: { label: '{n}개 반영하고 디자인으로', zeroLabel: '그대로 디자인으로' },
+      } as StreamEvent)
+    expect(quality(['rec2', 'rec3'])).toEqual([{ type: 'agentText', id: 'auto-q', text: '자동으로 골랐어요: 기술 스택 순서 바꾸기, 요약 한 줄 더하기' }])
+    expect(quality([])).toEqual([{ type: 'agentText', id: 'auto-q', text: '자동으로 골랐어요: 그대로 디자인으로' }])
+  })
+
   it('template submit label follows the selected thumbnail', () => {
     const approval: Approval = {
       id: 'r',
