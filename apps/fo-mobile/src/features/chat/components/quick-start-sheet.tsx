@@ -2,7 +2,7 @@ import { router } from 'expo-router'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Platform, Pressable, View } from 'react-native'
 import { hitSlopTo, radius, selectedRing, spacing, useColors } from '@/theme'
-import { Badge, Chip, GlassButton, Icon, SegmentedControl, Sheet, Switch, Text, TextField } from '@/shared/components'
+import { Badge, Chip, GlassButton, GlassPressable, Icon, SegmentedControl, Sheet, Switch, Text, TextField } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
 import { useChatDocs, useQuickStart, useStartChat } from '../api/hooks'
@@ -83,11 +83,15 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
             {qs.description}
           </Text>
         </View>
-        {Platform.OS === 'ios' ? (
-          <View style={{ margin: -spacing[1] }}>
+        <View style={{ margin: -spacing[1] }}>
+          {Platform.OS === 'ios' ? (
             <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} />
-          </View>
-        ) : null}
+          ) : (
+            <GlassPressable glass={false} accessibilityRole="button" accessibilityLabel="닫기" onPress={onClose} style={{ width: 44, height: 44, borderRadius: radius.pill }}>
+              <Icon name="x" size={16} />
+            </GlassPressable>
+          )}
+        </View>
       </View>
       <SheetScroll style={{ maxHeight: bound.maxHeight }} onLayout={bound.onScrollLayout} contentContainerStyle={{ gap: spacing[3] }} keyboardShouldPersistTaps="handled">
         {!d ? (
