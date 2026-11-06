@@ -21,7 +21,7 @@ const DetailWebView = ({ path, onTitle, onBridge }: Props) => {
   const token = useSession((s) => s.session?.accessToken ?? null)
   const [failed, setFailed] = useState(false)
   const zoom = Math.round(useWindowDimensions().fontScale * 100)
-  const applyZoom = Platform.OS === 'ios' ? `document.documentElement.style.webkitTextSizeAdjust='${zoom}%';true;` : undefined
+  const applyZoom = Platform.OS === 'ios' ? `document.documentElement.style.zoom='${zoom / 100}';true;` : undefined
   const [boot] = useState(() => `window.__PUSH__=${JSON.stringify({ token, apiBaseUrl: API_BASE_URL, mock: API_MOCK, theme: mode })};true;`)
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const DetailWebView = ({ path, onTitle, onBridge }: Props) => {
         ref={ref}
         key={mode}
         source={{ uri: detailUrl(WEB_BASE_URL, path, mode, API_MOCK) }}
-        injectedJavaScriptBeforeContentLoaded={boot}
+        injectedJavaScriptBeforeContentLoaded={applyZoom ? boot + applyZoom : boot}
         injectedJavaScript={applyZoom}
         textZoom={zoom}
         onMessage={onMessage}
