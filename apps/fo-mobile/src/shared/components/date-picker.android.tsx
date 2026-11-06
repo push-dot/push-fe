@@ -32,7 +32,7 @@ const DatePicker = ({ value, onChange, label, mode = 'date', min, max, surface =
         accessibilityRole="button"
         accessibilityLabel={label}
         onPress={() => setOpen(true)}
-        style={{ minHeight: 56, borderRadius: radius.md, backgroundColor: c[surface], paddingHorizontal: spacing[4], flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}
+        style={{ minHeight: 48, borderRadius: radius.md, backgroundColor: c[surface], paddingHorizontal: spacing[4], flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}
       >
         <Text v="b1" color={value ? 't1' : 't4'} style={{ flex: 1 }}>
           {value ? FORMAT[mode](value) : label}
