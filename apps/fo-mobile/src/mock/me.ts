@@ -205,7 +205,7 @@ const applications: Application[] = [
   app('a3', 'p8', '별빛게임즈', 'DevOps 엔지니어', 'APPLIED', on(10, 16)),
   app('a4', 'p7', '라온헬스', '백엔드 개발자 (Java)', 'ACCEPTED', on(9, 22)),
   app('a5', 'p6', '새벽마켓', '결제 플랫폼 엔지니어', 'REJECTED', on(9, 8)),
-  // Applications behind the Push 서류 cards; the 지원활동 header counts only the first five.
+  // Applications behind the Push 서류 cards; not applied yet, so the list (like push-be's 지원활동) leaves them out.
   ...(
     [
       ['a6', '다온뱅크', '서버 개발자', 76],
@@ -220,7 +220,7 @@ const applications: Application[] = [
     fitScore,
   })),
 ]
-mock('GET', 'applications', ({ query }) => withTotal(applications, query, 5))
+mock('GET', 'applications', ({ query }) => page(applications.filter((a) => a.appliedAt), query))
 
 const pushDoc = (id: string, applicationId: string, title: string, updatedAt: string): HubDocument => ({
   id,

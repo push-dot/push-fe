@@ -36,7 +36,7 @@ const SUBS: { key: ActivitySub; label: string }[] = [
 const Applications = () => {
   const { data, isLoading } = useMyApplications()
   if (isLoading) return <ListSkeleton />
-  const list = (data?.data ?? []).filter((a) => a.appliedAt)
+  const list = data?.data ?? []
   return (
     <>
       {list.length === 0 ? (
@@ -46,7 +46,7 @@ const Applications = () => {
           onAction={() => router.push(emptyCta('applications').href)}
         />
       ) : (
-        <ListTitle title="지원한 공고" count={list.length} />
+        <ListTitle title="지원한 공고" count={data?.page.total ?? list.length} />
       )}
       {list.map((a) => (
         <Row
@@ -87,7 +87,7 @@ const Bookmarks = () => {
           onAction={() => router.push(emptyCta('bookmarks').href)}
         />
       ) : (
-        <ListTitle title="북마크한 공고" count={list.length} />
+        <ListTitle title="북마크한 공고" count={data?.page.total ?? list.length} />
       )}
       {list.map((p) => (
         <Pressable
