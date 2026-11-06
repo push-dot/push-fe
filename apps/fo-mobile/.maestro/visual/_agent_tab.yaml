@@ -15,7 +15,16 @@ tags:
 - extendedWaitUntil:
     notVisible: "동의하고 시작하기"
     timeout: 10000
-- extendedWaitUntil:
-    visible: "공고 링크로 맞추기"
-    timeout: 10000
+# On Android the consent sheet sometimes closes back onto 홈 (the tab switch had not landed); tap the tab again then.
+- retry:
+    maxRetries: 2
+    commands:
+      - runFlow:
+          when:
+            notVisible: "공고 링크로 맞추기"
+          commands:
+            - tapOn: "에이전트"
+      - extendedWaitUntil:
+          visible: "공고 링크로 맞추기"
+          timeout: 10000
 - waitForAnimationToEnd
