@@ -1,12 +1,11 @@
 import { useIsFocused } from 'expo-router'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { askConfirm, showToast, type ConfirmRequest } from '@/shared/components'
+import { useEffect, useEffectEvent } from 'react'
+import { showToast, type ConfirmRequest } from '@/shared/components'
 import { pickDocument } from '@/shared/infrastructure'
-import { useRemoveSource } from './api/hooks'
-import { MAX_BYTES, RESUME_DOCUMENT_OPTIONS, SHEET_SWAP_MS, UNDO_MS } from './constants'
+import { MAX_BYTES, RESUME_DOCUMENT_OPTIONS, SHEET_SWAP_MS } from './constants'
 import type { PickedFile } from './types'
-import { useDocDelete, useDocImport } from './stores'
-import { createUndo, deleteDocCopy, SIZE_LIMIT } from './utils'
+import { deleteWithUndo, useDocDelete, useDocImport, usePendingDelete } from './stores'
+import { deleteDocCopy, SIZE_LIMIT } from './utils'
 
 // A sheet only files the request; the screen under it acts on it `ms` after regaining focus, and drops it if it loses focus first.
 const useSheetHandoff = <T,>(request: T | null | false, clear: () => void, fire: (request: T) => void, ms: number) => {
@@ -34,43 +33,14 @@ export const deleteConfirm = (doc: { fileName: string }, onConfirm: () => void):
   return { title, body, confirm, cancel, danger: true, onConfirm }
 }
 
-export const useUndoRemove = (onRemoved?: () => void) => {
-  const alive = useRef(true)
-  const { mutate } = useRemoveSource(() => {
-    if (alive.current) onRemoved?.()
-  })
-  const [hiddenId, setHiddenId] = useState<string | null>(null)
-  const [undo] = useState(() =>
-    createUndo((id) => {
-      mutate(id)
-      setHiddenId(null)
-    }, UNDO_MS),
-  )
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-      undo.flush()
-    }
-  }, [undo])
+export const useUndoRemove = (onStart?: () => void) => {
+  const hidden = usePendingDelete((st) => st.hidden)
   const confirm = (doc: { id: string; fileName: string }) => {
-    const copy = deleteDocCopy(doc.fileName)
-    undo.start(doc.id)
-    setHiddenId(doc.id)
-    showToast({
-      message: copy.toast,
-      action: {
-        label: copy.undo,
-        onPress: () => {
-          undo.cancel()
-          setHiddenId(null)
-        },
-      },
-    })
+    deleteWithUndo(doc)
+    onStart?.()
   }
-  const ask = (doc: { id: string; fileName: string }) => askConfirm(deleteConfirm(doc, () => confirm(doc)))
   useSheetHandoff(useDocDelete((st) => st.doc), () => useDocDelete.setState({ doc: null }), confirm, 0)
-  return { hiddenId, ask }
+  return hidden
 }
 
 export const pickResume = async (): Promise<PickedFile | null> => {

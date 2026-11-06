@@ -109,13 +109,13 @@ const DocsTab = () => {
   const c = useColors()
   const { data, isLoading } = useSources()
   const push = useDocuments()
-  const undo = useUndoRemove()
+  const hidden = useUndoRemove()
   const { upload, start, cancel } = useUpload(() => showToast({ message: '이력서 파일을 올렸어요', tone: 'success' }))
   const pickFile = () => void pickResume().then((file) => file && start(file))
   useImportRequest(pickFile)
 
   if (isLoading) return <ActivityIndicator style={{ marginTop: 60 }} />
-  const docs = (data?.data ?? []).filter((d) => d.id !== undo.hiddenId)
+  const docs = (data?.data ?? []).filter((d) => !hidden.includes(d.id))
   const pushDocs = push.data?.data ?? []
   const preview = pushDocs.slice(0, 3)
   if (docs.length === 0 && preview.length === 0 && !upload && !push.isLoading) {
