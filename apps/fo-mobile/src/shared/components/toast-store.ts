@@ -13,11 +13,8 @@ export type ToastInput = {
 }
 export type Toast = ToastInput & { id: number }
 
-/** Artboard toast bottoms, as offsets above the safe inset. */
-export const toastOffsets = ({ tabBarHeight, safeBottom }: { tabBarHeight: number; safeBottom: number }) => {
-  const tabs = tabBarHeight - safeBottom
-  return { tabs: tabs + 14, docsCta: tabs + 100, docsError: tabs + 150, cta: 92 } as const
-}
+/** Artboard toast bottoms above the safe inset, given the tab bar's height above it. */
+export const toastOffsets = (tabBar: number) => ({ tabs: tabBar + 14, docsCta: tabBar + 100, docsError: tabBar + 150, cta: 92 }) as const
 
 type State = { current: Toast | null; hosts: string[] }
 
