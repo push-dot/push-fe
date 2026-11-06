@@ -29,7 +29,7 @@ const ToastHost = () => {
       pointerEvents={toast ? 'auto' : 'none'}
       style={{ position: 'absolute', left: spacing[4], right: spacing[4], bottom: insets.bottom + (toast?.bottom ?? TOAST_BOTTOM_GAP) }}
     >
-      <SnackbarHost ref={ref}>
+      <SnackbarHost key={toast?.id ?? 0} ref={ref}>
         <Snackbar containerColor={c.t1} contentColor={c.bg} actionContentColor={inverse.acText} modifiers={[clip(Shapes.RoundedCorner(radius.md))]} />
       </SnackbarHost>
     </NativeHost>

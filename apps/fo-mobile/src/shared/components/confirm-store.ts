@@ -1,5 +1,6 @@
 import { router } from 'expo-router'
 import { create } from 'zustand'
+import { clearToast } from './toast-store'
 
 export type ConfirmRequest = {
   title: string
@@ -19,7 +20,9 @@ export const useConfirmStore = create<ConfirmState>()((set) => ({
   set: (request) => set({ request }),
 }))
 
+// Android draws toasts above native sheets, so a lingering undo snackbar would cover the confirm button.
 export const askConfirm = (request: ConfirmRequest, href: ConfirmHref = '/confirm') => {
+  clearToast()
   useConfirmStore.getState().set(request)
   router.push(href)
 }

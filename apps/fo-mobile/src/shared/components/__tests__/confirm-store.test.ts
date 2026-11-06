@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { askConfirm, useConfirmStore } from '../confirm-store'
+import { showToast, useToastStore } from '../toast-store'
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 
@@ -16,6 +17,12 @@ describe('askConfirm', () => {
     askConfirm({ title: '이 서류를 삭제할까요?', body: '지워요', confirm: '삭제', onConfirm })
     expect(useConfirmStore.getState().request).toMatchObject({ title: '이 서류를 삭제할까요?', confirm: '삭제' })
     expect(push).toHaveBeenCalledWith('/confirm')
+  })
+
+  it('askConfirm clears the toast so it cannot cover the confirm sheet', () => {
+    showToast({ message: '링크를 삭제했어요', action: { label: '되돌리기', onPress: vi.fn() } })
+    askConfirm({ title: '이 링크를 삭제할까요?', body: '지워요', confirm: '삭제', onConfirm: vi.fn() })
+    expect(useToastStore.getState().current).toBeNull()
   })
 
   it('askConfirm pushes the given href', () => {
