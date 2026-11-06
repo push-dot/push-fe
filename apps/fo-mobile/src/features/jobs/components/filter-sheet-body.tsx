@@ -45,7 +45,7 @@ const FilterSheetBody = ({ kind, draft, trending, onChange, scrollMax }: Props) 
       {scrollMax === undefined ? (
         options
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: scrollMax }}>
+        <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: scrollMax }} contentContainerStyle={{ gap: 14 }}>
           {options}
         </ScrollView>
       )}
