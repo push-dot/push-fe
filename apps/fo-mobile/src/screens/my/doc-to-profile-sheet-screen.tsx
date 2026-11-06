@@ -69,9 +69,9 @@ const DocToProfileSheetScreen = () => {
       <Sheet
         title="이 이력서로 프로필을 채울까요?"
         onClose={() => router.back()}
-        action={query.isError ? { label: RETRY_LABEL, onPress: () => void query.refetch() } : undefined}
+        action={query.isPending ? undefined : { label: RETRY_LABEL, onPress: () => void query.refetch() }}
       >
-        {query.isError ? null : <ListSkeleton count={3} />}
+        {query.isPending ? <ListSkeleton count={3} /> : null}
       </Sheet>
     )
   const chosen = picked ?? sections.filter((s) => s.on).map((s) => s.key)

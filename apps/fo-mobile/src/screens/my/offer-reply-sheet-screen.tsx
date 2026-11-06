@@ -16,9 +16,9 @@ const OfferReplySheetScreen = () => {
       <Sheet
         title={TITLE}
         onClose={() => router.back()}
-        action={offer.isError ? { label: RETRY_LABEL, onPress: () => void offer.refetch() } : undefined}
+        action={offer.isPending ? undefined : { label: RETRY_LABEL, onPress: () => void offer.refetch() }}
       >
-        {offer.isError ? null : <ListSkeleton count={2} />}
+        {offer.isPending ? <ListSkeleton count={2} /> : null}
       </Sheet>
     )
   const who = counterpart(o, 'received')
