@@ -1,6 +1,6 @@
-import { Pressable, ScrollView, View } from 'react-native'
+import { Pressable, View, type LayoutChangeEvent } from 'react-native'
 import { CAREER_YEARS, EMPLOYMENT_TYPES, JOB_CATEGORIES } from '@push/api-client'
-import { Text } from '../../../shared/components'
+import { SheetScroll, Text } from '../../../shared/components'
 import { hitSlopTo, type } from '../../../theme'
 import { FILTER_TITLES } from '../constants'
 import { EMPTY, toggle, toggleRegion, type FilterKey, type Filters } from '../utils'
@@ -13,10 +13,10 @@ type Props = {
   draft: Filters
   trending: string[]
   onChange: (filters: Filters) => void
-  scrollMax?: number
+  scroll?: { maxHeight: number; onLayout: (e: LayoutChangeEvent) => void }
 }
 
-const FilterSheetBody = ({ kind, draft, trending, onChange, scrollMax }: Props) => {
+const FilterSheetBody = ({ kind, draft, trending, onChange, scroll }: Props) => {
   const set = (list: Filters[FilterKey]) => onChange({ ...draft, [kind]: list })
   const options =
     kind === 'category' ? (
@@ -42,12 +42,12 @@ const FilterSheetBody = ({ kind, draft, trending, onChange, scrollMax }: Props) 
           </Text>
         </Pressable>
       </View>
-      {scrollMax === undefined ? (
-        options
-      ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: scrollMax }} contentContainerStyle={{ gap: 14 }}>
+      {scroll ? (
+        <SheetScroll keyboardShouldPersistTaps="handled" style={{ maxHeight: scroll.maxHeight }} onLayout={scroll.onLayout}>
           {options}
-        </ScrollView>
+        </SheetScroll>
+      ) : (
+        options
       )}
     </View>
   )
