@@ -88,7 +88,7 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
           const stopRow = stop ? <ChoiceRow choice={{ label: stop }} on={false} square bare center onPress={cancel} /> : null
           const inGrid = s.options.length % 2 === 1
           return (
-            <View key={si}>
+            <View key={si} style={{ gap: 6 }}>
               {title ? <Question label={title} /> : null}
               <MultiGrid stop={stopRow && !inGrid ? <View style={{ marginTop: 2 }}>{stopRow}</View> : undefined}>
                 {s.options.map((o, i) => (
@@ -100,9 +100,9 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
           )
         }
         return (
-          <View key={si}>
+          <View key={si} style={{ gap: 6 }}>
             {title ? <Question label={title} /> : null}
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2], paddingHorizontal: spacing[1], paddingVertical: spacing[1] }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2], paddingHorizontal: spacing[1], paddingBottom: spacing[1] }}>
               {s.options.map((o, i) => (
                 <MiniChip
                   key={o}
@@ -123,7 +123,7 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
       }
       case 'rows':
         return (
-          <View key={si}>
+          <View key={si} style={{ gap: 6 }}>
             <Sub label={s.title} />
             {s.items.map((r) => (
               <View key={r.id ?? r.title} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[2], paddingHorizontal: spacing[1] }}>
