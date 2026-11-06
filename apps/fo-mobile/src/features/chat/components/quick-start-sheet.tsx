@@ -1,15 +1,13 @@
 import { router } from 'expo-router'
-import { useEffect, useState, type ComponentProps, type ReactNode } from 'react'
-import { Platform, Pressable, View } from 'react-native'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Pressable, View } from 'react-native'
 import { hitSlopTo, radius, selectedRing, spacing, useColors } from '@/theme'
-import { Badge, Chip, GlassButton, Icon, SegmentedControl, Sheet, Switch, Text, TextField } from '@/shared/components'
+import { Badge, Chip, GlassButton, Icon, SegmentedControl, Sheet, SheetScroll, Switch, Text, TextField, useSheetScrollMax } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
 import { useChatDocs, useQuickStart, useStartChat } from '../api/hooks'
-import { useSheetScrollMax } from '../hooks'
 import Mark from './mark'
 import Pick from './pick'
-import SheetScroll from './sheet-scroll'
 import { CALENDAR_TASKS, type QuickStart } from '../constants'
 import { initialPicks } from '../utils/quick-start-data'
 
@@ -83,11 +81,9 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
             {qs.description}
           </Text>
         </View>
-        {Platform.OS === 'ios' ? (
-          <View style={{ margin: -spacing[1] }}>
-            <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} />
-          </View>
-        ) : null}
+        <View style={{ margin: -spacing[1] }}>
+          <GlassButton filled actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} />
+        </View>
       </View>
       <SheetScroll style={{ maxHeight: bound.maxHeight }} onLayout={bound.onScrollLayout} contentContainerStyle={{ gap: spacing[3] }} keyboardShouldPersistTaps="handled">
         {!d ? (
@@ -321,13 +317,6 @@ const DocField = ({
     </>
   ) : null
 
-// Badge pins itself to the start of its parent's cross axis; a plain wrapper lets the row centre it.
-const Tag = (props: ComponentProps<typeof Badge>) => (
-  <View>
-    <Badge {...props} />
-  </View>
-)
-
 const ItemRow = ({ item, layout, on, onPress }: { item: QsItem; layout: string; on: boolean; onPress?: () => void }) => {
   const status = layout === 'status'
   const content = (
@@ -345,7 +334,7 @@ const ItemRow = ({ item, layout, on, onPress }: { item: QsItem; layout: string; 
           <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
             {item.title}
           </Text>
-          {layout === 'reply' && item.badge ? <Tag {...item.badge} /> : null}
+          {layout === 'reply' && item.badge ? <Badge {...item.badge} /> : null}
           {layout === 'reply' && item.meta ? (
             <Text v="c2" color="t3" style={{ marginLeft: 'auto' }}>
               {item.meta}
@@ -365,7 +354,7 @@ const ItemRow = ({ item, layout, on, onPress }: { item: QsItem; layout: string; 
       </View>
       {layout === 'deadline' ? (
         <View style={{ alignItems: 'flex-end', gap: spacing[1] }}>
-          {item.badge ? <Tag {...item.badge} /> : null}
+          {item.badge ? <Badge {...item.badge} /> : null}
           {item.note ? (
             <Text v="c2" weight="600" color={item.note.ac ? 'acText' : 't3'}>
               {item.note.label}
@@ -373,7 +362,7 @@ const ItemRow = ({ item, layout, on, onPress }: { item: QsItem; layout: string; 
           ) : null}
         </View>
       ) : null}
-      {status && item.badge ? <Tag {...item.badge} /> : null}
+      {status && item.badge ? <Badge {...item.badge} /> : null}
       {layout === 'pick' ? <Pick on={on} /> : null}
     </View>
   )
@@ -453,7 +442,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
                 {e.sub}
               </Text>
             </View>
-            {e.badge ? <Tag {...e.badge} /> : null}
+            {e.badge ? <Badge {...e.badge} /> : null}
           </View>
         ))}
       </View>
