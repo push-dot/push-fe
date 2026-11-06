@@ -1,4 +1,4 @@
-import { TextInput, View, type TextInputProps } from 'react-native'
+import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
 import Icon from './icon'
@@ -8,6 +8,7 @@ type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; v
 
 const TextField = ({ icon, label, max, multiline, value, style, variant = 'field', ...rest }: Props) => {
   const c = useColors()
+  const { fontScale } = useWindowDimensions()
   const search = variant === 'search'
   return (
     <View
@@ -33,7 +34,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
           multiline={multiline}
           maxLength={max}
           placeholderTextColor={c.t4}
-          style={[{ flex: 1, fontSize: type.b1.fontSize, lineHeight: type.b1.lineHeight, color: c.t1, minHeight: multiline ? 96 : 24, textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
+          style={[{ flex: 1, fontSize: type.b1.fontSize, color: c.t1, minHeight: (multiline ? 96 : type.b1.lineHeight) * fontScale, textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
           {...rest}
         />
       </View>
