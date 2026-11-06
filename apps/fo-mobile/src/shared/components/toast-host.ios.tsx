@@ -51,7 +51,7 @@ const ToastHost = () => {
         position: 'absolute',
         left: shape.inset,
         right: shape.inset,
-        bottom: insets.bottom + (toast.bottom ?? TOAST_BOTTOM_GAP.ios),
+        bottom: insets.bottom + (toast.bottom ?? TOAST_BOTTOM_GAP),
         opacity: shown,
         transform: [{ translateY }],
       }}
