@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { BlurView } from 'expo-blur'
 import { Animated, Easing, Platform, Pressable, View, useWindowDimensions } from 'react-native'
-import { onAccent, radius, spacing, tile, useColors, useShadow, useThemeMode, type Colors } from '../../../theme'
+import { onAccent, radius, spacing, tile, useColors, useShadow, type Colors } from '../../../theme'
 import { Badge, Button, Icon, Text } from '@/shared/components'
+import Blur from '@/shared/components/blur'
 import { shareMessage } from '@/shared/infrastructure'
 import { useOpenArtifact, useShareFile } from '../api/hooks'
 import { usePop, usePulse, useReduceMotion } from '../hooks'
@@ -343,14 +343,14 @@ const Bar = ({ pct, low, height = 8, delay = 150 }: { pct: number; low?: boolean
   )
 }
 
-const FitRow = ({ label, score, index }: { label: string; score?: number; index: number }) => (
+const FitRow = ({ label, score, index }: { label: string; score: number; index: number }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
     <Text v="c1" color="t2" style={{ width: 76 }}>
       {label}
     </Text>
-    <Bar pct={score === undefined ? FIT_LOCKED_PCT[index % FIT_LOCKED_PCT.length]! : score * 10} low={score !== undefined && score < 6} delay={150 + index * 80} />
+    <Bar pct={score * 10} low={score < 6} delay={150 + index * 80} />
     <Text v="c1" weight="700" style={{ width: 28, textAlign: 'right', fontVariant: ['tabular-nums'] }}>
-      {score === undefined ? '' : score.toFixed(1)}
+      {score.toFixed(1)}
     </Text>
   </View>
 )
@@ -358,7 +358,6 @@ const FitRow = ({ label, score, index }: { label: string; score?: number; index:
 const LockedParts = ({ rows, onPlan }: { rows: { label: string }[]; onPlan?: () => void }) => {
   const c = useColors()
   const shadow = useShadow().pop
-  const mode = useThemeMode()
   return (
     <View>
       <View style={{ gap: spacing[3], opacity: 0.55, ...(Platform.OS === 'android' ? { filter: [{ blur: 5 }] } : {}) }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -371,8 +370,7 @@ const LockedParts = ({ rows, onPlan }: { rows: { label: string }[]; onPlan?: () 
           ))}
         </View>
       </View>
-      {/* iOS ignores the RN blur filter, so the native blur covers the rows there. */}
-      {Platform.OS === 'ios' ? <BlurView intensity={20} tint={mode} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} /> : null}
+      <Blur intensity={20} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} />
       <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing[2] }}>
         <Pressable
           accessibilityRole="button"
