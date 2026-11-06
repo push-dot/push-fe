@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES, stageBadge } from '@push/api-client'
 import { careerLabel, monthDay } from '@push/shared'
 import { Badge, Chip, Icon, Text } from '@/shared/components'
-import { spacing, useColors } from '../../../theme'
+import { hitSlopTo, spacing, useColors } from '../../../theme'
 import {
   useMyApplications,
   useMyBookmarks,
@@ -122,7 +122,7 @@ const Bookmarks = () => {
             accessibilityLabel="북마크 해제"
             accessibilityState={{ selected: true }}
             onPress={() => unbookmark.mutate(p)}
-            hitSlop={12}
+            hitSlop={hitSlopTo(20)}
             style={{ width: 20, height: 20 }}
           >
             <Icon name="bookmark" size={20} color={c.acText} filled />
