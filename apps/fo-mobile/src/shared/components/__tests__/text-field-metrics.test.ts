@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { inputMetrics, inputReset } from '../text-field-metrics'
+
+vi.mock('react-native', () => ({ Platform: { OS: 'android' } }))
 
 describe('text field input height', () => {
   it('keeps the pre-scaling heights at font scale 1.0', () => {
