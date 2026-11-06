@@ -11,6 +11,7 @@ import { LINK_KIND_LABEL } from '../utils/links'
 import { cacheName } from '../utils/cache-name'
 import type { MentionGroup } from '../utils/mentions'
 import { isConsentRequired } from '../utils/consent'
+import { retryUnlessMissing } from '../utils/retry'
 import { askConsent, bindOpenChat, forget, holdOpen, pickAccessMode, send, usePrefs } from '../stores'
 import {
   archiveConversation,
@@ -56,14 +57,13 @@ export const useStartChat = () => {
 export const useConversationList = () =>
   useQuery({ queryKey: ['conversations', 'all'], queryFn: () => chatApi.conversations({ limit: 100 }) })
 
-/** One conversation by id: the list row when it is already cached, else GET /conversations/:id (the list stops at 100). */
+/** One conversation by id: GET /conversations/:id (the list stops at 100), falling back to the cached list row when that fails. */
 export const useConversation = (id: string) => {
   const qc = useQueryClient()
-  return useQuery({
-    queryKey: ['conversations', 'one', id],
-    queryFn: () => chatApi.conversation(id),
-    initialData: () => qc.getQueryData<ListEnvelope<ConversationRow>>(['conversations', 'all'])?.data.find((x) => x.id === id),
-  })
+  const listed = () => qc.getQueryData<ListEnvelope<ConversationRow>>(['conversations', 'all'])?.data.find((x) => x.id === id)
+  const q = useQuery({ queryKey: ['conversations', 'one', id], queryFn: () => chatApi.conversation(id), initialData: listed, retry: retryUnlessMissing })
+  const data = q.data ?? listed()
+  return { data, failed: !data && q.isError, loading: !data && q.isFetching, retry: () => void q.refetch() }
 }
 
 export const useRenameConversation = (id: string, revision: number | undefined) => {
