@@ -46,7 +46,8 @@ tags:
     when:
       notVisible: "내 서류"
     commands:
-      - tapOn: "대화 목록 열기"
+      - tapOn:
+          point: "9%,10%"
       - extendedWaitUntil:
           visible: "내 서류"
           timeout: 10000
@@ -62,7 +63,8 @@ tags:
     when:
       notVisible: "북마크한 공고"
     commands:
-      - tapOn: "대화 목록 열기"
+      - tapOn:
+          point: "9%,10%"
       - extendedWaitUntil:
           visible: "북마크한 공고"
           timeout: 10000
