@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { activeToastHost, hideToast, mountSheet, mountToastHost, showToast, toastDuration, toastOffsets, useToastStore } from '../toast-store'
+import { activeToastHost, hideToast, mountSheet, mountToastHost, showToast, sizeSheet, toastDuration, toastOffsets, useToastStore } from '../toast-store'
 
-beforeEach(() => useToastStore.setState({ current: null, hosts: [], sheets: 0 }))
+beforeEach(() => useToastStore.setState({ current: null, hosts: [], sheet: 0 }))
 
 describe('toast store', () => {
   it('shows the newest toast in place of the current one', () => {
@@ -22,13 +22,15 @@ describe('toast store', () => {
     expect(useToastStore.getState().current).toBeNull()
   })
 
-  it('counts open sheets until the last one unmounts', () => {
-    const closeFirst = mountSheet()
-    const closeSecond = mountSheet()
-    closeFirst()
-    expect(useToastStore.getState().sheets).toBe(1)
-    closeSecond()
-    expect(useToastStore.getState().sheets).toBe(0)
+  it('clears the toast when a sheet opens and keeps its height until it closes', () => {
+    showToast({ message: '서류를 삭제했어요' })
+    const close = mountSheet()
+    expect(useToastStore.getState().current).toBeNull()
+    sizeSheet(240)
+    showToast({ message: '삭제하지 못했어요. 다시 시도해 주세요' })
+    expect(useToastStore.getState()).toMatchObject({ sheet: 240, current: { message: '삭제하지 못했어요. 다시 시도해 주세요' } })
+    close()
+    expect(useToastStore.getState().sheet).toBe(0)
   })
 
   it('keeps an undo toast up longer than a plain one', () => {

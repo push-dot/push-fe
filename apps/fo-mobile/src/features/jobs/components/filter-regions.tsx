@@ -15,7 +15,7 @@ const FilterRegions = ({ draft, onToggle }: { draft: Filters; onToggle: (v: stri
     districts.map((d) => ({ value: d.location, label: d.location.slice(sido.length + 1), count: d.count })),
   )
   return (
-    <View style={{ flexDirection: 'row', gap: spacing[2], height: 300 }}>
+    <View style={{ flexDirection: 'row', gap: spacing[2], flex: 1 }}>
       <View style={{ width: 112, gap: spacing[1], borderRightWidth: 1, borderColor: c.line, paddingRight: spacing[2] }}>
         {SIDOS.map((s) => (
           <FilterRow key={s} label={s} on={s === sido} count="" onPress={() => setSido(s)} />
