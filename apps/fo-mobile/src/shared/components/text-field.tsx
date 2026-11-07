@@ -18,7 +18,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
         backgroundColor: c.fill,
         paddingHorizontal: spacing[4],
         paddingVertical: multiline || label ? spacing[4] : 0,
-        minHeight: search ? 48 : 56,
+        minHeight: search || icon === 'search' ? 48 : 56,
         justifyContent: 'center',
         gap: spacing[2],
       }}
