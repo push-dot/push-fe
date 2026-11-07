@@ -29,6 +29,9 @@
     "button": "rgba(255,255,255,.86)",
     "shade": "rgba(0,0,0,.28)"
   },
+  "toast": {
+    "androidAction": "#B3AAFF"
+  },
   "shadow": {
     "icon": "0 6px 10px rgba(0,0,0,.18)",
     "panel": "0 -4px 30px rgba(0,0,0,.12)"
