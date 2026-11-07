@@ -281,6 +281,14 @@
             "fontWeight": 600,
             "sample": "AI 채팅",
             "usage": "Tab bar labels."
+          },
+          {
+            "name": "segLabel",
+            "fontSize": "15px",
+            "lineHeight": "22px",
+            "fontWeight": 600,
+            "sample": "내 활동",
+            "usage": "Segmented control labels."
           }
         ]
       },
