@@ -15,8 +15,14 @@ export type MenuAction = {
   selected?: boolean
 }
 
+/** A group of actions: iOS draws a UIMenu section (with its title as header), Android a divider above it and the title as a label. */
+export type MenuSection = { key: string; title?: string; actions: MenuAction[] }
+
+export const menuSections = (items: MenuAction[] | MenuSection[]): MenuSection[] =>
+  items.length && 'actions' in items[0]! ? (items as MenuSection[]) : [{ key: 'actions', actions: items as MenuAction[] }]
+
 export type MenuProps = {
-  actions: MenuAction[]
+  actions: MenuAction[] | MenuSection[]
   accessibilityLabel: string
   children: ReactElement
   /** iOS: the trigger takes the parent's width (a full settings row) instead of its own. */

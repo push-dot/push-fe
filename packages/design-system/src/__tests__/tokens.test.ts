@@ -139,7 +139,7 @@ describe('css', () => {
 
 describe('icons', () => {
   it('register every svg file by name', () => {
-    expect(Object.keys(LINE_ICONS)).toHaveLength(61)
+    expect(Object.keys(LINE_ICONS)).toHaveLength(63)
     expect(Object.keys(ICONS_3D)).toHaveLength(32)
     expect(Object.keys(BRAND)).toEqual(['push-mascot-on-dark', 'push-mascot-on-light'])
   })

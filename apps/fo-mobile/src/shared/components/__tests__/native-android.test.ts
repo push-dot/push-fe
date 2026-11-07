@@ -78,10 +78,11 @@ describe('MenuAnchor (Android)', () => {
     expect(menu.props).toMatchObject({ expanded: true, onDismissRequest: onClose })
   })
 
-  it('closes and runs the action when an item is picked, coloring delete and the current pick', () => {
+  it('closes and runs the action when an item is picked, coloring delete and checking the current pick', () => {
     const onClose = vi.fn()
     const items = findAll(MenuAnchor({ actions, open: true, onClose, children: createElement('View') }), stubs.compose.DropdownMenuItem)
-    expect(items.map((i) => (i.props.elementColors as { textColor: string }).textColor)).toEqual([c.t1, c.red, c.acText])
+    expect(items.map((i) => (i.props.elementColors as { textColor: string }).textColor)).toEqual([c.t1, c.red, c.t1])
+    expect(findAll(items[2]!, stubs.compose.DropdownMenuItem.TrailingIcon)).toHaveLength(1)
     ;(items[1]!.props.onClick as () => void)()
     expect(onClose).toHaveBeenCalled()
     expect(actions[1]!.onPress).toHaveBeenCalled()
@@ -96,6 +97,16 @@ describe('MenuAnchor (Android)', () => {
 })
 
 describe('Menu and ContextMenu (Android)', () => {
+  it('draws sections with a divider between them and the title as a disabled label', () => {
+    const sections = [
+      { key: 'view', title: '보기', actions: [actions[2]!] },
+      { key: 'sort', title: '정렬', actions: [actions[0]!] },
+    ]
+    const tree = MenuAnchor({ actions: sections, open: true, onClose: vi.fn(), children: createElement('View') })
+    expect(findAll(tree, stubs.compose.HorizontalDivider)).toHaveLength(1)
+    expect(findAll(tree, stubs.compose.DropdownMenuItem).map((i) => i.props.enabled)).toEqual([false, undefined, false, undefined])
+  })
+
   it('Menu opens on tap', () => {
     const anchor = Menu({ actions, accessibilityLabel: '정렬', children: createElement('View') })
     const trigger = find(anchor, 'Pressable')
