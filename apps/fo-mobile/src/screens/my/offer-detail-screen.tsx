@@ -12,6 +12,7 @@ import {
   personLine,
   useOffer,
   useOfferDecision,
+  useOfferMenu,
 } from '@/features/my'
 import { CtaBar, Badge, Button, Chip, GlassButton, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
@@ -24,6 +25,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
   const c = useColors()
   const { data: o, isLoading } = useOffer(id)
   const { decline } = useOfferDecision(id, '', () => undefined)
+  const menu = useOfferMenu(o)
 
   if (isLoading || !o) {
     return (
@@ -56,7 +58,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
               {
                 icon: 'menu',
                 label: '더 보기',
-                menu: [{ key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) }],
+                menu: menu ?? [],
               },
             ]}
           />

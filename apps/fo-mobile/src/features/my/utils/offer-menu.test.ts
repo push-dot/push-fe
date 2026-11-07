@@ -1,6 +1,6 @@
 import type { Offer } from '@push/api-client'
 import { describe, expect, it, vi } from 'vitest'
-import { offerMenu, otherParty, type OfferMenuDeps } from './offer-menu'
+import { offerMenu, offerMenuSections, otherParty, type OfferMenuDeps } from './offer-menu'
 
 const party = (id: string) => ({ id, displayName: id, avatarUrl: null, companyName: null, headline: '' })
 const offer = { id: 'o1', sender: party('them'), recipient: party('me') } as Offer
@@ -26,6 +26,7 @@ describe('offerMenu', () => {
     expect(d.block).toHaveBeenCalledWith('them')
     expect(d.back).toHaveBeenCalled()
     expect(d.refresh).toHaveBeenCalled()
+    expect(vi.mocked(d.toast).mock.calls[0]![0]).toEqual({ message: 'them 님을 차단했어요' })
   })
 
   it('archives with an undo that unarchives and re-reads', async () => {
@@ -53,5 +54,62 @@ describe('offerMenu', () => {
     await offerMenu(offer, 'me', d).archive()
     expect(d.back).not.toHaveBeenCalled()
     expect(vi.mocked(d.toast).mock.calls[0]![0].tone).toBe('error')
+  })
+})
+
+describe('offerMenuSections', () => {
+  const sectionDeps = (over: Partial<OfferMenuDeps> = {}) => ({ ...deps(over), profile: vi.fn(), confirm: vi.fn() })
+  const labels = (o: Offer, d = sectionDeps(), report = false) =>
+    offerMenuSections(o, 'me', d, report).map((s) => s.actions.map((a) => a.label))
+
+  it('offers 보관 for a received offer and 보관 풀기 once it is archived', () => {
+    expect(labels(offer)).toEqual([['허브 프로필 보기', '제안 보관하기'], ['차단하기']])
+    expect(labels({ ...offer, archivedAt: '2026-10-01T00:00:00Z' })).toEqual([['허브 프로필 보기', '보관 풀기'], ['차단하기']])
+  })
+
+  it('does not archive an offer the viewer sent, but still releases an archived one', () => {
+    const sent = { ...offer, sender: party('me'), recipient: party('them') } as Offer
+    expect(labels(sent)).toEqual([['허브 프로필 보기'], ['차단하기']])
+    expect(labels({ ...sent, archivedAt: '2026-10-01T00:00:00Z' })[0]).toEqual(['허브 프로필 보기', '보관 풀기'])
+  })
+
+  it('hides 신고하기 until the report copy is settled', () => {
+    expect(labels(offer, sectionDeps(), true)[1]).toEqual(['신고하기', '차단하기'])
+    expect(labels(offer)[1]).toEqual(['차단하기'])
+  })
+
+  it('opens the other party hub profile', () => {
+    const d = sectionDeps()
+    offerMenuSections(offer, 'me', d)[0]!.actions[0]!.onPress()
+    expect(d.profile).toHaveBeenCalledWith('them')
+  })
+
+  it('asks before blocking and blocks only after the confirm', async () => {
+    const d = sectionDeps()
+    const block = offerMenuSections(offer, 'me', d)[1]!.actions[0]!
+    expect(block.destructive).toBe(true)
+    block.onPress()
+    expect(d.block).not.toHaveBeenCalled()
+    const ask = vi.mocked(d.confirm).mock.calls[0]![0]
+    expect(ask).toMatchObject({ title: 'them 님을 차단할까요?', confirm: '차단', danger: true, note: '설정 › 차단한 사람에서 언제든 풀 수 있어요.' })
+    ask.onConfirm()
+    await flush()
+    expect(d.block).toHaveBeenCalledWith('them')
+    expect(d.back).toHaveBeenCalled()
+  })
+
+  it('archives, and unarchives without leaving the screen', async () => {
+    const d = sectionDeps()
+    offerMenuSections(offer, 'me', d)[0]!.actions[1]!.onPress()
+    await flush()
+    expect(d.archive).toHaveBeenCalledWith('o1')
+    expect(d.back).toHaveBeenCalled()
+    const e = sectionDeps()
+    offerMenuSections({ ...offer, archivedAt: '2026-10-01T00:00:00Z' }, 'me', e)[0]!.actions[1]!.onPress()
+    await flush()
+    expect(e.unarchive).toHaveBeenCalledWith('o1')
+    expect(e.back).not.toHaveBeenCalled()
+    expect(e.toast).not.toHaveBeenCalled()
+    expect(e.refresh).toHaveBeenCalled()
   })
 })

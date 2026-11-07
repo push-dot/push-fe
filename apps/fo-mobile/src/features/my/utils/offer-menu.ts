@@ -1,6 +1,8 @@
 import type { Offer } from '@push/api-client'
-import type { ToastInput } from '@/shared/components/toast-store'
-import { OFFER_MENU_COPY } from './my-rules'
+import type { ConfirmRequest } from '@/shared/components/confirm-store'
+import type { MenuSection } from '@/shared/components/menu-action'
+import { toastOffsets, type ToastInput } from '@/shared/components/toast-store'
+import { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked, REPORT_ENABLED } from './my-rules'
 
 export const otherParty = (o: Offer, viewerId: string) => (o.sender.id === viewerId ? o.recipient : o.sender)
 
@@ -31,11 +33,50 @@ export const offerMenu = (offer: Offer, viewerId: string, d: OfferMenuDeps) => {
           action: { label: OFFER_MENU_COPY.undo, onPress: () => void d.unarchive(offer.id).then(d.refresh, failed) },
         })
       }),
-    report: () => run(d.report(offer.id), () => d.toast({ message: OFFER_MENU_COPY.reported, tone: 'success' })),
+    unarchive: () => run(d.unarchive(offer.id), () => void d.refresh()),
+    report: () =>
+      run(d.report(offer.id), () => d.toast({ message: OFFER_MENU_COPY.reported, tone: 'success', bottom: toastOffsets(0).cta })),
     block: () =>
       run(d.block(otherParty(offer, viewerId).id), () => {
         d.back()
         void d.refresh()
+        d.toast({ message: offerBlocked(otherParty(offer, viewerId).displayName) })
       }),
   }
+}
+
+export type OfferMenuSectionDeps = OfferMenuDeps & {
+  profile: (userId: string) => void
+  confirm: (r: ConfirmRequest) => void
+}
+
+/**
+ * The ⋯ menu: 허브 프로필 보기 and 보관 (or 보관 풀기 once archived), then 신고하기 and 차단하기.
+ * Only the recipient archives a new offer (the 보관한 제안 list is the received box); an already archived one can always be released.
+ */
+export const offerMenuSections = (offer: Offer, viewerId: string, d: OfferMenuSectionDeps, reportEnabled = REPORT_ENABLED): MenuSection[] => {
+  const run = offerMenu(offer, viewerId, d)
+  const who = otherParty(offer, viewerId)
+  const archived = !!offer.archivedAt
+  const keep: MenuSection['actions'] = [
+    { key: 'profile', label: OFFER_MENU_COPY.profile, systemImage: 'person', icon: 'user', onPress: () => d.profile(who.id) },
+  ]
+  if (archived)
+    keep.push({ key: 'unarchive', label: OFFER_MENU_COPY.unarchive, systemImage: 'tray.and.arrow.up', icon: 'archive', onPress: () => void run.unarchive() })
+  else if (offer.recipient.id === viewerId)
+    keep.push({ key: 'archive', label: OFFER_MENU_COPY.archive, systemImage: 'archivebox', icon: 'archive', onPress: () => void run.archive() })
+  const harm: MenuSection['actions'] = []
+  if (reportEnabled) harm.push({ key: 'report', label: OFFER_MENU_COPY.report, systemImage: 'flag', icon: 'flag', onPress: () => void run.report() })
+  harm.push({
+    key: 'block',
+    label: OFFER_MENU_COPY.block,
+    systemImage: 'nosign',
+    icon: 'block',
+    destructive: true,
+    onPress: () => d.confirm({ ...offerBlockConfirm(who.displayName), danger: true, onConfirm: () => void run.block() }),
+  })
+  return [
+    { key: 'keep', actions: keep },
+    { key: 'harm', actions: harm },
+  ]
 }
