@@ -1,0 +1,27 @@
+appId: app.push.mobile
+name: probe · link-add sheet with the keyboard up (r4-shared, not a tour)
+tags:
+  - visual
+---
+- runFlow: ../flows/_login.yaml
+- runFlow: _agent_tab.yaml
+- tapOn: "대화 목록 열기"
+- extendedWaitUntil:
+    visible: "최근 대화"
+    timeout: 10000
+- tapOn: "내 링크"
+- extendedWaitUntil:
+    visible: "에이전트에서 @언급으로 불러오거나.*"
+    timeout: 10000
+- tapOn: "링크 추가"
+- extendedWaitUntil:
+    visible: "추가하기"
+    timeout: 5000
+- waitForAnimationToEnd
+- takeScreenshot: ProbeKbdMount
+- inputText: "github.com/probe"
+- waitForAnimationToEnd
+- takeScreenshot: ProbeKbdTyped
+- runFlow: _hide_kbd.yaml
+- waitForAnimationToEnd
+- takeScreenshot: ProbeKbdDown
