@@ -174,14 +174,19 @@ export const ToolLine = ({ item }: { item: Of<'tool'> }) => {
 // The board's index chip is width 24 plus 2x7 padding.
 const INDEX_CHIP = 38
 
-// shortcut: Android drops the Text decoration on these labels (probed: it draws when the row mounts done, not here), so a rule is drawn over the label; find the cause when RN changes.
-const Struck = ({ on, children }: { on: boolean; children: React.ReactNode }) => {
+// shortcut: Android does not draw the decoration on a label that turns done (probed: native-driver pop off strikes one of two rows, constant weight none), so it draws the board's rule itself: 1.5pt at 55% of each line box. Retry the native line on an RN upgrade.
+const StruckLabel = ({ on, ...props }: { on: boolean } & React.ComponentProps<typeof Text>) => {
   const c = useColors()
-  if (!on || Platform.OS !== 'android') return children
+  const [lines, setLines] = useState<{ x: number; y: number; width: number; height: number }[]>([])
+  if (Platform.OS === 'ios') return <Text {...props} style={[props.style, on ? { textDecorationLine: 'line-through' } : null]} />
   return (
     <View>
-      {children}
-      <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: c.t3 }} />
+      <Text {...props} onTextLayout={(e) => setLines(e.nativeEvent.lines)} />
+      {on
+        ? lines.map((l, i) => (
+            <View key={i} pointerEvents="none" style={{ position: 'absolute', left: l.x, top: l.y + l.height * 0.55 - 0.75, width: l.width, height: 1.5, backgroundColor: c.t3 }} />
+          ))
+        : null}
     </View>
   )
 }
@@ -209,11 +214,9 @@ const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
         {done ? <Icon name="check" size={12} color={onAccent} /> : null}
         {now ? <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: c.ac }} /> : null}
       </Animated.View>
-      <Struck on={done}>
-        <Text v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'} style={done ? { textDecorationLine: 'line-through' } : undefined}>
-          {item.label}
-        </Text>
-      </Struck>
+      <StruckLabel on={done} v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'}>
+        {item.label}
+      </StruckLabel>
       {item.added ? <Badge label="새로 추가" tone="ac" /> : null}
     </View>
   )
