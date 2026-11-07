@@ -1,7 +1,7 @@
 import { spacing } from '../../../theme/tokens'
 
-// The design leaves 43-58pt (iOS) and ~33pt (Android) between the last thread line and an approval sheet.
-const APPROVAL_GAP = { ios: 50, android: 32 }
+// Last thread line to sheet title, measured on 12 boards per platform against the design: median +4pt (iOS) / +2pt (Android) at 50 / 32.
+const APPROVAL_GAP = { ios: 46, android: 30 }
 const KEYBOARD_GAP = spacing[2]
 const THREAD_GAP = spacing[4]
 

@@ -19,7 +19,7 @@ describe('threadInset', () => {
   })
 
   it('leaves the design gap above an approval sheet per platform', () => {
-    expect(threadInset({ ...base, bottomH: 260, approval: true })).toBe(310)
-    expect(threadInset({ ...base, bottomH: 260, approval: true, android: true })).toBe(292)
+    expect(threadInset({ ...base, bottomH: 260, approval: true })).toBe(306)
+    expect(threadInset({ ...base, bottomH: 260, approval: true, android: true })).toBe(290)
   })
 })
