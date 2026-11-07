@@ -713,18 +713,20 @@ const EditProfileScreen = ({ section }: { section: ProfileSection }) => {
     { basic: EditBasic, intro: EditIntro, career: EditCareer, skills: EditSkills }[section] ??
     EditBasic
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{
-        flex: 1,
-        backgroundColor: c.bg,
-        paddingTop: Platform.OS === 'android' ? insets.top : 0,
-        paddingBottom: insets.bottom,
-      }}
-    >
-      {p ? <Form p={p} /> : <SkeletonRows {...LOADING_ROWS} />}
+    <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{
+          flex: 1,
+          backgroundColor: c.bg,
+          paddingTop: Platform.OS === 'android' ? insets.top : 0,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        {p ? <Form p={p} /> : <SkeletonRows {...LOADING_ROWS} />}
+      </KeyboardAvoidingView>
       {Platform.OS === 'ios' ? <ToastHost /> : null}
-    </KeyboardAvoidingView>
+    </View>
   )
 }
 
