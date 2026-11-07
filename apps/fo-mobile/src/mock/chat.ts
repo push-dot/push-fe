@@ -47,8 +47,8 @@ mock('GET', 'conversations', ({ query }) =>
 mock('POST', 'conversations', ({ body }) => {
   if (!referenceData) return { status: 403, body: { error: { code: 'CONSENT_REQUIRED', message: 'consent' } } }
   const b = body as { title: string }
-  // Every scenario targets the 모아페이 posting except the upload without one (ChatDoneNoJob).
-  const c = { ...conv(`c-${Date.now()}`, b.title.slice(0, 300), 0, ''), company: /^ext-nojob$/i.test(b.title.trim()) ? null : '모아페이' }
+  // Every scenario targets the 모아페이 posting except the upload without one (ChatDoneNoJob) and the read failure (ChatErrors).
+  const c = { ...conv(`c-${Date.now()}`, b.title.slice(0, 300), 0, ''), company: /^(ext-nojob|fail|이 서류를 고쳐 줘)$/i.test(b.title.trim()) ? null : '모아페이' }
   conversations.push(c)
   return { status: 201, body: { data: c } }
 })
@@ -145,9 +145,18 @@ const tailorRead: Step[] = [
   s(1500, tool('jd', '공고 읽기', MOA, 'ok', '필수 5개 · 우대 3개', JD_LINES)),
 ]
 
+// 마이 › 서류 › 에이전트로 고치기 has no posting yet: the run starts by reading the file, before any plan or todo (DocAgentNew).
+const fixDocRun: Step[] = [
+  s(200, status('읽는 중…')),
+  s(300, tool('resume', '이력서 읽기', RESUME, 'run', '서류를 읽는 중')),
+  s(HOLD, tool('resume', '이력서 읽기', RESUME, 'ok', '2쪽 · 경력 2건, 프로젝트 5건, 링크 3개')),
+  done,
+]
+
 const tailorFit = (labels: string[], added = -1, hold = DWELL): Step[] => [
   s(200, todo('todo', labels, 2, added)),
-  s(100, status(added < 0 ? '맞춰보는 중…' : '다시 맞춰보는 중…', '견주어 보는 중…', '따져 보는 중…')),
+  // The resumed run holds one verb, so a screenshot never catches the rotation on another (ChatInterrupt).
+  s(100, status(...(added < 0 ? ['맞춰보는 중…', '견주어 보는 중…', '따져 보는 중…'] : ['다시 맞춰보는 중…']))),
   s(200, tool('fit', '적합도 계산', added < 0 ? '5개 항목' : '이어서', 'run', added < 0 ? '기술 스택을 비교하는 중' : '경력 수준을 비교하는 중')),
   s(hold + 1300, tool('fit', '적합도 계산', '5개 항목', 'ok', '6.9점 · 키워드와 도메인이 약해요')),
   s(300, {
@@ -172,9 +181,11 @@ const tailorFit = (labels: string[], added = -1, hold = DWELL): Step[] => [
 ]
 
 // What the mapper makes of the server's result frame: the task line, the summary, then the card.
-const finish = (score: string, josa = '로'): Step[] => [
-  s(400, todo('todo', PROFILE_TODO, PROFILE_TODO.length)),
-  s(200, tool('task', '프로필 수정', 'Push 프로필 · 경력', 'ok')),
+// The done boards draw the finished task line above the to-do card, so it comes first when the card is new to the thread.
+const TASK_RESULT = '반영했어요 · 2줄 추가, 1줄 삭제'
+const profileCard = (score: string, josa = '로'): Step[] => [
+  s(400, tool('task', '프로필 수정', 'Push 프로필 · 경력', 'ok', TASK_RESULT)),
+  s(200, todo('todo', PROFILE_TODO, PROFILE_TODO.length)),
   s(200, agent('done', `다 됐어요! 적합도를 **${score}**${josa} 올렸어요.`, BULLETS)),
   s(200, {
     type: 'result',
@@ -192,6 +203,9 @@ const finish = (score: string, josa = '로'): Step[] => [
       { id: 'view', label: '프로필 보기' },
     ],
   }),
+]
+const finish = (score: string, josa = '로'): Step[] => [
+  ...profileCard(score, josa),
   ask({ ...numbered('present', 'Push 프로필에 저장했어요. 결과를 확인할까요?', ['확인했어요', '그만하기']), pendingNote: 'PDF는 Push 프로필에서 내보낼 수 있어요.' }),
   awaitingDone,
 ]
@@ -203,9 +217,15 @@ const ext = (o: { todo?: string[]; text?: string; fileName?: string; saved?: boo
   const job = o.job ?? true
   const saved = o.saved ?? true
   return [
-    s(200, todo('todo', labels, labels.length)),
-    s(200, tool('task', '이력서 수정', '올린 파일 · 경력', 'ok')),
-    s(300, agent('done', o.text ?? `다 됐어요! 적합도를 **6.9 → 8.1**${o.josa ?? '로'} 올렸어요.`, BULLETS)),
+    // The gate boards (ChatPh6ResultFile, ChatPh6ResultFail) draw only the closing line and the card, no task lines or bullets.
+    ...(o.gate
+      ? []
+      : [
+          s(200, tool('task', '이력서 수정', '올린 파일 · 경력', 'ok', TASK_RESULT)),
+          s(200, tool('pdf', 'PDF 만들기', '모던 템플릿', 'ok', FILE_PAGE)),
+          s(200, todo('todo', labels, labels.length)),
+        ]),
+    s(300, agent('done', o.text ?? `다 됐어요! 적합도를 **6.9 → 8.1**${o.josa ?? '로'} 올렸어요.`, o.gate ? undefined : BULLETS)),
     s(200, {
       type: 'result',
       id: 'result',
@@ -224,7 +244,8 @@ const ext = (o: { todo?: string[]; text?: string; fileName?: string; saved?: boo
             ...(saved ? [{ id: 'convert', label: '프로필로 전환', method: 'POST', path: '/api/v1/documents/src-upload/profile' }] : []),
           ],
     }),
-    ...(o.gate ? [ask(numbered('ext-gate', o.gate, ['확인했어요', '그만하기'])), awaitingDone] : [done]),
+    // No done event while the gate is open, so no 작업했어요 footer under the card.
+    ...(o.gate ? [ask(numbered('ext-gate', o.gate, ['확인했어요', '그만하기']))] : [done]),
   ]
 }
 const fileRun = (): Step[] => ext({})
@@ -367,18 +388,19 @@ const ph2: Step[] = [
   ask(numbered('ph2', '이 전략대로 초안을 쓸까요?', ['초안 쓸게요', '피드백만 볼게요', '그만하기'])),
 ]
 const PH3 = ['요약', '경력', '프로젝트', '기술 스택', '학력']
-const ph3: Step[] = [
+const ph3Open: Step[] = [
   s(200, status('끄적이는 중…', '고쳐 쓰는 중…')),
   s(200, todo('todo3', PH3, 1)),
   s(200, tool('draft', '초안 쓰기', '이력서 v1 · 경력', 'run', '경력 섹션을 쓰는 중')),
-  s(300, {
-    type: 'paper', id: 'paper', label: '이력서 초안 v1', heading: '김서준 · 백엔드 개발자',
-    lines: ['모아페이 · 백엔드 엔지니어 · 2022.03–현재', '• 결제 승인 API를 Kotlin·Spring으로 재설계, p95 응답 320ms → 140ms', '• Kafka 기반 결제 이벤트 파이프라인을 구축해 정산 지연을'],
-  }),
-  s(DWELL, todo('todo3', PH3, 3)),
+]
+const paper = s(300, {
+  type: 'paper', id: 'paper', label: '이력서 초안 v1', heading: '김서준 · 백엔드 개발자',
+  lines: ['모아페이 · 백엔드 엔지니어 · 2022.03–현재', '• 결제 승인 API를 Kotlin·Spring으로 재설계, p95 응답 320ms → 140ms', '• Kafka 기반 결제 이벤트 파이프라인을 구축해 정산 지연을'],
+})
+const ph3Rest = (wait: number): Step[] => [
+  s(wait, todo('todo3', PH3, 3)),
   s(1200, todo('todo3', PH3, 5)),
   s(300, tool('draft', '초안 쓰기', '이력서 v1', 'ok', '1쪽 · 섹션 5개 · 말투 그대로')),
-  s(200, { type: 'file', id: 'v1', name: '이력서 초안 v1', meta: '1쪽 · 방금', preview: true }),
   s(200, {
     type: 'diff', id: 'diff3',
     lines: [
@@ -390,6 +412,10 @@ const ph3: Step[] = [
   }),
   ask(numbered('ph3-review', '첫 번째 초안(v1)이에요. 이대로 검토할까요?', ['검토할게요', '그만하기'])),
 ]
+// ChatPh3Review goes from the 초안 쓰기 line straight to the diff, with no draft card between.
+const ph3: Step[] = [...ph3Open, ...ph3Rest(DWELL)]
+// ChatPh3 draws the writing state (to-do 1/5, the streaming draft card), so the run holds on it long enough to shoot.
+const ph3Writing: Step[] = [...ph3Open, paper, ...ph3Rest(HOLD)]
 const ph3Boost: Step[] = [
   s(200, status('점수 올리는 중…')),
   s(200, tool('boost1', '점수 올리기 1회', '키워드 밀도', 'run', '키워드를 넣는 중')),
@@ -493,7 +519,7 @@ const ph2xBlueprints: Step[] = [
 const applyRun: Step[] = [
   s(200, status('지원 준비하는 중…')),
   s(300, tool('save', '내 서류에 저장', undefined, 'run', '저장하는 중')),
-  s(900, tool('save', '내 서류에 저장', undefined, 'ok', '저장했어요 · Push 프로필')),
+  s(900, tool('save', '내 서류에 저장', undefined, 'ok')),
   s(300, tool('apply', '지원하기', MOA, 'wait', '확인을 기다리는 중')),
   ask({ ...numbered('apply', '이 공고에 지원해요', ['실행', '취소']), foot: undefined, warning: '지원하면 취소할 수 없어요' }),
 ]
@@ -589,6 +615,25 @@ const TOKENS: Record<string, Step[]> = {
   'ext-nosave': ext({ saved: false }),
   'ext-ok': ext({ josa: '으로', gate: '내 서류에 저장했어요. 결과를 확인할까요?' }),
   'ext-fail': ext({ josa: '으로', saved: false, gate: '내 서류에 저장하지 못했어요. 결과를 확인할까요?' }),
+  // Each phase board draws one thread under its own user line, so jump to it in a fresh conversation (Android types the alias).
+  '1번, 지금 이력서로 할게요': ph0Input,
+  'ph0-input': ph0Input,
+  '이력서만 · 자료 3개 · 말투 그대로': ph0Start,
+  'ph0-start': ph0Start,
+  'feedback only': feedbackOnly,
+  // ChatDoneProfile: the finished profile run without the 확인했어요 gate, so one elapsed line and no answer bubbles.
+  'profile-done': [...profileCard('6.9 → 8.1', '로'), done],
+  // Jumps for the boards that draw one phase under its own user line, without the earlier phases above it (Android types the alias).
+  '네, 맞춰서 고쳐 주세요': ph2,
+  ph2,
+  '네, 써 주세요': ph3Writing,
+  'ph3-write': ph3Writing,
+  '클래식으로 만들기': [...ph5, ...finish('6.9 → 8.1', '으로')],
+  ph5: [...ph5, ...finish('6.9 → 8.1', '으로')],
+  '중간 제약으로': verifyFail,
+  'verify-fail': verifyFail,
+  // ChatPh6Result: the closing line and the card under the open gate, with no task lines, bullets or 작업했어요 footer.
+  'profile-gate': [s(300, agent('done', '다 됐어요! 적합도를 **6.9 → 8.1**으로 올렸어요.')), ...finish('6.9 → 8.1', '으로').filter((st) => st.event.type === 'result' || st.event.type === 'approval')],
   'ph1-free': ph1Plan('FREE'),
   'ph1-ultra': ph1Plan('ULTRA'),
   // The open gate hides the chat from accessibility, so hold it back until a tour has tapped the card open.
@@ -615,7 +660,8 @@ const TOKENS: Record<string, Step[]> = {
 const pick = (text: string, interrupted: boolean, attachment?: string, intent?: string): { steps: Step[]; labels?: string[] } | null => {
   // The Android keyboard capitalizes the first letter of a tour's typed English alias.
   const t = text.trim().toLowerCase()
-  const token = TOKENS[t]
+  // `run:<token>` (links.ts) plays that scenario for any text, so a tour can type the design's own user line (ChatErrUnavailable, ChatErrOther).
+  const token = TOKENS[account.run ?? t]
   if (token) return { steps: token }
   if (attachment) return { steps: fileRun() }
   if (intent === 'fit') return { steps: ph1 }
@@ -628,6 +674,7 @@ const pick = (text: string, interrupted: boolean, attachment?: string, intent?: 
   if (/pdf로 만들어 줘/.test(t)) return { steps: autoPick }
   if (/경력 섹션을 공고에 맞게/.test(t)) return { steps: awaitReply }
   if (interrupted) return null
+  if (t === '이 서류를 고쳐 줘') return { steps: fixDocRun, labels: TODO }
   if (/맞춰|고쳐|^tailor/.test(t)) return { steps: [...tailorRead, ...tailorFit(TODO)], labels: TODO }
   return { steps: generic(text) }
 }
@@ -761,7 +808,7 @@ const linkNotFound = { status: 404, body: { error: { code: 'NOT_FOUND', message:
 
 mock('GET', 'me/links', ({ query }) => {
   const kind = query.get('kind')
-  const live = links.filter((l) => !deletedLinks.has(l.id))
+  const live = links.filter((l) => !deletedLinks.has(l.id)).slice(0, account.few ? 1 : undefined)
   return page(kind ? live.filter((l) => l.kind === kind) : live, query)
 })
 mock('POST', 'me/links', ({ body }) => {
@@ -799,7 +846,7 @@ export const removeChatDoc = (id: string) => {
   const i = docs.findIndex((d) => d.id === id)
   if (i >= 0) docs.splice(i, 1)
 }
-mock('GET', 'chat/docs', () => ({ data: docs }))
+mock('GET', 'chat/docs', () => ({ data: account.few ? docs.filter((d) => d.id === 'd2' || d.id === 'd4') : docs }))
 mock('POST', 'chat/docs', ({ body }) => {
   const b = body as { fileName: string; size: number }
   const d: ChatDoc = { id: `d${Date.now()}`, fileName: b.fileName, size: b.size, createdAt: new Date().toISOString() }
@@ -807,7 +854,8 @@ mock('POST', 'chat/docs', ({ body }) => {
   return { status: 201, body: { data: d } }
 })
 // Tour switches (links.ts): `plan-ultra` is an ULTRA account (4x PRO's credits), `credits-out` has spent all of them (ChatNoCreditUltra).
-let account = { ultra: false, spent: false }
+// `few-materials` is the account ChatMention draws: two bookmarks, two documents, one link. `run` is the token the next messages play.
+let account: { ultra: boolean; spent: boolean; few: boolean; run?: string } = { ultra: false, spent: false, few: false }
 export const setAccount = (next: Partial<typeof account>) => {
   account = { ...account, ...next }
 }

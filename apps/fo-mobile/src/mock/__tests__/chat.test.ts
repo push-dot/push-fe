@@ -28,6 +28,12 @@ describe('chat mock', () => {
     expect((await call('GET', 'conversations/c-dotori')).data).toMatchObject({ company: '모아페이' })
   })
 
+  it('starts 에이전트로 고치기 by reading the file, with no todo yet', async () => {
+    const events = await run('t-fixdoc', { text: '이 서류를 고쳐 줘' })
+    expect(types(events).slice(0, 2)).toEqual(['status', 'tool'])
+    expect(events.some((e) => e.type === 'todo')).toBe(false)
+  })
+
   it('runs a tour token instead of the generic reply', async () => {
     const events = await run('t-free', { text: 'ph1-free' })
     const fit = events.find((e) => e.type === 'fit')
@@ -58,6 +64,33 @@ describe('chat mock', () => {
     const gate = (await run('t-level', { answer: { approvalId: 'ph2x-approach', choice: 0 } })).find((e) => e.type === 'approval')
     expect(events).not.toHaveLength(0)
     expect(gate).toMatchObject({ approval: { id: 'ph2x-level', sections: [{ selected: [1] }] } })
+  })
+
+  it('jumps to one phase in a fresh conversation, under the typed user line alone', async () => {
+    expect(types(await run('t-ph2', { text: '네, 맞춰서 고쳐 주세요' }))).toContain('plan')
+    const verify = await run('t-vf', { text: '중간 제약으로' })
+    expect(verify).toContainEqual(expect.objectContaining({ type: 'tool', state: 'err' }))
+    expect(verify.some((e) => e.type === 'approval' && e.approval.id === 'ph2x-verify')).toBe(true)
+  })
+
+  it('holds the writing state with the draft card, while the run to the review gate has no draft card', async () => {
+    const writing = (await call('POST', 'chat/runs', { conversationId: 't-write', text: '네, 써 주세요' })).data as Step[]
+    const paper = writing.findIndex((st) => st.event.type === 'paper')
+    expect(paper).toBeGreaterThan(-1)
+    expect(writing[paper + 1]!.wait).toBeGreaterThan(30_000)
+    await run('t-draft', { text: 'ph2' })
+    const review = await run('t-draft', { answer: { approvalId: 'ph2', choice: 0 } })
+    expect(types(review)).not.toContain('paper')
+    expect(types(review)).not.toContain('file')
+    expect(review.some((e) => e.type === 'approval' && e.approval.id === 'ph3-review')).toBe(true)
+  })
+
+  it('draws the result gates as the closing line and the card alone, with no bullets or elapsed footer', async () => {
+    for (const text of ['profile-gate', 'ext-ok', 'ext-fail']) {
+      const events = await run(`t-gate-${text}`, { text })
+      expect(types(events)).toEqual(['agentText', 'result', 'approval'])
+      expect(events[0]).not.toHaveProperty('bullets')
+    }
   })
 
   it('serves the stopped draft and its expired gate for 도토리증권 without a first user bubble', async () => {
@@ -105,5 +138,35 @@ describe('chat mock', () => {
     const res = await mockFetch(new Request('http://x/api/v1/chat/runs', { method: 'POST', body: JSON.stringify({ conversationId: 't-states', text: '도토리증권 공고도 맞춰 줘' }), headers: { 'Content-Type': 'application/json' } }))
     expect(res.status).toBe(429)
     expect(await res.json()).toMatchObject({ error: { code: 'QUEUE_BUSY', details: { retryAfterSec: 12 } } })
+  })
+
+  it('draws the finished task lines above the to-do card on the done boards', async () => {
+    const order = async (text: string) => types(await run(`t-${text}`, { text })).filter((x) => x === 'tool' || x === 'todo')
+    expect(await order('ext-done')).toEqual(['tool', 'tool', 'todo'])
+    expect(await order('profile-done')).toEqual(['tool', 'todo'])
+    expect(types(await run('t-profile-done-2', { text: 'profile-done' }))).not.toContain('approval')
+  })
+
+  it('plays a chat token for any text when a run: switch is set, until reset', async () => {
+    setAccount({ run: 'err-unavailable' })
+    expect(await run('t-switch', { text: '모아페이 백엔드 공고에 맞춰 이력서 고쳐 주세요' })).toMatchObject([{ type: 'error', code: 'NOT_CONFIGURED' }])
+    setAccount({ run: undefined })
+    expect(types(await run('t-switch-off', { text: '모아페이 백엔드 공고에 맞춰 이력서 고쳐 주세요' }))).toContain('todo')
+  })
+
+  it('keeps one status verb while the interrupted run resumes', async () => {
+    await run('t-int', { text: 'tailor hold' })
+    const events = await run('t-int', { text: 'wait also write cover letter', interrupted: true })
+    const verbs = events.flatMap((e) => (e.type === 'status' ? [e.verbs] : []))
+    expect(verbs.flat()).toContain('다시 맞춰보는 중…')
+    expect(verbs.flat()).not.toContain('견주어 보는 중…')
+  })
+
+  it('serves two bookmarks-worth of documents and one link on the few-materials account', async () => {
+    setAccount({ few: true })
+    expect(((await call('GET', 'chat/docs')).data as { id: string }[]).map((d) => d.id)).toEqual(['d2', 'd4'])
+    expect((await call('GET', 'me/links')).data).toHaveLength(1)
+    setAccount({ few: false })
+    expect((await call('GET', 'chat/docs')).data).toHaveLength(4)
   })
 })

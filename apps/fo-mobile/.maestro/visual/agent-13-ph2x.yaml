@@ -31,7 +31,6 @@ tags:
       PICK: ".*중간 제약으로"
       NEXT: "검증을 통과하지 못했어요.*"
 - waitForAnimationToEnd
-- takeScreenshot: ChatVerifyFail
 - runFlow:
     file: _pick.yaml
     env:
@@ -47,3 +46,15 @@ tags:
       NEXT: "어떤 프로젝트를 구현할까요?"
 - waitForAnimationToEnd
 - takeScreenshot: ChatPh2XBlueprints
+# ChatVerifyFail draws the failed check under the 중간 제약으로 line alone, so it jumps there in a fresh conversation (mock token).
+- runFlow: _back_home.yaml
+- runFlow:
+    file: _say.yaml
+    env:
+      KO: "중간 제약으로"
+      EN: "verify-fail"
+- extendedWaitUntil:
+    visible: "검증을 통과하지 못했어요.*"
+    timeout: 30000
+- waitForAnimationToEnd
+- takeScreenshot: ChatVerifyFail
