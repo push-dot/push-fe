@@ -15,12 +15,12 @@ export type GlassAction = {
   badge?: number
 }
 
-const GlassActionButton = ({ a, width }: { a: GlassAction; width: number }) => {
+const GlassActionButton = ({ a, width, iconSize = 22 }: { a: GlassAction; width: number; iconSize?: number }) => {
   const c = useColors()
   const box = { height: 44, minWidth: width, alignItems: 'center', justifyContent: 'center' } as const
   const face = (
     <>
-      <Icon name={a.icon} size={22} color={a.active ? c.acText : c.t1} filled={a.active} />
+      <Icon name={a.icon} size={iconSize} color={a.active ? c.acText : c.t1} filled={a.active} />
       {a.badge ? (
         <View
           style={{
