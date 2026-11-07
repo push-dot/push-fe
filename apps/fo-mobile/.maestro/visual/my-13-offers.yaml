@@ -34,25 +34,6 @@ tags:
 - waitForAnimationToEnd
 - takeScreenshot: ProposalDetail
 
-- tapOn: "더 보기"
-- extendedWaitUntil:
-    visible: "제안 보관하기"
-    timeout: 5000
-- waitForAnimationToEnd
-- takeScreenshot: ProposalDetailMenu
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - back
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      - tapOn:
-          point: "50%,80%"
-- waitForAnimationToEnd
-
 # The state boards are iOS only.
 - runFlow:
     when:

@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES } from '@push/api-client'
 import { Icon, Text, TopBar } from '@/shared/components'
 import { Empty, emptyCta, ListSkeleton, postedAt, useMyCommentedPosts, useMyPosts } from '@/features/my'
-import { spacing, type, useColors } from '@/theme'
+import { spacing, useColors } from '@/theme'
 
 const MyPostsScreen = () => {
   const c = useColors()
@@ -20,8 +20,8 @@ const MyPostsScreen = () => {
         <ListSkeleton />
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          {/* the board's count sits in a block whose 16px body line box is taller than the label's own line */}
-          <Text v="c1" weight="600" color="t2" style={{ lineHeight: type.b1.lineHeight, paddingTop: spacing[2], paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
+          {/* the board's count block sits on a 16px body line box, about 4pt taller than the label's own line */}
+          <Text v="c1" weight="600" color="t2" style={{ paddingTop: spacing[3], paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
             {query.data?.page.total ?? posts.length}개
           </Text>
           {posts.length === 0 && !commented ? (
