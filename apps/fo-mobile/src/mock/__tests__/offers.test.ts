@@ -62,6 +62,8 @@ it('archives and blocks like push-be: gone from the default list, archived=1 lis
   expect((await call('me/offers/o2/report', 'POST', {})).status).toBe(204)
   expect((await call('me/blocks', 'POST', { userId: 'u3' })).status).toBe(204)
   expect(await ids('me/offers?box=received')).not.toContain('o2')
+  const blocks = (await (await call('me/blocks')).json()) as { data: { user: { id: string; displayName: string }; createdAt: string }[] }
+  expect(blocks.data.map((b) => b.user)).toEqual([{ id: 'u3', displayName: '박도윤' }])
   await call('me/blocks/u3', 'DELETE')
   expect(await ids('me/offers?box=received')).toContain('o2')
 })

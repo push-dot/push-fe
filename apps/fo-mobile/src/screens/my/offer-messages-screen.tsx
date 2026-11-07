@@ -20,12 +20,13 @@ import {
   useOffer,
   useOfferMessages,
 } from '@/features/my'
+import { ApiError } from '@push/api-client'
 import { Glass, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { inputReset } from '@/shared/components/text-field-metrics'
 import { fontFor, onAccent, radius, spacing, type, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
-type Failed = { key: string; body: string }
+type Failed = { key: string; body: string; blocked: boolean }
 
 const Bubble = ({
   body,
@@ -106,7 +107,13 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
       : [],
   )
   const post = (body: string) =>
-    send.mutate(body, { onError: () => setFailed((f) => [...f, { key: `${Date.now()}`, body }]) })
+    send.mutate(body, {
+      onError: (e) =>
+        setFailed((f) => [
+          ...f,
+          { key: `${Date.now()}`, body, blocked: e instanceof ApiError && e.code === 'BLOCKED' },
+        ]),
+    })
   const canSend = !!text.trim()
   const ios = Platform.OS === 'ios'
   const Composer = ios ? Glass : View
@@ -171,7 +178,13 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
           </View>
         ))}
         {empty ? (
-          <View style={{ flex: 1, justifyContent: 'center', paddingBottom: Math.max(EMPTY_LIFT - composerH, 0) }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              paddingBottom: Math.max(EMPTY_LIFT - composerH, 0),
+            }}
+          >
             <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
               첫 메시지를 보내 대화를 시작해 보세요.
             </Text>
@@ -195,17 +208,19 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
               <Text v="c2" color="red">
                 {OFFER_FAIL_TITLE}
               </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="다시 보내기"
-                hitSlop={10}
-                onPress={() => {
-                  setFailed((xs) => xs.filter((x) => x.key !== f.key))
-                  post(f.body)
-                }}
-              >
-                <Icon name="retry" size={16} color="t2" />
-              </Pressable>
+              {f.blocked ? null : (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="다시 보내기"
+                  hitSlop={10}
+                  onPress={() => {
+                    setFailed((xs) => xs.filter((x) => x.key !== f.key))
+                    post(f.body)
+                  }}
+                >
+                  <Icon name="retry" size={16} color="t2" />
+                </Pressable>
+              )}
             </View>
           </View>
         ))}

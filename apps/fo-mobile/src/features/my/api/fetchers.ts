@@ -118,7 +118,7 @@ export const archiveOffer = (id: string) => api.me.archiveOffer(id)
 
 export const unarchiveOffer = (id: string) => api.me.unarchiveOffer(id)
 
-export const reportOffer = (id: string) => api.me.reportOffer(id)
+export const reportOffer = (id: string, reason?: string) => api.me.reportOffer(id, reason)
 
 export const blockUser = (userId: string) => api.me.blockUser(userId)
 

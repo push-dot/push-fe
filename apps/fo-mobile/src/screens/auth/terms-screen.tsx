@@ -72,7 +72,6 @@ const TermsScreen = () => {
               label={row.label}
               badge={row.required ? TERMS_REQUIRED : TERMS_OPTIONAL}
               required={row.required}
-              detail={row.detail}
               checked={Boolean(checked[row.id])}
               onPress={() => setChecked((current) => ({ ...current, [row.id]: !current[row.id] }))}
             />

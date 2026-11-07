@@ -1,9 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES } from '@push/api-client'
-import { GlassButton, Icon, Text, TopBar } from '@/shared/components'
+import { Icon, Text, TopBar } from '@/shared/components'
 import { Empty, emptyCta, ListSkeleton, postedAt, useMyCommentedPosts, useMyPosts } from '@/features/my'
-import { spacing, useColors } from '@/theme'
+import { spacing, type, useColors } from '@/theme'
 
 const MyPostsScreen = () => {
   const c = useColors()
@@ -15,35 +15,13 @@ const MyPostsScreen = () => {
   const posts = query.data?.data ?? []
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <TopBar
-        title={commented ? '댓글 단 글' : '내가 쓴 글'}
-        onBack={() => router.back()}
-        right={
-          <GlassButton
-            actions={[
-              {
-                icon: 'menu',
-                label: '더 보기',
-                menu: [
-                  {
-                    key: 'switch',
-                    label: commented ? '내가 쓴 글' : '댓글 단 글',
-                    systemImage: commented ? 'square.and.pencil' : 'text.bubble',
-                    icon: commented ? 'edit' : 'chat',
-                    onPress: () => router.replace({ pathname: '/activity/posts', params: { box: commented ? 'mine' : 'commented' } }),
-                  },
-                ],
-              },
-            ]}
-          />
-        }
-      />
+      <TopBar title={commented ? '댓글 단 글' : '내가 쓴 글'} onBack={() => router.back()} />
       {query.isLoading ? (
         <ListSkeleton />
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          {/* the board's count sits on a 16px line box, 5pt taller than this 13px label's own line */}
-          <Text v="c1" weight="600" color="t2" style={{ paddingTop: spacing[2] + 5, paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
+          {/* the board's count sits in a block whose 16px body line box is taller than the label's own line */}
+          <Text v="c1" weight="600" color="t2" style={{ lineHeight: type.b1.lineHeight, paddingTop: spacing[2], paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
             {query.data?.page.total ?? posts.length}개
           </Text>
           {posts.length === 0 && !commented ? (

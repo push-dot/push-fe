@@ -12,7 +12,6 @@ import {
   personLine,
   useOffer,
   useOfferDecision,
-  useOfferMenu,
 } from '@/features/my'
 import { CtaBar, Badge, Button, Chip, GlassButton, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
@@ -25,7 +24,6 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
   const c = useColors()
   const { data: o, isLoading } = useOffer(id)
   const { decline } = useOfferDecision(id, '', () => undefined)
-  const menu = useOfferMenu(o, box)
 
   if (isLoading || !o) {
     return (
@@ -58,12 +56,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
               {
                 icon: 'menu',
                 label: '더 보기',
-                menu: [
-                  { key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) },
-                  { key: 'archive', label: '제안 보관하기', systemImage: 'archivebox', icon: 'archive', onPress: menu.archive },
-                  { key: 'report', label: '신고하기', systemImage: 'flag', onPress: menu.report },
-                  { key: 'block', label: '차단하기', systemImage: 'nosign', icon: 'slash', destructive: true, onPress: menu.block },
-                ],
+                menu: [{ key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) }],
               },
             ]}
           />

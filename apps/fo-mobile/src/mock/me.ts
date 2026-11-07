@@ -649,7 +649,7 @@ const o1Row = (o: Offer): Offer =>
     ? { ...o, message: '결제 플랫폼팀 시니어 포지션으로 가볍게 커피챗 어떠세요? 승인 API 개선하신 경험이 딱 저희 팀 고민이에요.', createdAt: ago(2 * H + 10 * 60_000) }
     : o
 const archivedAt = new Map<string, string>()
-const blockedUsers = new Set<string>()
+const blockedUsers = new Map<string, string>()
 const otherParty = (o: Offer) => (o.sender.id === ME.id ? o.recipient.id : o.sender.id)
 mock('GET', 'me/offers', ({ query }) => {
   const rows = (query.get('box') === 'sent' ? sent : received.map(o1Row))
@@ -671,12 +671,16 @@ mock('POST', 'me/offers/:id/unarchive', ({ params }) => {
 })
 mock('POST', 'me/offers/:id/report', ({ params }) => (findOffer(params.id!) ? undefined : notFound))
 mock('POST', 'me/blocks', ({ body }) => {
-  blockedUsers.add((body as { userId: string }).userId)
+  blockedUsers.set((body as { userId: string }).userId, new Date().toISOString())
 })
 mock('DELETE', 'me/blocks/:userId', ({ params }) => {
   blockedUsers.delete(params.userId!)
 })
-mock('GET', 'me/blocks', ({ query }) => page([...blockedUsers].map((userId) => ({ userId })), query))
+const partyName = (id: string) =>
+  [...received, ...sent].flatMap((o) => [o.sender, o.recipient]).find((p) => p.id === id)?.displayName ?? id
+mock('GET', 'me/blocks', ({ query }) =>
+  page([...blockedUsers].map(([id, createdAt]) => ({ user: { id, displayName: partyName(id) }, createdAt })), query),
+)
 // The boards draw o1 twice: the detail (two paragraphs; its date line slices the UTC day but shows the local clock, so shift the instant until
 // both read 10월 20일 오전 1:42) and, once accepted, the thread's opening bubble (one paragraph, local day).
 const o1Opening =
