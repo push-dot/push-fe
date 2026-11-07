@@ -12,6 +12,7 @@ type Props = { actions: MenuAction[] | MenuSection[]; open: boolean; onClose: ()
 /** Android: Material 3 dropdown anchored over its trigger; the overlay passes touches to the trigger. */
 const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
   const c = useColors()
+  const sections = menuSections(actions)
   return (
     <View>
       {children}
@@ -21,7 +22,7 @@ const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
             <Box modifiers={[fillMaxSize()]} />
           </DropdownMenu.Trigger>
           <DropdownMenu.Items>
-            {menuSections(actions).map((s, si) => (
+            {sections.map((s, si) => (
               <Fragment key={s.key}>
                 {si > 0 ? <HorizontalDivider color={c.line} /> : null}
                 {s.title ? (
@@ -35,7 +36,7 @@ const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
                   const ink = a.destructive ? c.red : c.t1
                   return (
                     <Fragment key={a.key}>
-                      {a.destructive && i > 0 && !s.actions[i - 1]!.destructive ? <HorizontalDivider color={c.line} /> : null}
+                      {sections.length === 1 && a.destructive && i > 0 && !s.actions[i - 1]!.destructive ? <HorizontalDivider color={c.line} /> : null}
                       <DropdownMenuItem onClick={() => (onClose(), a.onPress())} elementColors={{ textColor: ink }}>
                         {a.icon ? (
                           <DropdownMenuItem.LeadingIcon>

@@ -7,11 +7,11 @@ const DocRenameSheet = ({ id }: { id: string }) => {
   const doc = useDocument(id).data?.data
   const [title, setTitle] = useState<string>()
   const value = title ?? doc?.title ?? ''
-  const rename = useRenameDocument(doc, () => router.back())
+  const rename = useRenameDocument(doc)
   return (
     <Sheet
       title="서류 이름을 바꿀까요?"
-      action={{ label: '이름 바꾸기', disabled: !value.trim() || !doc || rename.isPending, onPress: () => rename.mutate(value.trim()) }}
+      action={{ label: '이름 바꾸기', disabled: !value.trim() || !doc || rename.isPending, onPress: () => rename.mutate(value.trim(), { onSuccess: () => router.back() }) }}
     >
       <TextField value={value} onChangeText={setTitle} max={300} autoFocus accessibilityLabel="서류 이름" />
     </Sheet>

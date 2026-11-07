@@ -1,12 +1,12 @@
 import { router } from 'expo-router'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
-import { Avatar, BLOCKED_COPY, blockedLine, useBlocked, useUnblock } from '@/features/my'
+import { Avatar, BLOCKED_COPY, blockedLine, OFFER_MENU_COPY, RETRY_LABEL, useBlocked, useUnblock } from '@/features/my'
 import { Button, emptyNoteStyle, SettingsGroup, StatusNote, Text, TopBar } from '@/shared/components'
 import { spacing, useColors } from '@/theme'
 
 const SettingsBlockedScreen = () => {
   const c = useColors()
-  const { data, isPending } = useBlocked()
+  const { data, isPending, isError, refetch } = useBlocked()
   const unblock = useUnblock()
   const rows = data?.data ?? []
   return (
@@ -14,6 +14,8 @@ const SettingsBlockedScreen = () => {
       <TopBar title={BLOCKED_COPY.title} onBack={() => router.back()} />
       {isPending ? (
         <ActivityIndicator style={{ marginTop: 40 }} />
+      ) : isError ? (
+        <StatusNote lines={[OFFER_MENU_COPY.failed]} action={{ label: RETRY_LABEL, onPress: () => void refetch() }} style={emptyNoteStyle(140)} />
       ) : rows.length === 0 ? (
         <StatusNote lines={[BLOCKED_COPY.empty]} style={emptyNoteStyle(140)} />
       ) : (

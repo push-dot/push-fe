@@ -82,10 +82,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
   const start = useStartChat()
   const share = useShareFile()
   const deleteCopy = deleteDocCopy(doc.data?.data.title ?? '')
-  const archive = useArchiveDocument(doc.data?.data, () => {
-    showToast({ message: deleteCopy.toast })
-    router.back()
-  })
+  const archive = useArchiveDocument(doc.data?.data)
   const [based, setBased] = useState(false)
   const setBase = useSetBaseProfile(() => {
     setBased(true)
@@ -102,7 +99,17 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
       export: () => share.mutate({ documentId: id }),
       rename: () => router.push(`/docs/push/${id}/rename`),
       duplicate: () => undefined,
-      delete: () => askConfirm(deleteConfirm({ fileName: item?.title ?? '' }, () => archive.mutate())),
+      delete: () =>
+        askConfirm(
+          deleteConfirm({ fileName: item?.title ?? '' }, () =>
+            archive.mutate(undefined, {
+              onSuccess: () => {
+                showToast({ message: deleteCopy.toast })
+                router.back()
+              },
+            }),
+          ),
+        ),
     },
   )
   const editable = (s: ProfileSection) => (application ? () => edit(s) : undefined)

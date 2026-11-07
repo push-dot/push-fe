@@ -86,4 +86,4 @@ export const TERMS_TEXT = {
 
 export type TermKey = keyof typeof TERMS_TEXT
 
-export const isTermKey = (key: unknown): key is TermKey => typeof key === 'string' && key in TERMS_TEXT
+export const isTermKey = (key: unknown): key is TermKey => typeof key === 'string' && Object.hasOwn(TERMS_TEXT, key)

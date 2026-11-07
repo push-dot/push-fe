@@ -121,13 +121,13 @@ export const useSetBaseProfile = (onDone: () => void) => {
   })
 }
 
-const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>, failed: string, onDone?: () => void) => {
+// Callers pass onSuccess to mutate(), so a sheet closed mid-request does not navigate back twice.
+const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>, failed: string) => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: write,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['documents'] })
-      onDone?.()
     },
     onError: () => {
       void qc.invalidateQueries({ queryKey: ['documents'] })
@@ -136,11 +136,11 @@ const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>, failed: string,
   })
 }
 
-export const useRenameDocument = (doc: { id: string; revision: number } | undefined, onDone: () => void) =>
-  useDocumentWrite((title: string) => renameDocument(doc!.id, doc!.revision, title), '이름을 바꾸지 못했어요', onDone)
+export const useRenameDocument = (doc: { id: string; revision: number } | undefined) =>
+  useDocumentWrite((title: string) => renameDocument(doc!.id, doc!.revision, title), '이름을 바꾸지 못했어요')
 
-export const useArchiveDocument = (doc: { id: string; revision: number } | undefined, onDone: () => void) =>
-  useDocumentWrite(() => archiveDocument(doc!.id, doc!.revision), '삭제하지 못했어요', onDone)
+export const useArchiveDocument = (doc: { id: string; revision: number } | undefined) =>
+  useDocumentWrite(() => archiveDocument(doc!.id, doc!.revision), '삭제하지 못했어요')
 
 export const useIngestJob = (jobId: string | undefined) => useQuery(ingestJobQuery(jobId))
 
@@ -181,7 +181,12 @@ export const useUnblock = () => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: unblockUser,
-    onSettled: () => Promise.all([qc.invalidateQueries({ queryKey: ['me', 'blocks'] }), qc.invalidateQueries({ queryKey: ['me', 'offers'] })]),
+    onSettled: () =>
+      Promise.all([
+        qc.invalidateQueries({ queryKey: ['me', 'blocks'] }),
+        qc.invalidateQueries({ queryKey: ['me', 'offers'] }),
+        qc.invalidateQueries({ queryKey: ['chat', 'quick-start'] }),
+      ]),
     onError: () => showToast({ message: OFFER_MENU_COPY.failed, tone: 'error' }),
   })
 }
@@ -395,7 +400,11 @@ export const useOfferMenu = (offer: Offer | undefined) => {
   const viewerId = useSession((s) => s.session?.user.id) ?? ''
   if (!offer) return null
   const refresh = () =>
-    Promise.all([qc.invalidateQueries({ queryKey: ['me', 'offers'] }), qc.invalidateQueries({ queryKey: ['me', 'offer', offer.id] })])
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ['me', 'offers'] }),
+      qc.invalidateQueries({ queryKey: ['me', 'offer', offer.id] }),
+      qc.invalidateQueries({ queryKey: ['chat', 'quick-start'] }),
+    ])
   return offerMenuSections(offer, viewerId, {
     archive: archiveOffer,
     unarchive: unarchiveOffer,
