@@ -20,6 +20,7 @@ export const MICRO_CREDITS_PER_CREDIT = 6000
 export const SAY_LABEL = '직접 말하기'
 export const CHOICE_QUESTION = '어떻게 할까요?'
 export const MULTI_PICK_SUBMIT = '이대로 진행'
+export const multiPickSubmit = (picked: number) => (picked ? `${picked}개로 진행하기` : '진행하기')
 export const MULTI_PICK_FOOT = '여러 개 고를 수 있어요'
 export const PICK_HINT = '번호를 누르거나 바로 말해도 돼요'
 export const HINTLESS_GATES = ['validate_cap']
