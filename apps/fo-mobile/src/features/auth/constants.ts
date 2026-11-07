@@ -54,8 +54,8 @@ export const PENDING_EXPIRED = '로그인 시간이 지났어요. 다시 로그�
 export const TRY_AGAIN = '잠시 후 다시 시도해 주세요.'
 
 export const TERM_ROWS = [
-  { id: 'age14', label: '만 14세 이상이에요', required: true },
-  { id: 'serviceTerms', label: '서비스 이용약관', required: true },
-  { id: 'privacy', label: '개인정보 수집·이용', required: true },
-  { id: 'marketing', label: '혜택·이벤트 알림 받기', required: false },
+  { id: 'age14', label: '만 14세 이상이에요', required: true, detail: false },
+  { id: 'serviceTerms', label: '서비스 이용약관', required: true, detail: true },
+  { id: 'privacy', label: '개인정보 수집·이용', required: true, detail: true },
+  { id: 'marketing', label: '혜택·이벤트 알림 받기', required: false, detail: true },
 ] as const

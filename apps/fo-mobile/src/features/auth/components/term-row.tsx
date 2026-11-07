@@ -1,9 +1,11 @@
 import { Pressable, View } from 'react-native'
-import { Text } from '../../../shared/components'
+import { Icon, Text } from '../../../shared/components'
 import TermCheckbox from './term-checkbox'
 import { spacing, type } from '../../../theme'
 
-const TermRow = ({ label, badge, required, checked, onPress }: { label: string; badge: string; required: boolean; checked: boolean; onPress: () => void }) => (
+type Props = { label: string; badge: string; required: boolean; detail: boolean; checked: boolean; onPress: () => void }
+
+const TermRow = ({ label, badge, required, detail, checked, onPress }: Props) => (
   <Pressable
     accessibilityRole="checkbox"
     accessibilityLabel={`${badge} ${label}`}
@@ -18,6 +20,12 @@ const TermRow = ({ label, badge, required, checked, onPress }: { label: string; 
       </Text>
       <Text style={{ flex: 1, lineHeight: type.b1.lineHeight }}>{label}</Text>
     </View>
+    {/* shortcut: the terms URLs aren't decided yet (see settings 약관 및 정책), so the chevron is drawn but not wired. */}
+    {detail ? (
+      <View style={{ width: 44, height: 44, marginVertical: -10, marginRight: -spacing[3], alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="chev" size={18} color="t3" />
+      </View>
+    ) : null}
   </Pressable>
 )
 
