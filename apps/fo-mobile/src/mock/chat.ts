@@ -2,7 +2,7 @@
 // Sample data follows the AI 채팅 artboards (김서준, 모아페이 …).
 import type { ConversationTurn, LinkKind, Message, UserLink } from '@push/api-client'
 import type { Approval, ChatDoc, ChatEvent, ChatItem, Choice, ConversationRow, QsData, RunInput, Step } from '@/features/chat'
-import { DEFAULT_ERROR_TEXT, ERROR_TEXT, MULTI_PICK_FOOT, MULTI_PICK_SUBMIT, PICK_HINT } from '../features/chat/constants'
+import { DEFAULT_ERROR_TEXT, ERROR_TEXT, MULTI_PICK_FOOT, MULTI_PICK_SUBMIT, PICK_HINT, queueBusyText } from '../features/chat/constants'
 import { kindOf } from '../features/chat/utils/links'
 import { mock, page } from './server'
 
@@ -679,15 +679,13 @@ const pick = (text: string, interrupted: boolean, attachment?: string, intent?: 
   return { steps: generic(text) }
 }
 
-// QUEUE_BUSY with a 12s Retry-After: the second 도토리증권 line of ChatStates.4.
+// The scripted run answers QUEUE_BUSY as an error line with the 12s wait: the second 도토리증권 line of ChatStates.4.
 const BUSY = new Set(['queue-busy', '도토리증권 공고도 맞춰 줘'])
 
 mock('POST', 'chat/runs', ({ body }) => {
   const b = body as RunInput
   const id = b.conversationId
-  if (BUSY.has((b.text ?? '').trim().toLowerCase())) {
-    return { status: 429, body: { error: { code: 'QUEUE_BUSY', message: 'queue busy', details: { retryAfterSec: 12 } } } }
-  }
+  if (BUSY.has((b.text ?? '').trim().toLowerCase())) return { data: fail(`err-${++seq}`, 'QUEUE_BUSY', queueBusyText(12)) }
   if (account.spent && !b.answer) return { data: fail(`err-${++seq}`, 'INSUFFICIENT_CREDITS', ERROR_TEXT.INSUFFICIENT_CREDITS!) }
   let steps: Step[]
   let state = scenario.get(id)

@@ -64,7 +64,7 @@ tags:
     visible: "맞추기 시작"
     timeout: 15000
 - extendedWaitUntil:
-    visible: "(?s).*복사한 링크.*"
+    visible: "붙여넣기"
     timeout: 10000
 - waitForAnimationToEnd
 # The field autofocuses; the board draws it empty with the keyboard down.
