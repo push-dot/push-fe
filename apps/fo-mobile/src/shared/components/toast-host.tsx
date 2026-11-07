@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Animated, Platform, Pressable, View, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { hitSlopTo, onAccent, palette, radius, spacing, type, useColors, useThemeMode } from '../../theme'
+import { onAccent, palette, radius, spacing, useColors, useThemeMode } from '../../theme'
 import { TOAST_BOTTOM_GAP, TOAST_SHEET_GAP } from './constants'
 import Glass from './glass'
 import Icon from './icon'
@@ -37,7 +37,7 @@ const Surface = ({ shape, children }: { shape: ViewStyle; children: ReactNode })
 
 const ToastHost = () => {
   const toast = useHostedToast()
-  const sheetOpen = useToastStore((s) => s.sheets > 0)
+  const sheet = useToastStore((s) => s.sheet)
   const insets = useSafeAreaInsets()
   const c = useColors()
   const inverse = palette[useThemeMode() === 'dark' ? 'light' : 'dark']
@@ -62,13 +62,13 @@ const ToastHost = () => {
         position: 'absolute',
         left: shape.inset,
         right: shape.inset,
-        bottom: insets.bottom + (toast.bottom ?? (sheetOpen ? TOAST_SHEET_GAP : TOAST_BOTTOM_GAP)),
+        bottom: sheet ? sheet + TOAST_SHEET_GAP : insets.bottom + (toast.bottom ?? TOAST_BOTTOM_GAP),
         opacity: shown,
         transform: [{ translateY }],
       }}
     >
       <Surface shape={{ borderRadius: shape.radius }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: 52, paddingHorizontal: spacing[4] }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: 52, paddingLeft: spacing[4], paddingRight: toast.action ? spacing[2] : spacing[4] }}>
           {toast.tone ? <ToneIcon tone={toast.tone} /> : null}
           <Text v="b2" weight="600" style={{ flex: 1, color: ink.text }}>
             {toast.message}
@@ -76,7 +76,7 @@ const ToastHost = () => {
           {toast.action ? (
             <Pressable
               accessibilityRole="button"
-              hitSlop={hitSlopTo(type.b2.lineHeight)}
+              style={{ height: 44, paddingHorizontal: spacing[3], justifyContent: 'center' }}
               onPress={() => {
                 toast.action?.onPress()
                 hideToast(toast.id)

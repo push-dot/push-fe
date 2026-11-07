@@ -7,7 +7,7 @@ import { floatingSheet, floatingSheetMargin } from './sheet-scale'
 import { useKeyboardHeight } from './use-keyboard-height'
 import GlassButton from './glass-button'
 import Text from './text'
-import { mountSheet } from './toast-store'
+import { mountSheet, sizeSheet } from './toast-store'
 
 type Props = {
   title?: string
@@ -35,7 +35,10 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
   const close = onClose && !android ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null
   return (
     <View
-      onLayout={onLayout}
+      onLayout={(e) => {
+        if (android) sizeSheet(e.nativeEvent.layout.height)
+        onLayout?.(e)
+      }}
       style={{
         paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
         paddingHorizontal: android ? spacing[5] : spacing[4],
