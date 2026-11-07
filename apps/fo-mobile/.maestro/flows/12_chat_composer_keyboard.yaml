@@ -19,10 +19,19 @@ name: 에이전트 → 대화 → 키보드가 떠 있어도 보내기 버튼 �
 # Empty composer reads "메시지 <placeholder>" on iOS, typed text reads "메시지".
 - tapOn: "메시지.*"
 - inputText: "tailor hold"
-- takeScreenshot: 12_chat_composer_keyboard-01
-# The send button must stay above the keyboard: the tap below lands on a keyboard key if it does not.
+- hideKeyboard:
+    optional: true
 - tapOn: "보내기"
 - extendedWaitUntil:
     visible: ".*기술 스택을 비교하는 중.*"
     timeout: 40000
+# The conversation screen: type with the keyboard up and send without lowering it.
+# The tap lands on a keyboard key if the composer is hidden behind the keyboard.
+- tapOn: "메시지.*"
+- inputText: "use numbers"
+- takeScreenshot: 12_chat_composer_keyboard-01
+- tapOn: "보내기"
+- extendedWaitUntil:
+    visible: ".*대기 중.*"
+    timeout: 10000
 - takeScreenshot: 12_chat_composer_keyboard-02
