@@ -108,12 +108,13 @@ const CalendarView = () => {
                 style={{
                   width: DAY_SIZE,
                   height: DAY_SIZE,
-                  borderRadius: DAY_SIZE / 2,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: isSel ? c.t1 : 'transparent',
                 }}
               >
+                {isSel ? (
+                  <View style={{ position: 'absolute', inset: 0, borderRadius: DAY_SIZE / 2, backgroundColor: c.t1 }} />
+                ) : null}
                 <Text
                   v="b2"
                   weight={isSel || isToday ? '800' : '600'}
