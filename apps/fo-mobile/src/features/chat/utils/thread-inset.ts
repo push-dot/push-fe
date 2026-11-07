@@ -1,8 +1,14 @@
-const THREAD_GAP = 16
-// The design leaves 43-58pt between the last thread line and an approval sheet.
-const APPROVAL_GAP = 50
-// ChatKeyboardAndroid: the composer rides the keyboard and the thread keeps one 8pt step above it.
-const KEYBOARD_GAP = 8
+import { spacing } from '../../../theme/tokens'
 
-export const threadInset = (bottomH: number, keyboard: number, approval: boolean) =>
-  bottomH + keyboard + (approval ? APPROVAL_GAP : keyboard ? KEYBOARD_GAP : THREAD_GAP)
+// The design leaves 43-58pt (iOS) and ~33pt (Android) between the last thread line and an approval sheet.
+const APPROVAL_GAP = { ios: 50, android: 32 }
+const KEYBOARD_GAP = spacing[2]
+const THREAD_GAP = spacing[4]
+
+type Inset = { bottomH: number; keyboard: number; navBar: number; approval: boolean; android: boolean }
+
+/** Android reports the keyboard without the nav bar, but KeyboardAvoidingView lifts the composer by both. */
+export const threadInset = ({ bottomH, keyboard, navBar, approval, android }: Inset) => {
+  const lift = keyboard && android ? keyboard + navBar : keyboard
+  return bottomH + lift + (approval ? APPROVAL_GAP[android ? 'android' : 'ios'] : keyboard ? KEYBOARD_GAP : THREAD_GAP)
+}

@@ -144,7 +144,7 @@ const PlanCard = ({ plan, current, disabled, onPress }: { plan: (typeof PLANS)[n
       accessibilityState={{ selected: current, disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[{ borderRadius: radius.card, padding: spacing[4] - 1.5, gap: spacing[2], backgroundColor: c.bg2, borderWidth: 1.5, borderColor: 'transparent' }, current && selectedRing(c)]}
+      style={[{ borderRadius: radius.card, padding: spacing[4] - selectedRing(c).borderWidth, gap: spacing[2], backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }, current && selectedRing(c)]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
         <Text v="h3" weight="800">

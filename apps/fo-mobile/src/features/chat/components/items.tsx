@@ -171,6 +171,21 @@ export const ToolLine = ({ item }: { item: Of<'tool'> }) => {
   )
 }
 
+// The board's index chip is width 24 plus 2x7 padding.
+const INDEX_CHIP = 38
+
+// shortcut: Android drops the Text decoration on these labels (probed: it draws when the row mounts done, not here), so a rule is drawn over the label; find the cause when RN changes.
+const Struck = ({ on, children }: { on: boolean; children: React.ReactNode }) => {
+  const c = useColors()
+  if (!on || Platform.OS !== 'android') return children
+  return (
+    <View>
+      {children}
+      <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: c.t3 }} />
+    </View>
+  )
+}
+
 const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
   const c = useColors()
   const done = item.state === 'done'
@@ -194,9 +209,11 @@ const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
         {done ? <Icon name="check" size={12} color={onAccent} /> : null}
         {now ? <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: c.ac }} /> : null}
       </Animated.View>
-      <Text v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'} style={done ? { textDecorationLine: 'line-through' } : undefined}>
-        {item.label}
-      </Text>
+      <Struck on={done}>
+        <Text v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'} style={done ? { textDecorationLine: 'line-through' } : undefined}>
+          {item.label}
+        </Text>
+      </Struck>
       {item.added ? <Badge label="새로 추가" tone="ac" /> : null}
     </View>
   )
@@ -261,7 +278,7 @@ const Plan = ({ item }: { item: Of<'plan'> }) => {
       ) : null}
       {item.rows.map((r, i) => (
         <View key={r.label} style={{ flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' }}>
-          {verdict ? <Badge label={String(i + 1)} minWidth={38} /> : <Badge label={r.tag} tone={r.tone} minWidth={titled ? 52 : 58} />}
+          {verdict ? <Badge label={String(i + 1)} minWidth={INDEX_CHIP} /> : <Badge label={r.tag} tone={r.tone} minWidth={titled ? 52 : 58} />}
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text v="b2" weight="700">
               {r.label}
@@ -411,8 +428,8 @@ const Projected = ({ label, bullets }: { label: string; bullets: string[] }) => 
   )
 }
 
-// iOS sets the 44pt numeral line box lower than the design's flex-end baseline.
-const FIT_BASELINE = Platform.OS === 'ios' ? 6 : 0
+// iOS sets the 44pt numeral line box lower than the design's flex-end baseline; the gap grows with the text size.
+const FIT_BASELINE = 6
 
 const FitNum = ({ size, color, children }: { size: 'mid' | 'big'; color: keyof Colors; children: string }) => (
   <Text
@@ -427,6 +444,8 @@ const FitNum = ({ size, color, children }: { size: 'mid' | 'big'; color: keyof C
 
 const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => {
   const c = useColors()
+  const { fontScale } = useWindowDimensions()
+  const baseline = Platform.OS === 'ios' ? Math.round(FIT_BASELINE * fontScale) : 0
   const view = fitChrome(item)
   const compact = !view.locked && !item.note && item.from === undefined
   const head = item.note ? (
@@ -454,11 +473,11 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
   ) : (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing[3] }}>
       <FitNum size="big" color="t1">{item.score.toFixed(1)}</FitNum>
-      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] + FIT_BASELINE }}>
+      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] + baseline }}>
         / 10
       </Text>
       {item.caption ? (
-        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] + FIT_BASELINE }}>
+        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] + baseline }}>
           {item.caption}
         </Text>
       ) : null}

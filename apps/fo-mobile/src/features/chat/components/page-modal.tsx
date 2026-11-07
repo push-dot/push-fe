@@ -44,10 +44,13 @@ const PageModal = ({
 }
 
 // The boards centre the empty state with 140pt kept under it, measured from the screen bottom.
+const EMPTY_LIFT = 140
+const EMPTY_INSET = 40
+
 export const PageEmpty = ({ children }: { children: ReactNode }) => {
   const insets = useSafeAreaInsets()
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[2], paddingHorizontal: 40, paddingBottom: Math.max(140 - spacing[6] - insets.bottom, 0) }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[2], paddingHorizontal: EMPTY_INSET, paddingBottom: Math.max(EMPTY_LIFT - spacing[6] - insets.bottom, 0) }}>
       {children}
     </View>
   )

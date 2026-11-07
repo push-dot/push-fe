@@ -19,6 +19,7 @@ import {
   OPEN_DRAWER,
   DELETE_CONFIRM,
   headerMenu,
+  headerCompany,
   hydrate,
   Item,
   Queued,
@@ -91,9 +92,9 @@ const ConversationScreen = ({ id }: { id: string }) => {
     },
   }))
 
-  const company = chat.items.findLast((i) => i.type === 'result')?.company ?? conv?.company ?? undefined
+  const company = headerCompany(chat.items, conv?.company)
   const placeholder = composerPlaceholder(chat)
-  // Android pads the keyboard height itself; the nav-bar inset on top of it would leave a gap.
+  // The keyboard lifts the composer on Android, so the nav-bar inset below it would leave a gap.
   const keyboard = useKeyboardHeight()
   const showPanel = chat.approval && !saying
   const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
@@ -102,7 +103,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
         ref={scroll}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset(bottomH, keyboard, !!showPanel) }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android' }) }}
         onScroll={(e) => {
           const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent
           atBottom.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - 48
@@ -158,7 +159,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
               onMaterials={() => (setSayingFor(chat.approval?.id), router.push(materialsPath()))}
             />
           ) : (
-            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' ? (keyboard ? 0 : insets.bottom + spacing[2]) : Math.max(insets.bottom, 6) }}>
+            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' ? (keyboard ? spacing[2] : insets.bottom + spacing[2]) : Math.max(insets.bottom, 6) }}>
               <ComposerArea
                 inputRef={input}
                 placeholder={saying ? '어떻게 할지 말해 주세요' : placeholder}
