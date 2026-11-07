@@ -2,11 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Animated, Platform, Pressable, View, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { hitSlopTo, onAccent, palette, radius, spacing, type, useColors, useThemeMode } from '../../theme'
-import { TOAST_BOTTOM_GAP } from './constants'
+import { TOAST_BOTTOM_GAP, TOAST_SHEET_GAP } from './constants'
 import Glass from './glass'
 import Icon from './icon'
 import Text from './text'
-import { hideToast, toastDuration, useHostedToast, type ToastTone } from './toast-store'
+import { hideToast, toastDuration, useHostedToast, useToastStore, type ToastTone } from './toast-store'
 
 const ANDROID_SHADOW = '0 8px 24px rgba(0,0,0,0.16)'
 const SHAPE = { plain: { inset: spacing[4], radius: radius.md }, tone: { inset: spacing[5], radius: 18 } }
@@ -37,6 +37,7 @@ const Surface = ({ shape, children }: { shape: ViewStyle; children: ReactNode })
 
 const ToastHost = () => {
   const toast = useHostedToast()
+  const sheetOpen = useToastStore((s) => s.sheets > 0)
   const insets = useSafeAreaInsets()
   const c = useColors()
   const inverse = palette[useThemeMode() === 'dark' ? 'light' : 'dark']
@@ -61,7 +62,7 @@ const ToastHost = () => {
         position: 'absolute',
         left: shape.inset,
         right: shape.inset,
-        bottom: insets.bottom + (toast.bottom ?? TOAST_BOTTOM_GAP),
+        bottom: insets.bottom + (toast.bottom ?? (sheetOpen ? TOAST_SHEET_GAP : TOAST_BOTTOM_GAP)),
         opacity: shown,
         transform: [{ translateY }],
       }}

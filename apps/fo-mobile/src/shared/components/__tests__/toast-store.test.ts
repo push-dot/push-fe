@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { activeToastHost, hideToast, mountToastHost, showToast, toastDuration, toastOffsets, useToastStore } from '../toast-store'
+import { activeToastHost, hideToast, mountSheet, mountToastHost, showToast, toastDuration, toastOffsets, useToastStore } from '../toast-store'
 
-beforeEach(() => useToastStore.setState({ current: null, hosts: [] }))
+beforeEach(() => useToastStore.setState({ current: null, hosts: [], sheets: 0 }))
 
 describe('toast store', () => {
   it('shows the newest toast in place of the current one', () => {
@@ -20,6 +20,15 @@ describe('toast store', () => {
     expect(useToastStore.getState().current).toMatchObject({ message: 'b' })
     hideToast(useToastStore.getState().current!.id)
     expect(useToastStore.getState().current).toBeNull()
+  })
+
+  it('counts open sheets until the last one unmounts', () => {
+    const closeFirst = mountSheet()
+    const closeSecond = mountSheet()
+    closeFirst()
+    expect(useToastStore.getState().sheets).toBe(1)
+    closeSecond()
+    expect(useToastStore.getState().sheets).toBe(0)
   })
 
   it('keeps an undo toast up longer than a plain one', () => {

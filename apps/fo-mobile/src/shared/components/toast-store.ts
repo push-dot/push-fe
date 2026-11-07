@@ -16,9 +16,9 @@ export type Toast = ToastInput & { id: number }
 /** Artboard toast bottoms above the safe inset, given the tab bar's height above it. */
 export const toastOffsets = (tabBar: number) => ({ tabs: tabBar + 14, docsCta: tabBar + 100, docsError: tabBar + 150, cta: 92 }) as const
 
-type State = { current: Toast | null; hosts: string[] }
+type State = { current: Toast | null; hosts: string[]; sheets: number }
 
-export const useToastStore = create<State>(() => ({ current: null, hosts: [] }))
+export const useToastStore = create<State>(() => ({ current: null, hosts: [], sheets: 0 }))
 
 let seq = 0
 
@@ -26,7 +26,11 @@ export const showToast = (toast: ToastInput) => useToastStore.setState({ current
 
 export const hideToast = (id: number) => useToastStore.setState((s) => (s.current?.id === id ? { current: null } : s))
 
-export const clearToast = () => useToastStore.setState({ current: null })
+/** Counts an open Android sheet, which the root toast draws above. */
+export const mountSheet = () => {
+  useToastStore.setState((s) => ({ sheets: s.sheets + 1 }))
+  return () => useToastStore.setState((s) => ({ sheets: s.sheets - 1 }))
+}
 
 export const toastDuration = (toast: ToastInput) => (toast.action ? TOAST_MS.action : TOAST_MS.plain)
 
