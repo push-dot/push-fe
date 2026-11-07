@@ -45,7 +45,6 @@ const Applications = () => {
         <Empty
           text={emptyCta('applications').title}
           lift={EMPTY_LIFT}
-          homeInset={false}
           action={emptyCta('applications').action}
           onAction={() => router.push(emptyCta('applications').href)}
         />
@@ -88,7 +87,6 @@ const Bookmarks = () => {
         <Empty
           text={emptyCta('bookmarks').title}
           lift={EMPTY_LIFT}
-          homeInset={false}
           action={emptyCta('bookmarks').action}
           onAction={() => router.push(emptyCta('bookmarks').href)}
         />
@@ -170,7 +168,6 @@ const Follows = () => {
         <Empty
           text={emptyCta('follows').title}
           lift={EMPTY_LIFT}
-          homeInset={false}
           action={emptyCta('follows').action}
           onAction={() => router.push(emptyCta('follows').href)}
         />
@@ -209,7 +206,6 @@ const Posts = () => {
         <Empty
           text={emptyCta('posts').title}
           lift={EMPTY_LIFT}
-          homeInset={false}
           action={emptyCta('posts').action}
           onAction={() => router.push(emptyCta('posts').href)}
         />

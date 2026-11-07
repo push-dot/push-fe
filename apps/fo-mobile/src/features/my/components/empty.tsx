@@ -1,12 +1,12 @@
 import { StatusNote, emptyNoteStyle } from '@/shared/components'
 
-type Props = { text: string; action?: string; onAction?: () => void; lift?: number; homeInset?: boolean }
+type Props = { text: string; action?: string; onAction?: () => void; lift?: number }
 
-const Empty = ({ text, action, onAction, lift = 140, homeInset = true }: Props) => (
+const Empty = ({ text, action, onAction, lift = 140 }: Props) => (
   <StatusNote
     lines={[text]}
     action={action && onAction ? { label: action, onPress: onAction } : undefined}
-    style={emptyNoteStyle(lift, homeInset)}
+    style={emptyNoteStyle(lift, false)}
   />
 )
 
