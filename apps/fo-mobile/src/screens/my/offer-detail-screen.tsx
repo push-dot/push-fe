@@ -25,7 +25,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
   const c = useColors()
   const { data: o, isLoading } = useOffer(id)
   const { decline } = useOfferDecision(id, '', () => undefined)
-  const menu = useOfferMenu(o)
+  const menu = useOfferMenu(o, box)
 
   if (isLoading || !o) {
     return (

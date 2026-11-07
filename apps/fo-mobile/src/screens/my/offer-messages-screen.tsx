@@ -81,7 +81,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null)
   const [failed, setFailed] = useState<FailedSend[]>([])
   const { data: o } = useOffer(id)
-  const menu = useOfferMenu(o)
+  const menu = useOfferMenu(o, box)
   const { data, send } = useOfferMessages(id)
 
   if (!o) {

@@ -52,9 +52,15 @@ export type OfferMenuSectionDeps = OfferMenuDeps & {
 
 /**
  * The ⋯ menu: 허브 프로필 보기 and 보관 (or 보관 풀기 once archived), then 신고하기 and 차단하기.
- * Only the recipient archives a new offer (the 보관한 제안 list is the received box); an already archived one can always be released.
+ * The box says which side the viewer is on. Only a received offer is archived (the 보관한 제안 list is the received box); an already archived one can always be released.
  */
-export const offerMenuSections = (offer: Offer, viewerId: string, d: OfferMenuSectionDeps, reportEnabled = REPORT_ENABLED): MenuSection[] => {
+export const offerMenuSections = (
+  offer: Offer,
+  box: 'received' | 'sent',
+  d: OfferMenuSectionDeps,
+  reportEnabled = REPORT_ENABLED,
+): MenuSection[] => {
+  const viewerId = box === 'received' ? offer.recipient.id : offer.sender.id
   const run = offerMenu(offer, viewerId, d)
   const who = otherParty(offer, viewerId)
   const archived = !!offer.archivedAt
@@ -63,7 +69,7 @@ export const offerMenuSections = (offer: Offer, viewerId: string, d: OfferMenuSe
   ]
   if (archived)
     keep.push({ key: 'unarchive', label: OFFER_MENU_COPY.unarchive, systemImage: 'tray.and.arrow.up', icon: 'archive', onPress: () => void run.unarchive() })
-  else if (offer.recipient.id === viewerId)
+  else if (box === 'received')
     keep.push({ key: 'archive', label: OFFER_MENU_COPY.archive, systemImage: 'archivebox', icon: 'archive', onPress: () => void run.archive() })
   const harm: MenuSection['actions'] = []
   if (reportEnabled) harm.push({ key: 'report', label: OFFER_MENU_COPY.report, systemImage: 'flag', icon: 'flag', onPress: () => void run.report() })

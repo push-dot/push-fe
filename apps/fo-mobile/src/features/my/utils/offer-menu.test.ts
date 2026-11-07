@@ -59,8 +59,8 @@ describe('offerMenu', () => {
 
 describe('offerMenuSections', () => {
   const sectionDeps = (over: Partial<OfferMenuDeps> = {}) => ({ ...deps(over), profile: vi.fn(), confirm: vi.fn() })
-  const labels = (o: Offer, d = sectionDeps(), report = false) =>
-    offerMenuSections(o, 'me', d, report).map((s) => s.actions.map((a) => a.label))
+  const labels = (o: Offer, box: 'received' | 'sent' = 'received', report = false) =>
+    offerMenuSections(o, box, sectionDeps(), report).map((s) => s.actions.map((a) => a.label))
 
   it('offers 보관 for a received offer and 보관 풀기 once it is archived', () => {
     expect(labels(offer)).toEqual([['허브 프로필 보기', '제안 보관하기'], ['차단하기']])
@@ -69,24 +69,33 @@ describe('offerMenuSections', () => {
 
   it('does not archive an offer the viewer sent, but still releases an archived one', () => {
     const sent = { ...offer, sender: party('me'), recipient: party('them') } as Offer
-    expect(labels(sent)).toEqual([['허브 프로필 보기'], ['차단하기']])
-    expect(labels({ ...sent, archivedAt: '2026-10-01T00:00:00Z' })[0]).toEqual(['허브 프로필 보기', '보관 풀기'])
+    expect(labels(sent, 'sent')).toEqual([['허브 프로필 보기'], ['차단하기']])
+    expect(labels({ ...sent, archivedAt: '2026-10-01T00:00:00Z' }, 'sent')[0]).toEqual(['허브 프로필 보기', '보관 풀기'])
   })
 
   it('hides 신고하기 until the report copy is settled', () => {
-    expect(labels(offer, sectionDeps(), true)[1]).toEqual(['신고하기', '차단하기'])
+    expect(labels(offer, 'received', true)[1]).toEqual(['신고하기', '차단하기'])
     expect(labels(offer)[1]).toEqual(['차단하기'])
+  })
+
+  it('blocks the sender of a received offer and the recipient of a sent one', async () => {
+    const d = sectionDeps()
+    const sent = { ...offer, sender: party('me'), recipient: party('them') } as Offer
+    vi.mocked(d.confirm).mockImplementation((r) => r.onConfirm())
+    offerMenuSections(sent, 'sent', d)[1]!.actions[0]!.onPress()
+    await flush()
+    expect(d.block).toHaveBeenCalledWith('them')
   })
 
   it('opens the other party hub profile', () => {
     const d = sectionDeps()
-    offerMenuSections(offer, 'me', d)[0]!.actions[0]!.onPress()
+    offerMenuSections(offer, 'received', d)[0]!.actions[0]!.onPress()
     expect(d.profile).toHaveBeenCalledWith('them')
   })
 
   it('asks before blocking and blocks only after the confirm', async () => {
     const d = sectionDeps()
-    const block = offerMenuSections(offer, 'me', d)[1]!.actions[0]!
+    const block = offerMenuSections(offer, 'received', d)[1]!.actions[0]!
     expect(block.destructive).toBe(true)
     block.onPress()
     expect(d.block).not.toHaveBeenCalled()
@@ -100,12 +109,12 @@ describe('offerMenuSections', () => {
 
   it('archives, and unarchives without leaving the screen', async () => {
     const d = sectionDeps()
-    offerMenuSections(offer, 'me', d)[0]!.actions[1]!.onPress()
+    offerMenuSections(offer, 'received', d)[0]!.actions[1]!.onPress()
     await flush()
     expect(d.archive).toHaveBeenCalledWith('o1')
     expect(d.back).toHaveBeenCalled()
     const e = sectionDeps()
-    offerMenuSections({ ...offer, archivedAt: '2026-10-01T00:00:00Z' }, 'me', e)[0]!.actions[1]!.onPress()
+    offerMenuSections({ ...offer, archivedAt: '2026-10-01T00:00:00Z' }, 'received', e)[0]!.actions[1]!.onPress()
     await flush()
     expect(e.unarchive).toHaveBeenCalledWith('o1')
     expect(e.back).not.toHaveBeenCalled()
