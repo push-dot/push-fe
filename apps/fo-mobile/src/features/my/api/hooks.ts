@@ -5,14 +5,16 @@ import { Alert } from 'react-native'
 import { type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
 import { DAY, NEXT_EVENT_DAYS } from '../constants'
 import type { CalendarEvent, PickedFile } from '../types'
-import { showToast } from '@/shared/components'
+import { askConfirm, showToast } from '@/shared/components'
 import { useSession } from '@/shared/infrastructure'
-import { nextEventFor, offerMenu, restoreLinkFailure } from '../utils'
+import { nextEventFor, OFFER_MENU_COPY, offerMenuSections, restoreLinkFailure } from '../utils'
 import {
   acceptOffer,
   addLink,
   archiveOffer,
   blockUser,
+  fetchBlocked,
+  unblockUser,
   reportOffer,
   unarchiveOffer,
   declineOffer,
@@ -31,12 +33,15 @@ import {
   fetchMyProfile,
   fetchOffer,
   fetchOfferMessages,
+  fetchArchivedOffers,
   fetchOffers,
   fetchPosting,
   convertDocumentProfile,
   fetchConsents,
   fetchDocument,
   fetchDocuments,
+  renameDocument,
+  archiveDocument,
   fetchDocumentVersions,
   fetchEvents,
   fetchSettings,
@@ -116,12 +121,36 @@ export const useSetBaseProfile = (onDone: () => void) => {
   })
 }
 
+const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>, failed: string, onDone?: () => void) => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: write,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['documents'] })
+      onDone?.()
+    },
+    onError: () => {
+      void qc.invalidateQueries({ queryKey: ['documents'] })
+      Alert.alert(failed, '잠시 뒤에 다시 해 주세요.')
+    },
+  })
+}
+
+export const useRenameDocument = (doc: { id: string; revision: number } | undefined, onDone: () => void) =>
+  useDocumentWrite((title: string) => renameDocument(doc!.id, doc!.revision, title), '이름을 바꾸지 못했어요', onDone)
+
+export const useArchiveDocument = (doc: { id: string; revision: number } | undefined, onDone: () => void) =>
+  useDocumentWrite(() => archiveDocument(doc!.id, doc!.revision), '삭제하지 못했어요', onDone)
+
 export const useIngestJob = (jobId: string | undefined) => useQuery(ingestJobQuery(jobId))
 
 type Box = 'received' | 'sent'
 
 export const useOffers = (box: Box) =>
   useQuery({ queryKey: ['me', 'offers', box], queryFn: () => fetchOffers(box) })
+
+export const useArchivedOffers = (box: Box) =>
+  useQuery({ queryKey: ['me', 'offers', box, 'archived'], queryFn: () => fetchArchivedOffers(box) })
 
 export const useSettings = () => {
   const qc = useQueryClient()
@@ -142,6 +171,19 @@ export const useSettings = () => {
     onSuccess: (s) => qc.setQueryData(key, s),
   })
   return { s: q.data, set: m.mutate }
+}
+
+// Blocking happens on other screens (offer detail), so always re-read when a screen mounts.
+export const useBlocked = () => useQuery({ queryKey: ['me', 'blocks'], queryFn: fetchBlocked, refetchOnMount: 'always' })
+
+// push-be lists offers without the people you block, so unblocking brings their offers back into the lists.
+export const useUnblock = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: unblockUser,
+    onSettled: () => Promise.all([qc.invalidateQueries({ queryKey: ['me', 'blocks'] }), qc.invalidateQueries({ queryKey: ['me', 'offers'] })]),
+    onError: () => showToast({ message: OFFER_MENU_COPY.failed, tone: 'error' }),
+  })
 }
 
 export const useMySettings = (enabled: boolean) =>
@@ -354,7 +396,17 @@ export const useOfferMenu = (offer: Offer | undefined) => {
   if (!offer) return null
   const refresh = () =>
     Promise.all([qc.invalidateQueries({ queryKey: ['me', 'offers'] }), qc.invalidateQueries({ queryKey: ['me', 'offer', offer.id] })])
-  return offerMenu(offer, viewerId, { archive: archiveOffer, unarchive: unarchiveOffer, report: reportOffer, block: blockUser, refresh, back: router.back, toast: showToast })
+  return offerMenuSections(offer, viewerId, {
+    archive: archiveOffer,
+    unarchive: unarchiveOffer,
+    report: reportOffer,
+    block: blockUser,
+    refresh,
+    back: router.back,
+    toast: showToast,
+    profile: (userId) => router.push(`/profiles/${userId}`),
+    confirm: askConfirm,
+  })
 }
 
 export const usePostingDetail = (postingId: string | undefined) =>

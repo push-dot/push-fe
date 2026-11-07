@@ -104,6 +104,7 @@ export type Offer = {
   createdAt: string
 }
 export type OfferMessage = { id: string; offerId: string; sender: UserRef; body: string; createdAt: string }
+export type BlockedUser = { user: UserRef & { companyName?: string | null }; createdAt: string }
 
 export type Post = {
   id: string

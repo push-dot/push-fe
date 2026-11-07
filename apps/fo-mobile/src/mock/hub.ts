@@ -2,7 +2,7 @@
 import type { Offer, Profile } from '@push/api-client'
 import { tenureOf } from '../features/hub/utils/filters'
 import { searchHangul } from '@push/shared'
-import { following, myProfile } from './me'
+import { blockedViewer, following, myProfile } from './me'
 import { mock, page } from './server'
 
 const base = (p: Pick<Profile, 'userId' | 'displayName' | 'headline' | 'tenureYears' | 'careerStatus'> & Partial<Profile>): Profile => ({
@@ -98,6 +98,8 @@ mock('POST', 'profiles/:userId/offer', ({ params, body }) => {
   const { message, postingId } = (body ?? {}) as { message?: string; postingId?: string }
   if (!message?.trim() || message.length > 500)
     return { status: 400, body: { error: { code: 'VALIDATION_FAILED', message: '메시지는 1–500자로 써 주세요.' } } }
+  if (blockedViewer(p.userId))
+    return { status: 403, body: { error: { code: 'BLOCKED', message: 'this user is not accepting offers from you' } } }
   if (offers.has(p.userId)) return { status: 409, body: { error: { code: 'CONFLICT', message: '이미 제안을 보냈어요.' } } }
   const offer: Offer = {
     id: `o-${p.userId}`,
