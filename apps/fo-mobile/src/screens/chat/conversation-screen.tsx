@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { radius, spacing, useColors } from '@/theme'
-import { askConfirm, Glass, GlassButton, Icon, Mascot, Menu, Text, type MenuAction } from '@/shared/components'
+import { askConfirm, Glass, GlassButton, Icon, Mascot, Menu, Text, useKeyboardHeight, type MenuAction } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
 import { usePersonalPurchase } from '@/features/billing'
 import { useConvertDocument } from '@/features/my'
@@ -35,7 +35,6 @@ import {
   useConversationList,
   useArchiveConversation,
   useDeleteConversation,
-  useKeyboardHeight,
   usePinConversation,
   useReduceMotion,
 } from '@/features/chat'
@@ -91,7 +90,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
     },
   }))
 
-  const company = chat.items.findLast((i) => i.type === 'result')?.company
+  const company = chat.items.findLast((i) => i.type === 'result')?.company ?? conv?.company ?? undefined
   const placeholder = composerPlaceholder(chat)
   // Android pads the keyboard height itself; the nav-bar inset on top of it would leave a gap.
   const keyboard = useKeyboardHeight()
@@ -158,7 +157,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
               onMaterials={() => (setSayingFor(chat.approval?.id), router.push(materialsPath()))}
             />
           ) : (
-            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' && keyboard ? 6 : Math.max(insets.bottom, 6) }}>
+            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' ? (keyboard ? spacing[2] : insets.bottom + spacing[2]) : Math.max(insets.bottom, 6) }}>
               <ComposerArea
                 inputRef={input}
                 placeholder={saying ? '어떻게 할지 말해 주세요' : placeholder}
