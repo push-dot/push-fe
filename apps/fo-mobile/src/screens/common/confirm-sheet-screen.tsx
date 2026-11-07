@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { useEffect } from 'react'
 import { View } from 'react-native'
-import { Button, Sheet, Text, useConfirmStore } from '@/shared/components'
+import { Button, Sheet, Text, showToast, useConfirmStore } from '@/shared/components'
 import { spacing } from '@/theme'
 
 const ConfirmSheetScreen = () => {
@@ -12,6 +12,12 @@ const ConfirmSheetScreen = () => {
   }, [request])
 
   useEffect(() => () => useConfirmStore.getState().set(null), [])
+
+  // PROBE ONLY (probe/r4-shared): a toast shown while the sheet is open, for ToastSheetAndroid panel 3.
+  useEffect(() => {
+    const t = setTimeout(() => showToast({ message: '삭제하지 못했어요. 다시 시도해 주세요' }), 15000)
+    return () => clearTimeout(t)
+  }, [])
 
   if (!request) return null
 

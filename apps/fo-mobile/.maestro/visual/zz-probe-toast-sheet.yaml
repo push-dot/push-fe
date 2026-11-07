@@ -1,0 +1,43 @@
+appId: app.push.mobile
+name: probe · toast and confirm sheet (ToastSheetAndroid, r4-shared, not a tour)
+tags:
+  - visual
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow: ../flows/_login.yaml
+      - runFlow: ../flows/_dismiss_logbox.yaml
+      - tapOn: "마이"
+      - extendedWaitUntil:
+          visible: "김서준"
+          timeout: 10000
+      - tapOn: "서류"
+      - extendedWaitUntil:
+          visible: "포트폴리오_결제시스템.pdf"
+          timeout: 10000
+      - tapOn:
+          text: ".* 더 보기"
+          index: 0
+      - tapOn: "서류 삭제하기"
+      - extendedWaitUntil:
+          visible: "이 서류를 삭제할까요?"
+          timeout: 10000
+      - tapOn: "삭제"
+      - extendedWaitUntil:
+          visible: "서류를 삭제했어요"
+          timeout: 10000
+      - takeScreenshot: ProbeToast1
+      - tapOn:
+          text: ".* 더 보기"
+          index: 0
+      - tapOn: "서류 삭제하기"
+      - extendedWaitUntil:
+          visible: "이 서류를 삭제할까요?"
+          timeout: 10000
+      - takeScreenshot: ProbeToast2
+      - extendedWaitUntil:
+          visible: "삭제하지 못했어요.*"
+          timeout: 30000
+      - takeScreenshot: ProbeToast3
