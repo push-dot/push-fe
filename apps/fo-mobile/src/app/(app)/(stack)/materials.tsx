@@ -74,8 +74,8 @@ const MaterialsScreen = () => {
                         alignItems: 'flex-start',
                         gap: spacing[3],
                         minHeight: 64,
-                        paddingVertical: spacing[3],
-                        paddingHorizontal: 14,
+                        paddingVertical: spacing[3] - selectedRing(c).borderWidth,
+                        paddingHorizontal: 14 - selectedRing(c).borderWidth,
                         borderRadius: 14,
                         ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
                       }}

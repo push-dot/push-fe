@@ -270,8 +270,8 @@ const ChoiceRow = ({ n, choice, on, square, bare, center, onPress }: { n?: numbe
         justifyContent: center ? 'center' : undefined,
         gap: center ? spacing[2] : spacing[3],
         minHeight: two ? 64 : 52,
-        paddingHorizontal: center ? spacing[2] : 14,
-        paddingVertical: two ? spacing[3] : 0,
+        paddingHorizontal: (center ? spacing[2] : 14) - selectedRing(c).borderWidth,
+        paddingVertical: two ? spacing[3] - selectedRing(c).borderWidth : 0,
         borderRadius: 14,
         ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
         transform: [{ scale: pressed ? 0.98 : 1 }],
@@ -359,7 +359,7 @@ const Template = ({ label, recommended, on, layout, onPress }: { label: string; 
       accessibilityState={{ selected: on }}
       accessibilityLabel={recommended ? `${label}, 추천` : label}
       onPress={onPress}
-      style={{ flex: 1, gap: spacing[2], padding: spacing[2], borderRadius: radius.md, ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
+      style={{ flex: 1, gap: spacing[2], padding: spacing[2] - selectedRing(c).borderWidth, borderRadius: radius.md, ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
     >
       {recommended ? (
         <View pointerEvents="none" style={{ position: 'absolute', top: -9, left: 0, right: 0, alignItems: 'center', zIndex: 1 }}>

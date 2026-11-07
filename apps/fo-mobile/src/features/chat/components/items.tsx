@@ -261,7 +261,7 @@ const Plan = ({ item }: { item: Of<'plan'> }) => {
       ) : null}
       {item.rows.map((r, i) => (
         <View key={r.label} style={{ flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' }}>
-          {verdict ? <Badge label={String(i + 1)} minWidth={24} /> : <Badge label={r.tag} tone={r.tone} minWidth={titled ? 52 : 58} />}
+          {verdict ? <Badge label={String(i + 1)} minWidth={38} /> : <Badge label={r.tag} tone={r.tone} minWidth={titled ? 52 : 58} />}
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text v="b2" weight="700">
               {r.label}
@@ -411,6 +411,9 @@ const Projected = ({ label, bullets }: { label: string; bullets: string[] }) => 
   )
 }
 
+// iOS sets the 44pt numeral line box lower than the design's flex-end baseline.
+const FIT_BASELINE = Platform.OS === 'ios' ? 6 : 0
+
 const FitNum = ({ size, color, children }: { size: 'mid' | 'big'; color: keyof Colors; children: string }) => (
   <Text
     v={size === 'big' ? 'h1' : 'h2'}
@@ -451,11 +454,11 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
   ) : (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing[3] }}>
       <FitNum size="big" color="t1">{item.score.toFixed(1)}</FitNum>
-      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] }}>
+      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] + FIT_BASELINE }}>
         / 10
       </Text>
       {item.caption ? (
-        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] }}>
+        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] + FIT_BASELINE }}>
           {item.caption}
         </Text>
       ) : null}

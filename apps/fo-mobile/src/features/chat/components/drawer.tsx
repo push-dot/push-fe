@@ -3,7 +3,7 @@ import { useDrawerStatus } from 'expo-router/drawer'
 import { Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { tintOf } from '@/features/my'
-import { radius, spacing, useColors } from '@/theme'
+import { radius, spacing, useColors, useShadow } from '@/theme'
 import { GlassButton, Icon, Text, type IconName } from '@/shared/components'
 import { useChatAccount, useMe, useRecentConversations } from '../api/hooks'
 import { statusBadge } from './conversations-modal'
@@ -14,6 +14,7 @@ import { accountPath, ago, bookmarksPath, conversationsPath, docsPath, linksPath
 /** Content of the app drawer (see app/(app)/_layout.tsx): full-width chat sidebar over the tab bar. */
 export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
   const c = useColors()
+  const shadow = useShadow()
   const insets = useSafeAreaInsets()
   const visible = useDrawerStatus() === 'open'
   const currentId = usePathname().match(/^\/chat\/([^/]+)$/)?.[1]
@@ -83,7 +84,9 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
             </Text>
           </View>
         </Pressable>
-        <GlassButton actions={[{ icon: 'sidebar-close', label: '사이드바 닫기', onPress: onClose }]} />
+        <View style={Platform.OS === 'android' ? [{ width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg, borderWidth: 1, borderColor: c.line }, shadow.glass] : undefined}>
+          <GlassButton actions={[{ icon: 'sidebar-close', label: '사이드바 닫기', onPress: onClose }]} />
+        </View>
       </View>
       <ScrollView
         contentContainerStyle={{
