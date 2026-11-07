@@ -1,5 +1,5 @@
 import { Platform, View } from 'react-native'
-import { radius, spacing, useColors, useThemeMode } from '../../theme'
+import { radius, spacing, useColors } from '../../theme'
 import Glass from './glass'
 import GlassActionButton, { type GlassAction } from './glass-action'
 
@@ -8,7 +8,6 @@ export type { GlassAction }
 /** `filled`: the design's solid `fill` icon chip with a 16pt glyph (sheet close buttons), on both platforms. */
 const GlassButton = ({ actions, filled }: { actions: GlassAction[]; filled?: boolean }) => {
   const c = useColors()
-  const dark = useThemeMode() === 'dark'
   const single = actions.length === 1
   const row = (
     <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: single ? 0 : spacing[1] }}>
@@ -21,7 +20,7 @@ const GlassButton = ({ actions, filled }: { actions: GlassAction[]; filled?: boo
   if (filled) return <View style={[shape, { backgroundColor: c.fill, overflow: 'hidden' }]}>{row}</View>
   if (Platform.OS === 'android') return row
   return (
-    <Glass interactive tint={dark ? c.glass : undefined} style={shape}>
+    <Glass interactive style={shape}>
       {row}
     </Glass>
   )
