@@ -30,8 +30,8 @@ tags:
     timeout: 10000
 - assertNotVisible: ".*김태윤.*"
 - waitForAnimationToEnd
-- takeScreenshot: HubLoading.1
-- takeScreenshot: HubLoading.2
+# The changed board has one panel per variant (iOS light, iOS dark, Android light).
+- takeScreenshot: HubLoading
 - tapOn: "소셜"
 - extendedWaitUntil:
     visible: "직장 생활"
