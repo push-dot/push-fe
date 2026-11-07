@@ -83,7 +83,7 @@ tags:
 - tapOn: "보관 풀기"
 - waitForAnimationToEnd
 - assertVisible: "수락하고 답장하기"
-- back
+- tapOn: "뒤로"
 - extendedWaitUntil:
     notVisible: ".*누리클라우드 채용팀.*"
     timeout: 10000
