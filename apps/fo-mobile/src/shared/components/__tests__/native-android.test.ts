@@ -13,7 +13,7 @@ vi.mock('@expo/ui/jetpack-compose/modifiers', async () => (await import('./nativ
 vi.mock('@/theme', async () => (await import('./native-stubs')).stubs.theme)
 vi.mock('@/shared/utility/asset-url', () => ({}))
 vi.mock('@/shared/components/icon', () => ({ default: 'Icon' }))
-vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) }))
+vi.mock('react-native-safe-area-context', () => ({ initialWindowMetrics: null, useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }) }))
 vi.mock('../button', () => ({ default: 'Button' }))
 vi.mock('../text', () => ({ default: 'Text' }))
 
