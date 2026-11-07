@@ -36,7 +36,7 @@ export const page = <T>(items: T[], query: URLSearchParams, withTotal = false) =
 }
 
 /**
- * Tour switches (links.ts). A rule matches `method` + a path regex and makes the route misbehave: `hang` never answers in time
+ * Tour switches (links.ts). A rule matches `method` + a regex on the path (or path + query string, to tell `GET postings` sorts apart) and makes the route misbehave: `hang` never answers in time
  * (loading skeletons), `fail` answers 500 (error states), `empty` serves the handler's list with no rows (empty states).
  */
 export type Rule = { kind: 'hang' | 'fail' | 'empty'; method: string; re: RegExp }
@@ -69,7 +69,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
   }
   const body: unknown = form ?? (text ? parse(text) : undefined)
   await delay(250)
-  const rule = rules.find((x) => x.method === method && x.re.test(path))
+  const rule = rules.find((x) => x.method === method && (x.re.test(path) || x.re.test(path + url.search)))
   if (rule?.kind === 'hang') await delay(HANG_MS)
   if (rule?.kind === 'fail') return json(500, { error: { code: 'INTERNAL', message: 'mock: injected failure' } })
   for (const r of routes) {

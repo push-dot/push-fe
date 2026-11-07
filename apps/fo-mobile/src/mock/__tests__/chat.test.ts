@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ChatEvent, Step } from '@/features/chat'
 import { mockFetch } from '../server'
-import '../chat'
+import { setAccount } from '../chat'
 
 const call = async (method: string, path: string, body?: unknown) => {
   const res = await mockFetch(new Request(`http://x/api/v1/${path}`, { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }))
@@ -73,5 +73,37 @@ describe('chat mock', () => {
     expect((await call('POST', 'me/links/l1/restore')).data).toEqual(before)
     expect(await ids()).toContain('l1')
     expect((await call('POST', 'me/links/l1/restore')).data).toEqual(before)
+  })
+
+  it('holds the working line well past the 8s dwell for the Android tour token', async () => {
+    const wait = async (text: string) => {
+      const steps = (await call('POST', 'chat/runs', { conversationId: `t-hold-${text}`, text })).data as Step[]
+      const run = steps.findIndex((s) => s.event.type === 'tool' && s.event.id.endsWith('-fit') && s.event.state === 'run')
+      return steps[run + 1]!.wait
+    }
+    expect(await wait('tailor hold')).toBeGreaterThan(30_000)
+    expect(await wait('tailor resume')).toBeLessThan(10_000)
+  })
+
+  it('serves an ULTRA account, and one with every credit spent that answers runs with the usage card error', async () => {
+    expect((await call('GET', 'chat/account')).data).toMatchObject({ plan: 'PRO' })
+    setAccount({ ultra: true })
+    expect((await call('GET', 'chat/account')).data).toMatchObject({ plan: 'ULTRA', credits: { used: 12_800, total: 20_000 } })
+    setAccount({ spent: true })
+    expect((await call('GET', 'chat/account')).data).toMatchObject({ plan: 'ULTRA', credits: { used: 20_000, total: 20_000 } })
+    const events = await run('t-spent', { text: '모아페이 공고에 맞춰 경력기술서도 써 줘' })
+    expect(events).toMatchObject([{ type: 'error', code: 'INSUFFICIENT_CREDITS' }])
+    setAccount({ ultra: false, spent: false })
+    expect(types(await run('t-spent', { text: 'ph1-free' }))).toContain('fit')
+  })
+
+  it('draws ChatStates.4 in one conversation: file card, apply record, then QUEUE_BUSY with a 12s wait', async () => {
+    const file = await run('t-states', { text: 'states-file' })
+    expect(file.find((e) => e.type === 'result')).toMatchObject({ source: 'external', actions: [] })
+    const applied = await run('t-states', { text: '모아페이에 바로 지원해 줘' })
+    expect(applied).toContainEqual(expect.objectContaining({ type: 'tool', state: 'ok', result: '지원했어요 · 마이 › 내 활동에 기록했어요' }))
+    const res = await mockFetch(new Request('http://x/api/v1/chat/runs', { method: 'POST', body: JSON.stringify({ conversationId: 't-states', text: '도토리증권 공고도 맞춰 줘' }), headers: { 'Content-Type': 'application/json' } }))
+    expect(res.status).toBe(429)
+    expect(await res.json()).toMatchObject({ error: { code: 'QUEUE_BUSY', details: { retryAfterSec: 12 } } })
   })
 })

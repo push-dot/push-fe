@@ -130,6 +130,8 @@ const TODO_PLUS = ['이력서 읽기', '공고 요건 정리', '적합도 계산
 const BULLETS = ['승인 API 성과를 숫자로 보여 줬어요', 'Kafka를 기술 스택 맨 앞으로 옮겼어요', '동아리 활동은 한 줄로 줄였어요']
 // Hold a running line this long so a screenshot can catch it.
 const DWELL = 8000
+// Android taps wait up to 10s for a running line's spinner to settle, so a tour that acts while one runs needs far more than DWELL.
+const HOLD = 60_000
 const JD_LINES = ['필수 · Kotlin 또는 Java 4년 이상', '필수 · Spring Boot 운영', '필수 · RDBMS 설계와 튜닝', '필수 · 대용량 트래픽 처리', '필수 · 결제·정산 도메인 이해', '우대 · Kafka · 장애 대응 · MSA']
 
 const tailorRead: Step[] = [
@@ -143,11 +145,11 @@ const tailorRead: Step[] = [
   s(1500, tool('jd', '공고 읽기', MOA, 'ok', '필수 5개 · 우대 3개', JD_LINES)),
 ]
 
-const tailorFit = (labels: string[], added = -1): Step[] => [
+const tailorFit = (labels: string[], added = -1, hold = DWELL): Step[] => [
   s(200, todo('todo', labels, 2, added)),
   s(100, status(added < 0 ? '맞춰보는 중…' : '다시 맞춰보는 중…', '견주어 보는 중…', '따져 보는 중…')),
   s(200, tool('fit', '적합도 계산', added < 0 ? '5개 항목' : '이어서', 'run', added < 0 ? '기술 스택을 비교하는 중' : '경력 수준을 비교하는 중')),
-  s(DWELL + 1300, tool('fit', '적합도 계산', '5개 항목', 'ok', '6.9점 · 키워드와 도메인이 약해요')),
+  s(hold + 1300, tool('fit', '적합도 계산', '5개 항목', 'ok', '6.9점 · 키워드와 도메인이 약해요')),
   s(300, {
     type: 'fit', id: 'fitcard', score: 8.1, from: 6.9, delta: '+1.2 예상',
     rows: [{ label: '기술 스택', score: 7.5 }, { label: '경험 연관성', score: 8.2 }, { label: '키워드', score: 4.5 }],
@@ -238,7 +240,7 @@ const tailorResume: Step[] = [
   s(200, { type: 'think', id: 'think', seconds: 6 }),
   s(600, agent('resume-msg', '알겠어요. 할 일에 자기소개서를 넣고, 멈춘 곳부터 이어서 할게요.')),
   s(300, status('다시 맞춰보는 중…')),
-  ...tailorFit(TODO_PLUS, 4),
+  ...tailorFit(TODO_PLUS, 4, HOLD),
 ]
 
 const failRun: Step[] = [
@@ -451,7 +453,7 @@ const ph5: Step[] = [
   s(300, tool('design', '디자인 적용', '모던', 'ok', 'A4 1쪽 · 여백과 줄 간격 맞춤')),
   s(300, tool('photo', '프로필 사진', '마이 › 프로필', 'ok', '헤더 왼쪽 원형 80px')),
   s(300, tool('save', 'Push 프로필', '마이 › 프로필', 'run', 'Push 프로필에 저장하는 중…')),
-  s(DWELL, tool('save', 'Push 프로필', '마이 › 프로필', 'ok', '저장했어요')),
+  s(HOLD, tool('save', 'Push 프로필', '마이 › 프로필', 'ok', '저장했어요')),
 ]
 const ph2xApproach: Step[] = [
   s(200, status('공고 뜯어보는 중…')),
@@ -557,6 +559,19 @@ const autoPick: Step[] = [
   s(300, tool('pdf', 'PDF 만들기', '모던 템플릿', 'ok', FILE_PAGE)),
   done,
 ]
+const statesFile: Step[] = [
+  s(300, agent('done', '다 됐어요! 적합도를 **6.9 → 8.1**로 올렸어요.')),
+  s(200, {
+    type: 'result', id: 'result', source: 'external', checklist: FILE_TODO, fileName: EXT_FILE, pageLine: FILE_PAGE, cardMeta: FILE_PAGE,
+    documentId: 'src-upload', company: '모아페이', actions: [],
+  }),
+  done,
+]
+const appliedRecord: Step[] = [
+  s(300, tool('apply', '지원하기', MOA, 'run', EXT_FILE)),
+  s(900, tool('apply', '지원하기', MOA, 'ok', '지원했어요 · 마이 › 내 활동에 기록했어요')),
+  done,
+]
 const awaitReply: Step[] = [
   s(300, tool('resume', '이력서 읽기', RESUME, 'ok', '2쪽 · 경력 2건')),
   s(400, agent('await', '경력 섹션을 이렇게 바꿀게요. 승인 API 성과를 숫자로 보여 주고, Kafka 경험을 맨 앞으로 옮겨요.')),
@@ -579,6 +594,11 @@ const TOKENS: Record<string, Step[]> = {
   // The open gate hides the chat from accessibility, so hold it back until a tour has tapped the card open.
   'ph1-ultra-open': ph1Plan('ULTRA', DWELL + 4000),
   'auto-pick': autoPick,
+  // The long-held working line: a second message or 중지 must land while it still runs (ChatWorking, ChatInterrupt on Android).
+  'tailor hold': [...tailorRead, ...tailorFit(TODO, -1, HOLD)],
+  // ChatStates.4 in one conversation: the file card, then the apply record, then (busy below) the 혼잡 error.
+  'states-file': statesFile,
+  '모아페이에 바로 지원해 줘': appliedRecord,
   // Jump straight to a phase: the design draws each phase under its own user line.
   analyze: ph1,
   boost: ph3Boost,
@@ -612,9 +632,16 @@ const pick = (text: string, interrupted: boolean, attachment?: string, intent?: 
   return { steps: generic(text) }
 }
 
+// QUEUE_BUSY with a 12s Retry-After: the second 도토리증권 line of ChatStates.4.
+const BUSY = new Set(['queue-busy', '도토리증권 공고도 맞춰 줘'])
+
 mock('POST', 'chat/runs', ({ body }) => {
   const b = body as RunInput
   const id = b.conversationId
+  if (BUSY.has((b.text ?? '').trim().toLowerCase())) {
+    return { status: 429, body: { error: { code: 'QUEUE_BUSY', message: 'queue busy', details: { retryAfterSec: 12 } } } }
+  }
+  if (account.spent && !b.answer) return { data: fail(`err-${++seq}`, 'INSUFFICIENT_CREDITS', ERROR_TEXT.INSUFFICIENT_CREDITS!) }
   let steps: Step[]
   let state = scenario.get(id)
   if (b.answer && state) {
@@ -779,7 +806,16 @@ mock('POST', 'chat/docs', ({ body }) => {
   docs.unshift(d)
   return { status: 201, body: { data: d } }
 })
-mock('GET', 'chat/account', () => ({ data: { email: 'seojun.kim@gmail.com', plan: 'PRO', credits: { used: 3200, total: 5000 } } }))
+// Tour switches (links.ts): `plan-ultra` is an ULTRA account (4x PRO's credits), `credits-out` has spent all of them (ChatNoCreditUltra).
+let account = { ultra: false, spent: false }
+export const setAccount = (next: Partial<typeof account>) => {
+  account = { ...account, ...next }
+}
+mock('GET', 'chat/account', () => {
+  const total = account.ultra ? 20_000 : 5000
+  const used = account.spent ? total : account.ultra ? 12_800 : 3200
+  return { data: { email: 'seojun.kim@gmail.com', plan: account.ultra ? 'ULTRA' : 'PRO', credits: { used, total } } }
+})
 
 // ---------- quick-start ingredients ----------
 
