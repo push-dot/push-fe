@@ -428,24 +428,26 @@ const Projected = ({ label, bullets }: { label: string; bullets: string[] }) => 
   )
 }
 
-// iOS sets the 44pt numeral line box lower than the design's flex-end baseline; the gap grows with the text size.
-const FIT_BASELINE = 6
+// iOS draws the 40pt numeral ~6pt higher in its 44pt line box than the board (card top to numeral 15.6 vs 21, '/ 10' 8pt low); the shift grows with the text size.
+const FIT_DROP = 6
 
-const FitNum = ({ size, color, children }: { size: 'mid' | 'big'; color: keyof Colors; children: string }) => (
-  <Text
-    v={size === 'big' ? 'h1' : 'h2'}
-    weight="800"
-    color={color}
-    style={size === 'big' ? { fontSize: 40, lineHeight: 44, letterSpacing: -1.2, fontVariant: ['tabular-nums'] } : { fontSize: 22, fontVariant: ['tabular-nums'] }}
-  >
-    {children}
-  </Text>
-)
+const FitNum = ({ size, color, children }: { size: 'mid' | 'big'; color: keyof Colors; children: string }) => {
+  const { fontScale } = useWindowDimensions()
+  const drop = size === 'big' && Platform.OS === 'ios' ? Math.round(FIT_DROP * fontScale) : 0
+  return (
+    <Text
+      v={size === 'big' ? 'h1' : 'h2'}
+      weight="800"
+      color={color}
+      style={size === 'big' ? { fontSize: 40, lineHeight: 44, letterSpacing: -1.2, fontVariant: ['tabular-nums'], transform: [{ translateY: drop }] } : { fontSize: 22, fontVariant: ['tabular-nums'] }}
+    >
+      {children}
+    </Text>
+  )
+}
 
 const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => {
   const c = useColors()
-  const { fontScale } = useWindowDimensions()
-  const baseline = Platform.OS === 'ios' ? Math.round(FIT_BASELINE * fontScale) : 0
   const view = fitChrome(item)
   const compact = !view.locked && !item.note && item.from === undefined
   const head = item.note ? (
@@ -473,11 +475,11 @@ const FitCard = ({ item, onPlan }: { item: Of<'fit'>; onPlan?: () => void }) => 
   ) : (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing[3] }}>
       <FitNum size="big" color="t1">{item.score.toFixed(1)}</FitNum>
-      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] + baseline }}>
+      <Text v="b2" color="t3" style={{ paddingBottom: spacing[2] }}>
         / 10
       </Text>
       {item.caption ? (
-        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] + baseline }}>
+        <Text v="c1" color="t3" style={{ flex: 1, textAlign: 'right', paddingBottom: spacing[1] }}>
           {item.caption}
         </Text>
       ) : null}
