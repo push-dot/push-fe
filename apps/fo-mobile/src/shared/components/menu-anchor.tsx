@@ -2,7 +2,7 @@ import { Box, DropdownMenu, DropdownMenuItem, HorizontalDivider, RNHostView, Tex
 import { Fragment } from 'react'
 import { fillMaxSize } from '@expo/ui/jetpack-compose/modifiers'
 import { StyleSheet, View } from 'react-native'
-import { radius, useColors } from '../../theme'
+import { radius, type, useColors } from '../../theme'
 import Icon from './icon'
 import { menuSections, type MenuAction, type MenuSection } from './menu-action'
 import NativeHost from './native-host'
@@ -27,7 +27,7 @@ const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
                 {s.title ? (
                   <DropdownMenuItem enabled={false} elementColors={{ disabledTextColor: c.t3 }}>
                     <DropdownMenuItem.Text>
-                      <Text style={{ fontSize: 12, fontWeight: 'bold' }}>{s.title}</Text>
+                      <Text style={{ fontSize: type.c2.fontSize, fontWeight: 'bold' }}>{s.title}</Text>
                     </DropdownMenuItem.Text>
                   </DropdownMenuItem>
                 ) : null}
