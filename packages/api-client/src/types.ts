@@ -100,6 +100,7 @@ export type Offer = {
   posting: OfferPosting | null
   status: OfferStatus
   readAt: string | null
+  archivedAt?: string | null
   createdAt: string
 }
 export type OfferMessage = { id: string; offerId: string; sender: UserRef; body: string; createdAt: string }
