@@ -41,3 +41,8 @@ tags:
           visible: "삭제하지 못했어요.*"
           timeout: 30000
       - takeScreenshot: ProbeToast3
+      - tapOn: "삭제"
+      - takeScreenshot: ProbeToast4
+      - waitForAnimationToEnd:
+          timeout: 3000
+      - takeScreenshot: ProbeToast5
