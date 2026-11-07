@@ -16,7 +16,7 @@ import { FOLLOW_PREVIEW, POST_PREVIEW } from '../constants'
 import type { ActivitySub } from '../types'
 import { appliedOnly, commentedSee, emptyCta, followSeeAll, followerSee, postsSeeAll, postedAt, stageTone } from '../utils'
 import CalendarView from './calendar-view'
-import Empty from './empty'
+import Empty, { TAB_EMPTY_LIFT } from './empty'
 import ListSkeleton from './list-skeleton'
 import ListTitle from './list-title'
 import Logo from './logo'
@@ -25,7 +25,7 @@ import Row from './row'
 import SectionHead from './section-head'
 
 const LIST_PAD = 40
-const EMPTY_LIFT = 140 - LIST_PAD
+const EMPTY_LIFT = TAB_EMPTY_LIFT - LIST_PAD
 
 const SUBS: { key: ActivitySub; label: string }[] = [
   { key: 'applications', label: '지원활동' },

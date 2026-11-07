@@ -10,6 +10,7 @@ import { INGEST_TEXT, PUSH_CARD_WIDTH } from '../constants'
 import { pickResume, useImportRequest, useUndoRemove } from '../hooks'
 import type { HubDocument, MySource } from '../types'
 import { PUSH_DOCS_TITLE, pushCardLines, pushSeeAll, RETRY_LABEL, SIZE_LIMIT, UPLOADS_TITLE } from '../utils'
+import { TAB_EMPTY_LIFT } from './empty'
 import FitRing from './fit-ring'
 import ListTitle from './list-title'
 import Row from './row'
@@ -19,7 +20,6 @@ const RETRY_H = 32
 const PROGRESS_H = 6
 const EMPTY_ART = 88
 const EMPTY_INSET = 40
-const EMPTY_BOTTOM = 140
 
 const openChat = () => router.push('/(app)/(stack)/(tabs)/(chat)/chat')
 
@@ -140,7 +140,7 @@ const DocsTab = () => {
           justifyContent: 'center',
           gap: spacing[2],
           paddingHorizontal: EMPTY_INSET,
-          paddingBottom: EMPTY_BOTTOM,
+          paddingBottom: TAB_EMPTY_LIFT,
         }}
       >
         <View style={{ marginBottom: spacing[2] }}>
