@@ -306,7 +306,7 @@ const Diff = ({ item }: { item: Of<'diff'> }) => {
               {l.n ?? ''}
             </Text>
             <Text v="c1" weight="700" style={{ width: 10, lineHeight: 20, color: add ? c.green : del ? c.red : c.t3 }}>
-              {l.sign === '-' ? '−' : l.sign}
+              {l.sign === '-' ? '−' : l.sign || '\u00A0'}
             </Text>
             <Text
               v="c1"
