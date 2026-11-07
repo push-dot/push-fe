@@ -28,8 +28,7 @@ const ToneIcon = ({ tone }: { tone: ToastTone }) => {
   )
 }
 
-// The artboards draw one toast on both platforms (.toastg): a Liquid Glass capsule on iOS, a solid inverse card on Android.
-// Android's Material snackbar cannot take its 16pt radius or 52pt height (@expo/ui Snackbar has no shape, and pads itself 12dp).
+// Android's Material snackbar cannot take the drawn 16pt radius or 52pt height (@expo/ui Snackbar has no shape prop).
 const Surface = ({ shape, children }: { shape: ViewStyle; children: ReactNode }) => {
   const c = useColors()
   if (Platform.OS === 'ios') return <Glass interactive style={shape}>{children}</Glass>
