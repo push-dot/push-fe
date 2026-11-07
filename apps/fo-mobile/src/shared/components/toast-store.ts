@@ -23,20 +23,21 @@ export const useToastStore = create<State>(() => ({ current: null, hosts: [], sh
 
 let seq = 0
 
-export const showToast = (toast: ToastInput) => useToastStore.setState({ current: { ...toast, id: ++seq } })
+export const showToast = (toast: ToastInput) => (console.log('[probe] show', toast.message), useToastStore.setState({ current: { ...toast, id: ++seq } }))
 
-export const hideToast = (id: number) => useToastStore.setState((s) => (s.current?.id === id ? { current: null } : s))
+export const hideToast = (id: number) => (console.log('[probe] hide', id, useToastStore.setState((s) => (s.current?.id === id ? { current: null } : s)))
 
 const putSheet = (sheets: OpenSheet[], id: string, height?: number) =>
   sheets.some((x) => x.id === id) ? sheets.map((x) => (x.id === id && height !== undefined ? { id, height } : x)) : [...sheets, { id, height: height ?? 0 }]
 
 /** Android (ToastSheetAndroid): an opening sheet clears the toast, and a toast shown while it is open floats above its top. */
 export const mountSheet = (id: string) => {
+  console.log('[probe] mountSheet', id)
   useToastStore.setState((s) => ({ current: null, sheets: putSheet(s.sheets, id) }))
-  return () => useToastStore.setState((s) => ({ sheets: s.sheets.filter((x) => x.id !== id) }))
+  return () => (console.log('[probe] closeSheet', id), useToastStore.setState((s) => ({ sheets: s.sheets.filter((x) => x.id !== id) })))
 }
 
-export const sizeSheet = (id: string, height: number) => useToastStore.setState((s) => ({ sheets: putSheet(s.sheets, id, height) }))
+export const sizeSheet = (id: string, height: number) => (console.log('[probe] size', id, height, useToastStore.setState((s) => ({ sheets: putSheet(s.sheets, id, height) })))
 
 /** Height of the top open sheet, 0 when none. */
 export const topSheet = (s: State) => s.sheets.at(-1)?.height ?? 0
