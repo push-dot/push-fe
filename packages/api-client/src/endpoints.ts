@@ -175,7 +175,7 @@ export const createApi = (c: Client) => ({
     content: (id: string) => c.raw('GET', `sources/${encodeURIComponent(id)}/content`),
   },
   applications: {
-    list: (p: PageParams & { stage?: string; query?: string } = {}) =>
+    list: (p: PageParams & { stage?: string; query?: string; applied?: boolean } = {}) =>
       c.get<ListEnvelope<Application>>('applications', { query: p }),
   },
   conversations: {

@@ -86,10 +86,16 @@ export type SocialAuthor = UserRef & { employer?: boolean; companyName?: string 
 
 export type OfferStatus = 'SENT' | 'READ' | 'ACCEPTED' | 'DECLINED'
 export type OfferPosting = Pick<Posting, 'id' | 'company' | 'title' | 'imageUrl'>
+export type OfferParty = UserRef & {
+  companyName: string | null
+  headline: string
+  avatarUrl: string | null
+  kind?: 'PERSON' | 'COMPANY'
+}
 export type Offer = {
   id: string
-  sender: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
-  recipient: UserRef & { companyName: string | null; headline: string; avatarUrl: string | null }
+  sender: OfferParty
+  recipient: OfferParty
   message: string
   posting: OfferPosting | null
   status: OfferStatus
