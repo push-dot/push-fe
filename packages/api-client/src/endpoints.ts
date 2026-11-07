@@ -115,6 +115,11 @@ export const createApi = (c: Client) => ({
     acceptOffer: (id: string, reply?: string) =>
       unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/accept`, { body: reply ? { reply } : {} })),
     declineOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/decline`)),
+    archiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/archive`)),
+    unarchiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/unarchive`)),
+    reportOffer: (id: string, reason?: string) => c.post<void>(`me/offers/${id}/report`, { body: reason ? { reason } : {} }),
+    blockUser: (userId: string) => c.post<void>('me/blocks', { body: { userId } }),
+    unblockUser: (userId: string) => c.delete<void>(`me/blocks/${userId}`),
     offerMessages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<OfferMessage>>(`me/offers/${id}/messages`, { query: p }),
     sendOfferMessage: (id: string, body: string) =>

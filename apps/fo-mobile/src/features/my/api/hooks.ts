@@ -2,13 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
-import { type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
+import { ApiError, type LinkKind, type Offer, type Profile, type Settings } from '@push/api-client'
 import { DAY, NEXT_EVENT_DAYS } from '../constants'
 import type { CalendarEvent, PickedFile } from '../types'
-import { nextEventFor, restoreLinkFailure } from '../utils'
+import { showToast } from '@/shared/components'
+import { counterpart, nextEventFor, OFFER_MENU_COPY, restoreLinkFailure } from '../utils'
 import {
   acceptOffer,
   addLink,
+  archiveOffer,
+  blockUser,
+  reportOffer,
+  unarchiveOffer,
   declineOffer,
   deleteLink,
   restoreLink,
@@ -336,10 +341,43 @@ export const useOfferDecision = (id: string, reply: string, onAccepted: () => vo
       onAccepted()
       done(next)
     },
-    onError: () => Alert.alert('수락하지 못했어요', '잠시 뒤에 다시 시도해 주세요.'),
+    onError: (e) =>
+      Alert.alert('수락하지 못했어요', e instanceof ApiError && e.code === 'BLOCKED' ? OFFER_MENU_COPY.blocked : '잠시 뒤에 다시 시도해 주세요.'),
   })
   const decline = useMutation({ mutationFn: () => declineOffer(id), onSuccess: done })
   return { accept, decline }
+}
+
+export const useOfferMenu = (offer: Offer | undefined, box: Box) => {
+  const qc = useQueryClient()
+  const refresh = () => qc.invalidateQueries({ queryKey: ['me', 'offers'] })
+  const onError = () => showToast({ message: OFFER_MENU_COPY.failed, tone: 'error' })
+  const archive = useMutation({
+    mutationFn: () => archiveOffer(offer!.id),
+    onSuccess: () => {
+      router.back()
+      void refresh()
+      showToast({
+        message: OFFER_MENU_COPY.archived,
+        action: { label: OFFER_MENU_COPY.undo, onPress: () => void unarchiveOffer(offer!.id).then(refresh) },
+      })
+    },
+    onError,
+  })
+  const report = useMutation({
+    mutationFn: () => reportOffer(offer!.id),
+    onSuccess: () => showToast({ message: OFFER_MENU_COPY.reported, tone: 'success' }),
+    onError,
+  })
+  const block = useMutation({
+    mutationFn: () => blockUser(counterpart(offer!, box).id),
+    onSuccess: () => {
+      router.back()
+      void refresh()
+    },
+    onError,
+  })
+  return { archive: archive.mutate, report: report.mutate, block: block.mutate }
 }
 
 export const usePostingDetail = (postingId: string | undefined) =>
