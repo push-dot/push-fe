@@ -59,8 +59,10 @@ const ToastHost = () => {
     Animated.spring(shown, { toValue: 1, useNativeDriver: true }).start()
     // Android reads the live region below; announcing as well would read it twice.
     if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(toast.message)
-    void AccessibilityInfo.getRecommendedTimeoutMillis(toastDuration(toast)).then((ms) => {
-      if (live) timer = setTimeout(() => hideToast(toast.id), ms)
+    const base = toastDuration(toast)
+    // TalkBack's timeout only lengthens it; RN resolves 0 when the AccessibilityManager is missing (seen on the gate emulator).
+    void AccessibilityInfo.getRecommendedTimeoutMillis(base).then((ms) => {
+      if (live) timer = setTimeout(() => hideToast(toast.id), Math.max(base, ms))
     })
     return () => {
       live = false
