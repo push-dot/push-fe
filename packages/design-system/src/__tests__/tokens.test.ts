@@ -13,6 +13,7 @@ import {
   shadows,
   spacing,
   tile,
+  toast,
   typography,
 } from '../tokens'
 
@@ -59,6 +60,7 @@ describe('artboard colours', () => {
     expect(tile).toEqual(artboard.tile)
     expect(glow).toEqual(artboard.glow)
     expect(photo).toEqual(artboard.photo)
+    expect(toast).toEqual(artboard.toast)
     expect(tile.indigo).toBe('#3B5BDB')
   })
 })

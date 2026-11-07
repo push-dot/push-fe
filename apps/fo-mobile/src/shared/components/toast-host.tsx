@@ -1,15 +1,21 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { AccessibilityInfo, Animated, Platform, Pressable, View, type ViewStyle } from 'react-native'
+import { AccessibilityInfo, Animated, Platform, View, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { onAccent, palette, radius, spacing, useColors, useThemeMode } from '../../theme'
+import { onAccent, palette, radius, spacing, toast as toastColor, useColors, useThemeMode } from '../../theme'
 import { TOAST_BOTTOM_GAP, TOAST_SHEET_GAP } from './constants'
 import Glass from './glass'
+import GlassPressable from './glass-pressable'
 import Icon from './icon'
 import Text from './text'
-import { hideToast, toastDuration, useHostedToast, useToastStore, type ToastTone } from './toast-store'
+import { hideToast, toastDuration, topSheet, useHostedToast, useToastStore, type ToastTone } from './toast-store'
+import { useReduceMotion } from './use-reduce-motion'
 
-const ANDROID_SHADOW = '0 8px 24px rgba(0,0,0,0.16)'
-const SHAPE = { plain: { inset: spacing[4], radius: radius.md }, tone: { inset: spacing[5], radius: 18 } }
+const TOAST_HEIGHT = 52
+const ACTION_HEIGHT = 44
+const SHAPE = {
+  plain: { inset: spacing[4], radius: radius.md, shadow: '0 8px 24px rgba(0,0,0,0.16)' },
+  tone: { inset: spacing[5], radius: 18, shadow: '0 10px 30px rgba(0,0,0,0.18)' },
+}
 
 const ToneIcon = ({ tone }: { tone: ToastTone }) => {
   const c = useColors()
@@ -28,31 +34,41 @@ const ToneIcon = ({ tone }: { tone: ToastTone }) => {
   )
 }
 
-// Android's Material snackbar cannot take the drawn 16pt radius or 52pt height (@expo/ui Snackbar has no shape prop).
-const Surface = ({ shape, children }: { shape: ViewStyle; children: ReactNode }) => {
+// Not the Material snackbar: @expo/ui's Snackbar has a fixed shape (no 16pt radius or 52pt height) and no dismiss API.
+const Surface = ({ shape, shadow, children }: { shape: ViewStyle; shadow: string; children: ReactNode }) => {
   const c = useColors()
   if (Platform.OS === 'ios') return <Glass interactive style={shape}>{children}</Glass>
-  return <View style={[shape, { backgroundColor: c.t1, boxShadow: ANDROID_SHADOW }]}>{children}</View>
+  return <View style={[shape, { backgroundColor: c.t1, boxShadow: shadow }]}>{children}</View>
 }
 
 const ToastHost = () => {
   const toast = useHostedToast()
-  const sheet = useToastStore((s) => s.sheet)
+  const sheet = useToastStore(topSheet)
   const insets = useSafeAreaInsets()
   const c = useColors()
-  const inverse = palette[useThemeMode() === 'dark' ? 'light' : 'dark']
-  const ink = Platform.OS === 'ios' ? { text: c.t1, action: c.acText } : { text: c.bg, action: inverse.acText }
+  const still = useReduceMotion()
+  const dark = useThemeMode() === 'dark'
+  // Android's card is inverse (t1); the design draws only the light theme, with its own lighter action purple.
+  const ink = Platform.OS === 'ios' ? { text: c.t1, action: c.acText } : { text: c.bg, action: dark ? palette.light.acText : toastColor.androidAction }
   const [shown] = useState(() => new Animated.Value(0))
   useEffect(() => {
     if (!toast) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let live = true
     shown.setValue(0)
     Animated.spring(shown, { toValue: 1, useNativeDriver: true }).start()
-    AccessibilityInfo.announceForAccessibility(toast.message)
-    const timer = setTimeout(() => hideToast(toast.id), toastDuration(toast))
-    return () => clearTimeout(timer)
+    // Android reads the live region below; announcing as well would read it twice.
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(toast.message)
+    void AccessibilityInfo.getRecommendedTimeoutMillis(toastDuration(toast)).then((ms) => {
+      if (live) timer = setTimeout(() => hideToast(toast.id), ms)
+    })
+    return () => {
+      live = false
+      clearTimeout(timer)
+    }
   }, [toast, shown])
   if (!toast) return null
-  const translateY = shown.interpolate({ inputRange: [0, 1], outputRange: [24, 0] })
+  const translateY = shown.interpolate({ inputRange: [0, 1], outputRange: [still ? 0 : 24, 0] })
   const shape = SHAPE[toast.tone ? 'tone' : 'plain']
   return (
     <Animated.View
@@ -67,16 +83,19 @@ const ToastHost = () => {
         transform: [{ translateY }],
       }}
     >
-      <Surface shape={{ borderRadius: shape.radius }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: 52, paddingLeft: spacing[4], paddingRight: toast.action ? spacing[2] : spacing[4] }}>
+      <Surface shape={{ borderRadius: shape.radius }} shadow={shape.shadow}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: TOAST_HEIGHT, paddingLeft: spacing[4], paddingRight: toast.action ? spacing[2] : spacing[4] }}>
           {toast.tone ? <ToneIcon tone={toast.tone} /> : null}
           <Text v="b2" weight="600" style={{ flex: 1, color: ink.text }}>
             {toast.message}
           </Text>
           {toast.action ? (
-            <Pressable
+            <GlassPressable
               accessibilityRole="button"
-              style={{ height: 44, paddingHorizontal: spacing[3], justifyContent: 'center' }}
+              glass={false}
+              fill={null}
+              style={{ height: ACTION_HEIGHT, borderRadius: radius.sm }}
+              contentStyle={{ paddingHorizontal: spacing[3] }}
               onPress={() => {
                 toast.action?.onPress()
                 hideToast(toast.id)
@@ -85,7 +104,7 @@ const ToastHost = () => {
               <Text v="b2" weight="700" style={{ color: ink.action }}>
                 {toast.action.label}
               </Text>
-            </Pressable>
+            </GlassPressable>
           ) : null}
         </View>
       </Surface>
