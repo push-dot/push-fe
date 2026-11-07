@@ -8,6 +8,8 @@ import { usePosting } from '@/features/jobs'
 import {
   Avatar,
   careerPeriod,
+  deleteConfirm,
+  deleteDocCopy,
   FitRing,
   ListSkeleton,
   FIX_DOC,
@@ -16,8 +18,10 @@ import {
   PROFILE_ACTIONS_TOP,
   PROFILE_NAME_TOP,
   pushCardLines,
+  pushDocMenu,
   SET_BASE_COPY,
   tenureLabel,
+  useArchiveDocument,
   useDocument,
   useDocumentVersions,
   useIngestJob,
@@ -77,6 +81,11 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
   const me = useMyProfile().data
   const start = useStartChat()
   const share = useShareFile()
+  const deleteCopy = deleteDocCopy(doc.data?.data.title ?? '')
+  const archive = useArchiveDocument(doc.data?.data, () => {
+    showToast({ message: deleteCopy.toast })
+    router.back()
+  })
   const [based, setBased] = useState(false)
   const setBase = useSetBaseProfile(() => {
     setBased(true)
@@ -86,6 +95,16 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
   const application = apps.data?.data.find((a) => a.id === item?.applicationId) ?? null
   const posting = usePosting(application?.jobId ?? '')
   const applied = !!application?.appliedAt || !!posting.data?.applied
+  const menu = pushDocMenu(
+    { hasPosting: !!application },
+    {
+      posting: () => router.push(`/postings/${application?.jobId}`),
+      export: () => share.mutate({ documentId: id }),
+      rename: () => router.push(`/docs/push/${id}/rename`),
+      duplicate: () => undefined,
+      delete: () => askConfirm(deleteConfirm({ fileName: item?.title ?? '' }, () => archive.mutate())),
+    },
+  )
   const editable = (s: ProfileSection) => (application ? () => edit(s) : undefined)
   const lines = item ? pushCardLines(item, application) : null
   const version = versions.data?.data[0]
@@ -99,7 +118,14 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
       <TopBar
         title={application ? undefined : '지원 서류용 프로필'}
         onBack={() => router.back()}
-        right={<GlassButton actions={[{ icon: 'share', label: '공유', onPress: () => share.mutate({ documentId: id }) }]} />}
+        right={
+          <GlassButton
+            actions={[
+              { icon: 'share', label: '공유', onPress: () => share.mutate({ documentId: id }) },
+              { icon: 'more', label: '더 보기', menu },
+            ]}
+          />
+        }
         safeTop={!(sheet && Platform.OS === 'ios')}
       />
       {doc.isLoading || !item || !lines ? (
