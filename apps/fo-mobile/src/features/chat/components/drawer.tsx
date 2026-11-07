@@ -11,6 +11,9 @@ import Mark from './mark'
 import { accountPath, ago, bookmarksPath, conversationsPath, docsPath, linksPath } from '../utils'
 
 
+// Android draws the collapse button as a 48pt white disc with a 1pt ring outside it.
+const CLOSE_DISC = 48
+
 /** Content of the app drawer (see app/(app)/_layout.tsx): full-width chat sidebar over the tab bar. */
 export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
   const c = useColors()
@@ -84,8 +87,8 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
             </Text>
           </View>
         </Pressable>
-        <View style={Platform.OS === 'android' ? [{ width: 50, height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.line }, shadow.glass] : undefined}>
-          <View style={Platform.OS === 'android' ? { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg } : undefined}>
+        <View style={Platform.OS === 'android' ? [{ width: CLOSE_DISC + 2, height: CLOSE_DISC + 2, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.line }, shadow.glass] : undefined}>
+          <View style={Platform.OS === 'android' ? { width: CLOSE_DISC, height: CLOSE_DISC, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg } : undefined}>
             <GlassButton iconSize={24} actions={[{ icon: 'sidebar-close', label: '사이드바 닫기', onPress: onClose }]} />
           </View>
         </View>

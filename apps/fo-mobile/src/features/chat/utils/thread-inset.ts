@@ -1,6 +1,6 @@
 import { spacing } from '../../../theme/tokens'
 
-// Last thread line to sheet title, measured on 12 boards per platform against the design: median +4pt (iOS) / +2pt (Android) at 50 / 32.
+// Last thread line to an approval sheet, calibrated on the device per platform.
 const APPROVAL_GAP = { ios: 46, android: 30 }
 const KEYBOARD_GAP = spacing[2]
 const THREAD_GAP = spacing[4]

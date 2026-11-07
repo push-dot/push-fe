@@ -20,6 +20,10 @@ type Props = {
 
 // `.panel { gap: 6px }`: between the panel's blocks and inside each section.
 const PANEL_GAP = 6
+// The foot sits 14pt under the grid: panel gap 6 + 6 + 2.
+const FOOT_TOP = 6
+// The board pads 그만하기 22pt per side; the Button gives 20.
+const STOP_PAD = { paddingHorizontal: 2 }
 
 const isSay = (c: Choice) => c.label === '직접 말하기' || c.hint === '직접 말하기'
 /** Replaces the composer until answered (design_system ApprovalPanel). */
@@ -181,13 +185,13 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
       ) : approval.submit ? (
         <>
           {multi.at >= 0 && approval.foot ? (
-            <Text v="c2" color="t3" style={{ textAlign: 'center', paddingTop: spacing[1] + 2, marginTop: 2 }}>
+            <Text v="c2" color="t3" style={{ textAlign: 'center', paddingTop: FOOT_TOP, marginTop: 2 }}>
               {approval.foot}
             </Text>
           ) : null}
           <View style={{ flexDirection: 'row', gap: spacing[2], marginTop: multi.at >= 0 ? spacing[1] : 2 }}>
             {multi.stopLabel ? (
-              <View style={multi.at >= 0 ? { paddingHorizontal: 2 } : { flex: 1 }}>
+              <View style={multi.at >= 0 ? STOP_PAD : { flex: 1 }}>
                 <Button
                   variant="secondary"
                   label={multi.stopLabel}
@@ -202,9 +206,8 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
                 onPress={() => {
                   if (multi.at >= 0) {
                     const picks = sel[multi.at] ?? []
-                    const items = (approval.sections[multi.at] as Extract<ApprovalSection, { kind: 'choices' }>).items
                     if (!picks.length) return
-                    onAnswer(picks.map((i) => items[i]!.label).join(', '), picks)
+                    onAnswer(picks.map((i) => multi.items[i]!.label).join(', '), picks)
                     return
                   }
                   onAnswer(approval.answer ?? approval.submit!, 0)
@@ -269,6 +272,7 @@ const Sub = ({ label }: { label: string }) => (
 
 const ChoiceRow = ({ n, choice, on, square, bare, center, onPress }: { n?: number; choice: Choice; on: boolean; square: boolean; bare?: boolean; center?: boolean; onPress: () => void }) => {
   const c = useColors()
+  const ring = selectedRing(c)
   const two = !!choice.desc
   const paleNumber = Platform.OS === 'ios' && !square
   return (
@@ -283,10 +287,10 @@ const ChoiceRow = ({ n, choice, on, square, bare, center, onPress }: { n?: numbe
         justifyContent: center ? 'center' : undefined,
         gap: center ? spacing[2] : spacing[3],
         minHeight: two ? 64 : 52,
-        paddingHorizontal: (center ? spacing[2] : 14) - selectedRing(c).borderWidth,
-        paddingVertical: two ? spacing[3] - selectedRing(c).borderWidth : 0,
+        paddingHorizontal: (center ? spacing[2] : 14) - ring.borderWidth,
+        paddingVertical: two ? spacing[3] - ring.borderWidth : 0,
         borderRadius: 14,
-        ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
+        ...(on ? ring : { borderWidth: ring.borderWidth, borderColor: 'transparent' }),
         transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
     >
@@ -352,6 +356,7 @@ const THUMB_LINES = ['90%', '72%', '84%', '56%']
 
 const Template = ({ label, recommended, on, layout, onPress }: { label: string; recommended?: boolean; on: boolean; layout: TemplateLayout; onPress: () => void }) => {
   const c = useColors()
+  const ring = selectedRing(c)
   const line = (w: string, key: string | number, extra?: object) => <View key={key} style={{ height: 7, width: w as `${number}%`, borderRadius: 4, backgroundColor: c.fill2, ...extra }} />
   const heading = (w: string, h: number, color: string) => line(w, 'h', { height: h, backgroundColor: color })
   const page = {
@@ -372,7 +377,7 @@ const Template = ({ label, recommended, on, layout, onPress }: { label: string; 
       accessibilityState={{ selected: on }}
       accessibilityLabel={recommended ? `${label}, 추천` : label}
       onPress={onPress}
-      style={{ flex: 1, gap: spacing[2], padding: spacing[2] - selectedRing(c).borderWidth, borderRadius: radius.md, ...(on ? selectedRing(c) : { borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
+      style={{ flex: 1, gap: spacing[2], padding: spacing[2] - ring.borderWidth, borderRadius: radius.md, ...(on ? ring : { borderWidth: ring.borderWidth, borderColor: 'transparent' }) }}
     >
       {recommended ? (
         <View pointerEvents="none" style={{ position: 'absolute', top: -9, left: 0, right: 0, alignItems: 'center', zIndex: 1 }}>

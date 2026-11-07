@@ -11,6 +11,7 @@ export const multiPick = (approval: Approval, sel: number[][]) => {
   const picked = at >= 0 ? (sel[at]?.length ?? 0) : 0
   return {
     at,
+    items,
     stopAt,
     stopLabel: approval.secondary ?? items[stopAt]?.label,
     picked,

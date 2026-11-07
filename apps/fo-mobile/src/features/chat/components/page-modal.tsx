@@ -43,8 +43,7 @@ const PageModal = ({
   )
 }
 
-// The boards centre the empty state with 140pt kept under it, measured from the screen bottom.
-// The boards keep 140pt under the block; the header height differs per platform, so the lift is calibrated on the device (empty text 9pt low on iOS, 20pt high on Android at 140).
+// The boards keep 140pt under the centred block; the header height differs per platform, so the lift is calibrated on the device.
 const EMPTY_LIFT = Platform.OS === 'ios' ? 158 : 100
 const EMPTY_INSET = 40
 

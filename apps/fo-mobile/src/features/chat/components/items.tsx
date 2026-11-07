@@ -546,10 +546,10 @@ const Surface = ({ children }: { children: React.ReactNode }) => {
 
 const ShareButton = ({ onPress }: { onPress: () => void }) =>
   Platform.OS === 'ios' ? (
-    <GlassButton iconSize={20} actions={[{ icon: 'share', label: '공유', onPress }]} />
+    <GlassButton iconSize={20} actions={[{ icon: 'share', label: '공유', color: 't2', onPress }]} />
   ) : (
     <Pressable accessibilityRole="button" accessibilityLabel="공유" onPress={onPress} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name="share" size={22} color="t2" />
+      <Icon name="share" size={20} color="t2" />
     </Pressable>
   )
 
