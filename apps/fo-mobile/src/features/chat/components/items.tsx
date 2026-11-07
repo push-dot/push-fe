@@ -194,7 +194,8 @@ const TodoRow = ({ item }: { item: Of<'todo'>['items'][number] }) => {
         {done ? <Icon name="check" size={12} color={onAccent} /> : null}
         {now ? <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: c.ac }} /> : null}
       </Animated.View>
-      <Text v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'} style={done ? { textDecorationLine: 'line-through' } : undefined}>
+      {/* Android keeps the first decoration of a mounted Text, so a row that turns done remounts it. */}
+      <Text key={String(done)} v="b2" color={done ? 't3' : 't1'} weight={now ? '700' : '400'} style={done ? { textDecorationLine: 'line-through' } : undefined}>
         {item.label}
       </Text>
       {item.added ? <Badge label="새로 추가" tone="ac" /> : null}
