@@ -643,7 +643,7 @@ const TOKENS: Record<string, Step[]> = {
   'tailor hold': [...tailorRead, ...tailorFit(TODO, -1, HOLD)],
   // ChatStates.4 in one conversation: the file card, then the apply record, then (busy below) the 혼잡 error.
   'states-file': statesFile,
-  '모아페이에 바로 지원해 줘': appliedRecord,
+  'states-apply': appliedRecord,
   // Jump straight to a phase: the design draws each phase under its own user line.
   analyze: ph1,
   boost: ph3Boost,

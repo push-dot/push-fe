@@ -133,7 +133,7 @@ describe('chat mock', () => {
   it('draws ChatStates.4 in one conversation: file card, apply record, then QUEUE_BUSY with a 12s wait', async () => {
     const file = await run('t-states', { text: 'states-file' })
     expect(file.find((e) => e.type === 'result')).toMatchObject({ source: 'external', actions: [] })
-    const applied = await run('t-states', { text: '모아페이에 바로 지원해 줘' })
+    const applied = await run('t-states', { text: 'states-apply' })
     expect(applied).toContainEqual(expect.objectContaining({ type: 'tool', state: 'ok', result: '지원했어요 · 마이 › 내 활동에 기록했어요' }))
     const res = await mockFetch(new Request('http://x/api/v1/chat/runs', { method: 'POST', body: JSON.stringify({ conversationId: 't-states', text: '도토리증권 공고도 맞춰 줘' }), headers: { 'Content-Type': 'application/json' } }))
     expect(res.status).toBe(429)
