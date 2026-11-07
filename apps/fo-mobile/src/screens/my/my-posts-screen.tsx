@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES } from '@push/api-client'
-import { Icon, Text, TopBar } from '@/shared/components'
+import { GlassButton, Icon, Text, TopBar } from '@/shared/components'
 import { Empty, emptyCta, ListSkeleton, postedAt, useMyCommentedPosts, useMyPosts } from '@/features/my'
 import { spacing, useColors } from '@/theme'
 
@@ -15,12 +15,35 @@ const MyPostsScreen = () => {
   const posts = query.data?.data ?? []
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <TopBar title={commented ? '댓글 단 글' : '내가 쓴 글'} onBack={() => router.back()} />
+      <TopBar
+        title={commented ? '댓글 단 글' : '내가 쓴 글'}
+        onBack={() => router.back()}
+        right={
+          <GlassButton
+            actions={[
+              {
+                icon: 'menu',
+                label: '더 보기',
+                menu: [
+                  {
+                    key: 'switch',
+                    label: commented ? '내가 쓴 글' : '댓글 단 글',
+                    systemImage: commented ? 'square.and.pencil' : 'text.bubble',
+                    icon: commented ? 'edit' : 'chat',
+                    onPress: () => router.replace({ pathname: '/activity/posts', params: { box: commented ? 'mine' : 'commented' } }),
+                  },
+                ],
+              },
+            ]}
+          />
+        }
+      />
       {query.isLoading ? (
         <ListSkeleton />
       ) : (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <Text v="c1" weight="600" color="t2" style={{ paddingTop: spacing[2], paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
+          {/* the board's count sits on a 16px line box, 5pt taller than this 13px label's own line */}
+          <Text v="c1" weight="600" color="t2" style={{ paddingTop: spacing[2] + 5, paddingBottom: spacing[1], paddingHorizontal: spacing[5] }}>
             {query.data?.page.total ?? posts.length}개
           </Text>
           {posts.length === 0 && !commented ? (

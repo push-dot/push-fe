@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Platform, Pressable, ScrollView, View } from 'react-native'
 import { isJobSettled, JOB_CATEGORIES } from '@push/api-client'
-import { useStartChat } from '@/features/chat'
+import { useShareFile, useStartChat } from '@/features/chat'
 import { usePosting } from '@/features/jobs'
 import {
   Avatar,
@@ -23,7 +23,7 @@ import {
   useMyProfile,
   useSetBaseProfile,
 } from '@/features/my'
-import { CtaBar, askConfirm, Badge, Button, Icon, showToast, Text, TopBar } from '@/shared/components'
+import { CtaBar, askConfirm, Badge, Button, GlassButton, type GlassAction, Icon, showToast, Text, TopBar } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
 
 const HUB_BADGE = '지원 서류용 프로필(허브형)'
@@ -74,6 +74,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
   const apps = useMyApplications()
   const me = useMyProfile().data
   const start = useStartChat()
+  const share = useShareFile()
   const [based, setBased] = useState(false)
   const setBase = useSetBaseProfile(() => {
     setBased(true)
@@ -91,11 +92,23 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
   const job = JOB_CATEGORIES.find((j) => j.key === me?.jobCategory)?.label ?? ''
   const jobLine = [job, tenureLabel(me?.tenureYears ?? null)].filter(Boolean).join(' · ')
 
+  const headerActions: GlassAction[] = [
+    { icon: 'share', label: '공유', onPress: () => share.mutate({ documentId: id }) },
+  ]
+  if (application) {
+    headerActions.push({
+      icon: 'menu',
+      label: '더 보기',
+      menu: [{ key: 'posting', label: '공고 보기', systemImage: 'doc.text', icon: 'doc', onPress: () => router.push(`/postings/${application.jobId}`) }],
+    })
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <TopBar
         title={application ? undefined : '지원 서류용 프로필'}
         onBack={() => router.back()}
+        right={<GlassButton actions={headerActions} />}
         safeTop={!(sheet && Platform.OS === 'ios')}
       />
       {doc.isLoading || !item || !lines ? (
@@ -109,7 +122,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
               onPress={() => router.push(`/postings/${application.jobId}`)}
               style={{
                 marginHorizontal: spacing[5],
-                marginTop: spacing[1],
+                marginTop: spacing[2],
                 borderRadius: radius.card,
                 borderWidth: 1,
                 borderColor: c.line,
@@ -139,7 +152,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
             </Pressable>
           ) : null}
 
-          <View style={{ alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5] }}>
+          <View style={{ alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingTop: application ? 0 : spacing[1] }}>
             <Avatar name={me?.displayName ?? ''} url={me?.avatarUrl ?? null} size={84} />
             <Text v="h1" style={{ marginTop: 6 }}>
               {me?.displayName}
