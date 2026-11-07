@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useNavigation } from 'expo-router'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Platform, View, type ViewProps } from 'react-native'
 import { initialWindowMetrics, SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { spacing, useColors } from '../../theme'
 import Button from './button'
-import { floatingSheet, floatingSheetMargin } from './sheet-scale'
+import { floatingSheet } from './sheet-scale'
 import { useKeyboardHeight } from './use-keyboard-height'
 import GlassButton from './glass-button'
 import Text from './text'
@@ -33,18 +34,30 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
   const c = useColors()
   const insets = useSafeAreaInsets()
   const android = Platform.OS === 'android'
-  useEffect(() => (android ? mountSheet() : undefined), [android])
+  const id = useId()
+  const closing = useRef(false)
+  const navigation = useNavigation<{ addListener: (type: 'beforeRemove', listener: () => void) => () => void }>()
+  // Leaves the toast stack when the close starts, so a toast shown on confirm lands where it stays.
+  useEffect(() => {
+    if (!android) return
+    const close = mountSheet(id)
+    const sub = navigation.addListener('beforeRemove', () => {
+      closing.current = true
+      close()
+    })
+    return () => (sub(), close())
+  }, [android, id, navigation])
   const close = onClose && !android ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null
   return (
     <View
       onLayout={(e) => {
-        if (android) sizeSheet(e.nativeEvent.layout.height)
+        if (android && !closing.current) sizeSheet(id, e.nativeEvent.layout.height)
         onLayout?.(e)
       }}
       style={{
         flex: full ? 1 : undefined,
         paddingTop: android ? spacing[3] : spacing[3] + GRAB.height + gap,
-        paddingHorizontal: android ? spacing[5] : full ? spacing[5] : spacing[4],
+        paddingHorizontal: android || full ? spacing[5] : spacing[4],
         paddingBottom: android ? insets.bottom + spacing[3] : full ? homeInset + spacing[3] : insets.bottom || (homeInset ? 0 : spacing[5]),
         gap,
       }}
@@ -94,7 +107,7 @@ const IosSheet = (props: Props) => {
                 alignSelf: 'center',
                 transformOrigin: 'top',
                 transform: [{ scale: float.scale }],
-                marginBottom: height ? floatingSheetMargin(height, frame.width / float.width, HOME_INSET) : 0,
+                marginBottom: height ? float.marginBottom(height) : 0,
               }
             : { flex: props.full ? 1 : undefined }
         }

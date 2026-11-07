@@ -5,7 +5,8 @@ import { toPickerUtc } from '@/shared/utility/picker-date'
 import { find, findAll, stubs } from './native-stubs'
 
 const state = vi.hoisted(() => ({ value: undefined as unknown, set: (() => {}) as (v: unknown) => void }))
-vi.mock('react', async (orig) => ({ ...(await orig<typeof import('react')>()), useState: (init: unknown) => [state.value ?? init, state.set], useEffect: () => {} }))
+vi.mock('react', async (orig) => ({ ...(await orig<typeof import('react')>()), useState: (init: unknown) => [state.value ?? init, state.set], useEffect: () => {}, useId: () => 'id', useRef: (v: unknown) => ({ current: v }) }))
+vi.mock('expo-router', () => ({ useNavigation: () => ({ addListener: () => () => {} }) }))
 vi.mock('react-native', async () => ({ ...(await import('./native-stubs')).stubs.reactNative, Platform: { OS: 'android' } }))
 vi.mock('@expo/ui', () => ({ Host: 'Host' }))
 vi.mock('@expo/ui/jetpack-compose', async () => (await import('./native-stubs')).stubs.compose)
