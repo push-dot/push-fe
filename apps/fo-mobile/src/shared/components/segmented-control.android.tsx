@@ -32,7 +32,7 @@ const SegmentedControl = <K extends string,>({ items, value, onChange }: Segment
             modifiers={[weight(1)]}
           >
             <SegmentedButton.Label>
-              <Text style={{ ...fontFor('600'), fontSize: type.b2.fontSize }}>{it.label}</Text>
+              <Text style={{ ...fontFor(type.segLabel.weight), fontSize: type.segLabel.fontSize }}>{it.label}</Text>
             </SegmentedButton.Label>
           </SegmentedButton>
         ))}
