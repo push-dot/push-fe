@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native'
 import { isJobSettled } from '@push/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { fileSize, monthDay } from '@push/shared'
-import { Button, GlassPressable, Icon, Spinner, TOAST_ABOVE, Text, showToast } from '@/shared/components'
+import { Button, GlassPressable, Icon, Icon3D, Spinner, TOAST_ABOVE, Text, showToast } from '@/shared/components'
 import { radius, spacing, useColors } from '../../../theme'
 import { useDocuments, useIngestJob, useMyApplications, useSources, useUpload } from '../api/hooks'
 import { INGEST_TEXT, PUSH_CARD_WIDTH } from '../constants'
@@ -17,7 +17,7 @@ import Row from './row'
 const HIT = 44
 const RETRY_H = 32
 const PROGRESS_H = 6
-const EMPTY_ART = 76
+const EMPTY_ART = 88
 const EMPTY_INSET = 40
 const EMPTY_BOTTOM = 140
 
@@ -143,18 +143,8 @@ const DocsTab = () => {
           paddingBottom: EMPTY_BOTTOM,
         }}
       >
-        <View
-          style={{
-            width: EMPTY_ART,
-            height: EMPTY_ART,
-            borderRadius: radius.xl,
-            backgroundColor: c.acSoft,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: spacing[2],
-          }}
-        >
-          <Icon name="doc" size={34} color={c.ac} />
+        <View style={{ marginBottom: spacing[2] }}>
+          <Icon3D name="paper" size={EMPTY_ART} />
         </View>
         <Text v="h2" style={{ textAlign: 'center' }}>
           아직 등록한 서류가 없어요

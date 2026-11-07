@@ -1,18 +1,13 @@
-import { View } from 'react-native'
-import { Button, Text } from '@/shared/components'
-import { spacing } from '../../../theme'
+import { StatusNote, emptyNoteStyle } from '@/shared/components'
 
-const Empty = ({ text, action, onAction }: { text: string; action?: string; onAction?: () => void }) => {
-  return (
-    <View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: spacing[2], paddingHorizontal: 40, paddingBottom: 140 }}>
-      <Text v="b1" weight="700" color="t2" style={{ textAlign: 'center' }}>
-        {text}
-      </Text>
-      {action && onAction ? (
-        <Button label={action} onPress={onAction} variant="secondary" size="pill" style={{ marginTop: spacing[3] }} />
-      ) : null}
-    </View>
-  )
-}
+type Props = { text: string; action?: string; onAction?: () => void; lift?: number; homeInset?: boolean }
+
+const Empty = ({ text, action, onAction, lift = 140, homeInset = true }: Props) => (
+  <StatusNote
+    lines={[text]}
+    action={action && onAction ? { label: action, onPress: onAction } : undefined}
+    style={emptyNoteStyle(lift, homeInset)}
+  />
+)
 
 export default Empty
