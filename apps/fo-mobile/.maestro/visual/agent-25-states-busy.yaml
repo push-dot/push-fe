@@ -36,7 +36,7 @@ tags:
       - runFlow:
           file: _chat_kbd_down.yaml
           env:
-            TEXT: ".*지원했어요 · 마이.*"
+            TEXT: "states-file"
       - retry:
           maxRetries: 3
           commands:
