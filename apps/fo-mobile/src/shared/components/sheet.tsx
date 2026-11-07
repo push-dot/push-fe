@@ -7,7 +7,7 @@ import { floatingSheet, floatingSheetMargin } from './sheet-scale'
 import { useKeyboardHeight } from './use-keyboard-height'
 import GlassButton from './glass-button'
 import Text from './text'
-import { clearToast } from './toast-store'
+import { mountSheet } from './toast-store'
 
 type Props = {
   title?: string
@@ -29,10 +29,7 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
   const c = useColors()
   const insets = useSafeAreaInsets()
   const android = Platform.OS === 'android'
-  // Android draws the root toast above native sheets, where a lingering undo toast would cover the sheet's buttons.
-  useEffect(() => {
-    if (android) clearToast()
-  }, [android])
+  useEffect(() => (android ? mountSheet() : undefined), [android])
   const close = onClose && !android ? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} /> : null
   return (
     <View

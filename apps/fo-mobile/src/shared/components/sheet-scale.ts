@@ -12,9 +12,5 @@ export const floatingSheet = (windowWidth: number, iosVersion: string | number, 
     ? { width: windowWidth - 2 * FLOAT_INSET, scale: keyboardUp ? 1 : windowWidth / (windowWidth - 2 * FLOAT_INSET) }
     : null
 
-/**
- * Bottom margin for floating content of `height`, scaled up by `scale` from its top edge. UIKit sizes the sheet from the
- * unscaled height plus the home inset, so without it the CTA sat 29pt above the sheet edge instead of the artboard's 20
- * (DeleteCareer). It ignores the keyboard for the same reason the width does.
- */
+/** UIKit sizes a floating sheet from the unscaled content height plus the home inset; this trims it to the drawn content plus 20pt. */
 export const floatingSheetMargin = (height: number, scale: number, homeInset: number) => (scale - 1) * height + BOTTOM_PAD * scale - homeInset
