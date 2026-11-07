@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Platform, View, type ViewProps } from 'react-native'
 import { SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { spacing, useColors } from '../../theme'
 import Button from './button'
-import { floatingSheet } from './sheet-scale'
+import { floatingSheet, floatingSheetMargin } from './sheet-scale'
 import { useKeyboardHeight } from './use-keyboard-height'
 import GlassButton from './glass-button'
 import Text from './text'
@@ -67,14 +67,28 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
 }
 
 // iOS 26 floats partial sheets clear of the home indicator and attaches large ones; a provider inside the sheet reads which.
-// A floating sheet already sits one home inset above its content (DeleteCareer capture: CTA 31pt high with 20pt padding), so it pads only without a home indicator.
+// A floating sheet already sits one home inset above its content, so the body pads only without a home indicator.
 const IosSheet = (props: Props) => {
   const frame = useSafeAreaFrame()
   const { bottom } = useSafeAreaInsets()
+  const [height, setHeight] = useState(0)
   const float = floatingSheet(frame.width, Platform.Version, bottom, useKeyboardHeight() > 0)
   return (
     <SafeAreaProvider initialMetrics={{ frame, insets: NO_INSETS }} style={{ flex: 0 }}>
-      <View style={float ? { width: float.width, alignSelf: 'center', transform: [{ scale: float.scale }] } : null}>
+      <View
+        onLayout={(e) => setHeight(e.nativeEvent.layout.height)}
+        style={
+          float
+            ? {
+                width: float.width,
+                alignSelf: 'center',
+                transformOrigin: 'top',
+                transform: [{ scale: float.scale }],
+                marginBottom: height ? floatingSheetMargin(height, frame.width / float.width, bottom) : 0,
+              }
+            : null
+        }
+      >
         <Body {...props} homeInset={bottom} />
       </View>
     </SafeAreaProvider>
