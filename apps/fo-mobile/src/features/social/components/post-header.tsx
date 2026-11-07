@@ -13,8 +13,8 @@ const PostHeader = ({ post }: { post: Post }) => {
       <Text v="h1">
         {post.title}
       </Text>
-      {post.body.split(/\n{2,}/).map((paragraph) => (
-        <Text key={paragraph} v="b1" color="t2">
+      {post.body.split(/\n{2,}/).map((paragraph, i) => (
+        <Text key={i} v="b1" color="t2">
           {paragraph}
         </Text>
       ))}
