@@ -66,10 +66,14 @@ const Bubble = ({
   )
 }
 
+// The board centres the empty line over the whole screen (composer overlaid) with a 120pt lift; here the composer takes its own height.
+const EMPTY_LIFT = 120
+
 const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [text, setText] = useState('')
+  const [composerH, setComposerH] = useState(0)
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null)
   const [failed, setFailed] = useState<Failed[]>([])
   const { data: o } = useOffer(id)
@@ -167,7 +171,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
           </View>
         ))}
         {empty ? (
-          <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 120 }}>
+          <View style={{ flex: 1, justifyContent: 'center', paddingBottom: Math.max(EMPTY_LIFT - composerH, 0) }}>
             <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
               첫 메시지를 보내 대화를 시작해 보세요.
             </Text>
@@ -207,6 +211,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
         ))}
       </ScrollView>
       <View
+        onLayout={(e) => setComposerH(e.nativeEvent.layout.height)}
         style={{
           paddingHorizontal: ios ? spacing[4] : spacing[3],
           paddingTop: ios ? 6 : spacing[2],
