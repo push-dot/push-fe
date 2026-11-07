@@ -40,6 +40,7 @@ export type Artboard = {
   tile: Record<string, string>
   glow: Record<string, string>
   photo: Record<string, string>
+  toast: Record<string, string>
   shadow: Record<string, string>
 }
 
@@ -116,6 +117,7 @@ export const buildTokens = (ds: DesignSystem, app: App, artboard: Artboard) => {
     tile: artboard.tile,
     glow: artboard.glow,
     photo: artboard.photo,
+    toast: artboard.toast,
     tracking,
   }
 }
@@ -164,6 +166,7 @@ export const renderTokens = (m: Model) =>
     declare('tile', m.tile),
     declare('glow', m.glow),
     declare('photo', m.photo),
+    declare('toast', m.toast),
   ].join('\n')
 
 const vars = (entries: [string, string][]) => entries.map(([k, v]) => `--${k}:${v}`).join(';')

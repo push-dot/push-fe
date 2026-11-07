@@ -155,3 +155,5 @@ export const photo = {
   button: 'rgba(255,255,255,.86)',
   shade: 'rgba(0,0,0,.28)',
 } as const
+
+export const toast = { androidAction: '#B3AAFF' } as const
