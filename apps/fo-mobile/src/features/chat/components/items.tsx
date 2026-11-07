@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, View, useWindowDimensions } from 'react-native'
 import { onAccent, radius, spacing, tile, useColors, useShadow, type Colors } from '../../../theme'
-import { Badge, Button, Icon, Text } from '@/shared/components'
+import { Badge, Button, GlassButton, Icon, Text } from '@/shared/components'
 import Blur from '@/shared/components/blur'
 import { shareMessage } from '@/shared/infrastructure'
 import { useOpenArtifact, useShareFile } from '../api/hooks'
@@ -522,11 +522,14 @@ const Surface = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-const ShareButton = ({ onPress }: { onPress: () => void }) => (
-  <Pressable accessibilityRole="button" accessibilityLabel="공유" onPress={onPress} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-    <Icon name="share" size={22} color="t2" />
-  </Pressable>
-)
+const ShareButton = ({ onPress }: { onPress: () => void }) =>
+  Platform.OS === 'ios' ? (
+    <GlassButton actions={[{ icon: 'share', label: '공유', onPress }]} />
+  ) : (
+    <Pressable accessibilityRole="button" accessibilityLabel="공유" onPress={onPress} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="share" size={22} color="t2" />
+    </Pressable>
+  )
 
 const FileCard = ({ item }: { item: Of<'file'> }) => {
   const c = useColors()

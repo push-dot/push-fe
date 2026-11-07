@@ -389,7 +389,7 @@ const OptionCard = ({ item, on, grid, onPress }: { item: QsItem; on: boolean; gr
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: spacing[3],
-        padding: spacing[4],
+        padding: spacing[4] - selectedRing(c).borderWidth,
         borderRadius: on ? radius.md : radius.card,
         width: grid ? '48.5%' : undefined,
         ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }),
@@ -455,7 +455,7 @@ const Calendar = ({ items, connected, task, setTask, onChange }: { items: QsItem
               accessibilityRole="radio"
               accessibilityState={{ selected: on }}
               onPress={() => setTask(i)}
-              style={{ width: '48.5%', gap: spacing[2], padding: spacing[4], borderRadius: radius.md, ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
+              style={{ width: '48.5%', gap: spacing[2], padding: spacing[4] - selectedRing(c).borderWidth, borderRadius: radius.md, ...(on ? selectedRing(c) : { backgroundColor: c.bg2, borderWidth: selectedRing(c).borderWidth, borderColor: 'transparent' }) }}
             >
               <Icon name={t.icon} size={20} color={on ? 'acText' : 't2'} />
               <Text v="b2" weight="700">
