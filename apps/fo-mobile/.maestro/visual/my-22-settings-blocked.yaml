@@ -14,10 +14,10 @@ tags:
 - extendedWaitUntil:
     visible: ".*Google 계정으로 로그인.*"
     timeout: 10000
-- runFlow: _settings_end.yaml
-- extendedWaitUntil:
-    visible: "차단한 사람.*"
-    timeout: 10000
+# The board shows the 허브 공개 group with the 차단한 사람 row in the middle of the screen.
+- scrollUntilVisible:
+    element: "차단한 사람.*"
+    centerElement: true
 - waitForAnimationToEnd
 - takeScreenshot: SettingsBlockedEntry
 - tapOn: "차단한 사람.*"
