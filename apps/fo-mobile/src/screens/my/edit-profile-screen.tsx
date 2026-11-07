@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native'
-import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { initialWindowMetrics, SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   CAREER_STATUSES,
   JOB_CATEGORIES,
@@ -57,7 +57,7 @@ import {
 import { inputReset } from '@/shared/components/text-field-metrics'
 import { pickImage } from '@/shared/infrastructure'
 import { searchHangul } from '@push/shared'
-import { fontFor, hitSlopTo, platformTheme, radius, spacing, type, useColors } from '@/theme'
+import { fontFor, hitSlopTo, radius, spacing, type, useColors } from '@/theme'
 
 const CAREER_MISSING = '회사, 직무, 기간을 채워 주세요'
 
@@ -708,8 +708,8 @@ const EditSkills = ({ p }: { p: Profile }) => {
 const EditProfileScreen = ({ section }: { section: ProfileSection }) => {
   const c = useColors()
   const raw = useSafeAreaInsets()
-  // A modal over the tab bar reports the tab bar as part of the bottom inset (home indicator 34 + bar 49); the sheet only has the indicator.
-  const insets = { ...raw, bottom: Platform.OS === 'ios' ? platformTheme.safeBottom : raw.bottom }
+  // A modal over the tab bar reports the tab bar as part of the bottom inset (home indicator + bar); the modal only has the window's home inset.
+  const insets = { ...raw, bottom: Platform.OS === 'ios' ? (initialWindowMetrics?.insets.bottom ?? 0) : raw.bottom }
   const { data: p } = useMyProfile()
   const Form =
     { basic: EditBasic, intro: EditIntro, career: EditCareer, skills: EditSkills }[section] ??
