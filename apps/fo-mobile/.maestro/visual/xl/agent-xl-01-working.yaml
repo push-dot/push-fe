@@ -21,6 +21,10 @@ tags:
 - extendedWaitUntil:
     visible: ".*대기 중.*"
     timeout: 10000
+- runFlow:
+    file: ../_chat_kbd_down.yaml
+    env:
+      TEXT: ".*맞춤 초안을 만들어 볼게요.*"
 - waitForAnimationToEnd
 - runFlow:
     when:
