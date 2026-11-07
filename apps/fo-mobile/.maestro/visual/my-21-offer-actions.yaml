@@ -20,8 +20,7 @@ tags:
     visible: "수락하고 답장하기"
     timeout: 10000
 - waitForAnimationToEnd
-- tapOn:
-    id: "더 보기"
+- tapOn: "더 보기"
 - extendedWaitUntil:
     visible: "제안 보관하기"
     timeout: 10000
@@ -44,8 +43,7 @@ tags:
     visible: "수락하고 답장하기"
     timeout: 10000
 - waitForAnimationToEnd
-- tapOn:
-    id: "더 보기"
+- tapOn: "더 보기"
 - extendedWaitUntil:
     visible: "차단하기"
     timeout: 10000
@@ -78,8 +76,7 @@ tags:
     visible: "수락하고 답장하기"
     timeout: 10000
 - waitForAnimationToEnd
-- tapOn:
-    id: "더 보기"
+- tapOn: "더 보기"
 - extendedWaitUntil:
     visible: "보관 풀기"
     timeout: 10000
