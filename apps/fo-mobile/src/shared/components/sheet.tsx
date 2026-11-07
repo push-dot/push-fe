@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Platform, View, type ViewProps } from 'react-native'
-import { SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { initialWindowMetrics, SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { spacing, useColors } from '../../theme'
 import Button from './button'
 import { floatingSheet, floatingSheetMargin } from './sheet-scale'
@@ -24,6 +24,8 @@ type Props = {
 const GRAB = { width: 36, height: 5, radius: 3 }
 const SHEET_GAP = 14
 const NO_INSETS = { top: 0, right: 0, bottom: 0, left: 0 }
+// The window's, not the sheet's: a sheet over the tab bar reads the tab bar into its bottom inset (83 for 34).
+const HOME_INSET = initialWindowMetrics?.insets.bottom ?? 0
 
 const Body = ({ title, description, children, action, secondary, onClose, gap = SHEET_GAP, onLayout, homeInset = 0 }: Props & { homeInset?: number }) => {
   const c = useColors()
@@ -72,9 +74,8 @@ const Body = ({ title, description, children, action, secondary, onClose, gap = 
 // A floating sheet already sits one home inset above its content, so the body pads only without a home indicator.
 const IosSheet = (props: Props) => {
   const frame = useSafeAreaFrame()
-  const { bottom } = useSafeAreaInsets()
   const [height, setHeight] = useState(0)
-  const float = floatingSheet(frame.width, Platform.Version, bottom, useKeyboardHeight() > 0)
+  const float = floatingSheet(frame.width, Platform.Version, HOME_INSET, useKeyboardHeight() > 0)
   return (
     <SafeAreaProvider initialMetrics={{ frame, insets: NO_INSETS }} style={{ flex: 0 }}>
       <View
@@ -86,12 +87,12 @@ const IosSheet = (props: Props) => {
                 alignSelf: 'center',
                 transformOrigin: 'top',
                 transform: [{ scale: float.scale }],
-                marginBottom: height ? floatingSheetMargin(height, frame.width / float.width, bottom) : 0,
+                marginBottom: height ? floatingSheetMargin(height, frame.width / float.width, HOME_INSET) : 0,
               }
             : null
         }
       >
-        <Body {...props} homeInset={bottom} />
+        <Body {...props} homeInset={HOME_INSET} />
       </View>
     </SafeAreaProvider>
   )
