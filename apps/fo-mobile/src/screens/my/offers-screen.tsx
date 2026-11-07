@@ -39,9 +39,7 @@ const OfferRow = ({ o, box }: { o: Offer; box: Box }) => {
           <Text v="b1" weight="700" numberOfLines={1} style={{ flexShrink: 1 }}>
             {who.displayName}
           </Text>
-          <View>
-            <Badge label={badge.label} tone={badge.tone} />
-          </View>
+          <Badge label={badge.label} tone={badge.tone} />
           <Text v="c2" color="t3" style={{ marginLeft: 'auto' }}>
             {timeAgo(o.createdAt)}
           </Text>

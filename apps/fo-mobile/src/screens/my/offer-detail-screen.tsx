@@ -72,9 +72,7 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
               <Text v="h3" accessibilityRole="header" numberOfLines={1} style={{ flexShrink: 1 }}>
                 {who.displayName}
               </Text>
-              <View>
-                <Badge label={badge.label} tone={badge.tone} />
-              </View>
+              <Badge label={badge.label} tone={badge.tone} />
             </View>
             {personLine(who) ? (
               <Text v="c1" color="t3">

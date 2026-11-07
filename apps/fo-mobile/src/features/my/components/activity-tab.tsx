@@ -63,9 +63,7 @@ const Applications = () => {
               {a.company} · {monthDay(a.appliedAt ?? a.createdAt)}
             </Text>
           </View>
-          <View>
-            <Badge label={stageBadge(a.stage)} tone={stageTone(a.stage)} />
-          </View>
+          <Badge label={stageBadge(a.stage)} tone={stageTone(a.stage)} />
         </Row>
       ))}
     </>
