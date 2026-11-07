@@ -6,7 +6,7 @@ export type ToastTone = 'success' | 'error'
 export type ToastInput = {
   message: string
   action?: { label: string; onPress: () => void }
-  /** Leading status icon (iOS only; Material snackbars carry no icon). Leave unset on undo/action toasts. */
+  /** Leading status icon. Leave unset on undo/action toasts. */
   tone?: ToastTone
   /** Distance above the bottom safe inset, to clear a tab bar or CTA (see TOAST_ABOVE). Defaults to TOAST_BOTTOM_GAP. */
   bottom?: number
@@ -25,6 +25,8 @@ let seq = 0
 export const showToast = (toast: ToastInput) => useToastStore.setState({ current: { ...toast, id: ++seq } })
 
 export const hideToast = (id: number) => useToastStore.setState((s) => (s.current?.id === id ? { current: null } : s))
+
+export const clearToast = () => useToastStore.setState({ current: null })
 
 export const toastDuration = (toast: ToastInput) => (toast.action ? TOAST_MS.action : TOAST_MS.plain)
 
