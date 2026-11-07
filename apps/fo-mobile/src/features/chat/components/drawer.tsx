@@ -86,7 +86,7 @@ export const ChatSidebar = ({ onClose }: { onClose: () => void }) => {
         </Pressable>
         <View style={Platform.OS === 'android' ? [{ width: 50, height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.line }, shadow.glass] : undefined}>
           <View style={Platform.OS === 'android' ? { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg } : undefined}>
-            <GlassButton actions={[{ icon: 'sidebar-close', label: '사이드바 닫기', onPress: onClose }]} />
+            <GlassButton iconSize={24} actions={[{ icon: 'sidebar-close', label: '사이드바 닫기', onPress: onClose }]} />
           </View>
         </View>
       </View>
