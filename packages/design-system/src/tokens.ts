@@ -65,6 +65,7 @@ export const typography = {
   c2: { family: 'sans', fontSize: 12, lineHeight: 16, fontWeight: 400, letterSpacing: -0.02 },
   button: { family: 'sans', fontSize: 17, lineHeight: 24, fontWeight: 700, letterSpacing: -0.02 },
   tab: { family: 'sans', fontSize: 11, lineHeight: 14, fontWeight: 600, letterSpacing: -0.02 },
+  segLabel: { family: 'sans', fontSize: 15, lineHeight: 22, fontWeight: 600, letterSpacing: -0.02 },
   mono: { family: 'mono', fontSize: 12.5, lineHeight: 19, fontWeight: 400, letterSpacing: -0.02 },
 } as const
 
