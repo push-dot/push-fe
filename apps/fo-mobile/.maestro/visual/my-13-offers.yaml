@@ -34,6 +34,14 @@ tags:
 - waitForAnimationToEnd
 - takeScreenshot: ProposalDetail
 
+- tapOn: "더 보기"
+- extendedWaitUntil:
+    visible: "제안 보관하기"
+    timeout: 5000
+- waitForAnimationToEnd
+- takeScreenshot: ProposalDetailMenu
+- runFlow: _dismiss_menu.yaml
+
 # The state boards are iOS only.
 - runFlow:
     when:

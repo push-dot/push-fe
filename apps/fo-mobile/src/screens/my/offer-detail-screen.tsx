@@ -18,6 +18,9 @@ import { radius, spacing, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
 
+// shortcut: push-be has no archive/report/block endpoint for offers yet (be-requests-r4.md); the items are drawn, wire them when it does.
+const NO_SERVER = () => undefined
+
 const DECLINE_INSET = Platform.OS === 'ios' ? spacing[1] : 0
 
 const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) => {
@@ -56,7 +59,12 @@ const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) 
               {
                 icon: 'menu',
                 label: '더 보기',
-                menu: [{ key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) }],
+                menu: [
+                  { key: 'profile', label: '허브 프로필 보기', systemImage: 'person', icon: 'user', onPress: () => router.push(`/profiles/${who.id}`) },
+                  { key: 'archive', label: '제안 보관하기', systemImage: 'archivebox', icon: 'archive', onPress: NO_SERVER },
+                  { key: 'report', label: '신고하기', systemImage: 'flag', onPress: NO_SERVER },
+                  { key: 'block', label: '차단하기', systemImage: 'nosign', icon: 'slash', destructive: true, onPress: NO_SERVER },
+                ],
               },
             ]}
           />
