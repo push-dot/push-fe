@@ -3,10 +3,10 @@ name: 마이 제안함 → 빈 받은 제안 → 답장 없이 수락 → 빈 �
 tags:
   - visual
 ---
-# The rule empties both boxes, so 보낸 제안 reads 0 here where the board draws 3.
+# Only the received box is emptied (the box query), so 보낸 제안 keeps its 3.
 - runFlow: ../flows/_login.yaml
 - runFlow: ../flows/_dismiss_logbox.yaml
-- openLink: push://social?mock=empty:GET:me/offers$
+- openLink: push://social?mock=empty:GET:me/offers.*box=received
 - extendedWaitUntil:
     visible: "직장 생활"
     timeout: 10000
