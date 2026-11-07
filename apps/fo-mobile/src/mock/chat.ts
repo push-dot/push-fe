@@ -131,7 +131,7 @@ const BULLETS = ['승인 API 성과를 숫자로 보여 줬어요', 'Kafka를 �
 // Hold a running line this long so a screenshot can catch it.
 const DWELL = 8000
 // Android taps wait up to 10s for a running line's spinner to settle, so a tour that acts while one runs needs far more than DWELL.
-const HOLD = 60_000
+const HOLD = 150_000
 const JD_LINES = ['필수 · Kotlin 또는 Java 4년 이상', '필수 · Spring Boot 운영', '필수 · RDBMS 설계와 튜닝', '필수 · 대용량 트래픽 처리', '필수 · 결제·정산 도메인 이해', '우대 · Kafka · 장애 대응 · MSA']
 
 const tailorRead: Step[] = [
