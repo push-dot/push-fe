@@ -13,6 +13,7 @@ import {
   useOffer,
   useOfferDecision,
   useOfferMenu,
+  useViewerBox,
 } from '@/features/my'
 import { CtaBar, Badge, Button, Chip, GlassButton, Icon, Skeleton, Text, TopBar } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
@@ -21,9 +22,10 @@ type Box = 'received' | 'sent'
 
 const DECLINE_INSET = Platform.OS === 'ios' ? spacing[1] : 0
 
-const OfferDetailScreen = ({ id, box = 'received' }: { id: string; box?: Box }) => {
+const OfferDetailScreen = ({ id, box: hint = 'received' }: { id: string; box?: Box }) => {
   const c = useColors()
   const { data: o, isLoading } = useOffer(id)
+  const box = useViewerBox(o, hint)
   const { decline } = useOfferDecision(id, '', () => undefined)
   const menu = useOfferMenu(o, box)
 

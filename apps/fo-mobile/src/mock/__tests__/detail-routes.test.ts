@@ -10,7 +10,7 @@ const get = async (path: string) => {
 it('serves the job and profile detail calls the native bars make', async () => {
   expect((await get('postings/p1')).body.data).toMatchObject({ company: '모아페이', bookmarked: true, applied: false })
   expect((await get('profiles/u2')).body.data).toMatchObject({ displayName: '이하은', following: false })
-  expect((await get('profiles/me')).body.data).toMatchObject({ displayName: '김서준', userId: 'me' })
+  expect((await get('profiles/me')).body.data).toMatchObject({ displayName: '김서준', userId: 'dev' })
 })
 
 it('follows the people the follow list shows, and keeps the board copy of the first offer row', async () => {

@@ -4,7 +4,18 @@ import type { MenuSection } from '@/shared/components/menu-action'
 import { toastOffsets, type ToastInput } from '@/shared/components/toast-store'
 import { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked } from './my-rules'
 
-export const otherParty = (o: Offer, viewerId: string) => (o.sender.id === viewerId ? o.recipient : o.sender)
+type Box = 'received' | 'sent'
+
+/** The offer decides which side the viewer is on; the route's box only answers when the session matches neither party. */
+export const viewerBox = (o: Offer, viewerId: string | undefined, hint: Box): Box => {
+  if (viewerId === o.sender.id) return 'sent'
+  if (viewerId === o.recipient.id) return 'received'
+  return hint
+}
+
+export const otherParty = (o: Offer, box: Box) => (box === 'sent' ? o.recipient : o.sender)
+
+const hasBottomBar = (o: Offer, box: Box) => o.status === 'ACCEPTED' || (box === 'received' && (o.status === 'SENT' || o.status === 'READ'))
 
 export type OfferMenuDeps = {
   archive: (id: string) => Promise<unknown>
@@ -17,7 +28,8 @@ export type OfferMenuDeps = {
 }
 
 /** The offer ⋯ menu actions; every failure shows the error toast and re-reads the offer so the screen never shows a stale state. */
-export const offerMenu = (offer: Offer, viewerId: string, d: OfferMenuDeps) => {
+export const offerMenu = (offer: Offer, box: Box, d: OfferMenuDeps) => {
+  const who = otherParty(offer, box)
   const failed = () => {
     d.toast({ message: OFFER_MENU_COPY.failed, tone: 'error' })
     void d.refresh()
@@ -35,12 +47,14 @@ export const offerMenu = (offer: Offer, viewerId: string, d: OfferMenuDeps) => {
       }),
     unarchive: () => run(d.unarchive(offer.id), () => void d.refresh()),
     report: () =>
-      run(d.report(offer.id), () => d.toast({ message: OFFER_MENU_COPY.reported, bottom: toastOffsets(0).cta })),
+      run(d.report(offer.id), () =>
+        d.toast({ message: OFFER_MENU_COPY.reported, bottom: hasBottomBar(offer, box) ? toastOffsets(0).cta : undefined }),
+      ),
     block: () =>
-      run(d.block(otherParty(offer, viewerId).id), () => {
+      run(d.block(who.id), () => {
         d.back()
         void d.refresh()
-        d.toast({ message: offerBlocked(otherParty(offer, viewerId).displayName) })
+        d.toast({ message: offerBlocked(who.displayName) })
       }),
   }
 }
@@ -52,16 +66,11 @@ export type OfferMenuSectionDeps = OfferMenuDeps & {
 
 /**
  * The ⋯ menu: 허브 프로필 보기 and 보관 (or 보관 풀기 once archived), then 신고하기 and 차단하기.
- * The box says which side the viewer is on. Only a received offer is archived (the 보관한 제안 list is the received box); an already archived one can always be released.
+ * Only a received offer is archived (the 보관한 제안 list is the received box); an already archived one can always be released.
  */
-export const offerMenuSections = (
-  offer: Offer,
-  box: 'received' | 'sent',
-  d: OfferMenuSectionDeps,
-): MenuSection[] => {
-  const viewerId = box === 'received' ? offer.recipient.id : offer.sender.id
-  const run = offerMenu(offer, viewerId, d)
-  const who = otherParty(offer, viewerId)
+export const offerMenuSections = (offer: Offer, box: Box, d: OfferMenuSectionDeps): MenuSection[] => {
+  const run = offerMenu(offer, box, d)
+  const who = otherParty(offer, box)
   const archived = !!offer.archivedAt
   const keep: MenuSection['actions'] = [
     { key: 'profile', label: OFFER_MENU_COPY.profile, systemImage: 'person', icon: 'user', onPress: () => d.profile(who.id) },

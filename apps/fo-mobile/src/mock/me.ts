@@ -14,9 +14,9 @@ import type {
 import type { CalendarEvent, HubDocument, ResumeDraft } from '@/features/my'
 import { appliedOnly } from '@/features/my/utils/applied-only'
 import { removeChatDoc } from './chat'
-import { mock, page, pdfResponse } from './server'
+import { MOCK_USER_ID, mock, page, pdfResponse } from './server'
 
-const ME: UserRef = { id: 'me', displayName: '김서준', avatarUrl: null }
+const ME: UserRef = { id: MOCK_USER_ID, displayName: '김서준', avatarUrl: null }
 const ME_SENDER: Offer['sender'] = { ...ME, avatarUrl: null, companyName: null, headline: '' }
 const ago = (ms: number) => new Date(Date.now() - ms).toISOString()
 const H = 3_600_000
@@ -34,7 +34,7 @@ const tomorrowAt = (h: number) => {
 }
 
 let profile: Profile = {
-  userId: 'me',
+  userId: MOCK_USER_ID,
   displayName: '김서준',
   avatarUrl: null,
   headline: '결제 시스템을 만드는 백엔드 개발자',
@@ -366,7 +366,7 @@ mock('POST', 'documents/:id/base-profile', ({ params }) => {
   const doc = documents.find((d) => d.id === params.id)
   if (!doc) return { status: 404, body: { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } } }
   profile = { ...profile, headline: doc.title.slice(0, 120), updatedAt: new Date().toISOString() }
-  return { data: { documentId: doc.id, profileUserId: 'me' } }
+  return { data: { documentId: doc.id, profileUserId: MOCK_USER_ID } }
 })
 mock('POST', 'documents/:id/profile', ({ params, body }) => {
   if (body && typeof body === 'object' && 'target' in body) {
@@ -775,7 +775,7 @@ mock('GET', 'me/offers/:id', ({ params }) => {
   const o = findOffer(params.id!)
   if (!o) return notFound
   // Opening a received offer marks it read (보낸 사람에게 '읽음').
-  if (o.recipient.id === 'me' && !o.readAt)
+  if (o.recipient.id === ME.id && !o.readAt)
     Object.assign(o, {
       readAt: new Date().toISOString(),
       status: o.status === 'SENT' ? 'READ' : o.status,
@@ -862,7 +862,7 @@ let settings: Settings = {
 mock('DELETE', 'me', () => null)
 mock('GET', 'auth/me', () => ({
   data: {
-    id: 'me',
+    id: MOCK_USER_ID,
     displayName: '김서준',
     locale: 'ko',
     createdAt: on(1, 5),

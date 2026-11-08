@@ -105,3 +105,15 @@ it('refuses messages and hub offers from people who blocked the viewer, like pus
   setBlockedByThem(false)
   expect((await post('profiles/u4/offer', { message: 'hello' })).status).toBe(201)
 })
+
+it('makes the session user the recipient of every received offer and the sender of every sent one', async () => {
+  vi.resetModules()
+  await import('../index')
+  const { mockFetch, MOCK_USER_ID } = await import('../server')
+  type Row = { sender: { id: string }; recipient: { id: string } }
+  const list = async (box: string) => ((await (await mockFetch(`http://x/api/v1/me/offers?box=${box}`)).json()) as { data: Row[] }).data
+  const me = ((await (await mockFetch('http://x/api/v1/auth/me')).json()) as { data: { id: string } }).data.id
+  expect(me).toBe(MOCK_USER_ID)
+  expect((await list('received')).every((o) => o.recipient.id === MOCK_USER_ID)).toBe(true)
+  expect((await list('sent')).every((o) => o.sender.id === MOCK_USER_ID)).toBe(true)
+})

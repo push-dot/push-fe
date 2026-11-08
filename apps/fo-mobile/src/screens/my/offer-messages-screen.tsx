@@ -22,6 +22,7 @@ import {
   personLine,
   useOffer,
   useOfferMenu,
+  useViewerBox,
   useOfferMessages,
   type FailedSend,
 } from '@/features/my'
@@ -73,7 +74,7 @@ const Bubble = ({
 // The board centres the empty line over the whole screen (composer overlaid) with a 120pt lift; here the composer takes its own height.
 const EMPTY_LIFT = 120
 
-const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
+const OfferMessagesScreen = ({ id, box: hint }: { id: string; box: Box }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const [text, setText] = useState('')
@@ -81,6 +82,7 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null)
   const [failed, setFailed] = useState<FailedSend[]>([])
   const { data: o } = useOffer(id)
+  const box = useViewerBox(o, hint)
   const menu = useOfferMenu(o, box)
   const { data, send } = useOfferMessages(id)
 

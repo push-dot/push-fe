@@ -1,6 +1,6 @@
 import type { Offer } from '@push/api-client'
 import { describe, expect, it, vi } from 'vitest'
-import { offerMenu, offerMenuSections, otherParty, type OfferMenuDeps } from './offer-menu'
+import { offerMenu, offerMenuSections, otherParty, viewerBox, type OfferMenuDeps } from './offer-menu'
 
 const party = (id: string) => ({ id, displayName: id, avatarUrl: null, companyName: null, headline: '' })
 const offer = { id: 'o1', sender: party('them'), recipient: party('me') } as Offer
@@ -19,10 +19,10 @@ const deps = (over: Partial<OfferMenuDeps> = {}): OfferMenuDeps => ({
 
 describe('offerMenu', () => {
   it('blocks the other party, whichever box the offer came from', async () => {
-    expect(otherParty(offer, 'me').id).toBe('them')
-    expect(otherParty(offer, 'them').id).toBe('me')
+    expect(otherParty(offer, 'received').id).toBe('them')
+    expect(otherParty(offer, 'sent').id).toBe('me')
     const d = deps()
-    await offerMenu(offer, 'me', d).block()
+    await offerMenu(offer, 'received', d).block()
     expect(d.block).toHaveBeenCalledWith('them')
     expect(d.back).toHaveBeenCalled()
     expect(d.refresh).toHaveBeenCalled()
@@ -31,7 +31,7 @@ describe('offerMenu', () => {
 
   it('archives with an undo that unarchives and re-reads', async () => {
     const d = deps()
-    await offerMenu(offer, 'me', d).archive()
+    await offerMenu(offer, 'received', d).archive()
     expect(d.back).toHaveBeenCalled()
     const toast = vi.mocked(d.toast).mock.calls[0]![0]
     toast.action!.onPress()
@@ -42,7 +42,7 @@ describe('offerMenu', () => {
 
   it('shows the error toast and re-reads when the undo fails', async () => {
     const d = deps({ unarchive: vi.fn(async () => Promise.reject(new Error('x'))) })
-    await offerMenu(offer, 'me', d).archive()
+    await offerMenu(offer, 'received', d).archive()
     vi.mocked(d.toast).mock.calls[0]![0].action!.onPress()
     await flush()
     expect(vi.mocked(d.toast).mock.calls[1]![0].tone).toBe('error')
@@ -51,9 +51,23 @@ describe('offerMenu', () => {
 
   it('stays on the screen and shows the error toast when an action fails', async () => {
     const d = deps({ archive: vi.fn(async () => Promise.reject(new Error('x'))) })
-    await offerMenu(offer, 'me', d).archive()
+    await offerMenu(offer, 'received', d).archive()
     expect(d.back).not.toHaveBeenCalled()
     expect(vi.mocked(d.toast).mock.calls[0]![0].tone).toBe('error')
+  })
+})
+
+describe('viewerBox', () => {
+  const sent = { ...offer, sender: party('me'), recipient: party('them') } as Offer
+
+  it('takes the side from the session, whatever the route box says', () => {
+    expect(viewerBox(offer, 'me', 'sent')).toBe('received')
+    expect(viewerBox(sent, 'me', 'received')).toBe('sent')
+  })
+
+  it('falls back to the route box when the session is neither party', () => {
+    expect(viewerBox(offer, undefined, 'sent')).toBe('sent')
+    expect(viewerBox(offer, 'stranger', 'received')).toBe('received')
   })
 })
 
@@ -73,7 +87,7 @@ describe('offerMenuSections', () => {
     expect(labels({ ...sent, archivedAt: '2026-10-01T00:00:00Z' }, 'sent')[0]).toEqual(['허브 프로필 보기', '보관 풀기'])
   })
 
-  it('reports and confirms with a plain toast above the bottom buttons, staying on the offer', async () => {
+  it('reports and confirms with a plain toast, staying on the offer', async () => {
     const d = sectionDeps()
     offerMenuSections(offer, 'received', d)[1]!.actions[0]!.onPress()
     await flush()
@@ -81,6 +95,19 @@ describe('offerMenuSections', () => {
     expect(d.back).not.toHaveBeenCalled()
     expect(vi.mocked(d.toast).mock.calls[0]![0]).toMatchObject({ message: '신고가 접수됐어요' })
     expect(vi.mocked(d.toast).mock.calls[0]![0].tone).toBeUndefined()
+  })
+
+  it('lifts the report toast above the bottom bar only when the offer has one', async () => {
+    const bottomOf = async (o: Offer, box: 'received' | 'sent') => {
+      const d = sectionDeps()
+      offerMenuSections(o, box, d)[1]!.actions[0]!.onPress()
+      await flush()
+      return vi.mocked(d.toast).mock.calls[0]![0].bottom
+    }
+    expect(await bottomOf({ ...offer, status: 'SENT' } as Offer, 'received')).toBe(92)
+    expect(await bottomOf({ ...offer, status: 'ACCEPTED' } as Offer, 'received')).toBe(92)
+    expect(await bottomOf({ ...offer, status: 'DECLINED' } as Offer, 'received')).toBeUndefined()
+    expect(await bottomOf({ ...offer, status: 'SENT' } as Offer, 'sent')).toBeUndefined()
   })
 
   it('blocks the sender of a received offer and the recipient of a sent one', async () => {

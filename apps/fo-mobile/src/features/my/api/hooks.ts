@@ -6,7 +6,8 @@ import { type LinkKind, type Offer, type Profile, type Settings } from '@push/ap
 import { DAY, NEXT_EVENT_DAYS } from '../constants'
 import type { CalendarEvent, PickedFile } from '../types'
 import { askConfirm, showToast } from '@/shared/components'
-import { nextEventFor, OFFER_MENU_COPY, offerMenuSections, restoreLinkFailure } from '../utils'
+import { useSession } from '@/shared/infrastructure'
+import { nextEventFor, OFFER_MENU_COPY, offerMenuSections, restoreLinkFailure, viewerBox } from '../utils'
 import {
   acceptOffer,
   addLink,
@@ -394,7 +395,12 @@ export const useOfferDecision = (id: string, reply: string, onAccepted: () => vo
   return { accept, decline }
 }
 
-export const useOfferMenu = (offer: Offer | undefined, box: 'received' | 'sent') => {
+export const useViewerBox = (offer: Offer | undefined, hint: Box): Box => {
+  const viewerId = useSession((s) => s.session?.user.id)
+  return offer ? viewerBox(offer, viewerId, hint) : hint
+}
+
+export const useOfferMenu = (offer: Offer | undefined, box: Box) => {
   const qc = useQueryClient()
   if (!offer) return null
   const refresh = () =>
