@@ -23,15 +23,19 @@ import type {
 } from '@push/api-client'
 import { searchHangul } from '@push/shared'
 import { sessionStore } from '../auth/session'
+import { isWebView } from '../lib/bridge'
 import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from '../model/constants'
 import { assistantReply, type ChatIntent } from '../model/employer-chat'
 import {
+  APP_DEADLINE_DAYS,
+  APP_POSTING_BODY,
+  APP_PROFILES,
   APPLICANT_SEEDS,
   CHAT_SEEDS,
   DRAFT_REPLY,
   APPLICATIONS,
   CALENDAR_EVENTS,
-  CATALOG_COUNTS,
+  CATALOG_TOTALS,
   COMMENT_THREADS,
   EMPLOYER_NOTICES,
   FEED,
@@ -42,13 +46,11 @@ import {
   POPULAR_ORDER,
   POSTING_DETAILS,
   RECEIVED_OFFERS,
-  SEARCH_PEOPLE_ALIASES,
-  SEARCH_TOTALS,
+  SEARCH_BOARDS,
   SEED_LINKS,
   SEED_NOTICES,
   SEED_SOURCES,
   SENT_OFFERS,
-  searchKeys,
   type PostingView,
 } from './mock-fixtures'
 
@@ -179,16 +181,23 @@ const flags = new Map<string, { bookmarked: boolean; applied: boolean }>(
   listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]),
 )
 
-let requestSigned = false
+const signedOf = (input: RequestInfo | URL, init?: RequestInit) =>
+  new Headers(input instanceof Request ? input.headers : init?.headers).has('Authorization')
 
-const present = (item: Posting): Posting => {
+const present = (item: Posting, signed: boolean): Posting => {
   const flag = flags.get(item.id)
-  if (!requestSigned) return { ...item, bookmarked: false, applied: false }
+  if (!signed) return { ...item, bookmarked: false, applied: false }
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
 }
 
-const detailFor = (item: Posting): PostingView => {
-  const shown = present(item)
+const localDateIn = (days: number) => {
+  const at = new Date(Date.now() + days * DAY_MS)
+  return `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, '0')}-${String(at.getDate()).padStart(2, '0')}`
+}
+
+const detailFor = (item: Posting, signed: boolean): PostingView => {
+  const shown = present(item, signed)
+  if (isWebView() && shown.id === 'p1') return { ...shown, ...APP_POSTING_BODY, deadline: localDateIn(APP_DEADLINE_DAYS) } as PostingView
   const detail = POSTING_DETAILS[shown.id]
   if (detail) return { ...shown, ...detail } as PostingView
   return {
@@ -439,7 +448,7 @@ const careerOverlaps = (item: Posting, key: string) => {
   return low <= span[1] && high >= span[0]
 }
 
-const filteredPostings = (url: URL) => {
+const filteredPostings = (url: URL, signed: boolean) => {
   const categories = splitParam(url, 'category')
   const skills = splitParam(url, 'skills')
   const years = splitParam(url, 'careerYears')
@@ -458,7 +467,7 @@ const filteredPostings = (url: URL) => {
   if (sort === 'popular') items = [...items].sort((a, b) => popularRank(a.id) - popularRank(b.id))
   else if (sort === 'deadline') items = [...items].sort((a, b) => (a.deadline ?? '').localeCompare(b.deadline ?? ''))
   else items = [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  return items.map(present)
+  return items.map((item) => present(item, signed))
 }
 
 const pageOf = (url: URL, items: Posting[], defaultLimit = items.length, total = items.length) => {
@@ -482,15 +491,19 @@ const popularRank = (id: string) => {
 
 const NARROWING_FILTERS = ['skills', 'careerYears', 'location', 'employmentType']
 
+const REPEAT_MARK = '~'
+
 const catalogPage = (url: URL, items: Posting[]) => {
   const narrowed = NARROWING_FILTERS.some((key) => splitParam(url, key).length > 0) || url.searchParams.get('deadlineWithin') === '7'
-  const sort = url.searchParams.get('sort')
-  const rail = sort === 'deadline' || sort === 'popular' || sort === 'latest'
-  const homeRail = rail && !url.searchParams.has('limit')
-  const categories = splitParam(url, 'category')
-  const kinds = categories.length > 0 ? categories : Object.keys(CATALOG_COUNTS)
-  const catalog = kinds.reduce((sum, key) => sum + (CATALOG_COUNTS[key as JobCategory] ?? 0), 0)
-  return pageOf(url, items, HOME_RAIL_SIZE, narrowed || homeRail ? items.length : catalog)
+  const total = narrowed || items.length === 0 ? 0 : (CATALOG_TOTALS[splitParam(url, 'category').sort().join(',')] ?? 0)
+  const catalog =
+    total > items.length
+      ? Array.from({ length: total }, (_, at) => {
+          const item = items[at % items.length]!
+          return at < items.length ? item : { ...item, id: `${item.id}${REPEAT_MARK}${Math.floor(at / items.length)}` }
+        })
+      : items
+  return pageOf(url, catalog, HOME_RAIL_SIZE)
 }
 
 let links: UserLink[] = SEED_LINKS.map((item) => ({ ...item }))
@@ -576,11 +589,9 @@ const employerPersona = () => {
   return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra' || kind === 'employer-new'
 }
 
-type MockMember = CompanyMember & { pending?: boolean }
-
 type CompanyRecord = {
   company: Company
-  members: MockMember[]
+  members: CompanyMember[]
 }
 
 const companyRecords = new Map<string, CompanyRecord>()
@@ -590,7 +601,7 @@ const personaKey = () => mockPersona() ?? 'default'
 
 const currentUserId = () => sessionStore.load()?.user.id ?? 'u1'
 
-const adminMember = (joinedAt: string): MockMember => ({
+const adminMember = (joinedAt: string): CompanyMember => ({
   userId: currentUserId(),
   email: MEMBER_EMAIL,
   role: 'ADMIN',
@@ -598,7 +609,6 @@ const adminMember = (joinedAt: string): MockMember => ({
 })
 
 const COMPANY_BRAND = '모아페이'
-const COMPANY_NAME = `${COMPANY_BRAND} 주식회사`
 const COMPANY_BNO = '2148703921'
 
 const seedCompany = (): CompanyRecord | null => {
@@ -609,7 +619,7 @@ const seedCompany = (): CompanyRecord | null => {
       company: {
         id: 'co-1',
         bNo: COMPANY_BNO,
-        name: COMPANY_NAME,
+        name: COMPANY_BRAND,
         plan: 'BASIC',
         verifiedAt,
         role: 'ADMIN',
@@ -623,16 +633,15 @@ const seedCompany = (): CompanyRecord | null => {
       company: {
         id: 'co-1',
         bNo: COMPANY_BNO,
-        name: COMPANY_NAME,
+        name: COMPANY_BRAND,
         plan: 'PRO',
         verifiedAt,
         role: 'ADMIN',
-        seats: { used: 2, limit: 2 },
+        seats: { used: 1, limit: 2 },
       },
       members: [
         adminMember(verifiedAt),
         { userId: 'u-member', email: 'jiho.han@moapay.kr', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
-        { userId: 'u-invite-0', email: 'sora.park@moapay.kr', role: 'MEMBER', joinedAt: '2026-10-14T00:00:00.000Z', pending: true },
       ],
     }
   }
@@ -641,7 +650,7 @@ const seedCompany = (): CompanyRecord | null => {
       company: {
         id: 'co-1',
         bNo: COMPANY_BNO,
-        name: COMPANY_NAME,
+        name: COMPANY_BRAND,
         plan: 'ULTRA',
         verifiedAt,
         role: 'ADMIN',
@@ -863,7 +872,10 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     links = [created, ...links]
     return json(200, { data: created })
   }
-  if (method === 'GET' && tail === '/me/bookmarks') return json(200, slicePage(url, listings.filter((item) => present(item).bookmarked), (item) => item.id))
+  if (method === 'GET' && tail === '/me/bookmarks') {
+    const signed = signedOf(input, init)
+    return json(200, slicePage(url, listings.filter((item) => present(item, signed).bookmarked), (item) => item.id))
+  }
   if (method === 'GET' && tail === '/me/follows') {
     const ids = new Set<string>()
     for (const item of hubProfiles) if (withFlags(item).following) ids.add(item.userId)
@@ -1056,7 +1068,8 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
 const handleEmployerPostings = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
   const tail = routeTail(pathname)
   if (method === 'GET' && tail === '/companies/me/postings') {
-    const items = employerOwnsPostings() ? companyPostings.map(present) : []
+    const signed = signedOf(input, init)
+    const items = employerOwnsPostings() ? companyPostings.map((item) => present(item, signed)) : []
     return json(200, pageOf(url, items))
   }
   if (method === 'POST' && tail === '/postings') {
@@ -1369,7 +1382,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
   const url = new URL(requestUrl, typeof location === 'undefined' ? 'http://localhost' : location.href)
   const pathname = url.pathname
   const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
-  requestSigned = new Headers(input instanceof Request ? input.headers : init?.headers).has('Authorization')
+  const signed = signedOf(input, init)
   await new Promise((resolve) => setTimeout(resolve, 250))
   const billing = await handleBilling(method, pathname, input, init)
   if (billing) return billing
@@ -1406,23 +1419,28 @@ export const mockFetch: typeof fetch = async (input, init) => {
       },
     })
   }
-  if (method === 'GET' && /\/postings\/?$/.test(pathname)) return json(200, catalogPage(url, filteredPostings(url)))
+  if (method === 'GET' && /\/postings\/?$/.test(pathname)) return json(200, catalogPage(url, filteredPostings(url, signed)))
   if (method === 'GET' && /\/search\/?$/.test(pathname)) {
     const q = url.searchParams.get('q') ?? ''
     const type = url.searchParams.get('type') ?? 'postings'
-    const totals = SEARCH_TOTALS[q.trim()]
+    const board = SEARCH_BOARDS[q.trim()]
     if (type === 'people') {
-      const data = searchHangul(hubProfiles, q, (item) => [item.displayName, item.headline, ...(SEARCH_PEOPLE_ALIASES[item.userId] ?? [])]).map((row) => row.item)
-      return json(200, { data, page: { nextCursor: null, hasMore: false, total: totals?.people ?? data.length } })
+      const data = board
+        ? board.peopleIds.map(profileById)
+        : searchHangul(hubProfiles, q, (item) => [item.displayName, item.headline]).map((row) => withFlags(row.item))
+      return json(200, { data, page: { nextCursor: null, hasMore: false, total: board?.people ?? data.length } })
     }
     if (type === 'posts') {
       const data = searchHangul(feed, q, (item) => [item.title, item.body]).map((row) => row.item)
-      return json(200, { data, page: { nextCursor: null, hasMore: false, total: totals?.posts ?? data.length } })
+      return json(200, { data, page: { nextCursor: null, hasMore: false, total: board?.posts ?? data.length } })
     }
-    const data = q.trim()
-      ? searchHangul(listings, q, searchKeys).map((row) => present(row.item))
-      : listings.map(present)
-    return json(200, { data, page: { nextCursor: null, hasMore: false, total: totals?.postings ?? data.length } })
+    const found = board
+      ? board.postingIds.flatMap((id) => listings.filter((item) => item.id === id))
+      : q.trim()
+        ? searchHangul(listings, q, (item) => [item.company, item.title]).map((row) => row.item)
+        : listings
+    const data = found.map((item) => present(item, signed))
+    return json(200, { data, page: { nextCursor: null, hasMore: false, total: board?.postings ?? data.length } })
   }
   if (method === 'GET' && /\/sources\/?$/.test(pathname)) {
     const kind = url.searchParams.get('kind')
@@ -1430,16 +1448,17 @@ export const mockFetch: typeof fetch = async (input, init) => {
     return json(200, { data, page: { nextCursor: null, hasMore: false } })
   }
   if (method === 'GET' && /\/postings\/[^/]+$/.test(pathname)) {
-    const id = decodeURIComponent(pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? '')
+    const id = decodeURIComponent(pathname.match(/\/postings\/([^/]+)$/)?.[1] ?? '').split(REPEAT_MARK)[0] ?? ''
     const listed = listings.find((item) => item.id === id)
-    if (listed) return json(200, { data: detailFor(listed) })
+    if (listed) return json(200, { data: detailFor(listed, signed) })
     const owned = ownedPostingResponse(id)
     if (owned) return owned
     return json(404, { error: { code: 'NOT_FOUND', message: '공고를 찾지 못했어요' } })
   }
   if (method === 'GET' && /\/profiles\/[^/]+$/.test(pathname)) {
     const id = pathname.match(/\/profiles\/([^/]+)$/)?.[1] ?? HUB_PROFILES[0]!.userId
-    return json(200, { data: profileById(id) })
+    const app = isWebView() ? APP_PROFILES[id] : undefined
+    return json(200, { data: app ? withFlags(app) : profileById(id) })
   }
   if (method === 'POST' && matches(pathname, '/auth/email/signup')) {
     const payload = await readJson(input, init)

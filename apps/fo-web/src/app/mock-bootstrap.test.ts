@@ -26,10 +26,10 @@ const storeWith = (kind: Parameters<typeof mockSession>[0] | null) => {
 }
 
 describe('applyMockSearch', () => {
-  it('clears a stored employer session when the url is mock without as', () => {
+  it('clears a stored employer session when the url is mock without as', async () => {
     setMockPersona('employer')
     const store = storeWith('employer')
-    applyMockSearch('?mock=1', store)
+    await applyMockSearch('?mock=1', store)
     expect(store.load()).toBeNull()
     expect(mockPersona()).toBeNull()
     const mode = postingActionMode({ webView: false, accountType: null })
@@ -38,72 +38,72 @@ describe('applyMockSearch', () => {
     expect(needsLogin('/social', false)).toBe(true)
   })
 
-  it('replaces a stored employer session with the personal persona', () => {
+  it('replaces a stored employer session with the personal persona', async () => {
     const store = storeWith('employer')
-    applyMockSearch('?mock=1&as=personal', store)
+    await applyMockSearch('?mock=1&as=personal', store)
     const session = store.load()
     expect(session?.user).toMatchObject({ displayName: '김서준', accountType: 'PERSONAL', companyId: null })
     expect(mockPersona()).toBe('personal')
     expect(postingActionMode({ webView: false, accountType: session?.user.accountType ?? null })).toBe('personal')
   })
 
-  it('replaces a stored personal session with the employer persona', () => {
+  it('replaces a stored personal session with the employer persona', async () => {
     const store = storeWith('personal')
-    applyMockSearch('?mock=1&as=employer', store)
+    await applyMockSearch('?mock=1&as=employer', store)
     const session = store.load()
     expect(session?.user).toMatchObject({ displayName: '이민아', accountType: 'EMPLOYER', companyId: 'co-1' })
     expect(session?.user.displayName).not.toBe('김서준')
     expect(mockPersona()).toBe('employer')
   })
 
-  it('replaces the session for employer-pro and employer-ultra', () => {
+  it('replaces the session for employer-pro and employer-ultra', async () => {
     const pro = storeWith('personal')
-    applyMockSearch('?mock=1&as=employer-pro', pro)
+    await applyMockSearch('?mock=1&as=employer-pro', pro)
     expect(pro.load()?.user.companyId).toBe('co-1')
     expect(mockPersona()).toBe('employer-pro')
     const ultra = storeWith('employer')
-    applyMockSearch('mock=1&as=employer-ultra', ultra)
+    await applyMockSearch('mock=1&as=employer-ultra', ultra)
     expect(ultra.load()?.user.accountType).toBe('EMPLOYER')
     expect(mockPersona()).toBe('employer-ultra')
   })
 
-  it('treats an unknown as as a guest and clears the session', () => {
+  it('treats an unknown as as a guest and clears the session', async () => {
     const store = storeWith('employer')
-    applyMockSearch('?mock=1&as=nope', store)
+    await applyMockSearch('?mock=1&as=nope', store)
     expect(store.load()).toBeNull()
     expect(mockPersona()).toBeNull()
   })
 
-  it('leaves a real session alone when the url has no mock param', () => {
+  it('leaves a real session alone when the url has no mock param', async () => {
     setMockPersona('personal')
     const store = storeWith('employer')
-    applyMockSearch('?as=personal', store)
+    await applyMockSearch('?as=personal', store)
     expect(store.load()?.user.accountType).toBe('EMPLOYER')
     expect(mockPersona()).toBe('personal')
   })
 
   it('loads the employer company that matches the session from the mock url', async () => {
     const store = storeWith('personal')
-    applyMockSearch('?mock=1&as=employer', store)
+    await applyMockSearch('?mock=1&as=employer', store)
     const companyId = store.load()?.user.companyId
     expect(companyId).toBe('co-1')
     const response = await mockFetch('http://localhost/api/v1/companies/me')
     expect(response.status).toBe(200)
     const body = (await response.json()) as { data: { id: string; name: string } }
-    expect(body.data).toMatchObject({ id: companyId, name: '모아페이 주식회사' })
+    expect(body.data).toMatchObject({ id: companyId, name: '모아페이' })
   })
 
   it('clears the company id on a guest mock url so the company panel stays idle', async () => {
     const store = storeWith('employer')
-    applyMockSearch('?mock=1', store)
+    await applyMockSearch('?mock=1', store)
     expect(store.load()?.user.companyId ?? null).toBeNull()
     const response = await mockFetch('http://localhost/api/v1/companies/me')
     expect(response.status).toBe(404)
   })
 
-  it('sends an unverified employer to verify and keeps the verify form off login', () => {
+  it('sends an unverified employer to verify and keeps the verify form off login', async () => {
     const store = storeWith('personal')
-    applyMockSearch('?mock=1&as=employer-new', store)
+    await applyMockSearch('?mock=1&as=employer-new', store)
     const account = gateAccount(store.load())
     expect(account).toEqual({ accountType: 'EMPLOYER', verified: false })
     expect(employerGate('/employer/postings', account)).toBe('verify')

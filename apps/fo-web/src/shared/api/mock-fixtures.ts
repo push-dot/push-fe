@@ -186,23 +186,12 @@ export const LISTINGS: Posting[] = [
 
 export const POPULAR_ORDER = ['p12', 'p13', 'p1', 'p9', 'p3']
 
-export const CATALOG_COUNTS: Record<JobCategory, number> = {
-  dev: 198,
-  data: 114,
-  design: 64,
-  marketing: 52,
-  plan: 47,
-  sales: 38,
-  hr: 21,
-  ops: 29,
-}
+// WebJobs boards: 개발 외 1 (category dev,data) reads 공고 312개 over a list that keeps loading.
+export const CATALOG_TOTALS: Record<string, number> = { 'data,dev': 312 }
 
-const SEARCH_ALIASES: Record<string, string[]> = { p3: ['백엔드'], p12: ['백엔드'] }
-
-export const searchKeys = (item: Posting) => [item.company, item.title, ...(SEARCH_ALIASES[item.id] ?? [])]
-
-export const SEARCH_TOTALS: Record<string, { postings: number; people: number; posts: number }> = {
-  백엔드: { postings: 48, people: 12, posts: 31 },
+// WebSearch boards: totals and the result rows, in the board's order.
+export const SEARCH_BOARDS: Record<string, { postings: number; people: number; posts: number; postingIds: string[]; peopleIds: string[] }> = {
+  백엔드: { postings: 48, people: 12, posts: 31, postingIds: ['p1', 'p9', 'p3', 'p12'], peopleIds: ['u-taeyoon', 'u-doyun'] },
 }
 
 const JOB_BODY: Partial<PostingView> = {
@@ -227,6 +216,19 @@ export const POSTING_DETAILS: Record<string, Partial<PostingView>> = {
     workConditions: { 근무지: '성남 판교 테헤란로 152', '근무 형태': '주 3일 출근 · 유연 근무' },
   },
 }
+
+// fo-mobile's DetailWebView opens these with its own mock ids; the Push 앱 boards (JobDetail, ProfileDetail,
+// MyFollowingProfile, ProfileDetailMe) draw them, so they follow the app boards, not the web ones.
+export const APP_POSTING_BODY: Partial<PostingView> = {
+  industry: '핀테크',
+  skills: ['Kotlin', 'Spring Boot', 'JPA', 'Kafka'],
+  description: '결제 승인·취소 API를 설계하고 개발해요\n정산 배치의 성능과 정확도를 높여요',
+  requirements: ['Kotlin 또는 Java로 4년 이상 서버 개발', 'Spring Boot, JPA 실무 경험'],
+  preferred: ['결제·금융 도메인 경험', 'Kafka 등 메시징 시스템 운영 경험'],
+  workConditions: { 근무: '주 5일, 유연 출퇴근 (코어 11–16시)', 보상: '연봉 협의 · 스톡옵션' },
+}
+
+export const APP_DEADLINE_DAYS = 13
 
 const career = (company: string, role: string, startedOn: string, endedOn: string | null, description: string) => ({
   company,
@@ -301,8 +303,6 @@ export const HUB_PROFILES: Profile[] = [
   person('u-chaewon', '윤채원', 'ML 모델을 서빙하는 엔지니어', 'data', 5, 'seeking'),
 ]
 
-export const SEARCH_PEOPLE_ALIASES: Record<string, string[]> = { 'u-doyun': ['백엔드'] }
-
 export const ME_PROFILE: Profile = {
   userId: 'u1',
   displayName: '김서준',
@@ -320,6 +320,40 @@ export const ME_PROFILE: Profile = {
   postCount: 8,
   resumeSourceId: 'src-resume',
   updatedAt: '2026-10-18T09:00:00.000Z',
+}
+
+export const APP_PROFILES: Record<string, Profile> = {
+  u2: {
+    userId: 'u2',
+    displayName: '이하은',
+    avatarUrl: null,
+    headline: 'React로 사용자 경험을 다듬어요',
+    jobCategory: 'dev',
+    tenureYears: 4,
+    careerStatus: 'seeking',
+    openToOffers: true,
+    intro: '커머스와 SaaS 제품에서 프론트엔드를 맡아 왔어요. 디자인 시스템을 만들고, 느린 화면을 빠르게 바꾸는 일을 좋아해요.',
+    careers: [
+      career('누리클라우드', '프론트엔드 개발자', '2023-03-01', null, '관리자 콘솔을 Next.js로 옮기고 디자인 시스템을 만들었어요.'),
+      career('하루랩스', '웹 개발자', '2021-07-01', '2023-02-28', ''),
+    ],
+    skills: ['React', 'TypeScript', 'Next.js', 'Zustand', 'Storybook'],
+    followerCount: 128,
+    followingCount: 42,
+    postCount: 15,
+    resumeSourceId: null,
+    updatedAt: '2026-10-18T09:00:00.000Z',
+  },
+  me: {
+    ...ME_PROFILE,
+    tenureYears: 4,
+    intro: '4년 동안 결제·정산 시스템을 설계하고 운영했어요. 트래픽이 몰리는 기간에도 장애 없는 결제를 만드는 데 집중해 왔어요.',
+    careers: [
+      career('모아페이', '백엔드 엔지니어', '2022-03-01', null, '결제 승인 API와 정산 배치를 맡고 있어요.'),
+      career('하루랩스', '서버 개발자', '2021-01-01', '2022-02-28', ''),
+    ],
+    skills: ['Kotlin', 'Spring Boot', 'JPA', 'MySQL', 'Kafka'],
+  },
 }
 
 const placeholder = (hue: number) =>
@@ -690,7 +724,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     appliedAt: '2026-10-20T01:00:00.000Z',
     documents: [
       { id: 'doc-3', ...PROFILE_DOC },
-      { id: 'doc-4', title: '포트폴리오.pdf', content: '결제 승인 API와 정산 스트림 사례를 14쪽으로 정리했어요.' },
+      { id: 'doc-4', title: '포트폴리오.pdf', content: '' },
     ],
   },
   {
@@ -699,7 +733,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     displayName: '정민재',
     headline: '개발 · 5년',
     appliedAt: '2026-10-19T01:00:00.000Z',
-    documents: [{ id: 'doc-5', title: '이력서.pdf', content: '쿠버네티스 운영과 비용 절감 경험을 정리했어요.' }],
+    documents: [{ id: 'doc-5', title: '이력서.pdf', content: '' }],
   },
   {
     id: 'app-4',
@@ -707,7 +741,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     displayName: '윤채원',
     headline: '데이터 · 5년',
     appliedAt: '2026-10-18T01:00:00.000Z',
-    documents: [{ id: 'doc-6', title: '이력서 (프로필)', content: 'ML 모델을 서빙하는 엔지니어예요.' }],
+    documents: [{ id: 'doc-6', title: '이력서 (프로필)', content: '' }],
   },
   {
     id: 'app-1',
@@ -716,8 +750,8 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     headline: '개발 · 3년',
     appliedAt: '2026-10-15T01:00:00.000Z',
     documents: [
-      { id: 'doc-1', title: '이력서 (프로필)', content: '평일엔 iOS 앱을 만들어요.' },
-      { id: 'doc-2', title: '경력기술서.pdf', content: '사이드 프로젝트 두 개를 운영했어요.' },
+      { id: 'doc-1', title: '이력서 (프로필)', content: '' },
+      { id: 'doc-2', title: '경력기술서.pdf', content: '' },
     ],
   },
   {
@@ -727,8 +761,8 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     headline: '개발 · 6년',
     appliedAt: '2026-10-12T01:00:00.000Z',
     documents: [
-      { id: 'doc-7', title: '이력서.pdf', content: '핀테크 서버를 6년 만들었어요.' },
-      { id: 'doc-8', title: '포트폴리오.pdf', content: '결제 전환율 개선 사례예요.' },
+      { id: 'doc-7', title: '이력서.pdf', content: '' },
+      { id: 'doc-8', title: '포트폴리오.pdf', content: '' },
     ],
   },
 ]
@@ -821,9 +855,6 @@ export const CHAT_SEEDS: ChatSeed[] = [
     id: 'c-draft',
     title: '데이터 엔지니어 새 공고',
     updatedAt: '2026-10-20T06:00:00.000Z',
-    messages: [
-      ['USER', '데이터 엔지니어 공고 초안 써 줘'],
-      ['ASSISTANT', '초안을 만들었어요. 공고 편집에서 열어 고쳐 주세요.'],
-    ],
+    messages: [],
   },
 ]

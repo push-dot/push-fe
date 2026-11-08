@@ -161,7 +161,7 @@ describe('employer chat mock', () => {
     const ultra = await read<{ data: { plan: string; role: string; name: string; seats: { used: number; limit: number } } }>(
       await mockFetch('http://localhost/api/v1/companies/me'),
     )
-    expect(ultra.data).toMatchObject({ plan: 'ULTRA', role: 'ADMIN', name: '모아페이 주식회사', seats: { used: 0, limit: 5 } })
+    expect(ultra.data).toMatchObject({ plan: 'ULTRA', role: 'ADMIN', name: '모아페이', seats: { used: 0, limit: 5 } })
 
     setMockPersona('employer')
     const basic = await read<{ data: { plan: string; seats: { limit: number } } }>(await mockFetch('http://localhost/api/v1/companies/me'))
