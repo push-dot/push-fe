@@ -96,6 +96,12 @@ tags:
 - tapOn: "보관 풀기"
 - waitForAnimationToEnd
 - assertVisible: "수락하고 답장하기"
+- tapOn: "더 보기"
+- extendedWaitUntil:
+    visible: "제안 보관하기"
+    timeout: 10000
+- assertNotVisible: "보관 풀기"
+- runFlow: _dismiss_menu.yaml
 - tapOn: "뒤로"
 - extendedWaitUntil:
     notVisible: ".*누리클라우드 채용팀.*"
@@ -123,7 +129,7 @@ tags:
 - extendedWaitUntil:
     visible: "어떻게 답장할까요?"
     timeout: 10000
-# iOS types the board's Korean text; Android inputText is ASCII only, so its first bubble reads "Thank you".
+# Android inputText is ASCII only, so it pastes the board's Korean text from the clipboard.
 - tapOn: "답장.*"
 - runFlow:
     when:
@@ -134,7 +140,8 @@ tags:
     when:
       platform: Android
     commands:
-      - inputText: "Thank you"
+      - setClipboard: "제안 감사해요, 지현 님! 다음 주 화요일이나 목요일 저녁이면 좋아요."
+      - pasteText
 - tapOn: "수락하고 보내기"
 - extendedWaitUntil:
     visible: ".*목요일 저녁 7시.*"
@@ -149,7 +156,8 @@ tags:
     when:
       platform: Android
     commands:
-      - inputText: "fail"
+      - setClipboard: "좋아요. 그때 뵐게요!"
+      - pasteText
 - tapOn: "보내기"
 - extendedWaitUntil:
     visible: "이 대화에는 더 이상 메시지를 보낼 수 없어요."
