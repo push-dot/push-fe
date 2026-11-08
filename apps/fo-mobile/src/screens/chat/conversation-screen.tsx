@@ -92,7 +92,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
 
   const company = headerCompany(chat.items, conv?.company)
   const placeholder = composerPlaceholder(chat)
-  // The keyboard lifts the composer on Android, so the nav-bar inset below it would leave a gap.
+  // The keyboard covers the nav bar / home indicator, so its inset below the composer would leave a gap.
   const keyboard = useKeyboardHeight()
   const showPanel = chat.approval && !saying
   const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
@@ -157,7 +157,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
               onMaterials={() => (setSayingFor(chat.approval?.id), router.push(materialsPath()))}
             />
           ) : (
-            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' ? (keyboard ? spacing[2] : insets.bottom + spacing[2]) : Math.max(insets.bottom, 6) }}>
+            <View style={{ paddingHorizontal: spacing[3], paddingBottom: keyboard ? spacing[2] : Platform.OS === 'android' ? insets.bottom + spacing[2] : Math.max(insets.bottom, 6) }}>
               <ComposerArea
                 inputRef={input}
                 placeholder={saying ? '어떻게 할지 말해 주세요' : placeholder}

@@ -14,7 +14,7 @@ const ChatHomeScreen = () => {
   const [typing, setTyping] = useState(false)
   // The floating iOS tab bar is inside the inset; the design keeps the composer a step above it.
   const lift = Platform.OS === 'ios' && insets.bottom > 0 ? spacing[4] : 0
-  // Android pads the keyboard height itself; the nav-bar inset on top of it would leave a gap.
+  // The keyboard covers the inset below the composer, so it is dropped while the keyboard is up.
   const keyboard = useKeyboardHeight()
 
   return (
@@ -34,7 +34,7 @@ const ChatHomeScreen = () => {
           ))}
         </ScrollView>
       ) : null}
-      <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' && keyboard ? 10 : Math.max(insets.bottom + lift, 10) }}>
+      <View style={{ paddingHorizontal: spacing[3], paddingBottom: keyboard ? (Platform.OS === 'android' ? 10 : spacing[2]) : Math.max(insets.bottom + lift, 10) }}>
         <ComposerArea
           placeholder="공고 링크를 붙여넣어 보세요"
           onTyping={setTyping}
