@@ -51,7 +51,7 @@ export const stubs = {
     DatePickerDialog: 'DatePickerDialog',
     TimePickerDialog: 'TimePickerDialog',
   },
-  composeModifiers: modifiers(['semantics', 'fillMaxWidth', 'fillMaxSize', 'weight']),
+  composeModifiers: modifiers(['semantics', 'fillMaxWidth', 'fillMaxSize', 'weight', 'selectable']),
   theme: {
     palette,
     radius,
