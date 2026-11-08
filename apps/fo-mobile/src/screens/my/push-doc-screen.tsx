@@ -142,6 +142,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
           />
         }
         safeTop={!(sheet && Platform.OS === 'ios')}
+        sheet={sheet}
       />
       {doc.isLoading || !item || !lines ? (
         <ListSkeleton />

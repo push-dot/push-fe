@@ -149,11 +149,7 @@ const SettingsScreen = () => {
         />
         <SettingsRow
           label="테마"
-          right={
-            <View style={{ width: 196 }}>
-              <SegmentedControl items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />
-            </View>
-          }
+          right={<SegmentedControl compact items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />}
         />
       </SettingsGroup>
 
