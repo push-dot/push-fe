@@ -34,10 +34,8 @@ name: 에이전트로 시작 → 홈·마이를 열기 전에 그 탭으로 이�
     visible: "공고 .*개"
     timeout: 20000
 - takeScreenshot: 14_unopened_tab_push-01
+# 뒤로 lands on the feed under 채용공고; with 홈's stack missing it went back to 에이전트 and 홈 showed 채용공고 again.
 - tapOn: "뒤로"
-- extendedWaitUntil:
-    visible: "공고 링크로 맞추기"
-    timeout: 10000
 - runFlow:
     file: _tap_tab.yaml
     env:
