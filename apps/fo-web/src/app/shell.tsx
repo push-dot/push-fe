@@ -1,5 +1,5 @@
 import { brandColor } from '@push/shared'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { initials } from '../shared/lib/format'
@@ -41,6 +41,10 @@ const Shell = () => {
   }, [queryText])
   const employer = session?.user.accountType === 'EMPLOYER'
   const chatScreen = !auth && location.pathname.startsWith('/employer/chat')
+  const navRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    navRef.current?.querySelector('a.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [location.pathname, employer])
   const end = topEndLinks(Boolean(session))
   const live = Boolean(session) && !auth
   const notes = useNotifications(live)
@@ -81,7 +85,7 @@ const Shell = () => {
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </NavLink>
-            <nav className="nav">
+            <nav className="nav" ref={navRef}>
               {MAIN_NAV.map((link) => (
                 <NavLink key={link.to} to={link.to} end={link.end} className={() => (navOn(location.pathname, link.to) ? 'on' : '')}>
                   {link.label}
