@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react'
-import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
+import { StyleSheet, TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
 import Icon from './icon'
 import { inputMetrics } from './text-field-metrics'
 import Text from './text'
 
-/** `compact`: the 48pt `.field` some boards draw (FilterSkill search) instead of the 56pt default. */
-type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; variant?: 'field' | 'search'; compact?: boolean; trailing?: ReactNode }
+const RING = 2
 
-const TextField = ({ icon, label, max, multiline, value, style, variant = 'field', compact, trailing, ...rest }: Props) => {
+/** `compact`: the 48pt `.field` some boards draw (FilterSkill search) instead of the 56pt default. */
+type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; variant?: 'field' | 'search'; compact?: boolean; trailing?: ReactNode; focusRing?: boolean }
+
+const TextField = ({ icon, label, max, multiline, value, style, variant = 'field', compact, trailing, focusRing, ...rest }: Props) => {
   const c = useColors()
   const { fontScale } = useWindowDimensions()
   const search = variant === 'search'
@@ -30,6 +32,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
           {label}
         </Text>
       ) : null}
+      {focusRing ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius.md, borderWidth: RING, borderColor: c.ac }]} /> : null}
       <View style={{ flexDirection: 'row', alignItems: multiline ? 'flex-start' : 'center', gap: spacing[2] }}>
         {(search ? 'search' : icon) ? <Icon name={search ? 'search' : icon!} size={search ? 20 : 18} color="t3" /> : null}
         <TextInput

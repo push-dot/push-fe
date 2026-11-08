@@ -708,7 +708,7 @@ const badRequest = (field: string, message: string) => ({
 })
 const blockedUsers = new Map<string, { displayName: string; createdAt: string }>([
   ['u-blocked-jihyun', { displayName: '오지현', createdAt: on(11, 7, 9) }],
-  ['u-blocked-greenticket', { displayName: '그린티켓 채용팀', createdAt: on(10, 3, 9) }],
+  ['u-blocked-minjae', { displayName: '한민재', createdAt: on(10, 3, 9) }],
 ])
 const otherParty = (o: Offer) => (o.sender.id === ME.id ? o.recipient.id : o.sender.id)
 mock('GET', 'me/offers', ({ query }) => {

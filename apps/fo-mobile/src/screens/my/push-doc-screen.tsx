@@ -104,7 +104,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
       onError: () =>
         showToast({
           message: deleteCopy.failed,
-          tone: 'error',
+          alert: true,
           opaque: true,
           bottom: TOAST_ABOVE.tabs,
           action: { label: RETRY_LABEL, onPress: removeDoc },

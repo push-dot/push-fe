@@ -6,6 +6,7 @@ describe('postsMenu', () => {
     const menu = postsMenu('commented', vi.fn())
     expect(menu).toHaveLength(1)
     expect(menu[0]!.title).toBe('보기')
+    expect(menu[0]!.check).toBe('trailing')
     expect(menu[0]!.actions.map((a) => [a.label, !!a.selected])).toEqual([
       ['내가 쓴 글', false],
       ['댓글 단 글', true],

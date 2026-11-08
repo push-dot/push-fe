@@ -13,6 +13,7 @@ export const postsMenu = (view: PostsView, pick: (v: PostsView) => void): MenuSe
   {
     key: 'view',
     title: '보기',
+    check: 'trailing',
     actions: POSTS_VIEWS.map((v) => ({ key: v.key, label: v.label, selected: v.key === view, onPress: () => pick(v.key) })),
   },
 ]

@@ -12,6 +12,7 @@ import { useReduceMotion } from './use-reduce-motion'
 
 const TOAST_HEIGHT = 52
 const ACTION_HEIGHT = 44
+const ALERT_ICON = 20
 const SHAPE = {
   plain: { inset: spacing[4], radius: radius.md, shadow: '0 8px 24px rgba(0,0,0,0.16)' },
   tone: { inset: spacing[5], radius: 18, shadow: '0 10px 30px rgba(0,0,0,0.18)' },
@@ -88,6 +89,7 @@ const ToastHost = () => {
       <Surface shape={{ borderRadius: shape.radius }} shadow={shape.shadow} opaque={toast.opaque}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[3], minHeight: TOAST_HEIGHT, paddingLeft: spacing[4], paddingRight: toast.action ? spacing[2] : spacing[4] }}>
           {toast.tone ? <ToneIcon tone={toast.tone} /> : null}
+          {toast.alert ? <Icon name="alert" size={ALERT_ICON} color="red" /> : null}
           <Text v="b2" weight="600" style={{ flex: 1, color: ink.text }}>
             {toast.message}
           </Text>

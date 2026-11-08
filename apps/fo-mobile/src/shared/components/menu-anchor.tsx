@@ -44,7 +44,8 @@ const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
                 ) : null}
                 {s.actions.map((a, i) => {
                   const ink = a.destructive ? c.red : c.t1
-                  const choice = s.actions.some((x) => x.selected !== undefined)
+                  const trailing = s.check === 'trailing'
+                  const choice = !trailing && s.actions.some((x) => x.selected !== undefined)
                   const pick = () => (onClose(), a.onPress())
                   return (
                     <Fragment key={a.key}>
@@ -68,8 +69,15 @@ const MenuAnchor = ({ actions, open, onClose, children }: Props) => {
                           </DropdownMenuItem.LeadingIcon>
                         ) : null}
                         <DropdownMenuItem.Text>
-                          <ComposeText>{a.label}</ComposeText>
+                          <ComposeText style={trailing && a.selected ? { fontWeight: 'bold' } : undefined}>{a.label}</ComposeText>
                         </DropdownMenuItem.Text>
+                        {trailing && a.selected ? (
+                          <DropdownMenuItem.TrailingIcon>
+                            <RNHostView matchContents>
+                              <Icon name="check" size={CHECK_SIZE} color="acText" />
+                            </RNHostView>
+                          </DropdownMenuItem.TrailingIcon>
+                        ) : null}
                       </DropdownMenuItem>
                     </Fragment>
                   )

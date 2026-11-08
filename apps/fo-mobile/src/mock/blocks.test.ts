@@ -14,7 +14,7 @@ const call = async (method: string, path: string, body?: unknown) => {
 describe('mock me/blocks like push-be', () => {
   it('lists the newest block first with the total, and unblocking removes the row', async () => {
     const list = await call('GET', 'me/blocks')
-    expect(list.json.data.map((b: { user: { displayName: string } }) => b.user.displayName)).toEqual(['오지현', '그린티켓 채용팀'])
+    expect(list.json.data.map((b: { user: { displayName: string } }) => b.user.displayName)).toEqual(['오지현', '한민재'])
     expect(list.json.page.total).toBe(2)
 
     const removed = await call('DELETE', 'me/blocks/u-blocked-jihyun')

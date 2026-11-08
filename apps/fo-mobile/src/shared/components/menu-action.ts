@@ -15,7 +15,7 @@ export type MenuAction = {
   selected?: boolean
 }
 
-export type MenuSection = { key: string; title?: string; actions: MenuAction[] }
+export type MenuSection = { key: string; title?: string; actions: MenuAction[]; /** Android: the pick reads as a bold label with a trailing check (MyPostsAllMenu) instead of the leading check. */ check?: 'trailing' }
 
 export const menuSections = (items: MenuAction[] | MenuSection[]): MenuSection[] =>
   items.length && 'actions' in items[0]! ? (items as MenuSection[]) : [{ key: 'actions', actions: items as MenuAction[] }]

@@ -102,6 +102,15 @@ describe('MenuAnchor (Android)', () => {
     expect(items.map((i) => (i.props.modifiers as { arg: unknown }[])[0]!.arg)).toEqual([true, false])
   })
 
+  it('draws a trailing acText check and a bold label when the section asks for it', () => {
+    const section = [{ key: 'view', title: '보기', check: 'trailing' as const, actions: [{ key: 'a', label: '내가 쓴 글', selected: true, onPress: vi.fn() }, { key: 'b', label: '댓글 단 글', selected: false, onPress: vi.fn() }] }]
+    const items = findAll(MenuAnchor({ actions: section, open: true, onClose: vi.fn(), children: createElement('View') }), stubs.compose.DropdownMenuItem)
+    expect(items.map((i) => findAll(i, stubs.compose.DropdownMenuItem.TrailingIcon).length)).toEqual([1, 0])
+    expect(findAll(items[0]!, 'Icon').map((i) => [i.props.name, i.props.color])).toEqual([['check', 'acText']])
+    expect(items.flatMap((i) => findAll(i, stubs.compose.DropdownMenuItem.LeadingIcon))).toHaveLength(0)
+    expect(findAll(items[0]!, stubs.compose.Text).map((t) => t.props.style)).toEqual([{ fontWeight: 'bold' }])
+  })
+
   it('draws no leading slot in a menu with nothing to choose', () => {
     const items = findAll(MenuAnchor({ actions: [actions[0]!, actions[1]!], open: true, onClose: vi.fn(), children: createElement('View') }), stubs.compose.DropdownMenuItem)
     expect(items.flatMap((i) => findAll(i, stubs.compose.DropdownMenuItem.LeadingIcon))).toHaveLength(0)
