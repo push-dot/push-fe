@@ -1,15 +1,15 @@
-import { brandColor } from '@push/shared'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { initials } from '../shared/lib/format'
 import { AgentMark, Icon } from '../shared/ui/icon'
 import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
-import EmployerChip from './employer-chip'
+import AccountMenu from './account-menu'
 import { EMPLOYER_LINKS, topEndLinks } from './shell-links'
+import TabBar from './tab-bar'
+import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
 
@@ -44,15 +44,20 @@ const Shell = () => {
   const navRef = useRef<HTMLElement>(null)
   useEffect(() => {
     navRef.current?.querySelector('a.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [location.pathname, employer])
+    const strip = document.querySelector<HTMLElement>('.side')
+    const on = strip?.querySelector<HTMLElement>('.side-link.on')
+    if (strip && on && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = on.offsetLeft - strip.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2
+  }, [location.pathname, location.search, employer])
   const end = topEndLinks(Boolean(session))
   const live = Boolean(session) && !auth
   const notes = useNotifications(live)
   const received = useOffers('received', live)
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
+  const tabs = !auth && tabBarShown(location.pathname)
+  const shellClass = ['shell', 'browser', auth ? 'auth-shell' : '', chatScreen ? 'chat-screen' : '', tabs ? 'has-tabs' : ''].filter(Boolean).join(' ')
   return (
-    <div className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}>
+    <div className={shellClass}>
       {auth ? (
         <header className="auth-bar">
           <NavLink to="/" end className="auth-logo">
@@ -91,8 +96,7 @@ const Shell = () => {
                   {link.label}
                   {!session && link.lock ? (
                     <svg className="ic lock" viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="6" y="11" width="12" height="9" rx="2" />
-                      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                      <path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5Zm2-.2V7.5a3.5 3.5 0 0 1 7 0v2.8" />
                     </svg>
                   ) : null}
                 </NavLink>
@@ -121,7 +125,9 @@ const Shell = () => {
                   navigate(search ? `/search?${search}` : '/search')
                 }}
               >
-                <Icon name="search" size={18} width={2.2} />
+                <button type="submit" className="sbox-go" aria-label={NAV.search}>
+                  <Icon name="search" size={20} width={2.2} />
+                </button>
                 <input aria-label={NAV.search} placeholder={SEARCH_PLACEHOLDER} value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} />
               </form>
             ) : null}
@@ -140,15 +146,8 @@ const Shell = () => {
                   {offerCount > 0 ? <span className="nb">{offerCount}</span> : null}
                 </NavLink>
               ) : null}
-              {session && employer ? (
-                <EmployerChip />
-              ) : session ? (
-                <NavLink to="/me" className="me-chip" aria-label={NAV.my}>
-                  <span className="av hd-av" style={{ background: brandColor(session.user.displayName) }}>
-                    {initials(session.user.displayName)}
-                  </span>
-                  <Icon name="down" size={16} width={2.2} />
-                </NavLink>
+              {session ? (
+                <AccountMenu />
               ) : (
                 <>
                   <NavLink to="/login" className="btn sec sm">
@@ -173,15 +172,20 @@ const Shell = () => {
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </span>
-            {FOOTER_LINKS.map((label) => (
-              <span key={label} className={label === '개인정보 처리방침' ? 'w7' : undefined}>
-                {label}
-              </span>
-            ))}
+            {FOOTER_LINKS.map((link) =>
+              'to' in link ? (
+                <Link key={link.label} to={link.to} className={link.to === '/privacy' ? 'w7' : undefined}>
+                  {link.label}
+                </Link>
+              ) : (
+                <span key={link.label}>{link.label}</span>
+              ),
+            )}
             <span className="ft-mark">{FOOTER_MARK}</span>
           </div>
         </footer>
       )}
+      {tabs ? <TabBar kind={!session ? 'guest' : employer ? 'employer' : 'personal'} /> : null}
     </div>
   )
 }

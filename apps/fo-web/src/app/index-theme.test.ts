@@ -21,8 +21,9 @@ describe('index.html theme boot', () => {
     expect(boot('?theme=light&mock=1', true)).toEqual({ theme: 'light', stored: [] })
   })
 
-  it('leaves prefers-color-scheme in charge without a valid ?theme=', () => {
-    expect(boot('')).toEqual({ theme: undefined, stored: [] })
-    expect(boot('?theme=system')).toEqual({ theme: undefined, stored: [] })
+  it('falls back to the settings choice in the browser, never in the WebView', () => {
+    expect(boot('')).toEqual({ theme: 'dark', stored: [] })
+    expect(boot('?theme=system')).toEqual({ theme: 'dark', stored: [] })
+    expect(boot('', true)).toEqual({ theme: undefined, stored: [] })
   })
 })

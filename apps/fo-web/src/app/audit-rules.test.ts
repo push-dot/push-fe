@@ -9,19 +9,16 @@ const rule = (selector: string) => {
   return matches.at(-1)?.[1] ?? ''
 }
 
-describe('audit rules', () => {
-  it('nav idle is t1', () => {
-    expect(rule('.browser .nav a')).toContain('color:var(--t1)')
+describe('v2 selected styles', () => {
+  it('top nav: t2 idle, acText 700 with a 2px underline when selected', () => {
+    expect(rule('.browser .nav a')).toContain('color:var(--t2)')
+    expect(rule('.browser .nav a.on')).toBe('color:var(--acText);font-weight:700')
+    expect(rule('.browser .nav a.on::after')).toContain('height:2px')
   })
 
-  it('nav selected is acText with inset ring', () => {
-    const selected = rule('.browser .nav a.on')
-    expect(selected).toContain('color:var(--acText)')
-    expect(selected).toContain('background:var(--acSoft)')
-    expect(selected).toContain('box-shadow:inset 0 0 0 1.5px var(--ac)')
-  })
-
-  it('nav min height 48', () => {
-    expect(rule('.browser .nav a')).toContain('min-height:48px')
+  it('side menu and chips: lavender ring', () => {
+    for (const selector of ['.browser .side-link.on', '.browser .seg button[aria-selected="true"]']) {
+      expect(rule(selector)).toContain('box-shadow:inset 0 0 0 1.5px var(--ac)')
+    }
   })
 })

@@ -12,7 +12,7 @@ describe('isAuthChrome', () => {
     expect(isAuthChrome('/invites')).toBe(false)
     expect(isAuthChrome('/')).toBe(false)
     expect(isAuthChrome('/jobs')).toBe(false)
-    expect(isAuthChrome('/auth/callback')).toBe(false)
+    expect(isAuthChrome('/auth/callback')).toBe(true)
     expect(isAuthChrome('/employer/postings')).toBe(false)
   })
 })
