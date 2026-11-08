@@ -8,7 +8,7 @@ const api = vi.hoisted(() => ({
 vi.mock('@/shared/infrastructure', () => ({ api, http: {}, API_MOCK: false, hapticImpactLight: vi.fn(), hapticNotify: vi.fn() }))
 vi.mock('@/features/my', () => ({ myApi: { upload: vi.fn(), sources: vi.fn(), googleConnected: vi.fn() } }))
 
-const { hydrate, useChatStore } = await import('../stores')
+const { fromHistory, hydrate, useChatStore } = await import('../stores')
 
 async function* frames(...evs: StreamEvent[]) {
   yield* evs
@@ -40,6 +40,7 @@ describe('hydrate', () => {
     await vi.waitFor(() => expect(chat('c1').working).toBeNull())
     expect(api.conversations.follow).toHaveBeenCalledWith('c1', undefined, expect.anything())
     expect(chat('c1').items.map((i) => (i.type === 'user' || i.type === 'agentText' ? i.text : i.type))).toEqual(['맞춰 줘', 'tool', '이어서 해 줘', '보는 중', 'worked'])
+    expect(chat('c1').items.map(fromHistory)).toEqual([true, true, true, false, false])
   })
 
   it('falls back to the plain messages when the turns cannot be read', async () => {
@@ -47,6 +48,7 @@ describe('hydrate', () => {
     api.conversations.turns.mockRejectedValue(new Error('404'))
     await hydrate('c2')
     expect(chat('c2').items).toMatchObject([{ type: 'user', text: '안녕' }])
+    expect(chat('c2').items.every(fromHistory)).toBe(true)
     expect(api.conversations.follow).not.toHaveBeenCalled()
   })
 })

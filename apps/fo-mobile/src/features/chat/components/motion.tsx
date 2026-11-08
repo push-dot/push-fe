@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { Animated, Easing, View, type StyleProp, type ViewStyle } from 'react-native'
 import { BUBBLE } from '../constants'
 import { useReduceMotion } from '@/shared/components'
 
@@ -12,8 +12,14 @@ type AppearProps = {
   duration?: number
 }
 
+const Still = createContext(false)
+/** Items already on screen before (history) render in place instead of playing their entrance. */
+export const AppearStill = Still.Provider
+
 /** Plays once on mount. */
-export const Appear = ({ children, style, kind = 'up', delay = 0, duration }: AppearProps) => {
+export const Appear = (props: AppearProps) => (useContext(Still) ? <View style={props.style}>{props.children}</View> : <Entrance {...props} />)
+
+const Entrance = ({ children, style, kind = 'up', delay = 0, duration }: AppearProps) => {
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(0))[0]
   useEffect(() => {

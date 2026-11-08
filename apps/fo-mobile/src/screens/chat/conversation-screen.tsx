@@ -24,8 +24,10 @@ import {
   Item,
   Queued,
   Appear,
+  AppearStill,
   accountPath,
   docsPath,
+  fromHistory,
   materialsPath,
   quickStartPath,
   renamePath,
@@ -121,16 +123,17 @@ const ConversationScreen = ({ id }: { id: string }) => {
         keyboardDismissMode="interactive"
       >
         {chat.items.map((it) => (
-          <Item
-            key={it.id}
-            item={it}
-            onAction={onAction}
-            onConvert={onConvert}
-            onView={onView}
-            resultPending={convert.isPending}
-            resultAwaiting={!!chat.approval && it.id === lastResultId}
-            onUsage={onUsage}
-          />
+          <AppearStill key={it.id} value={fromHistory(it)}>
+            <Item
+              item={it}
+              onAction={onAction}
+              onConvert={onConvert}
+              onView={onView}
+              resultPending={convert.isPending}
+              resultAwaiting={!!chat.approval && it.id === lastResultId}
+              onUsage={onUsage}
+            />
+          </AppearStill>
         ))}
         {chat.queue.map((item, i) => (
           <Queued key={`${i}-${item.text}`} text={item.text} />

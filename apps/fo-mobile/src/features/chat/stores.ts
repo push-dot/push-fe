@@ -18,7 +18,7 @@ import { applyEvent, emptyChat } from './utils/reducer'
 import { isConsentRequired } from './utils/consent'
 import { errorText, fromStream } from './utils/stream'
 import { restoreTurns } from './utils/turns'
-import type { ChatEvent, ChatState } from './types'
+import type { ChatEvent, ChatItem, ChatState } from './types'
 
 // Runs live outside React so they keep going when the conversation screen closes (feature-spec 2).
 export const useChatStore = create<{ chats: Record<string, ChatState> }>(() => ({ chats: {} }))
@@ -273,6 +273,15 @@ export const stop = (id: string) => {
 
 const busy = (id: string) => get(id).items.length > 0 || runs.has(id)
 
+const history = new WeakSet<ChatItem>()
+/** True for items restored by `hydrate`: they were already there, so they skip the entrance animation. */
+export const fromHistory = (item: ChatItem) => history.has(item)
+
+const restore = (id: string, chat: ChatState) => {
+  chat.items.forEach((i) => history.add(i))
+  useChatStore.setState((s) => ({ chats: { ...s.chats, [id]: chat } }))
+}
+
 export const hydrate = async (id: string) => {
   if (busy(id)) return
   const [res, turns] = await Promise.all([fetchConversationMessages(id), fetchConversationTurns(id).catch(() => null)])
@@ -281,15 +290,17 @@ export const hydrate = async (id: string) => {
   if (newest) {
     // Joined tokens keep their first seq, so a running job is replayed whole instead of resumed after it.
     const active = newest.status === 'RUNNING' || newest.status === 'PENDING'
-    const chat = restoreTurns([active ? { ...newest, events: [] } : newest, ...older], res.data)
-    useChatStore.setState((s) => ({ chats: { ...s.chats, [id]: chat } }))
+    restore(id, restoreTurns([active ? { ...newest, events: [] } : newest, ...older], res.data))
     if (active && !API_MOCK) void startRun({ conversationId: id, follow: true })
     return
   }
   // push-be pages newest first; the transcript reads oldest first.
-  for (const m of [...res.data].reverse()) {
-    dispatch(id, m.role === 'USER' ? { type: 'user', id: m.id, text: m.text } : { type: 'agentText', id: m.id, text: m.text })
-  }
+  restore(
+    id,
+    [...res.data]
+      .reverse()
+      .reduce((s, m) => applyEvent(s, m.role === 'USER' ? { type: 'user', id: m.id, text: m.text } : { type: 'agentText', id: m.id, text: m.text }), get(id)),
+  )
 }
 
 export const forget = (id: string) =>
