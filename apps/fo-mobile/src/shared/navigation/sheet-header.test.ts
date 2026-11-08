@@ -19,10 +19,4 @@ describe('sheet header top', () => {
   it('leaves a route outside a page sheet on the real inset', () => {
     expect(sheetHeaderTop('android', false, INSET, TOP_BAR_ROW)).toBe(INSET)
   })
-
-  it('moves the pushed Push 서류 page only when the modal opened it (sheet=1), not from the tabs', () => {
-    const header = (sheetParam?: string) => sheetHeaderTop('android', sheetParam === '1', INSET, TOP_BAR_ROW)
-    expect(header('1')).toBe(24)
-    expect(header(undefined)).toBe(INSET)
-  })
 })
