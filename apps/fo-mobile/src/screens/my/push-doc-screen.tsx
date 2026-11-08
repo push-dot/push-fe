@@ -18,6 +18,7 @@ import {
   PROFILE_ACTIONS_TOP,
   PROFILE_NAME_TOP,
   RETRY_LABEL,
+  SHEET_SWAP_MS,
   pushCardLines,
   pushDocMenu,
   SET_BASE_COPY,
@@ -116,7 +117,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
       posting: () => router.push(`/postings/${application?.jobId}`),
       export: () => share.mutate({ documentId: id }),
       rename: () => router.push(`/docs/push/${id}/rename`),
-      delete: () => askConfirm(deleteConfirm({ fileName: item?.title ?? '' }, removeDoc)),
+      delete: () => askConfirm(deleteConfirm({ fileName: item?.title ?? '' }, () => setTimeout(removeDoc, SHEET_SWAP_MS))),
     },
   )
   const editable = (s: ProfileSection) => (application ? () => edit(s) : undefined)
