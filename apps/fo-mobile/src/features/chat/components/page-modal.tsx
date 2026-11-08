@@ -27,7 +27,7 @@ const PageModal = ({
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
   return (
-    <View style={{ flex: 1, backgroundColor: c.bg, paddingTop: ios ? spacing[4] : insets.top + spacing[2] }}>
+    <View style={{ flex: 1, backgroundColor: c.bg, paddingTop: ios ? spacing[4] : insets.top + spacing[2] - 2 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingHorizontal: spacing[5], paddingBottom: tight ? 0 : spacing[2] }}>
         {left ?? <GlassButton actions={[{ icon: 'x', label: '닫기', onPress: onClose }]} />}
         <Text v="h3" accessibilityRole="header" style={{ flex: 1, textAlign: 'center' }}>
