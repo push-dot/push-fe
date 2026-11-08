@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router'
-import { useFocusedOnce } from '@/shared/navigation'
 
 // Unique initial route per tab group avoids duplicate "/" paths across groups.
 export const unstable_settings = { initialRouteName: 'chat' }
 
-const TabStack = () => (useFocusedOnce() ? <Stack screenOptions={{ headerShown: false }} /> : null)
+// Not mounted on first focus like the other tabs: ChatHomeScreen's ConsentSheet opens consent for chats started from them.
+const TabStack = () => <Stack screenOptions={{ headerShown: false }} />
 
 export default TabStack
