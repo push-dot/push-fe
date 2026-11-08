@@ -71,6 +71,28 @@ describe('viewerBox', () => {
   })
 })
 
+describe('the menu of an offer opened without a box (notification link)', () => {
+  const sent = { ...offer, status: 'ACCEPTED', sender: party('me'), recipient: party('them') } as Offer
+  const d = { ...deps(), profile: vi.fn(), confirm: vi.fn() }
+  const menu = offerMenuSections(sent, viewerBox(sent, 'me', 'received'), d)
+
+  it('offers no 제안 보관하기 on a sent offer', () => {
+    expect(menu.map((s) => s.actions.map((a) => a.label))).toEqual([['허브 프로필 보기'], ['신고하기', '차단하기']])
+  })
+
+  it('opens the profile of the other person, never your own', () => {
+    menu[0]!.actions[0]!.onPress()
+    expect(d.profile).toHaveBeenCalledWith('them')
+  })
+
+  it('blocks the other person, never yourself', async () => {
+    vi.mocked(d.confirm).mockImplementation((r) => r.onConfirm())
+    menu[1]!.actions[1]!.onPress()
+    await flush()
+    expect(d.block).toHaveBeenCalledWith('them')
+  })
+})
+
 describe('offerMenuSections', () => {
   const sectionDeps = (over: Partial<OfferMenuDeps> = {}) => ({ ...deps(over), profile: vi.fn(), confirm: vi.fn() })
   const labels = (o: Offer, box: 'received' | 'sent' = 'received') =>
