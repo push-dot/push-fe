@@ -11,6 +11,7 @@ const HubFilterSheetScreen = () => {
   const sent = useProfileCount(['offers'], { explore: 'offers' }, true)
   return (
     <Sheet
+      actionGap={6}
       action={{
         label: total === undefined ? '프로필 보기' : `프로필 ${total}개 보기`,
         onPress: () => {

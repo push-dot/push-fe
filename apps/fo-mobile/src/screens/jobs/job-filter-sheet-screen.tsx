@@ -29,6 +29,7 @@ const JobFilterSheetScreen = () => {
   return (
     <Sheet
       full={full}
+      actionGap={6}
       onLayout={bound.onSheetLayout}
       action={{
         label: total === undefined ? '공고 보기' : `공고 ${formatCount(total)}개 보기`,

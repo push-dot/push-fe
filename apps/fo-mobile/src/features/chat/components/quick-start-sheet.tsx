@@ -71,7 +71,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
     <DocField label={qs.docLabel} doc={doc} picking={pickingDoc} chevron={!!qs.listLabel} docs={docs.data} onToggle={() => setPickingDoc((v) => !v)} onPick={(name) => (setDoc(name), setPickingDoc(false))} />
   )
   return (
-    <Sheet gap={spacing[3]} action={action} onLayout={bound.onSheetLayout}>
+    <Sheet gap={spacing[3]} actionGap={4} action={action} onLayout={bound.onSheetLayout}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2] }}>
         <View style={{ flex: 1, gap: spacing[1] }}>
           <Text v="h2" accessibilityRole="header">
