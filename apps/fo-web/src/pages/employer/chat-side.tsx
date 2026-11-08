@@ -33,7 +33,7 @@ const ChatSide = ({
     <nav>
       {conversations.map((conversation) => (
         <Link key={conversation.id} className={conversation.id === activeId ? 'chat-link on' : 'chat-link'} to={`/employer/chat/${conversation.id}`}>
-          <span className="b2 w7 cap">{conversation.title || '기업 AI'}</span>
+          <span className="b2 w7 cap">{conversation.title || '에이전트'}</span>
           <span className="c1 t3">{relativeTime(conversation.updatedAt)}</span>
         </Link>
       ))}

@@ -1,4 +1,3 @@
-import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
 import '@push/design-system/tokens.css'
 import './styles.css'
 import { StrictMode } from 'react'

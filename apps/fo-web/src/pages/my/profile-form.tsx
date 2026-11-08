@@ -1,5 +1,5 @@
 import { CAREER_STATUSES, type Profile } from '@push/api-client'
-import { brandOf } from '@push/shared'
+import { personColor } from '../../shared/lib/brand/brand'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { assetUrl } from '../../shared/api/client'
@@ -84,7 +84,7 @@ const ProfileForm = () => {
             {profile.avatarUrl ? (
               <img className="av" src={assetUrl(profile.avatarUrl)} alt="" />
             ) : (
-              <span className="av" style={{ background: brandOf(profile.displayName) }}>
+              <span className="av" style={{ background: personColor(profile.displayName) }}>
                 {initials(profile.displayName)}
               </span>
             )}

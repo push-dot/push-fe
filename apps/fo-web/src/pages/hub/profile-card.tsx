@@ -1,5 +1,5 @@
 import { CAREER_STATUSES, type Profile } from '@push/api-client'
-import { brandOf } from '@push/shared'
+import { personColor } from '../../shared/lib/brand/brand'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { initials, roleLabel } from '../../shared/lib/format'
@@ -12,7 +12,7 @@ const ProfileCard = ({ profile }: { profile: Profile }) => {
       {profile.avatarUrl ? (
         <img className="hub-av" src={assetUrl(profile.avatarUrl)} alt="" />
       ) : (
-        <span className="hub-av" style={{ background: brandOf(profile.displayName) }}>
+        <span className="hub-av" style={{ background: personColor(profile.displayName) }}>
           {initials(profile.displayName)}
         </span>
       )}

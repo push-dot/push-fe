@@ -1,4 +1,4 @@
-import { brandOf } from '@push/shared'
+import { companyColor, personColor } from '../../shared/lib/brand/brand'
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
 
 import { NAV } from '../../app/constants'
@@ -7,6 +7,7 @@ import { useOffers } from '../../entities/offer'
 import { useMyProfile } from '../../entities/profile'
 import { initials, roleLabel } from '../../shared/lib/format'
 import { useSession } from '../../shared/auth/use-session'
+import { Icon } from '../../shared/ui/icon'
 import { ROLE_NAME } from '../../shared/model/employer-plan'
 import {
   EMPLOYER_ACTIVITY_MENU,
@@ -48,7 +49,7 @@ const MySide = () => {
   return (
     <nav className="side" aria-label={NAV.my}>
       <div className="who">
-        <span className={employer ? 'av biz-mark' : 'av hd-av'} style={{ background: brandOf(title || 'Push') }}>
+        <span className={employer ? 'av biz-mark' : 'av hd-av'} style={{ background: (employer ? companyColor : personColor)(title || 'Push') }}>
           {title ? (employer ? [...title][0] : initials(title)) : ''}
         </span>
         <span>
@@ -58,23 +59,27 @@ const MySide = () => {
       </div>
       {menu.map((item) => (
         <NavLink key={item.to} to={item.to} className={() => (itemOn(item.to) ? 'side-link on' : 'side-link')}>
+          <Icon name={item.icon} size={19} />
           {item.label}
         </NavLink>
       ))}
       <div className="side-label">내 활동</div>
       {activity.map((item) => (
         <NavLink key={item.to} to={item.to} className={() => (itemOn(item.to) ? 'side-link on' : 'side-link')}>
+          <Icon name={item.icon} size={19} />
           {item.label}
         </NavLink>
       ))}
       <div className="side-hr" />
       {employer ? null : (
         <NavLink to="/offers" className={() => (offersOn ? 'side-link on' : 'side-link')}>
+          <Icon name="inbox" size={19} />
           {NAV.offers}
           {offerCount > 0 ? <span className="side-count">{offerCount}</span> : null}
         </NavLink>
       )}
       <NavLink to="/settings" className={() => (settingsOn ? 'side-link on' : 'side-link')}>
+        <Icon name="gear" size={19} />
         설정
       </NavLink>
     </nav>

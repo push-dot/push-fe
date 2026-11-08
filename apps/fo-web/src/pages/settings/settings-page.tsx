@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import MySide from '../my/my-side'
+import { Icon } from '../../shared/ui/icon'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
 import { useAuthMe, useConsents, useSettings } from '../../entities/session'
@@ -164,8 +165,14 @@ const SettingsPage = () => {
           </label>
         </section>
         <section className="box">
-          <div className="settings-row">고객센터</div>
-          <div className="settings-row">약관 및 정책</div>
+          <div className="settings-row">
+            고객센터
+            <Icon name="next" size={18} />
+          </div>
+          <div className="settings-row">
+            약관 및 정책
+            <Icon name="next" size={18} />
+          </div>
           <button
             type="button"
             className="settings-row danger"

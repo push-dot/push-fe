@@ -1,5 +1,5 @@
 import { POST_CATEGORIES, type PostCategory } from '@push/api-client'
-import { brandOf } from '@push/shared'
+import { personColor } from '../../shared/lib/brand/brand'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -32,7 +32,7 @@ const SocialPage = () => {
       </nav>
       <div className="feed">
         <button type="button" className="box composer" onClick={() => setComposing(true)}>
-          <span className="av" style={{ background: brandOf(name || 'Push') }}>
+          <span className="av" style={{ background: personColor(name || 'Push') }}>
             {initials(name || '나')}
           </span>
           <span className="t3">{composerPrompt(session?.user.accountType === 'EMPLOYER', name)}</span>

@@ -1,8 +1,9 @@
-import { brandOf } from '@push/shared'
+import { personColor } from '../shared/lib/brand/brand'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { initials } from '../shared/lib/format'
+import { AgentMark, Icon } from '../shared/ui/icon'
 import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
@@ -47,10 +48,7 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   return (
-    <div
-      className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}
-      data-theme="light"
-    >
+    <div className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}>
       {auth ? (
         <header className="auth-bar">
           <NavLink to="/" end className="auth-logo">
@@ -79,7 +77,7 @@ const Shell = () => {
       ) : (
         <header className="hd">
           <div className="wrap">
-            <NavLink to="/" end className="logo">
+            <NavLink to="/" end className="wordmark">
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </NavLink>
@@ -98,11 +96,7 @@ const Shell = () => {
               {employer
                 ? EMPLOYER_LINKS.map((link) => (
                     <NavLink key={link.to} to={link.to} className={() => (navOn(location.pathname, link.to) ? 'on' : '')}>
-                      {link.to === '/employer/chat' ? (
-                        <svg className="ic spark" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M11 3c.6 4 2.7 6.1 6.7 6.7-4 .6-6.1 2.7-6.7 6.7-.6-4-2.7-6.1-6.7-6.7C8.3 9.1 10.4 7 11 3ZM18.5 14.5c.3 2 1.2 2.9 3 3.2-1.8.3-2.7 1.2-3 3.2-.3-2-1.2-2.9-3-3.2 1.8-.3 2.7-1.2 3-3.2Z" />
-                        </svg>
-                      ) : null}
+                      {link.to === '/employer/chat' ? <AgentMark /> : null}
                       {link.label}
                     </NavLink>
                   ))
@@ -123,10 +117,7 @@ const Shell = () => {
                   navigate(search ? `/search?${search}` : '/search')
                 }}
               >
-                <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M20 20l-3.2-3.2" />
-                </svg>
+                <Icon name="search" size={18} width={2.2} />
                 <input aria-label={NAV.search} placeholder={SEARCH_PLACEHOLDER} value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} />
               </form>
             ) : null}
@@ -135,19 +126,13 @@ const Shell = () => {
                 .filter((link) => link.to === '/notifications')
                 .map((link) => (
                   <NavLink key={link.to} to={link.to} className="hbtn" aria-label={unread > 0 ? `${link.label} ${unread}개` : link.label}>
-                    <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M6 9a6 6 0 0 1 12 0c0 7 2 7 2 7H4s2 0 2-7" />
-                      <path d="M10 19a2 2 0 0 0 4 0" />
-                    </svg>
+                    <Icon name="bell" size={22} />
                     {unread > 0 ? <span className="nb">{unread}</span> : null}
                   </NavLink>
                 ))}
               {session ? (
                 <NavLink to="/offers" className="hbtn" aria-label={offerCount > 0 ? `${NAV.offers} ${offerCount}개` : NAV.offers}>
-                  <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 6h16v12H4z" />
-                    <path d="m4 7 8 6 8-6" />
-                  </svg>
+                  <Icon name="inbox" size={22} />
                   {offerCount > 0 ? <span className="nb">{offerCount}</span> : null}
                 </NavLink>
               ) : null}
@@ -155,12 +140,10 @@ const Shell = () => {
                 <EmployerChip />
               ) : session ? (
                 <NavLink to="/me" className="me-chip" aria-label={NAV.my}>
-                  <span className="av hd-av" style={{ background: brandOf(session.user.displayName) }}>
+                  <span className="av hd-av" style={{ background: personColor(session.user.displayName) }}>
                     {initials(session.user.displayName)}
                   </span>
-                  <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
+                  <Icon name="down" size={16} width={2.2} />
                 </NavLink>
               ) : (
                 <>
@@ -182,7 +165,7 @@ const Shell = () => {
       {auth || chatScreen ? null : (
         <footer className="ft">
           <div className="wrap">
-            <span className="logo">
+            <span className="wordmark">
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </span>

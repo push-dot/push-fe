@@ -1,4 +1,4 @@
-import { brandOf } from '@push/shared'
+import { personColor } from '../../shared/lib/brand/brand'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -91,7 +91,7 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
             const who = box === 'received' ? item.sender : item.recipient
             return (
               <Link key={item.id} to={`/offers/${item.id}?box=${box}`} className={item.id === selectedId ? 'offer-line-row on' : 'offer-line-row'}>
-                <span className="av hd-av" style={{ background: brandOf(who.displayName) }}>
+                <span className="av hd-av" style={{ background: personColor(who.displayName) }}>
                   {initials(who.displayName)}
                 </span>
                 <span className="offer-copy">

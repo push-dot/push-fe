@@ -1,10 +1,12 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
-import { brandOf, careerLabel } from '@push/shared'
+import { careerLabel } from '@push/shared'
+import { brandGradient, companyColor } from '../../shared/lib/brand/brand'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { send } from '../../shared/lib/bridge'
 import { dDay } from '../../shared/lib/format'
 import type { PostingView } from '../../shared/api/mock'
+import { Icon } from '../../shared/ui/icon'
 import Toast from '../../shared/ui/toast'
 import PostingActions from './posting-actions'
 import { NAV } from '../../app/constants'
@@ -26,16 +28,17 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
   return (
     <main className="page browser-posting">
       <Link to="/jobs" className="back b2">
+        <Icon name="back" size={18} width={2.2} />
         {NAV.jobs}
       </Link>
       <div className="job-detail">
         <div className="split-sections">
-          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandOf(posting.company) }}>
+          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandGradient(companyColor(posting.company)) }}>
             {posting.imageUrl ? <img src={assetUrl(posting.imageUrl)} alt="" /> : [...posting.company][0]}
           </div>
           <header className="head">
             <div className="cover-meta">
-              <span className="av hd-av" style={{ background: brandOf(posting.company) }}>
+              <span className="av hd-av" style={{ background: companyColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
               <span className="b1 w7">{posting.company}</span>
@@ -108,13 +111,14 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.sourceUrl ? (
             <a
-              className="b2 w6 t2"
+              className="b2 w6 t2 source-link"
               href={posting.sourceUrl}
               onClick={(event) => {
                 event.preventDefault()
                 send({ type: 'external', url: posting.sourceUrl! })
               }}
             >
+              <Icon name="ext" size={18} />
               원문 보기 · {posting.company} 채용 사이트
             </a>
           ) : null}
