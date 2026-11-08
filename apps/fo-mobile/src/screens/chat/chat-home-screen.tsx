@@ -7,6 +7,9 @@ import { Glass, GlassButton, Icon3D, Text, useKeyboardHeight } from '@/shared/co
 import { ComposerArea, ConsentSheet, OPEN_DRAWER, QUICK_STARTS, quickStartPath, useStartChat, type QuickStart } from '@/features/chat'
 
 
+// iOS draws the 56pt glyph 9pt above the centre of its line box (measured on the simulator); the board centres the ink.
+const MARK_INK_DROP = 18
+
 const ChatHomeScreen = () => {
   const c = useColors()
   const insets = useSafeAreaInsets()
@@ -14,7 +17,7 @@ const ChatHomeScreen = () => {
   const [typing, setTyping] = useState(false)
   const navigation = useNavigation()
   // The floating iOS tab bar is inside the inset; the design keeps the composer a step above it.
-  const lift = Platform.OS === 'ios' && insets.bottom > 0 ? spacing[4] : 0
+  const lift = Platform.OS === 'ios' && insets.bottom > 0 ? spacing[5] : 0
   // Android pads the keyboard height itself; the nav-bar inset on top of it would leave a gap.
   const keyboard = useKeyboardHeight()
 
@@ -25,7 +28,7 @@ const ChatHomeScreen = () => {
       </View>
       {/* The board centres the mark between the status bar and 6pt above the chips: up under the 56pt header, down 10pt into the chip row's top padding. */}
       <View style={{ flex: 1, marginTop: -56, marginBottom: -10, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none" accessibilityElementsHidden>
-        <Text style={{ fontSize: 56, lineHeight: 60, letterSpacing: -2.8, ...fontFor('800'), color: c.t1, opacity: typing ? 0 : 0.12 }}>
+        <Text style={{ fontSize: 56, lineHeight: 60, letterSpacing: -2.8, ...fontFor('800'), color: c.t1, opacity: typing ? 0 : 0.12, paddingTop: Platform.OS === 'ios' ? MARK_INK_DROP : 0 }}>
           Push<Text style={{ fontSize: 56, lineHeight: 60, ...fontFor('800'), color: c.ac }}>.</Text>
         </Text>
       </View>
