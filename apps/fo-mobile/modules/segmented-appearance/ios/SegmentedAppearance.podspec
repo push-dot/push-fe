@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
   s.version        = '1.0.0'
   s.summary        = 'Sets the title font of every UISegmentedControl'
   s.description    = 'The SwiftUI segmented Picker ignores a font modifier, so the weight goes through UIAppearance.'
-  s.author         = ''
+  s.author         = 'Push'
   s.homepage       = 'https://docs.expo.dev/modules/'
   s.platforms      = { :ios => '15.1' }
   s.source         = { git: '' }
