@@ -11,15 +11,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400..800&display=swap" />
     <script>
       ;(function () {
-        var key = 'push-theme'
-        var theme = new URLSearchParams(location.search).get('theme')
-        var valid = theme === 'light' || theme === 'dark'
-        try {
-          if (!window.ReactNativeWebView) {
-            if (valid) localStorage.setItem(key, theme)
-            else theme = localStorage.getItem(key)
-          }
-        } catch (e) {}
+        var params = new URLSearchParams(location.search)
+        var theme = params.get('theme')
         if (!document.documentElement.hasAttribute('data-theme') && (theme === 'light' || theme === 'dark')) {
           document.documentElement.dataset.theme = theme
         }
