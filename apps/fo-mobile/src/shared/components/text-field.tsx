@@ -2,7 +2,7 @@ import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
 import Icon from './icon'
-import { inputMetrics } from './text-field-metrics'
+import { inputMetrics, typedTextShift } from './text-field-metrics'
 import Text from './text'
 
 /** `compact`: the 48pt `.field` some boards draw (FilterSkill search) instead of the 56pt default. */
@@ -30,13 +30,13 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
         </Text>
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: multiline ? 'flex-start' : 'center', gap: spacing[2] }}>
-        {(search ? 'search' : icon) ? <Icon name={search ? 'search' : icon!} size={search ? 20 : 18} color="t3" /> : null}
+        {(search ? 'search' : icon) ? <Icon name={search ? 'search' : icon!} size={search ? 20 : 18} color={search ? 't3' : 't1'} /> : null}
         <TextInput
           value={value}
           multiline={multiline}
           maxLength={max}
           placeholderTextColor={c.t4}
-          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
+          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), typedTextShift(multiline, !!value), style]}
           {...rest}
         />
       </View>
