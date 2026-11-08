@@ -51,7 +51,7 @@ describe('applyMockSearch', () => {
     const store = storeWith('personal')
     applyMockSearch('?mock=1&as=employer', store)
     const session = store.load()
-    expect(session?.user).toMatchObject({ displayName: '모아페이', accountType: 'EMPLOYER', companyId: 'co-1' })
+    expect(session?.user).toMatchObject({ displayName: '이민아', accountType: 'EMPLOYER', companyId: 'co-1' })
     expect(session?.user.displayName).not.toBe('김서준')
     expect(mockPersona()).toBe('employer')
   })
@@ -90,7 +90,7 @@ describe('applyMockSearch', () => {
     const response = await mockFetch('http://localhost/api/v1/companies/me')
     expect(response.status).toBe(200)
     const body = (await response.json()) as { data: { id: string; name: string } }
-    expect(body.data).toMatchObject({ id: companyId, name: '모아페이' })
+    expect(body.data).toMatchObject({ id: companyId, name: '모아페이 주식회사' })
   })
 
   it('clears the company id on a guest mock url so the company panel stays idle', async () => {
