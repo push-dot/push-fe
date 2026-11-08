@@ -88,6 +88,13 @@ tags:
     visible: "이 서류를 삭제할까요?"
     timeout: 10000
 - runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "삭제"
+- runFlow:
+    when:
+      platform: Android
     file: ../flows/_tap_sheet_button.yaml
     env:
       TEXT: "삭제"
