@@ -71,7 +71,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
   const thread = useRef<FlatList<ChatItem>>(null)
-  const atBottom = useRef(true)
+  const [away, setAway] = useState(false)
   const input = useRef<TextInputInstance>(null)
 
   useEffect(() => {
@@ -154,13 +154,14 @@ const ConversationScreen = ({ id }: { id: string }) => {
         }
         contentContainerStyle={{ gap: 18, paddingHorizontal: spacing[5], paddingBottom: insets.top + 64, paddingTop: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android' }) }}
         onScroll={(e) => {
-          atBottom.current = e.nativeEvent.contentOffset.y <= 48
-          if (atBottom.current) setFresh(false)
+          const bottom = e.nativeEvent.contentOffset.y <= 48
+          setAway(!bottom)
+          if (bottom) setFresh(false)
         }}
         scrollEventThrottle={64}
-        // Keep the line being read in place while new lines land below it; follow them only at the bottom (feature-spec 15.4).
-        maintainVisibleContentPosition={{ minIndexForVisible: 0, autoscrollToTopThreshold: 48 }}
-        onContentSizeChange={() => !atBottom.current && setFresh(true)}
+        // At the bottom the inverted list follows new lines and the keyboard by itself; scrolled up, the read line stays put (feature-spec 15.4).
+        maintainVisibleContentPosition={away ? { minIndexForVisible: 0 } : undefined}
+        onContentSizeChange={() => away && setFresh(true)}
         keyboardDismissMode="interactive"
       />
 
