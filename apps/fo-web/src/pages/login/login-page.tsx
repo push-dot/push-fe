@@ -10,7 +10,8 @@ import { loginProviders } from '../../shared/model/login-providers'
 import AccountTypeControl from './account-type-control'
 import AuthPasswordField from './auth-password-field'
 import AuthProviderButton from './auth-provider-button'
-import { authEmailLogin, authStart, mockSession } from '../../features/sign-in'
+import { authEmailLogin, authStart } from '../../features/sign-in'
+import { loadMock } from '../../shared/api/mock-loader'
 import {
   BAD_CREDENTIALS_COPY,
   EMAIL_LABEL,
@@ -59,6 +60,7 @@ const LoginPage = () => {
   const continueWith = async (provider: 'google' | 'github') => {
     setError(null)
     if (isMock()) {
+      const { mockSession } = await loadMock()
       const session = mockSession(employer ? 'employer' : 'personal')
       sessionStore.save(session)
       leave(session)
