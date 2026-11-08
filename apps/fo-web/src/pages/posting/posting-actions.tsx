@@ -1,5 +1,4 @@
-import { monthDay } from '@push/shared'
-import { companyColor } from '../../shared/lib/brand/brand'
+import { brandColor, monthDay } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -107,7 +106,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
             {posting.imageUrl ? (
               <img className="av hd-av" src={assetUrl(posting.imageUrl)} alt="" />
             ) : (
-              <span className="av hd-av" style={{ background: companyColor(posting.company) }}>
+              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
             )}

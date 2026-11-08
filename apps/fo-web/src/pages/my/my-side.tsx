@@ -1,4 +1,4 @@
-import { companyColor, personColor } from '../../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
 
 import { NAV } from '../../app/constants'
@@ -49,7 +49,7 @@ const MySide = () => {
   return (
     <nav className="side" aria-label={NAV.my}>
       <div className="who">
-        <span className={employer ? 'av biz-mark' : 'av hd-av'} style={{ background: (employer ? companyColor : personColor)(title || 'Push') }}>
+        <span className={employer ? 'av biz-mark' : 'av hd-av'} style={{ background: brandColor(title || 'Push') }}>
           {title ? (employer ? [...title][0] : initials(title)) : ''}
         </span>
         <span>

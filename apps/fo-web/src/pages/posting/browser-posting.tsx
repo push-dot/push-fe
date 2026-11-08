@@ -1,6 +1,6 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
-import { careerLabel } from '@push/shared'
-import { brandGradient, companyColor } from '../../shared/lib/brand/brand'
+import { brandColor, careerLabel } from '@push/shared'
+import { brandGradient } from '../../shared/lib/brand/brand'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { send } from '../../shared/lib/bridge'
@@ -33,12 +33,12 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
       </Link>
       <div className="job-detail">
         <div className="split-sections">
-          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandGradient(companyColor(posting.company)) }}>
+          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandGradient(brandColor(posting.company)) }}>
             {posting.imageUrl ? <img src={assetUrl(posting.imageUrl)} alt="" /> : [...posting.company][0]}
           </div>
           <header className="head">
             <div className="cover-meta">
-              <span className="av hd-av" style={{ background: companyColor(posting.company) }}>
+              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
               <span className="b1 w7">{posting.company}</span>

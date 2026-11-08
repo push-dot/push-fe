@@ -1,4 +1,4 @@
-import { companyColor } from '../../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { Link } from 'react-router-dom'
 
 import { useMyCompany } from '../../entities/company'
@@ -27,7 +27,7 @@ const CompanyPanel = () => {
   return (
     <section className="stack">
       <div className="box company-hero">
-        <span className="av biz-mark" style={{ background: companyColor(company.name) }}>
+        <span className="av biz-mark" style={{ background: brandColor(company.name) }}>
           {[...company.name][0]}
         </span>
         <span>

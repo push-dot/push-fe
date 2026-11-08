@@ -1,4 +1,4 @@
-import { companyColor } from '../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { NavLink } from 'react-router-dom'
 
 import { useMyCompany } from '../entities/company'
@@ -18,7 +18,7 @@ const EmployerChip = () => {
   const sub = [plan ? PLAN_NAME[plan] : null, role === 'ADMIN' || role === 'MEMBER' ? ROLE_NAME[role] : null].filter(Boolean).join(' · ')
   return (
     <NavLink to="/me" className="me-chip biz" aria-label={NAV.my}>
-      <span className="av biz-mark" style={{ background: companyColor(name || 'Push') }}>
+      <span className="av biz-mark" style={{ background: brandColor(name || 'Push') }}>
         {name ? [...name][0] : ''}
       </span>
       <span className="biz-id">

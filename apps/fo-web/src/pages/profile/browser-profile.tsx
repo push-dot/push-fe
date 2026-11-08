@@ -1,5 +1,5 @@
 import { CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
-import { personColor } from '../../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { NAV } from '../../app/constants'
@@ -24,7 +24,7 @@ const BrowserProfile = ({ profile }: { profile: Profile }) => {
             {profile.avatarUrl ? (
               <img className="av" src={assetUrl(profile.avatarUrl)} alt="" />
             ) : (
-              <span className="av" style={{ background: personColor(profile.displayName) }}>
+              <span className="av" style={{ background: brandColor(profile.displayName) }}>
                 {initials(profile.displayName)}
               </span>
             )}

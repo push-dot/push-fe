@@ -1,5 +1,5 @@
 import { CAREER_STATUSES } from '@push/api-client'
-import { brandOf } from '@push/shared'
+import { brandColor } from '@push/shared'
 import { useParams } from 'react-router-dom'
 import { useAuthMe } from '../../entities/session'
 import { assetUrl } from '../../shared/api/client'
@@ -35,7 +35,7 @@ const ProfilePage = () => {
         {p.avatarUrl ? (
           <img className="av" src={assetUrl(p.avatarUrl)} alt="" />
         ) : (
-          <div className="av" style={{ background: brandOf(p.displayName) }} aria-hidden="true">
+          <div className="av" style={{ background: brandColor(p.displayName) }} aria-hidden="true">
             {initials(p.displayName)}
           </div>
         )}

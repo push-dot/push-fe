@@ -1,6 +1,5 @@
 import type { Post, Posting, Profile } from '@push/api-client'
-import { careerLabel, matchHangul } from '@push/shared'
-import { companyColor, personColor } from '../../shared/lib/brand/brand'
+import { brandColor, careerLabel, matchHangul } from '@push/shared'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -88,7 +87,7 @@ const SearchPage = () => {
         <div className="search-list">
           {rows.map((posting) => (
             <Link key={posting.id} to={`/postings/${posting.id}`} className="search-row">
-              <span className="ph" style={{ background: companyColor(posting.company) }}>
+              <span className="ph" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
               <span className="search-copy">
@@ -115,7 +114,7 @@ const SearchPage = () => {
         <div className="search-list">
           {rows.map((person) => (
             <Link key={person.userId} to={`/profiles/${person.userId}`} className="search-row">
-              <span className="ph" style={{ background: personColor(person.displayName) }}>
+              <span className="ph" style={{ background: brandColor(person.displayName) }}>
                 {initials(person.displayName)}
               </span>
               <span className="search-copy">

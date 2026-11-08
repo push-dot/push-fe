@@ -1,5 +1,6 @@
 import { mockSession, setMockPersona, type MockPersona } from '../shared/api/mock'
 import type { createSessionStore } from '../shared/auth/session'
+import { registerMockBrandColors } from '../shared/api/mock-brand'
 
 type SessionStore = ReturnType<typeof createSessionStore>
 
@@ -10,6 +11,7 @@ const personaFrom = (value: string | null): MockPersona | null => PERSONAS.find(
 export const applyMockSearch = (search: string, store: SessionStore) => {
   const params = new URLSearchParams(search)
   if (!params.has('mock')) return
+  registerMockBrandColors()
   const persona = personaFrom(params.get('as'))
   setMockPersona(persona)
   if (persona) store.save(mockSession(persona))

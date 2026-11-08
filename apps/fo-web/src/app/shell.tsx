@@ -1,4 +1,4 @@
-import { personColor } from '../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
@@ -140,7 +140,7 @@ const Shell = () => {
                 <EmployerChip />
               ) : session ? (
                 <NavLink to="/me" className="me-chip" aria-label={NAV.my}>
-                  <span className="av hd-av" style={{ background: personColor(session.user.displayName) }}>
+                  <span className="av hd-av" style={{ background: brandColor(session.user.displayName) }}>
                     {initials(session.user.displayName)}
                   </span>
                   <Icon name="down" size={16} width={2.2} />

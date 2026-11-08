@@ -1,4 +1,4 @@
-import { personColor } from '../../shared/lib/brand/brand'
+import { brandColor } from '@push/shared'
 import { MEMBER_SELF, REMOVE_MEMBER, TRANSFER_ADMIN } from './constants'
 
 const MemberRow = ({
@@ -21,7 +21,7 @@ const MemberRow = ({
   onTransfer: () => void
 }) => (
   <li className="member-row">
-    <span className="av biz-mark" style={{ background: personColor(email) }}>
+    <span className="av biz-mark" style={{ background: brandColor(email) }}>
       {[...email][0]?.toUpperCase()}
     </span>
     <span className="member-copy">
