@@ -116,8 +116,8 @@ const ConversationScreen = ({ id }: { id: string }) => {
           if (atBottom.current) setFresh(false)
         }}
         scrollEventThrottle={64}
-        // Follow new lines; stop following once the person scrolls up (feature-spec 15.4).
-        onContentSizeChange={() => (atBottom.current ? scroll.current?.scrollToEnd({ animated: !reduce }) : setFresh(true))}
+        // Follow new lines without animating (a streamed reply grows ~30x/s); stop once the person scrolls up (feature-spec 15.4).
+        onContentSizeChange={() => (atBottom.current ? scroll.current?.scrollToEnd({ animated: false }) : setFresh(true))}
         keyboardDismissMode="interactive"
       >
         {chat.items.map((it) => (
