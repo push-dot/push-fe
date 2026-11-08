@@ -33,6 +33,7 @@ export const ComposerBody = ({ inputRef, roomy, ...p }: ComposerProps) => {
   const hasText = typed.length > 0
   // A bare "@" only opens the suggestions; there is nothing to send yet.
   const canSend = hasText && typed !== '@'
+  console.log('[FLAKE] body render', Date.now(), 'hasText', hasText, 'canSend', canSend, 'working', !!p.working)
   const round = { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' } as const
   const chip = { minHeight: 40, paddingHorizontal: spacing[4], borderRadius: radius.pill, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', gap: spacing[2] } as const
   return (
@@ -102,7 +103,11 @@ export const ComposerBody = ({ inputRef, roomy, ...p }: ComposerProps) => {
               accessibilityLabel="보내기"
               accessibilityState={{ disabled: !canSend }}
               disabled={!canSend}
-              onPress={p.onSend}
+              onPressIn={() => console.log('[FLAKE] send pressIn', Date.now())}
+              onPress={() => {
+                console.log('[FLAKE] send press', Date.now())
+                p.onSend()
+              }}
               hitSlop={hitSlopTo(40, 40)}
               style={[round, { backgroundColor: canSend ? c.ac : c.fill2 }]}
             >

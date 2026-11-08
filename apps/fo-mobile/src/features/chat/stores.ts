@@ -198,6 +198,7 @@ const nameOf = (attachment?: string | PickedFile) => (typeof attachment === 'str
 
 export const send = (id: string, text: string, attachment?: string | PickedFile, intent?: ChatIntent, context?: RunInput['context']) => {
   const s = get(id)
+  console.log('[FLAKE] send()', Date.now(), 'working', !!s.working, 'approval', !!s.approval)
   if (s.working) {
     const file = fileOf(attachment)
     return dispatch(id, { type: 'queue', text, ...(file ? { file } : {}) })
