@@ -5,6 +5,8 @@ name: 탭 전환 후 상태와 스크롤 위치 유지
 - scrollUntilVisible:
     element: "이번 주 많이 본 공고"
     direction: DOWN
+    centerElement: true
+- assertNotVisible: "새로 올라온 공고"
 - runFlow:
     file: _tap_tab.yaml
     env:
@@ -20,6 +22,7 @@ name: 탭 전환 후 상태와 스크롤 위치 유지
     env:
       TAB: "홈"
       READY: "이번 주 많이 본 공고"
+- assertNotVisible: "새로 올라온 공고"
 - takeScreenshot: 13_tab_state_kept-02
 - runFlow:
     file: _tap_tab.yaml
