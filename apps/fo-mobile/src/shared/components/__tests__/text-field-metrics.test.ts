@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { inputMetrics, inputReset } from '../text-field-metrics'
+import { inputMetrics, inputReset, IOS_TYPED_TEXT_RAISE, typedTextShift } from '../text-field-metrics'
 
 vi.mock('react-native', () => ({ Platform: { OS: 'android' } }))
 
@@ -18,5 +18,12 @@ describe('text field input height', () => {
     expect(inputReset).toEqual({ padding: 0, includeFontPadding: false })
     expect(inputMetrics(false, 1)).toMatchObject(inputReset)
     expect(inputMetrics(true, 1)).toMatchObject(inputReset)
+  })
+
+  it('raises typed multiline text on iOS only, never the placeholder or single line', () => {
+    expect(typedTextShift(true, true, 'ios')).toEqual({ transform: [{ translateY: -IOS_TYPED_TEXT_RAISE }] })
+    expect(typedTextShift(true, false, 'ios')).toBeUndefined()
+    expect(typedTextShift(false, true, 'ios')).toBeUndefined()
+    expect(typedTextShift(true, true, 'android')).toBeUndefined()
   })
 })

@@ -11,3 +11,9 @@ export const inputMetrics = (multiline: boolean | undefined, fontScale: number) 
   multiline
     ? { ...inputReset, lineHeight: type.b1.lineHeight, minHeight: MULTILINE_ROWS * type.b1.lineHeight * fontScale }
     : { ...inputReset, minHeight: type.b1.lineHeight * fontScale }
+
+/** iOS UITextView draws typed multiline text 6.6pt below the board's first line (placeholder is fine), measured on EditIntro at 16/25. */
+export const IOS_TYPED_TEXT_RAISE = 6.6
+
+export const typedTextShift = (multiline: boolean | undefined, typed: boolean, os: string = Platform.OS) =>
+  os === 'ios' && multiline && typed ? { transform: [{ translateY: -IOS_TYPED_TEXT_RAISE }] } : undefined
