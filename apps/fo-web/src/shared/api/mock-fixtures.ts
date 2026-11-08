@@ -61,6 +61,7 @@ export const LISTINGS: Posting[] = [
     location: '서울 영등포구',
     skills: ['Go', 'gRPC'],
     deadline: '2026-11-10',
+    bookmarked: true,
     createdAt: '2026-10-20T10:00:00Z',
   }),
   listing({
@@ -73,6 +74,7 @@ export const LISTINGS: Posting[] = [
     careerMax: 3,
     deadline: '2026-11-03',
     sourceUrl: 'https://career.nuricloud.kr/jobs/208',
+    bookmarked: true,
     createdAt: '2026-10-20T09:00:00Z',
   }),
   listing({
@@ -106,7 +108,6 @@ export const LISTINGS: Posting[] = [
     careerMin: 1,
     careerMax: 3,
     deadline: '2026-10-24',
-    bookmarked: true,
     createdAt: '2026-10-20T06:00:00Z',
   }),
   listing({
@@ -116,6 +117,7 @@ export const LISTINGS: Posting[] = [
     location: '성남 판교',
     skills: ['Kubernetes', 'AWS'],
     deadline: '2026-10-25',
+    bookmarked: true,
     createdAt: '2026-10-20T05:00:00Z',
   }),
   listing({
@@ -125,6 +127,7 @@ export const LISTINGS: Posting[] = [
     location: '원격',
     skills: ['Swift', 'SwiftUI'],
     deadline: '2026-10-26',
+    bookmarked: true,
     createdAt: '2026-10-20T04:00:00Z',
   }),
   listing({
@@ -145,6 +148,7 @@ export const LISTINGS: Posting[] = [
     location: '경기 이천',
     skills: ['Kafka', 'Python', 'AWS'],
     deadline: '2026-11-08',
+    bookmarked: true,
     createdAt: '2026-10-20T02:00:00Z',
   }),
   listing({
@@ -167,7 +171,6 @@ export const LISTINGS: Posting[] = [
     careerMin: 1,
     careerMax: 3,
     deadline: '2026-11-25',
-    bookmarked: true,
     createdAt: '2026-10-15T01:00:00Z',
   }),
   listing({
@@ -179,7 +182,6 @@ export const LISTINGS: Posting[] = [
     careerMin: 1,
     careerMax: 3,
     deadline: '2026-11-28',
-    bookmarked: true,
     createdAt: '2026-10-14T01:00:00Z',
   }),
 ]
@@ -246,6 +248,8 @@ const TAEYOON_CAREERS = [
 export const TAEYOON_INTRO =
   '결제 승인과 정산을 5년 동안 만들어 왔어요. 하루 2,000만 건을 처리하는 승인 API의 p99를 420ms에서 180ms로 줄였고, 정산 배치를 Kafka 기반 스트림으로 바꿨어요. 다음에는 더 큰 트래픽을 다루는 팀에서 일하고 싶어요.'
 
+const ME_INTRO = TAEYOON_INTRO.replace('5년 동안', '4년 동안')
+
 export const TAEYOON_SKILLS = ['Kotlin', 'Spring Boot', 'JPA', 'Kafka', 'MySQL', 'Redis', 'AWS', 'Kubernetes']
 
 const person = (
@@ -309,10 +313,10 @@ export const ME_PROFILE: Profile = {
   avatarUrl: null,
   headline: '결제 시스템을 만드는 백엔드 개발자',
   jobCategory: 'dev',
-  tenureYears: 5,
+  tenureYears: 4,
   careerStatus: 'seeking',
   openToOffers: true,
-  intro: TAEYOON_INTRO,
+  intro: ME_INTRO,
   careers: TAEYOON_CAREERS,
   skills: TAEYOON_SKILLS,
   followerCount: 12,
@@ -415,6 +419,26 @@ export const FEED: Post[] = [
   },
 ]
 
+const SEOJUN = { id: 'u1', displayName: '김서준', avatarUrl: null }
+
+const myPost = (id: string, category: Post['category'], title: string, body: string, commentCount: number, viewCount: number, createdAt: string): Post => ({
+  id,
+  author: SEOJUN,
+  category,
+  title,
+  body,
+  imageUrls: [],
+  commentCount,
+  viewCount,
+  createdAt,
+})
+
+export const MY_POSTS: Post[] = [
+  myPost('post-me-1', 'dev', '정산 배치를 Kafka 스트림으로 바꾼 이야기', '3시간 걸리던 배치를 20분으로 줄이기까지 겪은 일을 정리했어요.', 12, 540, '2026-10-18T00:00:00.000Z'),
+  myPost('post-me-2', 'career', '4년차 백엔드, 이직 준비 어디서부터 할까요', '경력기술서를 처음 써 보는데, 숫자를 어디까지 넣어야 할지 고민이에요.', 8, 260, '2026-10-14T00:00:00.000Z'),
+  myPost('post-me-3', 'coffeechat', '판교 점심 커피챗 하실 분', '결제·정산 도메인 이야기 나누실 분 편하게 댓글 주세요.', 5, 90, '2026-10-07T00:00:00.000Z'),
+]
+
 export const COMMENT_THREADS: [string, Comment[]][] = [
   [
     'post-1',
@@ -481,7 +505,8 @@ export const RECEIVED_OFFERS: Offer[] = [
     id: 'offer-3',
     sender: party('u-doyun', '박도윤', '하루랩스', 'iOS 개발자'),
     recipient: ME_PARTY,
-    message: '주말 사이드 프로젝트를 같이 하실 백엔드 개발자를…',
+    message:
+      '안녕하세요, 서준 님! 주말 사이드 프로젝트를 같이 하실 백엔드 개발자를 찾고 있어요. 운동 기록 앱인데, API 설계를 맡아 주시면 좋겠어요. 관심 있으시면 편하게 답장 주세요.',
     posting: null,
     status: 'SENT',
     readAt: null,
@@ -491,11 +516,11 @@ export const RECEIVED_OFFERS: Offer[] = [
     id: 'offer-4',
     sender: party('u-jiwoo', '최지우', '파도AI', '데이터 엔지니어'),
     recipient: ME_PARTY,
-    message: '정산 데이터 파이프라인 경험을 듣고 싶어요.',
+    message: '정산 데이터 파이프라인 경험을 듣고 싶어요. 저희 팀 데이터 플랫폼 이야기도 나눠 드릴게요.',
     posting: null,
     status: 'DECLINED',
     readAt: '2026-10-14T03:00:00.000Z',
-    createdAt: '2026-10-14T01:00:00.000Z',
+    createdAt: '2026-10-14T02:03:00.000Z',
   },
   {
     id: 'offer-5',
@@ -677,7 +702,9 @@ const file = (id: string, fileName: string, mimeType: string, size: number, crea
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 export const SEED_SOURCES: Source[] = [
-  file('src-ai', '모아페이_맞춤_이력서_v2.pdf', 'application/pdf', 1_900_000, '2026-10-20T01:00:00.000Z', { kind: 'AI_MADE' }),
+  file('src-ai', '모아페이_맞춤_이력서_v2', 'application/pdf', 1_900_000, '2026-10-20T01:00:00.000Z', { kind: 'AI_MADE' }),
+  file('src-ai-toss', '서버 개발자 이력서', 'application/pdf', 1_600_000, '2026-10-14T01:00:00.000Z', { kind: 'AI_MADE' }),
+  file('src-ai-kakao', '결제 플랫폼 경력기술서', 'application/pdf', 1_200_000, '2026-09-30T01:00:00.000Z', { kind: 'AI_MADE' }),
   file('src-resume', '김서준_백엔드_이력서_2026.pdf', 'application/pdf', 2_400_000, '2026-10-12T01:00:00.000Z'),
   file('src-career', '경력기술서_모아페이.docx', DOCX, 640_000, '2026-09-28T01:00:00.000Z'),
   file('src-extra', '포트폴리오_결제시스템.pdf', 'application/pdf', 8_100_000, '2026-08-03T01:00:00.000Z'),
