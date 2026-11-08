@@ -347,16 +347,18 @@ const Bar = ({ pct, low, height = 8, delay = 150 }: { pct: number; low?: boolean
   const reduce = useReduceMotion()
   const v = useState(() => new Animated.Value(reduce ? 1 : 0))[0]
   useEffect(() => {
-    Animated.timing(v, { toValue: 1, duration: reduce ? 0 : 900, delay, easing: Easing.bezier(0.2, 0.8, 0.2, 1), useNativeDriver: false }).start()
+    Animated.timing(v, { toValue: 1, duration: reduce ? 0 : 900, delay, easing: Easing.bezier(0.2, 0.8, 0.2, 1), useNativeDriver: true }).start()
   }, [v, reduce, delay])
   return (
     <View style={{ flex: 1, height, borderRadius: height / 2, backgroundColor: c.fill2, overflow: 'hidden' }}>
       <Animated.View
         style={{
           height: '100%',
+          width: `${Math.min(100, pct)}%`,
           borderRadius: height / 2,
           backgroundColor: low ? c.orange : c.ac,
-          width: v.interpolate({ inputRange: [0, 1], outputRange: ['0%', `${Math.min(100, pct)}%`] }),
+          transform: [{ scaleX: v }],
+          transformOrigin: 'left',
         }}
       />
     </View>
@@ -640,9 +642,9 @@ const ResultCard = ({
   )
 }
 
-const Paper = ({ item }: { item: Of<'paper'> }) => {
+const Paper = ({ item, live }: { item: Of<'paper'>; live?: boolean }) => {
   const c = useColors()
-  const caret = usePulse(true, 1000, 0)
+  const caret = usePulse(!!live, 1000, 0)
   const [first, ...rest] = item.lines
   return (
     <Appear style={{ borderRadius: radius.card, padding: spacing[4], gap: 6, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line }}>
@@ -696,6 +698,7 @@ export const Item = memo(function Item({
   onView,
   resultPending,
   resultAwaiting,
+  live,
 }: {
   item: ChatItem
   onAction: (text: string) => void
@@ -704,6 +707,8 @@ export const Item = memo(function Item({
   onView?: (item: Of<'result'>) => void
   resultPending?: boolean
   resultAwaiting?: boolean
+  /** The agent is still working: a 쓰는 중 caret blinks only then. */
+  live?: boolean
 }) {
   const c = useColors()
   switch (item.type) {
@@ -735,7 +740,7 @@ export const Item = memo(function Item({
     case 'file':
       return <FileCard item={item} />
     case 'paper':
-      return <Paper item={item} />
+      return <Paper item={item} live={live} />
     case 'result':
       return (
         <ResultCard

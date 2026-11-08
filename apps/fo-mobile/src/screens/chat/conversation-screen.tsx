@@ -121,6 +121,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
     () => (working ? <StatusRow verbs={working.verbs} startedAt={working.startedAt} onStop={onStop} /> : awaiting ? <AwaitingRow text={AWAITING_TEXT[awaiting]} /> : null),
     [working, awaiting, onStop],
   )
+  const busy = !!working
   const awaitingResultId = chat.approval ? chat.items.findLast((i) => i.type === 'result')?.id : undefined
   const pending = convert.isPending
   // Inverted: newest first, so the thread stays bottom-anchored and grows upward without scrollToEnd.
@@ -128,10 +129,10 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const renderItem = useCallback<ListRenderItem<ChatItem>>(
     ({ item }) => (
       <AppearStill value={fromHistory(item)}>
-        <Item item={item} onAction={onAction} onConvert={onConvert} onView={onView} resultPending={pending} resultAwaiting={item.id === awaitingResultId} onUsage={onUsage} />
+        <Item item={item} onAction={onAction} onConvert={onConvert} onView={onView} resultPending={pending} resultAwaiting={item.id === awaitingResultId} onUsage={onUsage} live={item.type === 'paper' && busy} />
       </AppearStill>
     ),
-    [onAction, onConvert, onView, onUsage, pending, awaitingResultId],
+    [onAction, onConvert, onView, onUsage, pending, awaitingResultId, busy],
   )
 
   return (

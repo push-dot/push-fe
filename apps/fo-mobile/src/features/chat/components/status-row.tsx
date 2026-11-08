@@ -28,7 +28,7 @@ export const StatusRow = ({ verbs, startedAt, onStop }: Props) => {
   }
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 1000)
-    const rotate = setInterval(() => setI((n) => n + 1), 2500)
+    const rotate = verbs.length > 1 ? setInterval(() => setI((n) => n + 1), 2500) : undefined
     return () => (clearInterval(tick), clearInterval(rotate))
   }, [verbs])
   const verb = verbs[i % verbs.length] ?? '생각하는 중…'
