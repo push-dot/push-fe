@@ -1,5 +1,8 @@
-import { Text as RNText, type TextProps } from 'react-native'
+import { Platform, Text as RNText, type TextProps } from 'react-native'
 import { fontFor, type, useColors, type Colors, type TypeName } from '../../theme'
+
+// iOS ceils each Text node to the pixel grid; list rows of 3 Text nodes ran +1pt (3 x 1/3pt). A hair under the token keeps the box on the token.
+const LINE_EPSILON = Platform.OS === 'ios' ? 0.01 : 0
 
 type Props = TextProps & {
   v?: TypeName
@@ -14,7 +17,7 @@ const Text = ({ v = 'b2', color = 't1', weight, style, ...rest }: Props) => {
     <RNText
       {...rest}
       style={[
-        { fontSize: t.fontSize, lineHeight: t.lineHeight, letterSpacing: t.letterSpacing, color: c[color] },
+        { fontSize: t.fontSize, lineHeight: t.lineHeight - LINE_EPSILON, letterSpacing: t.letterSpacing, color: c[color] },
         fontFor(weight ?? t.weight),
         style,
       ]}
