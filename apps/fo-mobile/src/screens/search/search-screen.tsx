@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FlatList, Pressable, ScrollView, View } from 'react-native'
 import type { Post, Posting, Profile } from '@push/api-client'
 import { formatCount } from '@/features/jobs'
@@ -7,7 +7,6 @@ import {
   PostingRow,
   PostRow,
   SEARCH_CLEAR_LABEL,
-  SEARCH_DEBOUNCE_MS,
   SEARCH_EMPTY_BODY,
   SEARCH_ERROR_LINES,
   SEARCH_RETRY_LABEL,
@@ -18,6 +17,7 @@ import {
   TABS,
   useRecentSearches,
   useSearch,
+  useSearchQuery,
   useTrending,
   type SearchSort,
   type SearchTab,
@@ -27,19 +27,9 @@ import { spacing, useColors } from '@/theme'
 
 const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) => {
   const c = useColors()
-  const [text, setText] = useState('')
-  const [q, setQ] = useState('')
+  const { text, q, setText, search } = useSearchQuery()
   const [tab, setTab] = useState<SearchTab>(initialTab)
   const [sort, setSort] = useState<SearchSort>('relevance')
-  useEffect(() => {
-    const t = text.trim()
-    const id = setTimeout(() => setQ(t), t ? SEARCH_DEBOUNCE_MS : 0)
-    return () => clearTimeout(id)
-  }, [text])
-  const search = (t: string) => {
-    setText(t)
-    setQ(t.trim())
-  }
   const recent = useRecentSearches()
   const popular = useTrending().data?.terms ?? []
   const results = { postings: useSearch(q, 'postings', sort), people: useSearch(q, 'people', sort), posts: useSearch(q, 'posts', sort) }
@@ -49,9 +39,8 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
   const totalOf = (k: SearchTab) => results[k].data?.pages[0]?.page.total
   const remember = () => q && recent.add(q)
   const submit = () => {
-    const t = text.trim()
-    setQ(t)
-    if (t) recent.add(t)
+    search(text)
+    if (text.trim()) recent.add(text.trim())
   }
 
   return (
