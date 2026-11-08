@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient'
 import { router, useNavigation } from 'expo-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, View, type ListRenderItem, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { radius, spacing, useColors } from '@/theme'
 import { askConfirm, Glass, GlassButton, Icon, Mascot, Menu, Text, useKeyboardHeight, useReduceMotion, type MenuAction } from '@/shared/components'
@@ -40,7 +40,10 @@ import {
   useArchiveConversation,
   useDeleteConversation,
   usePinConversation,
+  type ChatItem,
 } from '@/features/chat'
+
+const keyOf = (item: ChatItem) => item.id
 
 
 const ConversationScreen = ({ id }: { id: string }) => {
@@ -58,7 +61,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const [sayingFor, setSayingFor] = useState<string>()
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
-  const scroll = useRef<ScrollViewInstance>(null)
+  const thread = useRef<FlatList<ChatItem>>(null)
   const atBottom = useRef(true)
   const input = useRef<TextInputInstance>(null)
 
@@ -105,40 +108,47 @@ const ConversationScreen = ({ id }: { id: string }) => {
   // The keyboard lifts the composer on Android, so the nav-bar inset below it would leave a gap.
   const keyboard = useKeyboardHeight()
   const showPanel = chat.approval && !saying
-  const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
+  const awaitingResultId = chat.approval ? chat.items.findLast((i) => i.type === 'result')?.id : undefined
+  const pending = convert.isPending
+  // Inverted: newest first, so the thread stays bottom-anchored and grows upward without scrollToEnd.
+  const rows = useMemo(() => [...chat.items].reverse(), [chat.items])
+  const renderItem = useCallback<ListRenderItem<ChatItem>>(
+    ({ item }) => (
+      <AppearStill value={fromHistory(item)}>
+        <Item item={item} onAction={onAction} onConvert={onConvert} onView={onView} resultPending={pending} resultAwaiting={item.id === awaitingResultId} onUsage={onUsage} />
+      </AppearStill>
+    ),
+    [onAction, onConvert, onView, onUsage, pending, awaitingResultId],
+  )
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <ScrollView
-        ref={scroll}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android' }) }}
+      <FlatList
+        ref={thread}
+        inverted
+        data={rows}
+        keyExtractor={keyOf}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          chat.queue.length ? (
+            <View style={{ gap: 18 }}>
+              {chat.queue.map((item, i) => (
+                <Queued key={`${i}-${item.text}`} text={item.text} />
+              ))}
+            </View>
+          ) : undefined
+        }
+        contentContainerStyle={{ gap: 18, paddingHorizontal: spacing[5], paddingBottom: insets.top + 64, paddingTop: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android' }) }}
         onScroll={(e) => {
-          const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent
-          atBottom.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - 48
+          atBottom.current = e.nativeEvent.contentOffset.y <= 48
           if (atBottom.current) setFresh(false)
         }}
         scrollEventThrottle={64}
-        // Follow new lines without animating (a streamed reply grows ~30x/s); stop once the person scrolls up (feature-spec 15.4).
-        onContentSizeChange={() => (atBottom.current ? scroll.current?.scrollToEnd({ animated: false }) : setFresh(true))}
+        // Keep the line being read in place while new lines land below it; follow them only at the bottom (feature-spec 15.4).
+        maintainVisibleContentPosition={{ minIndexForVisible: 0, autoscrollToTopThreshold: 48 }}
+        onContentSizeChange={() => !atBottom.current && setFresh(true)}
         keyboardDismissMode="interactive"
-      >
-        {chat.items.map((it) => (
-          <AppearStill key={it.id} value={fromHistory(it)}>
-            <Item
-              item={it}
-              onAction={onAction}
-              onConvert={onConvert}
-              onView={onView}
-              resultPending={convert.isPending}
-              resultAwaiting={!!chat.approval && it.id === lastResultId}
-              onUsage={onUsage}
-            />
-          </AppearStill>
-        ))}
-        {chat.queue.map((item, i) => (
-          <Queued key={`${i}-${item.text}`} text={item.text} />
-        ))}
-      </ScrollView>
+      />
 
       <Header onDrawer={() => navigation.dispatch(OPEN_DRAWER)} title={company} menu={menu} />
 
@@ -147,7 +157,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
           <Appear kind="fade" style={{ alignItems: 'center', paddingBottom: spacing[2] }}>
             <Pressable
               accessibilityRole="button"
-              onPress={() => (scroll.current?.scrollToEnd({ animated: !reduce }), setFresh(false))}
+              onPress={() => (thread.current?.scrollToOffset({ offset: 0, animated: !reduce }), setFresh(false))}
               style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[1], height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: c.t1 }}
             >
               <Icon name="down" size={16} color={c.bg} />
