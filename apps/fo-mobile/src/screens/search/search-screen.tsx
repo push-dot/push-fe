@@ -1,4 +1,4 @@
-import { useDeferredValue, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FlatList, Pressable, ScrollView, View } from 'react-native'
 import type { Post, Posting, Profile } from '@push/api-client'
 import { formatCount } from '@/features/jobs'
@@ -7,6 +7,7 @@ import {
   PostingRow,
   PostRow,
   SEARCH_CLEAR_LABEL,
+  SEARCH_DEBOUNCE_MS,
   SEARCH_EMPTY_BODY,
   SEARCH_ERROR_LINES,
   SEARCH_RETRY_LABEL,
@@ -27,9 +28,19 @@ import { spacing, useColors } from '@/theme'
 const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) => {
   const c = useColors()
   const [text, setText] = useState('')
+  const [q, setQ] = useState('')
   const [tab, setTab] = useState<SearchTab>(initialTab)
   const [sort, setSort] = useState<SearchSort>('relevance')
-  const q = useDeferredValue(text.trim())
+  useEffect(() => {
+    const t = text.trim()
+    const id = setTimeout(() => setQ(t), t ? SEARCH_DEBOUNCE_MS : 0)
+    return () => clearTimeout(id)
+  }, [text])
+  // Taps (recent, popular, clear) search at once; only typing waits.
+  const search = (t: string) => {
+    setText(t)
+    setQ(t.trim())
+  }
   const recent = useRecentSearches()
   const popular = useTrending().data?.terms ?? []
   const results = { postings: useSearch(q, 'postings', sort), people: useSearch(q, 'people', sort), posts: useSearch(q, 'posts', sort) }
@@ -38,10 +49,15 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
   const items: (Posting | Profile | Post)[] = loading ? [] : active.data?.pages.flatMap((p): (Posting | Profile | Post)[] => p.data) ?? []
   const totalOf = (k: SearchTab) => results[k].data?.pages[0]?.page.total
   const remember = () => q && recent.add(q)
+  const submit = () => {
+    const t = text.trim()
+    setQ(t)
+    if (t) recent.add(t)
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <SearchBar value={text} onChange={setText} onSubmit={remember} />
+      <SearchBar value={text} onChange={setText} onSubmit={submit} />
       {!q ? (
         <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 32 }}>
           {recent.terms.length ? (
@@ -60,7 +76,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                 <View key={t} style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => setText(t)}
+                    onPress={() => search(t)}
                     style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingLeft: spacing[5], paddingVertical: spacing[3] }}
                   >
                     <Icon name="clock" size={18} color="t3" />
@@ -92,7 +108,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
                 accessibilityRole="button"
                 accessibilityLabel={`${i + 1}위 ${t}`}
                 onPress={() => {
-                  setText(t)
+                  search(t)
                   recent.add(t)
                 }}
                 style={{ width: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3] }}
@@ -176,7 +192,7 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
             ) : (
               <StatusNote
                 lines={[searchEmptyTitle(q), SEARCH_EMPTY_BODY]}
-                action={{ label: SEARCH_CLEAR_LABEL, onPress: () => setText('') }}
+                action={{ label: SEARCH_CLEAR_LABEL, onPress: () => search('') }}
                 style={emptyNoteStyle(160)}
               />
             )
