@@ -1,13 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient'
 import { router, useNavigation } from 'expo-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, View, type ListRenderItem, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { radius, spacing, useColors } from '@/theme'
 import { askConfirm, Glass, GlassButton, Icon, Mascot, Menu, Text, useKeyboardHeight, useReduceMotion, type MenuAction } from '@/shared/components'
 import { shareMessage } from '@/shared/infrastructure'
 import { usePersonalPurchase } from '@/features/billing'
-import { useConvertDocument } from '@/features/my'
+import { useConvertDocument, type PickedFile } from '@/features/my'
 import {
   answer,
   ApprovalPanel,
@@ -40,10 +40,19 @@ import {
   useArchiveConversation,
   useDeleteConversation,
   usePinConversation,
+  useChatStore,
   type ChatItem,
+  type QuickStart,
 } from '@/features/chat'
 
 const keyOf = (item: ChatItem) => item.id
+const openQuickStart = (qs: QuickStart) => router.push(quickStartPath(qs.key))
+// Read at press time so the menu does not change with every streamed line.
+const shareText = (id: string) =>
+  (useChatStore.getState().chats[id]?.items ?? [])
+    .map((i) => (i.type === 'user' ? `나: ${i.text}` : i.type === 'agentText' ? `AI: ${i.text.replace(/\*\*/g, '')}` : i.type === 'tool' ? `· ${i.action} ${i.result ?? i.error ?? ''}` : ''))
+    .filter(Boolean)
+    .join('\n')
 
 
 const ConversationScreen = ({ id }: { id: string }) => {
@@ -70,9 +79,9 @@ const ConversationScreen = ({ id }: { id: string }) => {
   }, [id])
   const saying = !!chat.approval && sayingFor === chat.approval.id
 
-  const remove = useDeleteConversation()
-  const pin = usePinConversation()
-  const archive = useArchiveConversation()
+  const { mutate: remove } = useDeleteConversation()
+  const { mutate: pin } = usePinConversation()
+  const { mutate: archive } = useArchiveConversation()
 
   const onAction = useCallback((text: string) => send(id, text), [id])
   const { mutate: convertDocument } = convert
@@ -81,13 +90,12 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const { buyCredits } = purchase
   const onUsage = useCallback((action: 'plan' | 'credits') => (action === 'plan' ? router.push(accountPath('plan')) : buyCredits()), [buyCredits])
 
-  const shareText = () =>
-    chat.items
-      .map((i) => (i.type === 'user' ? `나: ${i.text}` : i.type === 'agentText' ? `AI: ${i.text.replace(/\*\*/g, '')}` : i.type === 'tool' ? `· ${i.action} ${i.result ?? i.error ?? ''}` : ''))
-      .filter(Boolean)
-      .join('\n')
+  const onStop = useCallback(() => stop(id), [id])
+  const onSend = useCallback((text: string, attachment?: PickedFile) => send(id, text, attachment), [id])
+  const onDrawer = useCallback(() => navigation.dispatch(OPEN_DRAWER), [navigation])
 
-  const menu = headerMenu(!!conv?.pinned).map((action) => ({
+
+  const menu = useMemo(() => headerMenu(!!conv?.pinned).map((action) => ({
     key: action.id,
     label: action.label,
     systemImage: action.systemImage,
@@ -95,19 +103,24 @@ const ConversationScreen = ({ id }: { id: string }) => {
     onPress: () => {
       if (action.id === 'rename') router.push(renamePath(id))
       else if (action.id === 'docs') router.push(docsPath())
-      else if (action.id === 'share') void shareMessage({ title: conv?.title, message: shareText() })
-      else if (action.id === 'pin' && conv) pin.mutate(conv)
-      else if (action.id === 'archive' && conv) archive.mutate(conv, { onSuccess: () => router.dismissTo('/chat') })
+      else if (action.id === 'share') void shareMessage({ title: conv?.title, message: shareText(id) })
+      else if (action.id === 'pin' && conv) pin(conv)
+      else if (action.id === 'archive' && conv) archive(conv, { onSuccess: () => router.dismissTo('/chat') })
       else if (action.id === 'delete')
-        askConfirm({ ...DELETE_CONFIRM, danger: true, onConfirm: () => remove.mutate(id, { onSuccess: () => router.dismissTo('/chat') }) })
+        askConfirm({ ...DELETE_CONFIRM, danger: true, onConfirm: () => remove(id, { onSuccess: () => router.dismissTo('/chat') }) })
     },
-  }))
+  })), [conv, id, pin, archive, remove])
 
   const company = headerCompany(chat.items, conv?.company)
   const placeholder = composerPlaceholder(chat)
   // The keyboard lifts the composer on Android, so the nav-bar inset below it would leave a gap.
   const keyboard = useKeyboardHeight()
   const showPanel = chat.approval && !saying
+  const { working, awaiting } = chat
+  const above = useMemo(
+    () => (working ? <StatusRow verbs={working.verbs} startedAt={working.startedAt} onStop={onStop} /> : awaiting ? <AwaitingRow text={AWAITING_TEXT[awaiting]} /> : null),
+    [working, awaiting, onStop],
+  )
   const awaitingResultId = chat.approval ? chat.items.findLast((i) => i.type === 'result')?.id : undefined
   const pending = convert.isPending
   // Inverted: newest first, so the thread stays bottom-anchored and grows upward without scrollToEnd.
@@ -150,7 +163,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
         keyboardDismissMode="interactive"
       />
 
-      <Header onDrawer={() => navigation.dispatch(OPEN_DRAWER)} title={company} menu={menu} />
+      <Header onDrawer={onDrawer} title={company} menu={menu} />
 
       <KeyboardAvoidingView behavior="padding" style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }} pointerEvents="box-none">
         {fresh ? (
@@ -183,16 +196,10 @@ const ConversationScreen = ({ id }: { id: string }) => {
                 inputRef={input}
                 placeholder={saying ? '어떻게 할지 말해 주세요' : placeholder}
                 working={!!chat.working}
-                onStop={() => stop(id)}
-                onSend={(text, attachment) => send(id, text, attachment)}
-                onShortcut={(qs) => router.push(quickStartPath(qs.key))}
-                above={
-                  chat.working ? (
-                    <StatusRow verbs={chat.working.verbs} startedAt={chat.working.startedAt} onStop={() => stop(id)} />
-                  ) : chat.awaiting ? (
-                    <AwaitingRow text={AWAITING_TEXT[chat.awaiting]} />
-                  ) : null
-                }
+                onStop={onStop}
+                onSend={onSend}
+                onShortcut={openQuickStart}
+                above={above}
               />
             </View>
           )}
@@ -204,7 +211,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   )
 }
 
-const Header = ({ onDrawer, title, menu }: { onDrawer: () => void; title?: string; menu: MenuAction[] }) => {
+const Header = memo(function Header({ onDrawer, title, menu }: { onDrawer: () => void; title?: string; menu: MenuAction[] }) {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
@@ -241,6 +248,6 @@ const Header = ({ onDrawer, title, menu }: { onDrawer: () => void; title?: strin
       </View>
     </View>
   )
-}
+})
 
 export default ConversationScreen

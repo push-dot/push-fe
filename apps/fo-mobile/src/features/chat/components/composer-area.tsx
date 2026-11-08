@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { brandOf } from '@push/shared'
 import { Alert, Platform, Pressable, ScrollView, View, useWindowDimensions, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -31,7 +31,7 @@ type Props = {
 }
 
 /** Composer + @ 언급 popover + attachment. Same on the first screen and in conversations. */
-export const ComposerArea = ({ placeholder, onSend, working, onStop, onTyping, above, inputRef }: Props) => {
+export const ComposerArea = memo(function ComposerArea({ placeholder, onSend, working, onStop, onTyping, above, inputRef }: Props) {
   const [text, setText] = useState('')
   const [file, setFile] = useState<PickedFile>()
   const own = useRef<TextInputInstance>(null)
@@ -107,7 +107,7 @@ export const ComposerArea = ({ placeholder, onSend, working, onStop, onTyping, a
       />
     </View>
   )
-}
+})
 
 const SHORTCUT_ICON: Record<(typeof MENTION_SHORTCUT_KEYS)[number], IconName> = { link: 'link', gap: 'search', fit: 'chart' }
 
