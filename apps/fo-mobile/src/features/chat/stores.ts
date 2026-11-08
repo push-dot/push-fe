@@ -152,21 +152,29 @@ const followed = (input: RunInput, signal: AbortSignal) =>
 
 const TOKEN_FLUSH_MS = 50
 
-// One commit per ~50 ms of streamed text instead of one per token; anything else flushes first so order holds.
+// The first token shows at once, then one commit per ~50 ms of streamed text instead of one per token;
+// anything else flushes first so order holds.
 const tokenBuffer = (id: string) => {
   let text = ''
   let timer: ReturnType<typeof setTimeout> | undefined
-  const flush = () => {
-    clearTimeout(timer)
-    timer = undefined
-    if (!text) return
+  const emit = () => {
+    if (!text) return false
     const t = text
     text = ''
     dispatch(id, { type: 'token', text: t })
+    return true
+  }
+  const tick = () => {
+    timer = emit() ? setTimeout(tick, TOKEN_FLUSH_MS) : undefined
+  }
+  const flush = () => {
+    clearTimeout(timer)
+    timer = undefined
+    emit()
   }
   const push = (t: string) => {
     text += t
-    timer ??= setTimeout(flush, TOKEN_FLUSH_MS)
+    if (timer === undefined) tick()
   }
   return { push, flush }
 }

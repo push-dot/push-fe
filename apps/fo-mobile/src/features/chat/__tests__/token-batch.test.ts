@@ -69,12 +69,15 @@ describe('token batching', () => {
     expect(chat('c3').items.map((i) => i.type)).toEqual(['user', 'agentText', 'error'])
   })
 
-  it('keeps the text received before a stop, ahead of the stop, and nothing after it', async () => {
+  it('shows the first token at once, keeps the text received before a stop ahead of it, and nothing after it', async () => {
     vi.useFakeTimers()
     try {
       post.mockResolvedValue({ data: [...tokens(10), { wait: 0, event: { type: 'done', at: 0 } }] })
       send('c4', '다듬어 주세요')
-      await vi.advanceTimersByTimeAsync(105)
+      await vi.advanceTimersByTimeAsync(15)
+      const first = chat('c4').items.findLast((i) => i.type === 'agentText')
+      expect(first?.type === 'agentText' && first.text).toBe(words[0])
+      await vi.advanceTimersByTimeAsync(90)
       const shown = chat('c4').items.findLast((i) => i.type === 'agentText')
       expect(shown?.type === 'agentText' && shown.text).toBe(words.slice(0, 5).join(''))
       stop('c4')
