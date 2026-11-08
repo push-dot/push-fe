@@ -1,9 +1,9 @@
 import type { AccessMode } from '@push/api-client'
 import type { Ref } from 'react'
-import { Pressable, TextInput, View, type TextInputInstance } from 'react-native'
+import { Pressable, TextInput, useWindowDimensions, View, type TextInputInstance } from 'react-native'
 import { fontFor, onAccent, radius, spacing, type, useColors } from '../../../theme'
 import { Icon, Text, hitSlopTo } from '@/shared/components'
-import { inputReset } from '@/shared/components/text-field-metrics'
+import { inputReset, iosLineBox } from '@/shared/components/text-field-metrics'
 import ModePicker from './mode-picker'
 
 
@@ -29,6 +29,7 @@ export type ComposerProps = {
 /** Text line on top (17px), control row below: + 첨부 · @ 언급 … mic · send/stop. Shared by both platforms. */
 export const ComposerBody = ({ inputRef, roomy, ...p }: ComposerProps) => {
   const c = useColors()
+  const { fontScale } = useWindowDimensions()
   const typed = p.value.trim()
   const hasText = typed.length > 0
   // A bare "@" only opens the suggestions; there is nothing to send yet.
@@ -59,8 +60,7 @@ export const ComposerBody = ({ inputRef, roomy, ...p }: ComposerProps) => {
         placeholderTextColor={c.t4}
         multiline
         accessibilityLabel="메시지"
-        // padding 0: iOS gives a multiline input paddingTop 5 unless the style sets padding.
-        style={[{ fontSize: type.h3.fontSize, lineHeight: type.h3.lineHeight, color: c.t1, maxHeight: 140, padding: 0, ...inputReset }, fontFor(hasText ? '600' : '400')]}
+        style={[{ fontSize: type.h3.fontSize, lineHeight: type.h3.lineHeight, color: c.t1, maxHeight: 140, ...inputReset, ...iosLineBox(type.h3.lineHeight, type.h3.fontSize, fontScale) }, fontFor(hasText ? '600' : '400')]}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
         <Pressable accessibilityRole="button" accessibilityLabel="첨부" onPress={p.onAttach} hitSlop={hitSlopTo(40, 40)} style={[round, { backgroundColor: c.fill }]}>
