@@ -1,2 +1,2 @@
 export * from './sheet-options'
-export * from './modal-insets'
+export * from './sheet-header'
