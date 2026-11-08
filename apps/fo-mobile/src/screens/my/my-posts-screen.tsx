@@ -20,7 +20,7 @@ const MyPostsScreen = () => {
       <TopBar
         title={postsTitle(view)}
         onBack={() => router.back()}
-        right={<GlassButton actions={[{ icon: 'more', label: '더 보기', menu: postsMenu({ view, sort }, { view: setView, sort: setSort }) }]} />}
+        right={<GlassButton actions={[{ icon: 'menu', label: '더 보기', menu: postsMenu({ view, sort }, { view: setView, sort: setSort }) }]} />}
       />
       {query.isLoading ? (
         <ListSkeleton />

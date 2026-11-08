@@ -129,7 +129,7 @@ const PushDocScreen = ({ id, jobId, sheet }: { id: string; jobId?: string; sheet
           <GlassButton
             actions={[
               { icon: 'share', label: '공유', onPress: () => share.mutate({ documentId: id }) },
-              { icon: 'more', label: '더 보기', menu },
+              { icon: 'menu', label: '더 보기', menu },
             ]}
           />
         }
