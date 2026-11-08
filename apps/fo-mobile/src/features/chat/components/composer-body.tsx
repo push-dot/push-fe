@@ -22,10 +22,12 @@ export type ComposerProps = {
   onClearAttachment: () => void
   accessMode: AccessMode
   inputRef?: Ref<TextInputInstance>
+  /** First screen: the box is 4pt roomier (padding 16/12/12/20, gap 16) than inside a conversation. */
+  roomy?: boolean
 }
 
 /** Text line on top (17px), control row below: + 첨부 · @ 언급 … mic · send/stop. Shared by both platforms. */
-export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
+export const ComposerBody = ({ inputRef, roomy, ...p }: ComposerProps) => {
   const c = useColors()
   const typed = p.value.trim()
   const hasText = typed.length > 0
@@ -34,7 +36,7 @@ export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
   const round = { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' } as const
   const chip = { minHeight: 40, paddingHorizontal: spacing[4], borderRadius: radius.pill, backgroundColor: c.fill, flexDirection: 'row', alignItems: 'center', gap: spacing[2] } as const
   return (
-    <View style={{ paddingTop: spacing[4], paddingRight: 10, paddingBottom: 10, paddingLeft: 18, gap: 14 }}>
+    <View style={{ paddingTop: spacing[4], paddingRight: roomy ? spacing[3] : 10, paddingBottom: roomy ? spacing[3] : 10, paddingLeft: roomy ? spacing[5] : 18, gap: roomy ? spacing[4] : 14 }}>
       {p.attachment ? (
         <Pressable
           accessibilityRole="button"
@@ -57,7 +59,8 @@ export const ComposerBody = ({ inputRef, ...p }: ComposerProps) => {
         placeholderTextColor={c.t4}
         multiline
         accessibilityLabel="메시지"
-        style={[{ fontSize: type.h3.fontSize, lineHeight: type.h3.lineHeight, color: c.t1, maxHeight: 140, ...inputReset }, fontFor(hasText ? '600' : '400')]}
+        // padding 0: iOS gives a multiline input paddingTop 5 unless the style sets padding.
+        style={[{ fontSize: type.h3.fontSize, lineHeight: type.h3.lineHeight, color: c.t1, maxHeight: 140, padding: 0, ...inputReset }, fontFor(hasText ? '600' : '400')]}
       />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
         <Pressable accessibilityRole="button" accessibilityLabel="첨부" onPress={p.onAttach} hitSlop={hitSlopTo(40, 40)} style={[round, { backgroundColor: c.fill }]}>

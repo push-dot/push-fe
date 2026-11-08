@@ -23,8 +23,9 @@ const ChatHomeScreen = () => {
       <View style={{ paddingTop: insets.top, height: insets.top + 56, justifyContent: 'center', alignItems: 'flex-start', paddingLeft: spacing[3] }}>
         <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: () => navigation.dispatch(OPEN_DRAWER) }]} />
       </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none" accessibilityElementsHidden>
-        <Text style={{ fontSize: 56, lineHeight: 60, letterSpacing: -2.8, ...fontFor('800'), color: c.t1, opacity: 0.12 }}>
+      {/* The board centres the mark between the status bar and 6pt above the chips: up under the 56pt header, down 10pt into the chip row's top padding. */}
+      <View style={{ flex: 1, marginTop: -56, marginBottom: -10, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none" accessibilityElementsHidden>
+        <Text style={{ fontSize: 56, lineHeight: 60, letterSpacing: -2.8, ...fontFor('800'), color: c.t1, opacity: typing ? 0 : 0.12 }}>
           Push<Text style={{ fontSize: 56, lineHeight: 60, ...fontFor('800'), color: c.ac }}>.</Text>
         </Text>
       </View>
@@ -38,6 +39,7 @@ const ChatHomeScreen = () => {
       <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' && keyboard ? 10 : Math.max(insets.bottom + lift, 10) }}>
         <ComposerArea
           placeholder="공고 링크를 붙여넣어 보세요"
+          roomy
           onTyping={setTyping}
           onShortcut={() => undefined}
           onSend={(text, attachment) => void start(text.length > 30 ? `${text.slice(0, 30)}…` : text, text, attachment)}
