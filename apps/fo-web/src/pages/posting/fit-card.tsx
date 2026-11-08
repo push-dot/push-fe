@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../shared/api/client'
-import { mockFit } from '../../shared/api/mock'
+import { loadMock } from '../../shared/api/mock-loader'
 import { isMock, send } from '../../shared/lib/bridge'
 import { MOCK_FIT_DELAY_MS } from './constants'
 import {
@@ -19,7 +19,7 @@ import {
 const C = 2 * Math.PI * 27
 
 const loadMockFit = async (): Promise<FitCardModel> => {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_FIT_DELAY_MS))
+  const [{ mockFit }] = await Promise.all([loadMock(), new Promise((resolve) => setTimeout(resolve, MOCK_FIT_DELAY_MS))])
   return {
     document: mockFit.document,
     score: mockFit.score,
@@ -32,7 +32,7 @@ const loadMockFit = async (): Promise<FitCardModel> => {
 
 const loadDocument = () =>
   isMock()
-    ? Promise.resolve({ id: mockFit.document, title: mockFit.document })
+    ? loadMock().then(({ mockFit }) => ({ id: mockFit.document, title: mockFit.document }))
     : firstDocument({ listDocuments: () => api.documents.list({ limit: 1 }) })
 
 const loadFit = (postingId: string, doc: FitDocument) =>
