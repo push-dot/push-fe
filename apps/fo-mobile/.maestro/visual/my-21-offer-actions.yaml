@@ -43,6 +43,19 @@ tags:
     visible: "수락하고 답장하기"
     timeout: 10000
 - waitForAnimationToEnd
+# Reporting stays on the offer; the toast sits above the bottom buttons.
+- tapOn: "더 보기"
+- extendedWaitUntil:
+    visible: "신고하기"
+    timeout: 10000
+- tapOn: "신고하기"
+- extendedWaitUntil:
+    visible: "신고가 접수됐어요"
+    timeout: 10000
+- takeScreenshot: ProposalToastReported
+- extendedWaitUntil:
+    notVisible: "신고가 접수됐어요"
+    timeout: 10000
 - tapOn: "더 보기"
 - extendedWaitUntil:
     visible: "차단하기"

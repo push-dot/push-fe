@@ -2,7 +2,7 @@ import type { Offer } from '@push/api-client'
 import type { ConfirmRequest } from '@/shared/components/confirm-store'
 import type { MenuSection } from '@/shared/components/menu-action'
 import { toastOffsets, type ToastInput } from '@/shared/components/toast-store'
-import { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked, REPORT_ENABLED } from './my-rules'
+import { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked } from './my-rules'
 
 export const otherParty = (o: Offer, viewerId: string) => (o.sender.id === viewerId ? o.recipient : o.sender)
 
@@ -35,7 +35,7 @@ export const offerMenu = (offer: Offer, viewerId: string, d: OfferMenuDeps) => {
       }),
     unarchive: () => run(d.unarchive(offer.id), () => void d.refresh()),
     report: () =>
-      run(d.report(offer.id), () => d.toast({ message: OFFER_MENU_COPY.reported, tone: 'success', bottom: toastOffsets(0).cta })),
+      run(d.report(offer.id), () => d.toast({ message: OFFER_MENU_COPY.reported, bottom: toastOffsets(0).cta })),
     block: () =>
       run(d.block(otherParty(offer, viewerId).id), () => {
         d.back()
@@ -58,7 +58,6 @@ export const offerMenuSections = (
   offer: Offer,
   box: 'received' | 'sent',
   d: OfferMenuSectionDeps,
-  reportEnabled = REPORT_ENABLED,
 ): MenuSection[] => {
   const viewerId = box === 'received' ? offer.recipient.id : offer.sender.id
   const run = offerMenu(offer, viewerId, d)
@@ -71,16 +70,17 @@ export const offerMenuSections = (
     keep.push({ key: 'unarchive', label: OFFER_MENU_COPY.unarchive, systemImage: 'tray.and.arrow.up', icon: 'archive', onPress: () => void run.unarchive() })
   else if (box === 'received')
     keep.push({ key: 'archive', label: OFFER_MENU_COPY.archive, systemImage: 'archivebox', icon: 'archive', onPress: () => void run.archive() })
-  const harm: MenuSection['actions'] = []
-  if (reportEnabled) harm.push({ key: 'report', label: OFFER_MENU_COPY.report, systemImage: 'flag', icon: 'flag', onPress: () => void run.report() })
-  harm.push({
-    key: 'block',
-    label: OFFER_MENU_COPY.block,
-    systemImage: 'nosign',
-    icon: 'block',
-    destructive: true,
-    onPress: () => d.confirm({ ...offerBlockConfirm(who.displayName), danger: true, onConfirm: () => void run.block() }),
-  })
+  const harm: MenuSection['actions'] = [
+    { key: 'report', label: OFFER_MENU_COPY.report, systemImage: 'flag', icon: 'flag', onPress: () => void run.report() },
+    {
+      key: 'block',
+      label: OFFER_MENU_COPY.block,
+      systemImage: 'nosign',
+      icon: 'block',
+      destructive: true,
+      onPress: () => d.confirm({ ...offerBlockConfirm(who.displayName), danger: true, onConfirm: () => void run.block() }),
+    },
+  ]
   return [
     { key: 'keep', actions: keep },
     { key: 'harm', actions: harm },

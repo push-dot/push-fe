@@ -113,8 +113,6 @@ export const OFFER_BLOCKED_COMPOSER = '이 대화에는 더 이상 메시지를 
 export const OFFER_ARCHIVED_NOTE = '보관한 제안은 받은 제안 목록과 알림에서 빠져요. 열어서 보관을 풀 수 있어요.'
 export const OFFER_ARCHIVED_ROW = '보관한 제안'
 export const OFFER_ARCHIVED_BADGE = '보관함'
-// Claude Design request d is correcting the report toast (push-be stores reports only, no review reply): 신고하기 stays hidden until `reported` holds that copy.
-export const REPORT_ENABLED = false
 export const OFFER_MENU_COPY = {
   profile: '허브 프로필 보기',
   archive: '제안 보관하기',
@@ -123,7 +121,7 @@ export const OFFER_MENU_COPY = {
   block: '차단하기',
   archived: '제안을 보관했어요',
   undo: '되돌리기',
-  reported: '신고를 접수했어요',
+  reported: '신고가 접수됐어요',
   failed: '잠시 뒤에 다시 시도해 주세요.',
 }
 export const offerBlocked = (name: string) => `${name} 님을 차단했어요`
