@@ -4,9 +4,20 @@ tags:
 # Dev builds show a LogBox toast over the tab bar that swallows the tab tap, so close it first.
 ---
 - waitForAnimationToEnd
+# iOS: the toast's body only opens DevTools and the toast stays until a debugger attaches; its X (right end) clears it.
 - runFlow:
     when:
       visible: ".*Open debugger to view warnings.*"
+      platform: iOS
+    commands:
+      - tapOn:
+          text: ".*Open debugger to view warnings.*"
+          point: "94%,50%"
+          optional: true
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+      platform: Android
     commands:
       - tapOn:
           text: ".*Open debugger to view warnings.*"
