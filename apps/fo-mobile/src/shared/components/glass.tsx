@@ -1,7 +1,7 @@
 import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect'
-import { useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Platform, View, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
-import { useColors, useShadow } from '../../theme'
+import { useColors, useShadow, useThemeMode } from '../../theme'
 import { toBoxShadow } from '../utility'
 
 const glassAvailable = Platform.OS === 'ios' && isGlassEffectAPIAvailable()
@@ -16,9 +16,21 @@ export const useReduceTransparency = () => {
   return on
 }
 
+/** Native glass inside a glass sheet draws nothing, so a glass control in a partial iOS sheet draws the board's glass colour instead. */
+export const SheetSurface = createContext(false)
+
 export const useGlassSurface = () => {
   const reduce = useReduceTransparency()
-  return glassAvailable && !reduce
+  const inSheet = useContext(SheetSurface)
+  return glassAvailable && !reduce && !inSheet
+}
+
+/** The board's `--glass` laid over a sheet: white in light, the glass token in dark. Null outside an iOS sheet. */
+export const useSheetGlassFill = () => {
+  const c = useColors()
+  const inSheet = useContext(SheetSurface)
+  const dark = useThemeMode() === 'dark'
+  return inSheet ? (dark ? c.glass : c.bg) : null
 }
 
 type Props = {
@@ -33,6 +45,7 @@ const Glass = ({ children, style, surface = 'glass', interactive, tint }: Props)
   const c = useColors()
   const boxShadow = toBoxShadow(useShadow().glass)
   const glass = useGlassSurface()
+  const sheetFill = useSheetGlassFill()
   if (Platform.OS === 'android') return <View style={[{ backgroundColor: c.bg2 }, style]}>{children}</View>
   if (glass) {
     // An RN boxShadow stays at rest size while interactive glass grows on press, leaving a fixed disc inside it.
@@ -42,7 +55,7 @@ const Glass = ({ children, style, surface = 'glass', interactive, tint }: Props)
       </GlassView>
     )
   }
-  return <View style={[{ boxShadow, backgroundColor: glassAvailable ? c.bg2 : c[surface] }, style]}>{children}</View>
+  return <View style={[{ boxShadow, backgroundColor: sheetFill ?? (glassAvailable ? c.bg2 : c[surface]) }, style]}>{children}</View>
 }
 
 export default Glass
