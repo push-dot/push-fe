@@ -6,17 +6,13 @@ const row = (createdAt: string, companyName?: string | null): BlockedUser => ({ 
 const NOW = new Date(2026, 10, 8)
 
 describe('blockedLine', () => {
-  it('shows the company, then the blocked date', () => {
-    expect(blockedLine(row(new Date(2026, 10, 7, 12).toISOString(), '모아페이'), NOW)).toBe('모아페이 · 11월 7일 차단')
-  })
-
-  it('drops the company when the server sends none', () => {
+  it('reads the blocked date, without the company', () => {
+    expect(blockedLine(row(new Date(2026, 10, 7, 12).toISOString(), '모아페이'), NOW)).toBe('11월 7일 차단')
     expect(blockedLine(row(new Date(2026, 9, 3, 12).toISOString()), NOW)).toBe('10월 3일 차단')
-    expect(blockedLine(row(new Date(2026, 9, 3, 12).toISOString(), null), NOW)).toBe('10월 3일 차단')
   })
 
   it('adds the year for an earlier year', () => {
-    expect(blockedLine(row(new Date(2025, 9, 3, 12).toISOString()), NOW)).toBe('2025. 10. 3. 차단')
+    expect(blockedLine(row(new Date(2025, 9, 3, 12).toISOString()), NOW)).toBe('2025년 10월 3일 차단')
   })
 })
 

@@ -407,6 +407,7 @@ export const useOfferMenu = (offer: Offer | undefined, box: Box) => {
     Promise.all([
       qc.invalidateQueries({ queryKey: ['me', 'offers'] }),
       qc.invalidateQueries({ queryKey: ['me', 'offer', offer.id] }),
+      qc.invalidateQueries({ queryKey: ['me', 'blocks'] }),
       qc.invalidateQueries({ queryKey: ['chat', 'quick-start'] }),
     ])
   return offerMenuSections(offer, box, {
