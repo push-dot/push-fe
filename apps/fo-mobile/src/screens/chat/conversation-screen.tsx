@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { router, useNavigation } from 'expo-router'
+import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -16,7 +16,6 @@ import {
   ComposerArea,
   composerPlaceholder,
   ConsentSheet,
-  OPEN_DRAWER,
   DELETE_CONFIRM,
   headerMenu,
   headerCompany,
@@ -30,6 +29,7 @@ import {
   quickStartPath,
   renamePath,
   send,
+  sidebarPath,
   StatusRow,
   stop,
   threadInset,
@@ -52,7 +52,6 @@ const ConversationScreen = ({ id }: { id: string }) => {
   })
   const list = useConversationList()
   const conv = list.data?.data.find((x) => x.id === id)
-  const navigation = useNavigation()
   const [sayingFor, setSayingFor] = useState<string>()
   const [bottomH, setBottomH] = useState(160)
   const [fresh, setFresh] = useState(false)
@@ -130,7 +129,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
         ))}
       </ScrollView>
 
-      <Header onDrawer={() => navigation.dispatch(OPEN_DRAWER)} title={company} menu={menu} />
+      <Header onSidebar={() => router.push(sidebarPath(id))} title={company} menu={menu} />
 
       <KeyboardAvoidingView behavior="padding" style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }} pointerEvents="box-none">
         {fresh ? (
@@ -184,7 +183,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   )
 }
 
-const Header = ({ onDrawer, title, menu }: { onDrawer: () => void; title?: string; menu: MenuAction[] }) => {
+const Header = ({ onSidebar, title, menu }: { onSidebar: () => void; title?: string; menu: MenuAction[] }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
   const ios = Platform.OS === 'ios'
@@ -211,7 +210,7 @@ const Header = ({ onDrawer, title, menu }: { onDrawer: () => void; title?: strin
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, height: insets.top + 56, backgroundColor: c.bg }} />
       )}
       <View style={{ marginTop: insets.top, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: ios ? spacing[3] : spacing[2] }}>
-        <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: onDrawer }]} />
+        <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: onSidebar }]} />
         <View accessibilityRole="header" accessibilityLabel={title ? `Push · ${title}` : 'Push'} style={{ flex: 1, alignItems: 'center', paddingHorizontal: spacing[2] }}>
           {ios ? <Glass style={{ borderRadius: radius.pill, maxWidth: '100%' }}>{pill}</Glass> : pill}
         </View>

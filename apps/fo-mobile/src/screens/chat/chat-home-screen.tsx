@@ -1,10 +1,10 @@
-import { router, useNavigation } from 'expo-router'
+import { router } from 'expo-router'
 import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { fontFor, spacing, useColors } from '@/theme'
 import { Glass, GlassButton, Icon3D, Text, useKeyboardHeight } from '@/shared/components'
-import { ComposerArea, ConsentSheet, OPEN_DRAWER, QUICK_STARTS, quickStartPath, useStartChat, type QuickStart } from '@/features/chat'
+import { ComposerArea, ConsentSheet, QUICK_STARTS, quickStartPath, sidebarPath, useStartChat, type QuickStart } from '@/features/chat'
 
 
 const ChatHomeScreen = () => {
@@ -12,7 +12,6 @@ const ChatHomeScreen = () => {
   const insets = useSafeAreaInsets()
   const start = useStartChat()
   const [typing, setTyping] = useState(false)
-  const navigation = useNavigation()
   // The floating iOS tab bar is inside the inset; the design keeps the composer a step above it.
   const lift = Platform.OS === 'ios' && insets.bottom > 0 ? spacing[4] : 0
   // Android pads the keyboard height itself; the nav-bar inset on top of it would leave a gap.
@@ -21,7 +20,7 @@ const ChatHomeScreen = () => {
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: c.bg }} behavior="padding">
       <View style={{ paddingTop: insets.top, height: insets.top + 56, justifyContent: 'center', alignItems: 'flex-start', paddingLeft: spacing[3] }}>
-        <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: () => navigation.dispatch(OPEN_DRAWER) }]} />
+        <GlassButton actions={[{ icon: 'side', label: '대화 목록 열기', onPress: () => router.push(sidebarPath()) }]} />
       </View>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none" accessibilityElementsHidden>
         <Text style={{ fontSize: 56, lineHeight: 60, letterSpacing: -2.8, ...fontFor('800'), color: c.t1, opacity: 0.12 }}>
