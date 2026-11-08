@@ -14,7 +14,6 @@ const GROUPS: { key: string; actions: PushDocAction[] }[] = [
   { key: 'danger', actions: ['delete'] },
 ]
 
-/** The ⋯ menu of a Push document; 공고 보기 needs a posting. */
 export const pushDocMenu = (doc: { hasPosting: boolean }, on: Record<PushDocAction, () => void>): MenuSection[] =>
   GROUPS.map(({ key, actions }) => ({
     key,

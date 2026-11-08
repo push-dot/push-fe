@@ -6,7 +6,6 @@ import { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked } from './my-rules'
 
 type Box = 'received' | 'sent'
 
-/** The offer decides which side the viewer is on; the route's box only answers when the session matches neither party. */
 export const viewerBox = (o: Offer, viewerId: string | undefined, hint: Box): Box => {
   if (viewerId === o.sender.id) return 'sent'
   if (viewerId === o.recipient.id) return 'received'
@@ -64,10 +63,6 @@ export type OfferMenuSectionDeps = OfferMenuDeps & {
   confirm: (r: ConfirmRequest) => void
 }
 
-/**
- * The ⋯ menu: 허브 프로필 보기 and 보관 (or 보관 풀기 once archived), then 신고하기 and 차단하기.
- * Only a received offer is archived (the 보관한 제안 list is the received box); an already archived one can always be released.
- */
 export const offerMenuSections = (offer: Offer, box: Box, d: OfferMenuSectionDeps): MenuSection[] => {
   const run = offerMenu(offer, box, d)
   const who = otherParty(offer, box)

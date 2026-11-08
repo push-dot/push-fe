@@ -9,7 +9,6 @@ export const POSTS_VIEWS: { key: PostsView; label: string }[] = [
 
 export const postsTitle = (view: PostsView) => POSTS_VIEWS.find((v) => v.key === view)!.label
 
-/** ⋯ menu of the full posts list: 보기 with a check on the current view. */
 export const postsMenu = (view: PostsView, pick: (v: PostsView) => void): MenuSection[] => [
   {
     key: 'view',

@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { ScrollView, View } from 'react-native'
-import { OFFER_ARCHIVED_NOTE, OfferRow, useArchivedOffers } from '@/features/my'
-import { SkeletonRows, Text, TopBar } from '@/shared/components'
+import { OFFER_ARCHIVED_NOTE, OFFER_MENU_COPY, OfferRow, RETRY_LABEL, useArchivedOffers } from '@/features/my'
+import { emptyNoteStyle, SkeletonRows, StatusNote, Text, TopBar } from '@/shared/components'
 import type { SkeletonRowsShape } from '@/shared/components'
 import { radius, spacing, useColors } from '@/theme'
 
@@ -33,6 +33,9 @@ const ArchivedOffersScreen = () => {
           {OFFER_ARCHIVED_NOTE}
         </Text>
         {q.isLoading ? <SkeletonRows {...OFFER_SKELETON} /> : null}
+        {q.isError && !q.data ? (
+          <StatusNote lines={[OFFER_MENU_COPY.failed]} action={{ label: RETRY_LABEL, onPress: () => void q.refetch() }} style={emptyNoteStyle(140)} />
+        ) : null}
         {q.data?.data.map((o) => (
           <OfferRow key={o.id} o={o} box="received" archived />
         ))}

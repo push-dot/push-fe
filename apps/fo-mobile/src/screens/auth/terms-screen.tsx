@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View } from 'react-native'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import {
   TERM_ROWS,
   TERMS_BODY,
@@ -38,6 +38,17 @@ const TermsScreen = () => {
 
   useEffect(() => () => useTermsConsent.getState().reset(), [])
 
+  const opening = useRef(false)
+  useFocusEffect(
+    useCallback(() => {
+      opening.current = false
+    }, []),
+  )
+  const openTerm = (term: string) => {
+    if (opening.current) return
+    opening.current = true
+    router.push({ pathname: '/terms-view', params: { term } })
+  }
 
   const submit = () => {
     if (!held || !requiredOk) return
@@ -74,7 +85,7 @@ const TermsScreen = () => {
               required={row.required}
               checked={Boolean(checked[row.id])}
               onPress={() => toggle(row.id)}
-              onOpen={isTermKey(row.id) ? () => router.push({ pathname: '/terms-view', params: { term: row.id } }) : undefined}
+              onOpen={isTermKey(row.id) ? () => openTerm(row.id) : undefined}
             />
           ))}
         </View>

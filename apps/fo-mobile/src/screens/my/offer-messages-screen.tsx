@@ -73,6 +73,8 @@ const Bubble = ({
 
 // The board centres the empty line over the whole screen (composer overlaid) with a 120pt lift; here the composer takes its own height.
 const EMPTY_LIFT = 120
+const COMPOSER_HEIGHT = 52
+const COMPOSER_RADIUS = COMPOSER_HEIGHT / 2
 
 const OfferMessagesScreen = ({ id, box: hint }: { id: string; box: Box }) => {
   const c = useColors()
@@ -244,8 +246,8 @@ const OfferMessagesScreen = ({ id, box: hint }: { id: string; box: Box }) => {
           <View
             accessibilityRole="alert"
             style={{
-              minHeight: 52,
-              borderRadius: 26,
+              minHeight: COMPOSER_HEIGHT,
+              borderRadius: COMPOSER_RADIUS,
               paddingHorizontal: spacing[4],
               alignItems: 'center',
               justifyContent: 'center',
@@ -259,7 +261,7 @@ const OfferMessagesScreen = ({ id, box: hint }: { id: string; box: Box }) => {
         ) : (
           <Composer
             style={{
-              borderRadius: 26,
+              borderRadius: COMPOSER_RADIUS,
               flexDirection: 'row',
               alignItems: 'flex-end',
               padding: 6,

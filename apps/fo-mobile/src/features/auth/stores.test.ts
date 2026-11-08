@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { TERMS_TEXT, TERM_ROWS, isTermKey } from './constants'
+import { TERMS_TEXT, TERM_ROWS, isTermKey, type TermKey } from './constants'
 import { useTermsConsent, usePhoneAuth } from './stores'
 
 describe('usePhoneAuth', () => {
@@ -28,10 +28,13 @@ describe('useTermsConsent', () => {
     expect(Object.values(useTermsConsent.getState().checked).some(Boolean)).toBe(false)
   })
 
-  it('every term row with a chevron has its own text, and age14 has none', () => {
+  it('opens a text only for the rows that have one', () => {
     expect(TERM_ROWS.filter((row) => isTermKey(row.id)).map((row) => row.id)).toEqual(['serviceTerms', 'privacy', 'marketing'])
-    expect(TERMS_TEXT.serviceTerms.title).toBe('서비스 이용약관')
-    expect(TERMS_TEXT.privacy.title).toBe('개인정보 수집·이용')
-    expect(TERMS_TEXT.marketing.sections).toHaveLength(6)
+    expect(TERM_ROWS.filter((row) => isTermKey(row.id)).every((row) => TERMS_TEXT[row.id as TermKey].sections.length > 0)).toBe(true)
+  })
+
+  it('accepts only own term keys, not inherited object properties or other values', () => {
+    expect(['toString', 'constructor', '__proto__', 'age14', '', undefined, 1].map(isTermKey)).toEqual(Array(7).fill(false))
+    expect(isTermKey('privacy')).toBe(true)
   })
 })

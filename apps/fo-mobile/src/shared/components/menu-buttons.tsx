@@ -12,7 +12,6 @@ const buttons = (actions: MenuAction[]) =>
     />
   ))
 
-/** iOS: menu actions as SwiftUI buttons inside a UIMenu; several sections become UIMenu sections. */
 const MenuButtons = ({ actions }: { actions: MenuAction[] | MenuSection[] }) => {
   const sections = menuSections(actions)
   if (sections.length === 1 && !sections[0]!.title) return buttons(sections[0]!.actions)

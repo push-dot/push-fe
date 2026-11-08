@@ -55,7 +55,6 @@ type TermsConsent = {
 
 const unchecked = () => Object.fromEntries(TERM_ROWS.map((row) => [row.id, false]))
 
-// The consent screen stays mounted under the terms view, so 동의하기 only has to write here.
 export const useTermsConsent = create<TermsConsent>((set) => ({
   checked: unchecked(),
   toggle: (id) => set((s) => ({ checked: { ...s.checked, [id]: !s.checked[id] } })),

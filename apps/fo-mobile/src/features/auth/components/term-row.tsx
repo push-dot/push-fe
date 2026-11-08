@@ -1,8 +1,10 @@
 import { Pressable, View } from 'react-native'
 import { Icon, Text } from '../../../shared/components'
 import TermCheckbox from './term-checkbox'
-import { spacing, type } from '../../../theme'
+import { hitSlopTo, spacing, type } from '../../../theme'
 import { TERMS_DETAIL_SUFFIX } from '../constants'
+
+const CHEVRON_SIZE = 44
 
 type Props = { label: string; badge: string; required: boolean; checked: boolean; onPress: () => void; onOpen?: () => void }
 
@@ -28,7 +30,8 @@ const TermRow = ({ label, badge, required, checked, onPress, onOpen }: Props) =>
         accessibilityRole="button"
         accessibilityLabel={`${label} ${TERMS_DETAIL_SUFFIX}`}
         onPress={onOpen}
-        style={{ width: 44, height: 44, marginRight: -spacing[3], alignItems: 'center', justifyContent: 'center' }}
+        hitSlop={hitSlopTo(CHEVRON_SIZE, CHEVRON_SIZE)}
+        style={{ width: CHEVRON_SIZE, height: CHEVRON_SIZE, marginRight: -spacing[3], alignItems: 'center', justifyContent: 'center' }}
       >
         <Icon name="chev" size={18} color="t3" />
       </Pressable>

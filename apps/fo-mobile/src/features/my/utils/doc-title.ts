@@ -14,7 +14,6 @@ export const titleLength = (title: string) => Array.from(title).length
 
 export const clipTitle = (title: string, max = DOC_TITLE_MAX) => Array.from(title).slice(0, max).join('')
 
-/** The title to save, or null when there is nothing to change (empty or the same name once trimmed). */
 export const renamedTitle = (current: string, typed: string) => {
   const next = typed.trim()
   return next && next !== current ? next : null

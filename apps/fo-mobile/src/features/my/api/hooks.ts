@@ -121,7 +121,6 @@ export const useSetBaseProfile = (onDone: () => void) => {
   })
 }
 
-// Callers pass onSuccess and onError to mutate(), so a sheet closed mid-request does not navigate back twice.
 // The refetch is returned, so a caller's onSuccess runs once the new revision is loaded.
 const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>) => {
   const qc = useQueryClient()
@@ -171,7 +170,6 @@ export const useSettings = () => {
   return { s: q.data, set: m.mutate }
 }
 
-// Blocking happens on other screens (offer detail), so always re-read when a screen mounts.
 export const useBlocked = () => useQuery({ queryKey: ['me', 'blocks'], queryFn: fetchBlocked, refetchOnMount: 'always' })
 
 // push-be lists offers without the people you block, so unblocking brings their offers back into the lists.

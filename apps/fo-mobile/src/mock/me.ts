@@ -613,7 +613,6 @@ const received: Offer[] = [
     status: 'DECLINED',
     createdAt: on(10, 2, 15),
   }),
-  // Archived from the start: the 받은 제안 board's 보관한 제안 1개 row and the 보관한 제안 board.
   offer({
     id: 'o8',
     sender: { ...user('u-nuri', '누리클라우드 채용팀', '누리클라우드', '프론트엔드 포지션'), kind: 'COMPANY' as const },
@@ -707,7 +706,6 @@ const badRequest = (field: string, message: string) => ({
   status: 400,
   body: { error: { code: 'VALIDATION_ERROR', message, details: { field } } },
 })
-// Two people are already blocked (the settings boards draw 2명). Their ids belong to no offer, so the offer lists stay whole.
 const blockedUsers = new Map<string, { displayName: string; createdAt: string }>([
   ['u-blocked-jihyun', { displayName: '오지현', createdAt: on(11, 7, 9) }],
   ['u-blocked-greenticket', { displayName: '그린티켓 채용팀', createdAt: on(10, 3, 9) }],
