@@ -1,7 +1,13 @@
 import { Picker, Text } from '@expo/ui/swift-ui'
 import { controlSize, pickerStyle, tag } from '@expo/ui/swift-ui/modifiers'
+import { setSegmentedTitleFont } from '../../../modules/segmented-appearance'
+import { NATIVE_FONTS } from '../../theme/fonts'
+import { type } from '../../theme'
 import type { SegmentedControlProps } from './segmented-control.android'
 import NativeHost from './native-host'
+
+// The SwiftUI picker ignores a font modifier on its labels; UIAppearance reaches the UISegmentedControl behind it.
+setSegmentedTitleFont(NATIVE_FONTS[type.segLabel.weight], type.segLabel.fontSize)
 
 /** iOS: SwiftUI segmented picker (UISegmentedControl). */
 const SegmentedControl = <K extends string,>({ items, value, onChange }: SegmentedControlProps<K>) => (
