@@ -117,6 +117,10 @@ const buy = async (sku: string, type: 'in-app' | 'subs') => {
   }
 }
 
+const buyCredits = () => {
+  void buy(IAP_PRODUCT_TOPUP, 'in-app')
+}
+
 export const usePersonalPurchase = () => {
   const isPending = useSyncExternalStore(
     (listener) => {
@@ -135,9 +139,7 @@ export const usePersonalPurchase = () => {
     manage: (plan: 'PRO' | 'ULTRA') => {
       void deepLinkToSubscriptions({ skuAndroid: plan === 'PRO' ? IAP_PRODUCT_PRO : IAP_PRODUCT_ULTRA, packageNameAndroid: Constants.expoConfig?.android?.package }).catch(() => Alert.alert(IAP_FAILED_MESSAGE))
     },
-    buyCredits: () => {
-      void buy(IAP_PRODUCT_TOPUP, 'in-app')
-    },
+    buyCredits,
     restore: () => {
       if (pending) return
       setPending(true)

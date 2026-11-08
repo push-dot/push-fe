@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient'
 import { router, useNavigation } from 'expo-router'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View, type ScrollViewInstance, type TextInputInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { radius, spacing, useColors } from '@/theme'
@@ -69,6 +69,13 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const pin = usePinConversation()
   const archive = useArchiveConversation()
 
+  const onAction = useCallback((text: string) => send(id, text), [id])
+  const { mutate: convertDocument } = convert
+  const onConvert = useCallback((card: { documentId: string }) => convertDocument(card.documentId), [convertDocument])
+  const onView = useCallback((card: { documentId: string }) => router.push(`/docs/push/${card.documentId}`), [])
+  const { buyCredits } = purchase
+  const onUsage = useCallback((action: 'plan' | 'credits') => (action === 'plan' ? router.push(accountPath('plan')) : buyCredits()), [buyCredits])
+
   const shareText = () =>
     chat.items
       .map((i) => (i.type === 'user' ? `나: ${i.text}` : i.type === 'agentText' ? `AI: ${i.text.replace(/\*\*/g, '')}` : i.type === 'tool' ? `· ${i.action} ${i.result ?? i.error ?? ''}` : ''))
@@ -117,12 +124,12 @@ const ConversationScreen = ({ id }: { id: string }) => {
           <Item
             key={it.id}
             item={it}
-            onAction={(text) => send(id, text)}
-            onConvert={(card) => convert.mutate(card.documentId)}
-            onView={(card) => router.push(`/docs/push/${card.documentId}`)}
+            onAction={onAction}
+            onConvert={onConvert}
+            onView={onView}
             resultPending={convert.isPending}
             resultAwaiting={!!chat.approval && it.id === lastResultId}
-            onUsage={(action) => (action === 'plan' ? router.push(accountPath('plan')) : purchase.buyCredits())}
+            onUsage={onUsage}
           />
         ))}
         {chat.queue.map((item, i) => (

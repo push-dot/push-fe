@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { Animated, Easing, Platform, Pressable, View, useWindowDimensions } from 'react-native'
 import { onAccent, radius, spacing, tile, useColors, useShadow, type Colors } from '../../../theme'
 import { Badge, Button, GlassButton, Icon, Text, useReduceMotion } from '@/shared/components'
@@ -688,7 +688,7 @@ export const Glyph = ({ still, size = 17, color }: { still?: boolean; size?: num
 }
 
 /** Renders one transcript item. Completion actions get callbacks from the screen. */
-export const Item = ({
+export const Item = memo(function Item({
   item,
   onAction,
   onUsage,
@@ -704,7 +704,7 @@ export const Item = ({
   onView?: (item: Of<'result'>) => void
   resultPending?: boolean
   resultAwaiting?: boolean
-}) => {
+}) {
   const c = useColors()
   switch (item.type) {
     case 'user':
@@ -770,7 +770,7 @@ export const Item = ({
         </Appear>
       )
   }
-}
+})
 
 /** Dashed "대기 중" chip for messages sent while the agent works. */
 export const Queued = ({ text }: { text: string }) => {

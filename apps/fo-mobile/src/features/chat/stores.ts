@@ -150,9 +150,32 @@ const resolved = async function* (input: RunInput, signal: AbortSignal): AsyncGe
 const followed = (input: RunInput, signal: AbortSignal) =>
   fromStream(followConversation(input.conversationId, undefined, signal), (after) => followConversation(input.conversationId, after, signal))
 
+const TOKEN_FLUSH_MS = 50
+
+// One commit per ~50 ms of streamed text instead of one per token; anything else flushes first so order holds.
+const tokenBuffer = (id: string) => {
+  let text = ''
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const flush = () => {
+    clearTimeout(timer)
+    timer = undefined
+    if (!text) return
+    const t = text
+    text = ''
+    dispatch(id, { type: 'token', text: t })
+  }
+  const push = (t: string) => {
+    text += t
+    timer ??= setTimeout(flush, TOKEN_FLUSH_MS)
+  }
+  return { push, flush }
+}
+
 const startRun = async (input: Outgoing) => {
   const id = input.conversationId
   const ctrl = new AbortController()
+  const tokens = tokenBuffer(id)
+  ctrl.signal.addEventListener('abort', tokens.flush, { once: true })
   runs.set(id, ctrl)
   dispatch(id, { type: 'start', at: Date.now() })
   let run: RunInput | undefined
@@ -162,11 +185,18 @@ const startRun = async (input: Outgoing) => {
       dispatch(id, { type: 'error', id: `err-${Date.now()}`, text: UPLOAD_ERROR_TEXT })
     } else {
       for await (const e of (run.resolve ? resolved : run.follow ? followed : API_MOCK ? scripted : streamed)(run, ctrl.signal)) {
+        if (e.type === 'token') {
+          tokens.push(e.text)
+          continue
+        }
+        tokens.flush()
         dispatch(id, e.type === 'done' ? { ...e, at: Date.now() } : e)
       }
+      tokens.flush()
       if (get(id).working) dispatch(id, { type: 'done', at: Date.now() })
     }
   } catch (err) {
+    tokens.flush()
     if (ctrl.signal.aborted) return
     if (isConsentRequired(err)) {
       pendingConsent = run ?? posted(input)
