@@ -88,6 +88,9 @@ export const fontFamily = {
 
 export const spacing = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24 } as const
 
+/** Extra space the boards put above a sheet's CTA (inline margin-top): filter sheets 6, quick-start sheets 4. */
+export const sheetActionGap = { filter: 6, quickStart: 4 } as const
+
 export const radius = {
   xs: 6,
   sm: 12,

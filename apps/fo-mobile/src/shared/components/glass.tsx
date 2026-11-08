@@ -1,7 +1,7 @@
 import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { AccessibilityInfo, Platform, View, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
-import { useColors, useShadow, useThemeMode } from '../../theme'
+import { useColors, useShadow, useThemeMode, type Colors } from '../../theme'
 import { toBoxShadow } from '../utility'
 
 const glassAvailable = Platform.OS === 'ios' && isGlassEffectAPIAvailable()
@@ -25,13 +25,13 @@ export const useGlassSurface = () => {
   return glassAvailable && !reduce && !inSheet
 }
 
-/** The board's `--glass` laid over a sheet: white in light, the glass token in dark. Null outside an iOS sheet. */
-export const useSheetGlassFill = () => {
-  const c = useColors()
-  const inSheet = useContext(SheetSurface)
-  const dark = useThemeMode() === 'dark'
-  return inSheet ? (dark ? c.glass : c.bg) : null
-}
+/**
+ * The board's `--glass` laid over a sheet, null outside an iOS sheet. Light `--glass` is 60% white over the board's light `--sheet`,
+ * which reads as solid white on the boards, while the same rgba over the native sheet material reads grey, so light paints `bg`.
+ */
+export const sheetGlassFill = (inSheet: boolean, dark: boolean, c: Pick<Colors, 'bg' | 'glass'>) => (inSheet ? (dark ? c.glass : c.bg) : null)
+
+export const useSheetGlassFill = () => sheetGlassFill(useContext(SheetSurface), useThemeMode() === 'dark', useColors())
 
 type Props = {
   children?: ReactNode

@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Pressable, View } from 'react-native'
-import { hitSlopTo, radius, selectedRing, spacing, useColors } from '@/theme'
+import { hitSlopTo, radius, selectedRing, sheetActionGap, spacing, useColors } from '@/theme'
 import { Badge, Chip, GlassButton, Icon, SegmentedControl, Sheet, SheetScroll, Switch, Text, TextField, useSheetScrollMax } from '@/shared/components'
 import { readClipboard } from '@/shared/infrastructure'
 import { type QsItem } from '../api/schemas'
@@ -71,7 +71,7 @@ const Body = ({ qs, onClose }: { qs: QuickStart; onClose: () => void }) => {
     <DocField label={qs.docLabel} doc={doc} picking={pickingDoc} chevron={!!qs.listLabel} docs={docs.data} onToggle={() => setPickingDoc((v) => !v)} onPick={(name) => (setDoc(name), setPickingDoc(false))} />
   )
   return (
-    <Sheet gap={spacing[3]} actionGap={4} action={action} onLayout={bound.onSheetLayout}>
+    <Sheet gap={spacing[3]} actionGap={sheetActionGap.quickStart} action={action} onLayout={bound.onSheetLayout}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2] }}>
         <View style={{ flex: 1, gap: spacing[1] }}>
           <Text v="h2" accessibilityRole="header">
