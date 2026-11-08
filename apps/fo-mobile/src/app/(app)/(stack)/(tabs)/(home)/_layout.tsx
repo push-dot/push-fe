@@ -1,6 +1,5 @@
 import { Stack } from 'expo-router'
-import { useFocusedOnce } from '@/shared/navigation'
 
-const TabStack = () => (useFocusedOnce() ? <Stack screenOptions={{ headerShown: false }} /> : null)
+const TabStack = () => <Stack screenOptions={{ headerShown: false }} />
 
 export default TabStack

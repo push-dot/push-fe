@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router'
-import { sheetOptions, useFocusedOnce } from '@/shared/navigation'
+import { sheetOptions } from '@/shared/navigation'
 import { useColors } from '@/theme'
 
 // Unique initial route per tab group avoids duplicate "/" paths across groups.
@@ -7,7 +7,6 @@ export const unstable_settings = { initialRouteName: 'my' }
 
 const TabStack = () => {
   const c = useColors()
-  if (!useFocusedOnce()) return null
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="edit-profile/[section]" options={{ presentation: 'modal' }} />
