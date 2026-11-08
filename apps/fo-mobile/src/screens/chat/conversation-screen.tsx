@@ -102,7 +102,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
 
   return (
-    <View style={{ flex: 1, backgroundColor: c.bg }}>
+    <View style={{ flex: 1, backgroundColor: c.bg }} onTouchStart={(e) => console.log('[FLAKE] touchStart', Date.now(), Math.round(e.nativeEvent.pageX), Math.round(e.nativeEvent.pageY))} onTouchEnd={(e) => console.log('[FLAKE] touchEnd', Date.now(), Math.round(e.nativeEvent.pageX), Math.round(e.nativeEvent.pageY))} onTouchCancel={() => console.log('[FLAKE] touchCancel', Date.now())}>
       <ScrollView
         ref={scroll}
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android', status: !!chat.working || !!chat.awaiting }) }}

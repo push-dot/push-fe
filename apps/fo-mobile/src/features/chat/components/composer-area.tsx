@@ -47,6 +47,7 @@ export const ComposerArea = ({ placeholder, onSend, working, onStop, onTyping, a
     onTyping?.(t.length > 0)
   }
   const submit = () => {
+    console.log('[FLAKE] submit', Date.now(), JSON.stringify(text))
     if (!text.trim()) return
     onSend(text.trim(), file)
     change('')
