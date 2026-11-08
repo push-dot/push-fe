@@ -25,6 +25,8 @@ export const colors = {
     acPress: '#4A3BDF',
     paper: '#FFFFFF',
     deco: '#B4BAC2',
+    headerGlass: 'rgba(255,255,255,.88)',
+    bookmarkGlass: 'rgba(255,255,255,.9)',
   },
   dark: {
     bg: '#0F1012',
@@ -52,6 +54,8 @@ export const colors = {
     acPress: '#5E4FEA',
     paper: '#24272C',
     deco: '#5C636C',
+    headerGlass: 'rgba(15,16,18,.86)',
+    bookmarkGlass: 'rgba(28,30,34,.9)',
   },
 } as const
 

@@ -27,7 +27,9 @@
       "glass": "rgba(255,255,255,.6)",
       "sheet": "rgba(250,250,252,.84)",
       "glassShadow": "0 6px 24px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)",
-      "deco": "#B4BAC2"
+      "deco": "#B4BAC2",
+      "headerGlass": "rgba(255,255,255,.88)",
+      "bookmarkGlass": "rgba(255,255,255,.9)"
     },
     "dark": {
       "bg": "#0F1012",
@@ -56,7 +58,9 @@
       "glass": "rgba(44,46,52,.58)",
       "sheet": "rgba(32,34,38,.86)",
       "glassShadow": "0 6px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.12),inset 0 1px 0 rgba(255,255,255,.16)",
-      "deco": "#5C636C"
+      "deco": "#5C636C",
+      "headerGlass": "rgba(15,16,18,.86)",
+      "bookmarkGlass": "rgba(28,30,34,.9)"
     }
   },
   "spacing": {
