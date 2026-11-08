@@ -16,7 +16,6 @@ type Props = {
 
 const Gap = () => <View style={{ height: 22 }} />
 
-// Memo rows: a new page keeps the loaded postings' identity, so only the new cards render.
 const GridCard = ({ posting, width, onBookmark }: { posting: Posting; width: number; onBookmark: (p: Posting) => void }) => (
   <JobCard posting={posting} width={width} onPress={() => router.push(`/postings/${posting.id}`)} onBookmark={() => onBookmark(posting)} />
 )

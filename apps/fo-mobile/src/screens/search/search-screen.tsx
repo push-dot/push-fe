@@ -36,7 +36,6 @@ const SearchScreen = ({ initialTab = 'postings' }: { initialTab?: SearchTab }) =
     const id = setTimeout(() => setQ(t), t ? SEARCH_DEBOUNCE_MS : 0)
     return () => clearTimeout(id)
   }, [text])
-  // Taps (recent, popular, clear) search at once; only typing waits.
   const search = (t: string) => {
     setText(t)
     setQ(t.trim())

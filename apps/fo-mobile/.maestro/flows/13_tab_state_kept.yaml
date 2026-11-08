@@ -1,7 +1,6 @@
 appId: app.push.mobile
 name: 탭 전환 후 상태와 스크롤 위치 유지
 ---
-# Tabs mount on their first focus; after that a tab switch must keep each tab's state and scroll position.
 - runFlow: _login.yaml
 - scrollUntilVisible:
     element: "이번 주 많이 본 공고"
