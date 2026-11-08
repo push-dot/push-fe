@@ -18,6 +18,7 @@ import type {
   Session,
   Settings,
   Source,
+  StreamEvent,
   UserLink,
   WebNotification,
 } from '@push/api-client'
@@ -26,6 +27,7 @@ import { sessionStore } from '../auth/session'
 import { isWebView } from '../lib/bridge'
 import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from '../model/constants'
 import { assistantReply, type ChatIntent } from '../model/employer-chat'
+import { CHAT_SCRIPTS, CHAT_SEED_ATTACHMENTS, CHAT_TURNS, type ChatScriptName } from './mock-chat-scripts'
 import {
   APP_DEADLINE_DAYS,
   APP_POSTING_BODY,
@@ -34,7 +36,10 @@ import {
   CHAT_SEEDS,
   DRAFT_REPLY,
   APPLICATIONS,
+  BLOCK_SEEDS,
+  BROWSER_BOOKMARKS,
   CALENDAR_EVENTS,
+  CANT_SEND_REPLY,
   CATALOG_TOTALS,
   COMMENT_THREADS,
   EMPLOYER_NOTICES,
@@ -42,6 +47,8 @@ import {
   HUB_PROFILES,
   LISTINGS,
   ME_PROFILE,
+  MY_FOLLOWS,
+  MY_POSTS,
   OFFER_THREADS,
   POPULAR_ORDER,
   POSTING_DETAILS,
@@ -52,6 +59,7 @@ import {
   SEED_SOURCES,
   SENT_OFFERS,
   type PostingView,
+  type SeedSource,
 } from './mock-fixtures'
 
 export type { PostingView }
@@ -97,8 +105,104 @@ export const setMockPersona = (value: string | null | undefined) => {
   persona = PERSONAS.find((item) => item === value) ?? null
 }
 
+export const MOCK_SWITCHES = [
+  'applicant-move-fail',
+  'apply-fail',
+  'apply-no-docs',
+  'apply-slow',
+  'auth-exchange-wait',
+  'billing-ledger',
+  'blocks-empty',
+  'blocks-list',
+  'bookmarks-empty',
+  'calendar-google-off',
+  'chat-approve',
+  'chat-draft',
+  'chat-limit',
+  'chat-member',
+  'chat-queue',
+  'chat-tool',
+  'chat-turns',
+  'chat-writing',
+  'docs-delete-fail',
+  'docs-deleted',
+  'docs-empty',
+  'docs-uploading',
+  'follows-empty',
+  'home-latest-error',
+  'inbox-archive',
+  'inbox-block',
+  'inbox-cant-send',
+  'inbox-empty',
+  'inbox-report',
+  'invite-accept-wait',
+  'invite-expired',
+  'invite-invalid',
+  'invite-other-account',
+  'links-empty',
+  'load-fail',
+  'login-code-expired',
+  'login-code-limit',
+  'login-code-wrong',
+  'login-phone-taken',
+  'login-social-fail',
+  'notif-empty',
+  'offer-blocked',
+  'phone-sent',
+  'posts-empty',
+  'profile-save-fail',
+  'pw-reset-expired',
+  'role-member',
+  'signup-consent',
+  'signup-taken-employer',
+  'slow',
+  'social-error',
+  'verify-expired',
+] as const
+
+export type MockSwitch = (typeof MOCK_SWITCHES)[number]
+
+let switches = new Set<MockSwitch>()
+
+export const setMockSwitches = (value: string | null | undefined) => {
+  const names = (value ?? '').split(',').map((part) => part.trim())
+  switches = new Set(MOCK_SWITCHES.filter((name) => names.includes(name)))
+}
+
+export const mockSwitch = (name: MockSwitch) => switches.has(name) && !isWebView()
+
+const HOLD_MS = 20_000
+
+const hold = () => new Promise((resolve) => setTimeout(resolve, HOLD_MS))
+
+const failure = (status: number, code: string, message: string, details?: Record<string, unknown>) =>
+  json(status, { error: { code, message, ...(details ? { details } : {}) } })
+
+const internalError = () => failure(500, 'INTERNAL', '잠시 후 다시 시도해 주세요')
+
+const companyPersona = (kind: MockPersona | null) => kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra'
+
+const memberView = () => companyPersona(persona) && (mockSwitch('role-member') || mockSwitch('chat-member'))
+
+const MEMBER_USER = { id: 'u-member', displayName: '한지호', email: 'jiho.han@moapay.kr' }
+
 export const mockSession = (kind: MockPersona): Session => {
-  if (kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra') {
+  if (companyPersona(kind) && memberView()) {
+    return {
+      accessToken: 'mock-access',
+      refreshToken: 'mock-refresh',
+      expiresIn: 900,
+      user: {
+        id: MEMBER_USER.id,
+        displayName: MEMBER_USER.displayName,
+        locale: 'ko',
+        accountType: 'EMPLOYER',
+        companyId: 'co-1',
+        companyRole: 'MEMBER',
+      },
+    }
+  }
+  if (companyPersona(kind)) {
     return {
       accessToken: 'mock-access',
       refreshToken: 'mock-refresh',
@@ -177,15 +281,21 @@ const HOME_RAIL_SIZE = 5
 
 const listings: Posting[] = LISTINGS.map((item) => ({ ...item }))
 
-const flags = new Map<string, { bookmarked: boolean; applied: boolean }>(
-  listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]),
+type PostingFlags = Map<string, { bookmarked: boolean; applied: boolean }>
+
+const webViewFlags: PostingFlags = new Map(listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]))
+
+const browserFlags: PostingFlags = new Map(
+  listings.map((item) => [item.id, { bookmarked: BROWSER_BOOKMARKS.includes(item.id), applied: item.applied }]),
 )
+
+const postingFlags = () => (isWebView() ? webViewFlags : browserFlags)
 
 const signedOf = (input: RequestInfo | URL, init?: RequestInit) =>
   new Headers(input instanceof Request ? input.headers : init?.headers).has('Authorization')
 
 const present = (item: Posting, signed: boolean): Posting => {
-  const flag = flags.get(item.id)
+  const flag = postingFlags().get(item.id)
   if (!signed) return { ...item, bookmarked: false, applied: false }
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
 }
@@ -406,7 +516,7 @@ const revisionConflict = (currentRevision: number) =>
 const ownedPostingResponse = (id: string) => {
   const owned = companyPostings.find((item) => item.id === id)
   if (!owned) return null
-  const flag = flags.get(id)
+  const flag = postingFlags().get(id)
   return json(200, {
     data: {
       ...owned,
@@ -510,7 +620,7 @@ let links: UserLink[] = SEED_LINKS.map((item) => ({ ...item }))
 
 const hubProfiles: Profile[] = HUB_PROFILES.map((item) => ({ ...item }))
 
-const socialFlags = new Map<string, { following: boolean; offered: boolean }>([['u-minjae', { following: true, offered: false }]])
+const socialFlags = new Map<string, { following: boolean; offered: boolean }>(MY_FOLLOWS.map((id) => [id, { following: true, offered: false }]))
 
 const withFlags = (item: Profile): Profile => {
   const flag = socialFlags.get(item.userId)
@@ -568,13 +678,25 @@ const applications: Application[] = APPLICATIONS.map((item) => ({ ...item }))
 
 const calendarEvents = CALENDAR_EVENTS.map((item) => ({ ...item }))
 
-const seedSources: Source[] = SEED_SOURCES.map((item) => ({ ...item }))
+const seedSources: SeedSource[] = SEED_SOURCES.map((item) => ({ ...item }))
 
-const uploadedSources: Source[] = []
+const uploadedSources: SeedSource[] = []
 
-const allSources = () => [...uploadedSources, ...seedSources]
+const DELETED_SOURCE_ID = 'src-ai-toss'
 
-const libraryItem = (source: Source) => ({
+const allSources = () =>
+  [...uploadedSources, ...seedSources].filter((item) => !(mockSwitch('docs-deleted') && item.id === DELETED_SOURCE_ID))
+
+const removeSource = (id: string) => {
+  for (const list of [uploadedSources, seedSources]) {
+    const at = list.findIndex((item) => item.id === id)
+    if (at >= 0) return list.splice(at, 1).length > 0
+  }
+  return false
+}
+
+const libraryItem = (source: SeedSource) => ({
+  ...(source.company ? { company: source.company, postingTitle: source.postingTitle } : {}),
   id: source.id,
   fileName: source.fileName,
   mimeType: source.mimeType,
@@ -611,9 +733,22 @@ const adminMember = (joinedAt: string): CompanyMember => ({
 const COMPANY_BRAND = '모아페이'
 const COMPANY_BNO = '2148703921'
 
+const memberSeats = (plan: Company['plan'], verifiedAt: string): CompanyRecord => ({
+  company: { id: 'co-1', bNo: COMPANY_BNO, name: COMPANY_BRAND, plan, verifiedAt, role: 'MEMBER', seats: { used: 2, limit: 2 } },
+  members: [
+    { userId: 'u-admin', email: MEMBER_EMAIL, role: 'ADMIN', joinedAt: verifiedAt },
+    { userId: MEMBER_USER.id, email: MEMBER_USER.email, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
+    { userId: 'u-sora', email: 'sora.park@moapay.kr', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
+  ],
+})
+
 const seedCompany = (): CompanyRecord | null => {
   const kind = mockPersona()
   const verifiedAt = '2026-09-01T00:00:00.000Z'
+  if (memberView()) {
+    const plan = kind === 'employer-ultra' ? 'ULTRA' : kind === 'employer' ? 'BASIC' : 'PRO'
+    return memberSeats(plan, verifiedAt)
+  }
   if (kind === 'employer') {
     return {
       company: {
@@ -716,6 +851,25 @@ const asCareers = (value: unknown): Profile['careers'] | null => {
   })
 }
 
+type Block = { user: Offer['sender']; blockedAt: string }
+
+let blocks: Block[] | null = null
+
+const blockList = () => (blocks ??= mockSwitch('blocks-list') ? BLOCK_SEEDS.map((item) => ({ ...item, user: { ...item.user } })) : [])
+
+const CANT_SEND_OFFER = 'offer-1'
+
+const cantSend = (offerId: string) => mockSwitch('inbox-cant-send') && offerId === CANT_SEND_OFFER
+
+const failedReply = (offerId: string) => ({
+  ...CANT_SEND_REPLY,
+  offerId,
+  sender: { id: 'u1', displayName: meProfile.displayName, avatarUrl: null },
+  status: 'FAILED',
+})
+
+const adminOnly = () => failure(403, 'FORBIDDEN', '관리자만 할 수 있어요')
+
 const handleCommunity = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
   const tail = routeTail(pathname)
   if (method === 'POST' && tail === '/uploads/images') {
@@ -738,9 +892,19 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     return json(200, { data: source })
   }
   const sourceMatch = tail.match(/^\/sources\/([^/]+)$/)
-  if (sourceMatch && method === 'GET') {
+  if (sourceMatch) {
     const found = allSources().find((item) => item.id === sourceMatch[1])
-    return found ? json(200, { data: found }) : json(404, { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } })
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '서류를 찾지 못했어요' } })
+    if (method === 'GET') return json(200, { data: found })
+    if (method === 'DELETE') {
+      removeSource(found.id)
+      return new Response(null, { status: 204 })
+    }
+    if (method === 'PATCH') {
+      const payload = await readJson(input, init)
+      if (typeof payload.title === 'string' && payload.title.trim()) found.fileName = payload.title.trim()
+      return json(200, { data: found })
+    }
   }
   if (method === 'GET' && tail === '/profiles') {
     const categories = splitParam(url, 'category')
@@ -883,8 +1047,14 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     return json(200, { data: [...ids].map((id) => profileById(id)), page: { nextCursor: null, hasMore: false, total: ids.size } })
   }
   if (method === 'GET' && tail === '/me/posts') {
-    const mine = feed.filter((item) => (employerPersona() ? item.author.employer === true : item.author.employer !== true))
+    const mine = employerPersona()
+      ? feed.filter((item) => item.author.employer === true)
+      : [...feed.filter((item) => item.author.id === 'u1' && item.author.employer !== true), ...MY_POSTS]
     return json(200, slicePage(url, mine, (item) => item.id))
+  }
+  if (method === 'GET' && tail === '/me/commented-posts') {
+    const commented = feed.filter((item) => (commentThreads.get(item.id) ?? []).some((comment) => comment.author.id === 'u1'))
+    return json(200, slicePage(url, commented, (item) => item.id))
   }
   if (method === 'GET' && tail === '/applications') {
     return json(200, { data: applications, page: { nextCursor: null, hasMore: false, total: applications.length } })
@@ -895,16 +1065,68 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const data = calendarEvents.filter((event) => (!from || event.startsAt >= from) && (!to || event.startsAt < to))
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
+  if (method === 'GET' && tail === '/calendar/google') return json(200, { data: { connected: true } })
+  if (method === 'POST' && tail === '/calendar/events') {
+    const payload = await readJson(input, init)
+    const now = new Date().toISOString()
+    const created: (typeof calendarEvents)[number] = {
+      ...CALENDAR_EVENTS[0]!,
+      id: `ev-${calendarEvents.length + 1}`,
+      type: (typeof payload.type === 'string' ? payload.type : 'INTERVIEW') as (typeof calendarEvents)[number]['type'],
+      title: String(payload.title ?? ''),
+      startsAt: String(payload.startsAt ?? now),
+      endsAt: String(payload.endsAt ?? payload.startsAt ?? now),
+      source: 'PUSH' as (typeof calendarEvents)[number]['source'],
+      notes: String(payload.notes ?? ''),
+      createdAt: now,
+      updatedAt: now,
+    }
+    calendarEvents.push(created)
+    return json(201, { data: created })
+  }
   if (method === 'GET' && tail === '/me/offers') {
-    const box = employerPersona() ? [] : url.searchParams.get('box') === 'sent' ? sentOffers : receivedOffers
-    return json(200, { data: box, page: { nextCursor: null, hasMore: false, total: box.length } })
+    const box = url.searchParams.get('box')
+    const blocked = new Set(blockList().map((item) => item.user.id))
+    const received = receivedOffers.filter((item) => !blocked.has(item.sender.id))
+    const data = employerPersona()
+      ? []
+      : box === 'sent'
+        ? sentOffers
+        : received.filter((item) => (box === 'archived') === Boolean(item.archivedAt))
+    return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+  }
+  if (method === 'GET' && tail === '/me/blocks') {
+    const data = blockList()
+    return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+  }
+  if (method === 'POST' && tail === '/me/blocks') {
+    const payload = await readJson(input, init)
+    const userId = String(payload.userId ?? '')
+    const known = [...receivedOffers.map((item) => item.sender), ...sentOffers.map((item) => item.recipient)].find((item) => item.id === userId)
+    const profile = hubProfiles.find((item) => item.userId === userId)
+    const user = known ?? { id: userId, displayName: profile?.displayName ?? userId, avatarUrl: null, companyName: null, headline: profile?.headline ?? '' }
+    if (!blockList().some((item) => item.user.id === userId)) blocks = [{ user, blockedAt: new Date().toISOString() }, ...blockList()]
+    return new Response(null, { status: 204 })
+  }
+  const blockMatch = tail.match(/^\/me\/blocks\/([^/]+)$/)
+  if (blockMatch && method === 'DELETE') {
+    blocks = blockList().filter((item) => item.user.id !== decodeURIComponent(blockMatch[1] ?? ''))
+    return new Response(null, { status: 204 })
+  }
+  const offerAction = tail.match(/^\/me\/offers\/([^/]+)\/(archive|unarchive|report)$/)
+  if (offerAction && method === 'POST') {
+    const found = offerById(offerAction[1] ?? '')
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    if (offerAction[2] === 'report') return new Response(null, { status: 204 })
+    found.archivedAt = offerAction[2] === 'archive' ? new Date().toISOString() : null
+    return json(200, { data: found })
   }
   const offerMessages = tail.match(/^\/me\/offers\/([^/]+)\/messages$/)
   if (offerMessages) {
     const id = offerMessages[1] ?? ''
     if (!offerById(id)) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
     if (method === 'GET') {
-      const data = offerThreads.get(id) ?? []
+      const data = [...(offerThreads.get(id) ?? []), ...(cantSend(id) ? [failedReply(id)] : [])]
       return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
     }
     if (method === 'POST') {
@@ -951,7 +1173,8 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   const offerDetail = tail.match(/^\/me\/offers\/([^/]+)$/)
   if (offerDetail && method === 'GET') {
     const found = offerById(offerDetail[1] ?? '')
-    return found ? json(200, { data: found }) : json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
+    return json(200, { data: cantSend(found.id) ? { ...found, canSend: false } : found })
   }
   if (method === 'POST' && tail === '/me/notifications/read') {
     const payload = await readJson(input, init)
@@ -1012,6 +1235,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   if (method === 'POST' && tail === '/companies/me/invites') {
     const record = companyRecord()
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    if (record.company.role !== 'ADMIN') return adminOnly()
     if (record.company.seats.used >= record.company.seats.limit) {
       return json(403, { error: { code: 'SEAT_LIMIT', message: '담당자 수를 넘었어요' } })
     }
@@ -1029,6 +1253,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   if (memberPath && (method === 'DELETE' || method === 'PATCH')) {
     const record = companyRecord()
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    if (record.company.role !== 'ADMIN') return adminOnly()
     const userId = decodeURIComponent(memberPath[1] ?? '')
     if (method === 'DELETE') {
       const index = record.members.findIndex((member) => member.userId === userId)
@@ -1049,8 +1274,6 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     if (mine) record.company.role = mine.role
     return new Response(null, { status: 204 })
   }
-  const acceptPath = tail.match(/^\/companies\/invites\/([^/]+)\/accept$/)
-  if (acceptPath && method === 'POST') return new Response(null, { status: 204 })
   if (method === 'GET' && tail === '/companies/me') {
     const company = companyMe()
     return company ? json(200, { data: company }) : json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
@@ -1189,7 +1412,7 @@ const seededChat = (): ChatBucket => {
         conversationId: seed.id,
         role,
         text,
-        attachments: [],
+        attachments: index === 0 && mockSwitch('chat-turns') ? (CHAT_SEED_ATTACHMENTS[seed.id] ?? []) : [],
         operationId: null,
         createdAt: seed.updatedAt,
       })),
@@ -1227,8 +1450,52 @@ const planRequired = (requiredPlan: 'PRO' | 'ULTRA', message: string) =>
 const interviewBlocked = (payload: Record<string, unknown>) => {
   const plan = companyMe()?.plan ?? null
   if (plan === 'PRO' || plan === 'ULTRA') return false
-  return payload.intent === 'interview' || String(payload.text ?? '').includes('면접 준비')
+  const text = String(payload.text ?? '')
+  return payload.intent === 'interview' || text.includes('면접 준비') || text.includes('면접 질문')
 }
+
+const SSE_GAP_MS = 250
+
+const LIVE_SCRIPTS: [MockSwitch, ChatScriptName][] = [
+  ['chat-approve', 'approve'],
+  ['chat-tool', 'tool'],
+  ['chat-writing', 'writing'],
+  ['chat-queue', 'queue'],
+  ['chat-draft', 'draft'],
+]
+
+const pendingFollow = new Map<string, ChatScriptName>()
+
+const tokensOf = (events: StreamEvent[]) => events.flatMap((event) => (event.type === 'token' ? [event.text] : [])).join('')
+
+const eventStream = (events: StreamEvent[], stall: boolean, onDone: () => void) => {
+  const encoder = new TextEncoder()
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      let at = 0
+      const push = () => {
+        const event = events[at]
+        if (!event) {
+          if (stall) return
+          onDone()
+          controller.close()
+          return
+        }
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...event, seq: at + 1 })}\n\n`))
+        at += 1
+        timer = setTimeout(push, SSE_GAP_MS)
+      }
+      push()
+    },
+    cancel() {
+      clearTimeout(timer)
+    },
+  })
+  return new Response(body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } })
+}
+
+const creditsSpent = () => json(402, { error: { code: 'INSUFFICIENT_CREDITS', message: '이번 달 사용량을 다 썼어요' } })
 
 const fileNameOf = (value: FormDataEntryValue | null) => {
   if (typeof File !== 'undefined' && value instanceof File && value.name) return value.name
@@ -1253,6 +1520,7 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     const items = bucket.messages.get(id) ?? []
     if (method === 'GET') return json(200, { data: items, page: { nextCursor: null, hasMore: false, total: items.length } })
     const payload = await readJson(input, init)
+    if (mockSwitch('chat-limit')) return creditsSpent()
     if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
     const text = String(payload.text ?? '')
     const user = chatMessage(id, 'USER', text)
@@ -1262,6 +1530,53 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     bucket.messages.set(id, next)
     conversation.updatedAt = assistant.createdAt
     return json(202, { data: null })
+  }
+  const streamPath = tail.match(/^\/conversations\/([^/]+)\/messages\/stream(\/active)?$/)
+  if (streamPath) {
+    const id = decodeURIComponent(streamPath[1] ?? '')
+    const bucket = chatBucket()
+    const conversation = bucket.conversations.find((item) => item.id === id)
+    if (!conversation) return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
+    const remember = (events: StreamEvent[]) => () => {
+      const text = tokensOf(events)
+      if (text) bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), chatMessage(id, 'ASSISTANT', text)])
+      conversation.updatedAt = new Date().toISOString()
+    }
+    if (streamPath[2]) {
+      const next = pendingFollow.get(id)
+      if (method !== 'GET' || !next) return new Response(null, { status: 204 })
+      pendingFollow.delete(id)
+      return eventStream(CHAT_SCRIPTS[next].events, false, remember(CHAT_SCRIPTS[next].events))
+    }
+    if (method !== 'POST') return null
+    const payload = await readJson(input, init)
+    if (mockSwitch('chat-limit')) return creditsSpent()
+    if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
+    const text = String(payload.text ?? '')
+    bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), chatMessage(id, 'USER', text)])
+    const live = LIVE_SCRIPTS.find(([name]) => mockSwitch(name))
+    const script = live ? CHAT_SCRIPTS[live[1]] : null
+    if (script?.title) conversation.title = script.title
+    conversation.updatedAt = new Date().toISOString()
+    const reply = bucket.postingIds.has(id) ? DRAFT_REPLY : assistantReply(asIntent(payload.intent), text)
+    const events: StreamEvent[] = script?.events ?? [
+      { type: 'token', text: reply },
+      { type: 'done', operation: null },
+    ]
+    return eventStream(events, script?.stall ?? false, remember(events))
+  }
+  const approvalPath = tail.match(/^\/conversations\/([^/]+)\/approvals\/([^/]+)$/)
+  if (approvalPath && method === 'POST') {
+    const payload = await readJson(input, init)
+    const optionId = String(payload.optionId ?? '')
+    const approved = optionId === 'approve'
+    pendingFollow.set(decodeURIComponent(approvalPath[1] ?? ''), approved ? 'approved' : 'rejected')
+    return json(200, { data: { id: approvalPath[2], status: approved ? 'APPROVED' : 'REJECTED', optionId } })
+  }
+  const turnsPath = tail.match(/^\/conversations\/([^/]+)\/turns$/)
+  if (turnsPath && method === 'GET') {
+    const data = mockSwitch('chat-turns') ? (CHAT_TURNS[decodeURIComponent(turnsPath[1] ?? '')] ?? []) : []
+    return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && tail === '/conversations') {
     const audience = url.searchParams.get('audience')
@@ -1323,7 +1638,7 @@ const companyBillingStatus = (): CompanyBillingStatus => {
   const personal = kind === 'personal' || kind === null
   const plan = personal ? null : (companyMe()?.plan ?? null)
   const monthly = plan ? (MONTHLY_MICRO[plan] ?? 0) : 0
-  const balance = creditBalances.get(personaKey()) ?? seededBalance()
+  const balance = mockSwitch('chat-limit') ? 0 : (creditBalances.get(personaKey()) ?? seededBalance())
   return {
     plan,
     audience: personal ? 'PERSONAL' : 'EMPLOYER',
@@ -1371,10 +1686,161 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
   return null
 }
 
-const flagFor = (id: string) => flags.get(id) ?? { bookmarked: false, applied: false }
+const PHONE_CODE_TTL_S = 180
+
+const phoneSent = (cooldownSeconds: number, ttlSeconds = PHONE_CODE_TTL_S) =>
+  json(200, { data: { cooldownSeconds, expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString() } })
+
+const handlePhone = (method: string, tail: string) => {
+  if (method !== 'POST') return null
+  if (tail === '/auth/phone/send') {
+    if (mockSwitch('login-phone-taken')) return failure(409, 'PHONE_TAKEN', '이미 가입된 번호예요', { provider: 'google' })
+    if (mockSwitch('login-code-wrong')) return phoneSent(151)
+    if (mockSwitch('login-code-expired')) return phoneSent(0, 0)
+    if (mockSwitch('phone-sent')) return phoneSent(168)
+    return phoneSent(PHONE_CODE_TTL_S)
+  }
+  if (tail === '/auth/phone/verify') {
+    if (mockSwitch('login-code-wrong')) return failure(400, 'CODE_WRONG', '인증번호가 맞지 않아요')
+    if (mockSwitch('login-code-expired')) return failure(400, 'CODE_EXPIRED', '인증번호가 만료됐어요')
+    if (mockSwitch('login-code-limit')) return failure(429, 'CODE_ATTEMPTS_EXCEEDED', '인증번호를 5번 잘못 입력했어요')
+    return json(200, { data: { ...mockSession('personal'), created: mockSwitch('signup-consent') } })
+  }
+  return null
+}
+
+const OAUTH_CODE = 'mock-code'
+
+const callbackUrl = (accountType: string | null) => {
+  const query = new URLSearchParams({ code: OAUTH_CODE, state: 'mock-state' })
+  if (switches.size > 0) query.set('ms', [...switches].join(','))
+  if (accountType === 'EMPLOYER') query.set('accountType', 'EMPLOYER')
+  return `/auth/callback?mock&${query.toString()}`
+}
+
+const handleOAuth = async (method: string, tail: string, url: URL) => {
+  if (method === 'GET' && /^\/auth\/[a-z]+\/start$/.test(tail)) {
+    if (mockSwitch('login-social-fail')) return failure(502, 'OAUTH_FAILED', 'Google 로그인에 실패했어요')
+    return json(200, { data: { authorizationUrl: callbackUrl(url.searchParams.get('accountType')), state: 'mock-state' } })
+  }
+  if (method === 'POST' && tail === '/auth/exchange') {
+    if (mockSwitch('login-social-fail')) return failure(401, 'OAUTH_FAILED', 'Google 로그인에 실패했어요')
+    if (mockSwitch('auth-exchange-wait')) await hold()
+    const employer = new URLSearchParams(typeof location === 'undefined' ? '' : location.search).get('accountType') === 'EMPLOYER'
+    return json(200, { data: mockSession(persona ?? (employer ? 'employer' : 'personal')) })
+  }
+  return null
+}
+
+const INVITE = {
+  companyName: COMPANY_BRAND,
+  inviterName: '이민아',
+  inviterRole: 'ADMIN',
+  email: 'jiho.han@moapay.kr',
+  expiresAt: '2026-11-08T00:00:00.000Z',
+}
+
+const inviteFailure = (token: string) => {
+  if (mockSwitch('invite-invalid') || token === 'bad-token') return failure(404, 'INVITE_NOT_FOUND', '초대 링크를 열 수 없어요')
+  if (mockSwitch('invite-expired') || token === 'expired-token') return failure(410, 'INVITE_EXPIRED', '초대가 만료됐어요', INVITE)
+  return null
+}
+
+const handleInvite = async (method: string, tail: string) => {
+  const match = tail.match(/^\/companies\/invites\/([^/]+)(\/accept)?$/)
+  if (!match) return null
+  const token = decodeURIComponent(match[1] ?? '')
+  const failed = inviteFailure(token)
+  if (failed) return failed
+  if (method === 'GET' && !match[2]) return json(200, { data: { ...INVITE, status: 'PENDING' } })
+  if (method !== 'POST' || !match[2]) return null
+  if (mockSwitch('invite-other-account')) return failure(403, 'INVITE_EMAIL_MISMATCH', '초대받은 이메일로만 들어올 수 있어요', { email: INVITE.email })
+  if (mockSwitch('invite-accept-wait')) await hold()
+  return new Response(null, { status: 204 })
+}
+
+const tokenExpired = (email: string) => failure(410, 'TOKEN_EXPIRED', '링크가 만료됐어요', { email })
+
+const emptyPage = () => json(200, { data: [], page: { nextCursor: null, hasMore: false, total: 0 } })
+
+const EMPTY_LISTS: [MockSwitch, string][] = [
+  ['bookmarks-empty', '/me/bookmarks'],
+  ['follows-empty', '/me/follows'],
+  ['posts-empty', '/me/posts'],
+  ['links-empty', '/me/links'],
+  ['notif-empty', '/me/notifications'],
+  ['inbox-empty', '/me/offers'],
+  ['blocks-empty', '/me/blocks'],
+  ['docs-empty', '/sources'],
+  ['apply-no-docs', '/sources'],
+]
+
+const LEDGER = [
+  ['Pro 월 구독', '2026-10-01', 10000, 'PRO'],
+  ['Pro 월 구독', '2026-09-01', 10000, 'PRO'],
+  ['Pro 월 구독', '2026-08-01', 10000, 'PRO'],
+  ['Basic 월 구독', '2026-07-01', 2000, 'BASIC'],
+] as const
+
+const ledgerEntries = () =>
+  LEDGER.map(([description, day, amountUsdCents, plan]) => ({
+    type: 'PURCHASE',
+    createdAt: `${day}T00:00:00.000Z`,
+    amountMicroCredits: MONTHLY_MICRO[plan] ?? 0,
+    balanceAfter: MONTHLY_MICRO[plan] ?? 0,
+    description,
+    amountUsdCents,
+    receiptUrl: `https://pay.stripe.com/receipts/mock-${day}`,
+  }))
+
+const switchResponse = async (method: string, tail: string, url: URL, input: RequestInfo | URL, init?: RequestInit) => {
+  if (switches.size === 0 || isWebView()) return null
+  if (method === 'GET') {
+    const empty = EMPTY_LISTS.find(([name, path]) => mockSwitch(name) && tail === path)
+    if (empty) return emptyPage()
+    if (mockSwitch('load-fail') && /^\/postings\/(?!locations$)[^/]+$/.test(tail)) return internalError()
+    if (mockSwitch('home-latest-error') && tail === '/postings' && url.searchParams.get('sort') === 'latest' && !url.searchParams.has('limit')) {
+      return internalError()
+    }
+    if (mockSwitch('social-error') && tail === '/posts') return internalError()
+    if (mockSwitch('slow') && (tail === '/postings' || tail === '/me/bookmarks' || tail === '/applications')) await hold()
+    if (mockSwitch('billing-ledger') && tail === '/billing/ledger') {
+      const data = ledgerEntries()
+      return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
+    }
+    if (mockSwitch('calendar-google-off') && tail === '/calendar/google') return json(200, { data: { connected: false } })
+  }
+  if (method === 'POST') {
+    if (/^\/postings\/[^/]+\/apply$/.test(tail)) {
+      if (mockSwitch('apply-fail')) return internalError()
+      if (mockSwitch('apply-slow')) await hold()
+    }
+    if (mockSwitch('offer-blocked') && /^\/profiles\/[^/]+\/offer$/.test(tail)) {
+      return failure(403, 'BLOCKED', '지금은 이 사람에게 제안을 보낼 수 없어요')
+    }
+    if (mockSwitch('docs-uploading') && tail === '/sources') await hold()
+    if (mockSwitch('inbox-cant-send') && /^\/me\/offers\/[^/]+\/messages$/.test(tail)) {
+      return failure(403, 'OFFER_CLOSED', '이 대화에는 더 이상 메시지를 보낼 수 없어요')
+    }
+    if (mockSwitch('signup-taken-employer') && tail === '/auth/email/signup') {
+      const payload = await readJson(input, init)
+      if (payload.email === MEMBER_EMAIL) return failure(409, 'EMAIL_TAKEN', 'taken', { accountType: 'EMPLOYER' })
+    }
+    if (mockSwitch('verify-expired') && tail === '/auth/email/verify') return tokenExpired(MEMBER_EMAIL)
+    if (mockSwitch('pw-reset-expired') && tail === '/auth/email/password-reset/confirm') return tokenExpired(MEMBER_EMAIL)
+  }
+  if (method === 'PATCH' || method === 'PUT') {
+    if (mockSwitch('profile-save-fail') && tail === '/me/profile') return internalError()
+    if (mockSwitch('applicant-move-fail') && /^\/postings\/[^/]+\/applicants\/[^/]+$/.test(tail)) return internalError()
+  }
+  if (method === 'DELETE' && mockSwitch('docs-delete-fail') && /^\/sources\/[^/]+$/.test(tail)) return internalError()
+  return null
+}
+
+const flagFor = (id: string) => postingFlags().get(id) ?? { bookmarked: false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
-  flags.set(id, { ...flagFor(id), ...patch })
+  postingFlags().set(id, { ...flagFor(id), ...patch })
 }
 
 export const mockFetch: typeof fetch = async (input, init) => {
@@ -1384,6 +1850,11 @@ export const mockFetch: typeof fetch = async (input, init) => {
   const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
   const signed = signedOf(input, init)
   await new Promise((resolve) => setTimeout(resolve, 250))
+  const tail = routeTail(pathname)
+  const switched = (await switchResponse(method, tail, url, input, init)) ?? handlePhone(method, tail)
+  if (switched) return switched
+  const auth = (await handleOAuth(method, tail, url)) ?? (await handleInvite(method, tail))
+  if (auth) return auth
   const billing = await handleBilling(method, pathname, input, init)
   if (billing) return billing
   const employerChat = await handleEmployerChat(method, url, pathname, input, init)
@@ -1458,7 +1929,8 @@ export const mockFetch: typeof fetch = async (input, init) => {
   if (method === 'GET' && /\/profiles\/[^/]+$/.test(pathname)) {
     const id = pathname.match(/\/profiles\/([^/]+)$/)?.[1] ?? HUB_PROFILES[0]!.userId
     const app = isWebView() ? APP_PROFILES[id] : undefined
-    return json(200, { data: app ? withFlags(app) : profileById(id) })
+    const profile = app ? withFlags(app) : profileById(id)
+    return json(200, { data: mockSwitch('offer-blocked') ? { ...profile, blockedMe: true } : profile })
   }
   if (method === 'POST' && matches(pathname, '/auth/email/signup')) {
     const payload = await readJson(input, init)
@@ -1496,9 +1968,6 @@ export const mockFetch: typeof fetch = async (input, init) => {
   if (method === 'POST' && matches(pathname, '/auth/email/password-reset')) {
     return new Response(null, { status: 202 })
   }
-  if (method === 'POST' && matches(pathname, '/auth/exchange')) {
-    return json(200, { data: mockSession(persona ?? 'personal') })
-  }
   if (method === 'GET' && matches(pathname, '/auth/me')) {
     const user = sessionStore.load()?.user
     const record = companyRecord()
@@ -1511,7 +1980,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
         accountType: user?.accountType ?? 'PERSONAL',
         companyId: record?.company.id ?? user?.companyId ?? null,
         companyRole: record?.company.role ?? user?.companyRole ?? null,
-        email: user?.accountType === 'EMPLOYER' ? MEMBER_EMAIL : 'seojun.kim@gmail.com',
+        email: user?.id === MEMBER_USER.id ? MEMBER_USER.email : user?.accountType === 'EMPLOYER' ? MEMBER_EMAIL : 'seojun.kim@gmail.com',
         provider: user?.accountType === 'EMPLOYER' ? 'email' : 'google',
       },
     })
