@@ -27,6 +27,11 @@ export const colors = {
     deco: '#B4BAC2',
     headerGlass: 'rgba(255,255,255,.88)',
     bookmarkGlass: 'rgba(255,255,255,.9)',
+    ctl: '#848C96',
+    popWeb: '0 12px 40px rgba(16,24,40,.14),0 0 0 1px rgba(16,24,40,.05)',
+    toastBg: '#16191D',
+    toastText: '#FFFFFF',
+    toastShadow: '0 12px 30px rgba(0,0,0,.2)',
   },
   dark: {
     bg: '#0F1012',
@@ -56,6 +61,11 @@ export const colors = {
     deco: '#5C636C',
     headerGlass: 'rgba(15,16,18,.86)',
     bookmarkGlass: 'rgba(28,30,34,.9)',
+    ctl: '#6E7680',
+    popWeb: '0 16px 48px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)',
+    toastBg: '#2E3238',
+    toastText: '#F3F4F6',
+    toastShadow: '0 12px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)',
   },
 } as const
 
