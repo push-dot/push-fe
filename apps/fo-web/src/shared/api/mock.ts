@@ -68,9 +68,9 @@ export const mockFit: Fit = {
   document: '김서준_백엔드_이력서_2026',
   score: 6.9,
   parts: [
-    { label: '기술 스택', value: 8.2 },
-    { label: '경험 연관성', value: 7.4 },
-    { label: '경력 수준', value: 6.1 },
+    { label: '기술 스택', value: 7.5 },
+    { label: '경험 연관성', value: 7 },
+    { label: '경력 수준', value: 8 },
     { label: '키워드', value: 4.5 },
     { label: '도메인', value: 5 },
   ],
