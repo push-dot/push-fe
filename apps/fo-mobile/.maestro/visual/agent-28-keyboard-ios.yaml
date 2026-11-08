@@ -22,6 +22,7 @@ tags:
       - inputText: "Tailor it for Nuri Cloud too"
       - waitForAnimationToEnd
       - takeScreenshot: ChatKeyboardIOS.1
+      - takeScreenshot: ChatKeyboardIOS.3
       - inputText: " but leave my career statement as it is and only fix the resume, please"
       - waitForAnimationToEnd
       - takeScreenshot: ChatKeyboardIOS.2
