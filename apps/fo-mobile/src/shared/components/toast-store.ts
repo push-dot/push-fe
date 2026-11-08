@@ -10,6 +10,8 @@ export type ToastInput = {
   tone?: ToastTone
   /** Distance above the bottom safe inset, to clear a tab bar or CTA (see TOAST_ABOVE). Defaults to TOAST_BOTTOM_GAP. */
   bottom?: number
+  /** iOS: a solid card instead of glass, for a toast that must stay readable over busy content. */
+  opaque?: boolean
 }
 export type Toast = ToastInput & { id: number }
 

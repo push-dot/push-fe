@@ -121,26 +121,24 @@ export const useSetBaseProfile = (onDone: () => void) => {
   })
 }
 
-// Callers pass onSuccess to mutate(), so a sheet closed mid-request does not navigate back twice.
-const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>, failed: string) => {
+// Callers pass onSuccess and onError to mutate(), so a sheet closed mid-request does not navigate back twice.
+// The refetch is returned, so a caller's onSuccess runs once the new revision is loaded.
+const useDocumentWrite = <V,>(write: (v: V) => Promise<unknown>) => {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: write,
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['documents'] })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['documents'] }),
     onError: () => {
       void qc.invalidateQueries({ queryKey: ['documents'] })
-      Alert.alert(failed, '잠시 뒤에 다시 해 주세요.')
     },
   })
 }
 
 export const useRenameDocument = (doc: { id: string; revision: number } | undefined) =>
-  useDocumentWrite((title: string) => renameDocument(doc!.id, doc!.revision, title), '이름을 바꾸지 못했어요')
+  useDocumentWrite((title: string) => renameDocument(doc!.id, doc!.revision, title))
 
 export const useArchiveDocument = (doc: { id: string; revision: number } | undefined) =>
-  useDocumentWrite(() => archiveDocument(doc!.id, doc!.revision), '삭제하지 못했어요')
+  useDocumentWrite(() => archiveDocument(doc!.id, doc!.revision))
 
 export const useIngestJob = (jobId: string | undefined) => useQuery(ingestJobQuery(jobId))
 

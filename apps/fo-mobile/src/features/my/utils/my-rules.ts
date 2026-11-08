@@ -30,6 +30,7 @@ export const deleteDocCopy = (fileName: string) => ({
   cancel: '취소',
   toast: '서류를 삭제했어요',
   undo: '되돌리기',
+  failed: '서류를 삭제하지 못했어요',
 })
 
 export const careerDeleteCopy = {

@@ -3,14 +3,13 @@ import { useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { POST_CATEGORIES } from '@push/api-client'
 import { GlassButton, Icon, Text, TopBar } from '@/shared/components'
-import { Empty, emptyCta, ListSkeleton, postedAt, postsMenu, postsTitle, useMyCommentedPosts, useMyPosts, type PostsSort, type PostsView } from '@/features/my'
+import { Empty, emptyCta, ListSkeleton, postedAt, postsMenu, postsTitle, useMyCommentedPosts, useMyPosts, type PostsView } from '@/features/my'
 import { spacing, useColors } from '@/theme'
 
 const MyPostsScreen = () => {
   const c = useColors()
   const { box } = useLocalSearchParams<{ box?: string }>()
   const [view, setView] = useState<PostsView>(box === 'commented' ? 'commented' : 'mine')
-  const [sort, setSort] = useState<PostsSort>('latest')
   const mine = useMyPosts()
   const replies = useMyCommentedPosts()
   const query = view === 'commented' ? replies : mine
@@ -20,7 +19,7 @@ const MyPostsScreen = () => {
       <TopBar
         title={postsTitle(view)}
         onBack={() => router.back()}
-        right={<GlassButton actions={[{ icon: 'menu', label: '더 보기', menu: postsMenu({ view, sort }, { view: setView, sort: setSort }) }]} />}
+        right={<GlassButton actions={[{ icon: 'menu', label: '더 보기', menu: postsMenu(view, setView) }]} />}
       />
       {query.isLoading ? (
         <ListSkeleton />

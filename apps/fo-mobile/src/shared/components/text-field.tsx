@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
@@ -6,9 +7,9 @@ import { inputMetrics } from './text-field-metrics'
 import Text from './text'
 
 /** `compact`: the 48pt `.field` some boards draw (FilterSkill search) instead of the 56pt default. */
-type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; variant?: 'field' | 'search'; compact?: boolean }
+type Props = TextInputProps & { icon?: IconName; label?: string; max?: number; variant?: 'field' | 'search'; compact?: boolean; trailing?: ReactNode }
 
-const TextField = ({ icon, label, max, multiline, value, style, variant = 'field', compact, ...rest }: Props) => {
+const TextField = ({ icon, label, max, multiline, value, style, variant = 'field', compact, trailing, ...rest }: Props) => {
   const c = useColors()
   const { fontScale } = useWindowDimensions()
   const search = variant === 'search'
@@ -39,6 +40,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
           style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), style]}
           {...rest}
         />
+        {trailing}
       </View>
       {max && multiline ? (
         <Text v="c2" color="t3" style={{ alignSelf: 'flex-end' }}>
