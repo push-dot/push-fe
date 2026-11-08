@@ -1,8 +1,8 @@
-import { TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
+import { StyleSheet, TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native'
 import type { IconName } from '@push/design-system'
 import { fontFor, radius, spacing, type, useColors } from '../../theme'
 import Icon from './icon'
-import { inputMetrics, typedTextShift } from './text-field-metrics'
+import { inputMetrics, iosLineBox } from './text-field-metrics'
 import Text from './text'
 
 /** `compact`: the 48pt `.field` some boards draw (FilterSkill search) instead of the 56pt default. */
@@ -36,7 +36,7 @@ const TextField = ({ icon, label, max, multiline, value, style, variant = 'field
           multiline={multiline}
           maxLength={max}
           placeholderTextColor={c.t4}
-          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), typedTextShift(multiline, !!value), style]}
+          style={[{ flex: 1, fontSize: type.b1.fontSize, letterSpacing: type.b1.letterSpacing, color: c.t1, ...inputMetrics(multiline, fontScale), textAlignVertical: multiline ? 'top' : 'center' }, fontFor('400'), multiline && iosLineBox(StyleSheet.flatten(style)?.lineHeight ?? type.b1.lineHeight, type.b1.fontSize, fontScale), style]}
           {...rest}
         />
       </View>

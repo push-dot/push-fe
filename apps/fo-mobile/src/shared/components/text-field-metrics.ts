@@ -12,8 +12,16 @@ export const inputMetrics = (multiline: boolean | undefined, fontScale: number) 
     ? { ...inputReset, lineHeight: type.b1.lineHeight, minHeight: MULTILINE_ROWS * type.b1.lineHeight * fontScale }
     : { ...inputReset, minHeight: type.b1.lineHeight * fontScale }
 
-/** iOS UITextView draws typed multiline text 6.6pt below the board's first line (placeholder is fine), measured on EditIntro at 16/25. */
-export const IOS_TYPED_TEXT_RAISE = 6.6
+// Noto Sans KR hhea ascender 1160 + descender 288 per 1000 units: UIFont.lineHeight (23.168 at 16pt) and the CSS content area.
+const FONT_LINE_EM = 1.448
 
-export const typedTextShift = (multiline: boolean | undefined, typed: boolean, os: string = Platform.OS) =>
-  os === 'ios' && multiline && typed ? { transform: [{ translateY: -IOS_TYPED_TEXT_RAISE }] } : undefined
+/**
+ * iOS multiline. RN gives a multiline TextInput paddingTop 5 (TextInput.js `multilineDefault`), which becomes the UITextView's
+ * textContainerInset, and TextKit puts a line's extra height above the glyphs where CSS splits it (half-leading).
+ * Zero the inset and lift the view by the other half; device probe at line heights 24 and 25 put the first line on the CSS line box.
+ */
+export const iosLineBox = (lineHeight: number, fontSize: number, fontScale: number, os: string = Platform.OS) => {
+  if (os !== 'ios') return undefined
+  const lead = (Math.max(0, lineHeight - fontSize * FONT_LINE_EM) / 2) * fontScale
+  return { paddingTop: 0, marginTop: -lead, marginBottom: lead }
+}
