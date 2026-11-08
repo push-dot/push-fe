@@ -7,6 +7,8 @@ export type SegmentedControlProps<K extends string> = {
   items: { key: K; label: string }[]
   value: K | null
   onChange: (k: K) => void
+  /** The 196 x 34 control Settings draws for the theme row; the default is the 44pt full-width one. */
+  compact?: boolean
 }
 
 /** Android: Material 3 single-choice segmented buttons. */
