@@ -165,7 +165,7 @@ const PlanCard = ({ plan, current, disabled, onPress }: { plan: (typeof PLANS)[n
       style={[{ borderRadius: radius.card, padding: spacing[4] - ring.borderWidth, gap: spacing[2], backgroundColor: c.bg2, borderWidth: ring.borderWidth, borderColor: 'transparent' }, current && ring]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[2] }}>
-        <Text v="h3" weight="800">
+        <Text v="h3">
           {plan.key}
         </Text>
         {current ? <Badge label="지금 쓰는 중" tone="ac" /> : plan.key === 'ULTRA' ? <Badge label="추천" /> : null}

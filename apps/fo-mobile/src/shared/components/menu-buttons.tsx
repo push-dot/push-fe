@@ -1,6 +1,7 @@
 import { Button, Section } from '@expo/ui/swift-ui'
 import { menuSections, type MenuAction, type MenuSection } from './menu-action'
 
+// Item icons take the host tint; Menu and ContextMenu set it to t1 so they read like the boards' black/gray icons, not accent.
 const buttons = (actions: MenuAction[]) =>
   actions.map((a) => (
     <Button
