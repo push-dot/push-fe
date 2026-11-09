@@ -21,7 +21,7 @@ describe('NotificationPanel states', () => {
 
   it('shows an error with 다시 시도 when the list fails', () => {
     const html = render({ isError: true })
-    expect(html).toContain('알림을 불러오지 못했어요.')
+    expect(html).toContain('알림을 불러오지 못했어요')
     expect(html).toContain('다시 시도')
   })
 

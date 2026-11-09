@@ -53,6 +53,15 @@ describe('SearchPage states', () => {
     expect(html).not.toContain('맞는 결과가 없어요')
   })
 
+  it('keeps the postings that loaded when only the people search fails in the overview', () => {
+    state.postings = { ...idle(), data: { data: [{ id: 'j1', title: '백엔드 개발자', company: '모아페이' }], page: { total: 1 } } }
+    state.people = { ...idle(), isError: true }
+    const html = render('?q=kotlin')
+    expect(html).toContain('백엔드 개발자')
+    expect(html).toContain('검색 결과를 불러오지 못했어요')
+    expect(html).not.toContain('맞는 결과가 없어요')
+  })
+
   it('says nothing matched only after every search answered empty', () => {
     expect(render('?q=kotlin')).toContain('맞는 결과가 없어요')
     expect(render('?q=kotlin&type=posts')).toContain('맞는 결과가 없어요')

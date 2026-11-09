@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
+import { ApiError } from '@push/api-client'
 import PostPage from './post-page'
 
 const state = vi.hoisted(() => ({ post: {} as Record<string, unknown>, comments: {} as Record<string, unknown> }))
@@ -44,6 +45,13 @@ describe('PostPage states', () => {
     const html = render({ isError: true }, {})
     expect(html).toContain('페이지를 불러오지 못했어요')
     expect(html).toContain('다시 시도')
+  })
+
+  it('says the post is gone on a 404 and keeps the connection copy for other errors', () => {
+    const gone = render({ isError: true, error: new ApiError('없음', 'NOT_FOUND', 404) }, {})
+    expect(gone).toContain('페이지를 찾을 수 없어요')
+    expect(gone).not.toContain('인터넷 연결')
+    expect(render({ isError: true, error: new ApiError('서버', 'INTERNAL', 500) }, {})).toContain('인터넷 연결')
   })
 
   it('shows a skeleton while the post loads', () => {

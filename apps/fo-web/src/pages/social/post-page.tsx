@@ -1,18 +1,19 @@
-import { POST_CATEGORIES, type Comment } from '@push/api-client'
+import { ApiError, POST_CATEGORIES, type Comment } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { authorLabel, usePost, usePostComments } from '../../entities/post'
 import { postsComment } from '../../features/comment-on-post'
 import { assetUrl } from '../../shared/api/client'
 import { compactCount, relativeTime } from '../../shared/lib/format'
 import { Icon } from '../../shared/ui/icon'
-import { LoadFail } from '../../shared/ui/page-state'
+import { LoadFail, PageState } from '../../shared/ui/page-state'
 import { Menu, Popover, type MenuItem } from '../../shared/ui/popover'
 import Skeleton from '../../shared/ui/skeleton'
 import { ErrorState } from '../../shared/ui/state-block'
 import Toast, { useToast } from '../../shared/ui/toast'
+import { NOT_FOUND } from '../not-found/constants'
 import AuthorAvatar from './author-avatar'
 import CommentItem from './comment-item'
 import { COMMENT_EMPTY, COMMENT_ERROR, COMMENT_MAX, COMMENT_PLACEHOLDER, LINK_COPIED, SOCIAL_TITLE } from './constants'
@@ -26,6 +27,7 @@ type ReplyTarget = { rootId: string; name: string }
 const PostPage = () => {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const postQuery = usePost(id)
   const commentsQuery = usePostComments(id)
   const viewer = useViewerAuthor()
@@ -68,6 +70,17 @@ const PostPage = () => {
       return
     }
   }
+  if (postQuery.error instanceof ApiError && postQuery.error.status === 404 && !post)
+    return (
+      <PageState top={<span className="nf-code num">404</span>} title={NOT_FOUND.title} body={NOT_FOUND.body}>
+        <button type="button" className="btn sec" onClick={() => navigate(-1)}>
+          {NOT_FOUND.back}
+        </button>
+        <button type="button" className="btn pri" onClick={() => navigate('/')}>
+          {NOT_FOUND.home}
+        </button>
+      </PageState>
+    )
   if (postQuery.isError && !post) return <LoadFail onRetry={() => void postQuery.refetch()} />
   if (!post)
     return (

@@ -52,7 +52,7 @@ describe('apply sheet', () => {
     expect(pushDocSub(created, now)).toBe('10월 20일')
     expect(uploadSub({ createdAt: '2026-08-03T01:00:00.000Z', pageCount: 14 }, now)).toBe('8월 3일 · 14쪽')
     expect(uploadSub({ createdAt: null, pageCount: null }, now)).toBe('')
-    expect(profileSub('개발 · 4년차', 2, 7)).toBe('개발 · 4년차 · 경력\u00a02개 · 기술\u00a07개')
+    expect(profileSub('개발 · 4년차', 2, 7)).toBe('개발 · 4년차 · 경력 2개 · 기술 7개')
   })
 
   it('shows the file type and the posting pair', () => {

@@ -103,19 +103,22 @@ const SearchPage = () => {
   let body: ReactNode = null
   if (gated) {
     body = loginNote
-  } else if (ready && waited.some((query) => query.isError)) {
+  } else if (ready && waited.every((query) => query.isError)) {
     body = <ErrorState title={SEARCH_ERROR} onRetry={retry} />
-  } else if (ready && waited.some((query) => !query.data)) {
+  } else if (ready && waited.some((query) => !query.data && !query.isError)) {
     body = <Skeleton rows={5} />
   } else if (ready && overview) {
     const postingTotal = totalOf('postings') ?? postingRows.length
     const shown = postingRows.slice(0, SEARCH_PREVIEW_POSTINGS)
     const persons = peopleRows.slice(0, SEARCH_PREVIEW_PEOPLE)
+    // a failed section says so while the sections that loaded stay visible
+    const peopleFailed = Boolean(session) && people.isError
     body =
-      shown.length === 0 && persons.length === 0 ? (
+      !postings.isError && !peopleFailed && shown.length === 0 && persons.length === 0 ? (
         empty
       ) : (
         <>
+          {postings.isError ? <ErrorState title={SEARCH_ERROR} onRetry={() => void postings.refetch()} /> : null}
           {shown.length > 0 ? (
             <div className="search-list">
               {shown.map((posting) => (
@@ -129,15 +132,19 @@ const SearchPage = () => {
               <Icon name="next" size={16} width={2.2} />
             </Link>
           ) : null}
-          {persons.length > 0 ? (
+          {persons.length > 0 || peopleFailed ? (
             <>
               <hr className="search-hr" />
               <h2 className="h3 search-people">{SEARCH_PEOPLE_TITLE}</h2>
-              <div className="search-list">
-                {persons.map((person) => (
-                  <PersonRow key={person.userId} person={person} q={q} />
-                ))}
-              </div>
+              {peopleFailed ? (
+                <ErrorState title={SEARCH_ERROR} onRetry={() => void people.refetch()} />
+              ) : (
+                <div className="search-list">
+                  {persons.map((person) => (
+                    <PersonRow key={person.userId} person={person} q={q} />
+                  ))}
+                </div>
+              )}
             </>
           ) : null}
           {!session ? loginNote : null}
