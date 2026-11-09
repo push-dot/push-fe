@@ -117,7 +117,7 @@ const SearchPage = () => {
             </div>
           ) : null}
           {postingTotal > shown.length ? (
-            <Link to={`/search?${new URLSearchParams({ q, type: 'postings' }).toString()}`} className="search-more b2 w6 t2">
+            <Link to={`/search?${new URLSearchParams({ q, type: 'postings' }).toString()}`} className="search-more b2 w6">
               {searchAllPostings(postingTotal)}
               <Icon name="next" size={16} width={2.2} />
             </Link>

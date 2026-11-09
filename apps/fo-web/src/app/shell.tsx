@@ -35,7 +35,7 @@ const Shell = () => {
   const navigate = useNavigate()
   const session = useSession()
   const auth = isAuthChrome(location.pathname)
-  const queryText = new URLSearchParams(location.search).get('q') ?? ''
+  const queryText = location.pathname === '/search' ? '' : (new URLSearchParams(location.search).get('q') ?? '')
   const [searchDraft, setSearchDraft] = useState(queryText)
   useEffect(() => {
     setSearchDraft(queryText)

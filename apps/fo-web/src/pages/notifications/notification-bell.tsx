@@ -18,7 +18,7 @@ const NotificationPanel = ({ onClose }: { onClose: () => void }) => {
       <div className="notif-head">
         <span className="h3">{NOTIFICATION_TITLE}</span>
         {items.length > 0 ? (
-          <button type="button" className="c1 w7 ac" disabled={read.isPending || !unread} onClick={() => read.mutate('all')}>
+          <button type="button" className="c1 w7" disabled={read.isPending || !unread} onClick={() => read.mutate('all')}>
             {NOTIFICATION_READ_ALL}
           </button>
         ) : null}

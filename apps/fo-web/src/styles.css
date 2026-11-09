@@ -388,7 +388,13 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .home-error .state-tile{margin-bottom:10px}
 .browser .home-error .state-actions{margin-top:16px}
 .browser .home-section{gap:18px}
-.browser .section-head a{color:var(--t3);font-weight:600;display:inline-flex;align-items:center;gap:2px}
+.browser .section-head a{color:var(--t1);font-size:15px;line-height:21px;font-weight:600;display:inline-flex;align-items:center;gap:2px}
+.browser .shortcut-sk{gap:10px;background:var(--bg2)}
+.browser .sk-bar.sk-name{width:64%;height:20px;border-radius:8px;background:var(--fill2)}
+.browser .sk-bar.sk-hint{width:48%;height:12px;border-radius:6px;background:var(--fill2)}
+.browser .sk-head{align-items:center}
+.browser .sk-bar.sk-title{width:200px;height:26px;border-radius:10px}
+.browser .sk-bar.sk-more{width:64px;height:16px;border-radius:8px}
 .browser .section-head a .ic{width:16px;height:16px}
 .browser .h-scroll,.browser .job-grid{display:grid;gap:28px 20px;overflow:visible;padding-bottom:0}
 .browser .h-scroll{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -482,18 +488,21 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .search-field{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 18px;border-radius:24px;background:var(--fill)}
 .browser .search-field input{flex:1;min-width:0;height:48px;border:0;background:transparent;color:var(--t1);font:inherit;font-size:16px;padding:0}
 .browser .search-field input:focus-visible{outline:none}
-.browser .trend{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.browser .trend{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
 .browser .trend button{display:flex;align-items:center;gap:12px;width:100%;height:36px;text-align:left;font-weight:400}
 .browser .trend .num{width:16px}
 .browser .search-side{display:flex;flex-direction:column;gap:24px;padding-top:4px}
 .browser .search-main{display:flex;flex-direction:column;gap:8px;min-width:0}
+.browser .search-main .state{padding:80px 24px}
+.browser .search-main .state-tile{margin-bottom:10px}
+.browser .search-main .state-actions{margin-top:16px}
 .browser .search-panel{display:flex;flex-direction:column;gap:12px}
 .browser .trend-panel{gap:4px}
 .browser .trend-panel>h2{margin-bottom:6px}
-.browser .search-chip{background:var(--bg);padding:0 8px 0 14px}
+.browser .search-chip{background:var(--bg);padding:0 14px}
 .browser .search-chip button{display:inline-flex;align-items:center;color:inherit;font:inherit}
 .browser .search-clear{display:flex;color:var(--deco)}
-.browser .search-more{display:flex;align-items:center;gap:2px;padding:8px 0;text-decoration:none}
+.browser .search-more{display:flex;align-items:center;gap:2px;padding:8px 0;color:var(--t1);text-decoration:none}
 .browser .search-hr{height:1px;margin:16px 0;border:0;background:var(--line)}
 .browser .search-people{margin-bottom:4px}
 .browser .search-bm{display:flex;color:var(--t4)}
@@ -502,10 +511,11 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .notif-row{display:flex;gap:12px;width:100%;padding:12px;border-radius:14px;background:var(--acSoft);text-align:left}
 .browser .notif-row.read{background:none}
 .browser .notif-ic{display:flex;align-items:center;justify-content:center;flex:none;width:40px;height:40px;border-radius:20px;color:#fff}
-.browser .notif-copy{display:flex;flex-direction:column;flex:1;min-width:0}
+.browser .notif-copy{display:flex;flex-direction:column;flex:1;min-width:0;word-break:keep-all}
+.browser .notif-head button{color:var(--t1)}
 .browser .notif-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 10px}
 .browser .notif-foot{margin:0;padding:10px;text-align:center}
-.browser .notif-pop{top:calc(100% + 6px);right:0;width:400px}
+.browser .pop.notif-pop{position:fixed;top:62px;right:max(32px,calc(50% - 530px));width:400px}
 .browser .notif-pop .state{padding:40px 16px 48px}
 .browser .notif-pop .state-tile{margin-bottom:10px;color:var(--t3)}
 .browser .notif-pop .state+.notif-foot{border-top:1px solid var(--line)}
@@ -597,7 +607,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .hub-pop-chips{display:flex;flex-wrap:wrap;gap:6px}
 .hub-pop-foot{display:flex;gap:8px}
 .hub-pop-foot .btn.pri{flex:1}
-.browser .search-row{display:flex;flex-direction:row;align-items:center;gap:16px;padding:16px 0;text-decoration:none;color:inherit}
+.browser .search-row{display:flex;flex-direction:row;align-items:center;gap:16px;padding:16px 0;border-bottom:0;text-decoration:none;color:inherit}
 .browser .search-row .ph{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;flex:none}
 .browser .search-row.person{gap:14px;padding:14px 0}
 .browser .search-row.person .ph{width:48px;height:48px;border-radius:50%;font-size:14px}

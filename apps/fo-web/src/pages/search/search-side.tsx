@@ -9,8 +9,8 @@ const SearchSide = ({ recent, onPick, onRemove, onClear }: SearchSideProps) => (
     {recent.length > 0 ? (
       <section className="card search-panel">
         <div className="recent-head b2">
-          <h2 className="w7">{SEARCH_RECENT_TITLE}</h2>
-          <button type="button" className="c1 t3" onClick={onClear}>
+          <h2 className="b2 w7">{SEARCH_RECENT_TITLE}</h2>
+          <button type="button" className="c1" onClick={onClear}>
             {SEARCH_RECENT_CLEAR}
           </button>
         </div>

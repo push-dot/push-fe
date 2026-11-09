@@ -5,19 +5,30 @@ import { useApplications } from '../../entities/application'
 import { useBookmarks, usePostingList } from '../../entities/posting'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
-import Skeleton from '../../shared/ui/skeleton'
+import { CardSkeletons } from '../../shared/ui/skeleton'
 import { ErrorState } from '../../shared/ui/state-block'
-import { HOME_ERROR, HOME_SECTIONS, HOME_SHORTCUTS, OPEN_APPLICATION_STAGES } from './constants'
+import { HOME_ERROR, HOME_SECTIONS, HOME_SHORTCUTS, HOME_SKELETON_CARDS, OPEN_APPLICATION_STAGES } from './constants'
 import ShortcutArt from './shortcut-art'
 
+
+const ShortcutSkeleton = () => (
+  <span className="shortcut shortcut-sk" aria-hidden="true">
+    <span className="sk-bar sk-name" />
+    <span className="sk-bar sk-hint" />
+  </span>
+)
 
 const HomeSection = ({ sort, title }: { sort: 'latest' | 'deadline' | 'popular'; title: string }) => {
   const query = usePostingList(sort)
   const items = query.data?.data ?? []
   if (query.isLoading) {
     return (
-      <section className="home-section">
-        <Skeleton rows={1} />
+      <section className="home-section" aria-busy="true">
+        <div className="section-head sk-head">
+          <span className="sk-bar sk-title" />
+          <span className="sk-bar sk-more" />
+        </div>
+        <CardSkeletons count={HOME_SKELETON_CARDS} />
       </section>
     )
   }
@@ -62,28 +73,31 @@ const HomePage = () => {
     }
     return hint
   }
+  const shortcutsLoading = Boolean(session) && (bookmarks.isLoading || applications.isLoading)
   return (
     <main className="page home">
       <div className="shortcuts">
-        {HOME_SHORTCUTS.map((shortcut) => (
-          <Link
-            key={shortcut.to}
-            to={shortcut.to}
-            className={`shortcut shortcut-${shortcut.key}`}
-            onClick={(event) => {
-              if (!shortcut.login || session) return
-              event.preventDefault()
-              saveReturnTo(shortcut.to)
-              navigate('/login')
-            }}
-          >
-            <span className="h3">{shortcut.label}</span>
-            <span className="c1 t3">{hintFor(shortcut.key, shortcut.hint)}</span>
-            <span className="shortcut-art">
-              <ShortcutArt name={shortcut.key} />
-            </span>
-          </Link>
-        ))}
+        {shortcutsLoading
+          ? HOME_SHORTCUTS.map((shortcut) => <ShortcutSkeleton key={shortcut.to} />)
+          : HOME_SHORTCUTS.map((shortcut) => (
+              <Link
+                key={shortcut.to}
+                to={shortcut.to}
+                className={`shortcut shortcut-${shortcut.key}`}
+                onClick={(event) => {
+                  if (!shortcut.login || session) return
+                  event.preventDefault()
+                  saveReturnTo(shortcut.to)
+                  navigate('/login')
+                }}
+              >
+                <span className="h3">{shortcut.label}</span>
+                <span className="c1 t3">{hintFor(shortcut.key, shortcut.hint)}</span>
+                <span className="shortcut-art">
+                  <ShortcutArt name={shortcut.key} />
+                </span>
+              </Link>
+            ))}
       </div>
       {HOME_SECTIONS.map((section) => (
         <HomeSection key={section.sort} sort={section.sort} title={section.title} />
