@@ -15,6 +15,15 @@ export const titleLength = (title: string) => Array.from(title).length
 
 export const clipTitle = (title: string, max = DOC_TITLE_MAX) => Array.from(title).slice(0, max).join('')
 
+/** An AI-made name can already be past the cap: it stays whole and can only get shorter; under the cap, typing stops at it. */
+export const typedTitle = (prev: string, typed: string, max = DOC_TITLE_MAX) => {
+  const len = titleLength(typed)
+  if (len <= max || len <= titleLength(prev)) return typed
+  return titleLength(prev) > max ? prev : clipTitle(typed, max)
+}
+
+export const titleOver = (title: string, max = DOC_TITLE_MAX) => titleLength(title.trim()) > max
+
 export const renamedTitle = (current: string, typed: string) => {
   const next = typed.trim()
   return next && next !== current ? next : null
