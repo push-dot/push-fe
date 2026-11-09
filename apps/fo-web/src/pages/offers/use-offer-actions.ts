@@ -1,6 +1,7 @@
 import type { Offer } from '@push/api-client'
 import { OFFER_MENU_COPY } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -14,13 +15,14 @@ import {
 } from '../../features/respond-to-offer'
 import type { useToast } from '../../shared/ui/toast'
 import { OFFER_ACCEPTED, OFFER_DECLINED } from './constants'
-import { offerMenu, offerToast, type OfferBox, type OfferMenuKey, type OfferToast } from './lib'
+import { blockedSend, offerMenu, offerToast, type OfferBox, type OfferMenuKey, type OfferToast, type ThreadEntry } from './lib'
 
 type Show = ReturnType<typeof useToast>['show']
 
 const useOfferActions = (offer: Offer, box: OfferBox, listPath: string, show: Show) => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [blocked, setBlocked] = useState<ThreadEntry[]>([])
   const refresh = () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: ['offers'] }),
@@ -48,7 +50,16 @@ const useOfferActions = (offer: Offer, box: OfferBox, listPath: string, show: Sh
   }
   const accept = useMutation({ mutationFn: () => meAcceptOffer(offer.id), onSuccess: responded(OFFER_ACCEPTED), onError: failed })
   const decline = useMutation({ mutationFn: () => meDeclineOffer(offer.id), onSuccess: responded(OFFER_DECLINED), onError: failed })
-  const send = useMutation({ mutationFn: (body: string) => meSendOfferMessage(offer.id, body), onSuccess: refresh, onError: failed })
+  const send = useMutation({
+    mutationFn: (body: string) => meSendOfferMessage(offer.id, body),
+    onSuccess: refresh,
+    onError: (error, body) => {
+      const entry = blockedSend(error, body)
+      if (!entry) return failed()
+      setBlocked((list) => [...list, entry])
+      void refresh()
+    },
+  })
   const menu = useMutation({
     mutationFn: (key: Exclude<OfferMenuKey, 'profile'>) =>
       offerMenu(offer, box, {
@@ -61,7 +72,7 @@ const useOfferActions = (offer: Offer, box: OfferBox, listPath: string, show: Sh
         toast: (t) => toast(offerToast(t)),
       })[key](),
   })
-  return { accept, decline, send, menu }
+  return { accept, decline, send, menu, blocked }
 }
 
 export default useOfferActions

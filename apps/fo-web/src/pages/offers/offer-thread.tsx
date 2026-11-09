@@ -26,7 +26,7 @@ const OfferThread = ({ offer, messages, viewerId, box, listPath, show }: OfferTh
   const actions = useOfferActions(offer, box, listPath, show)
   const person = otherParty(offer, box)
   const line = partyLine(person)
-  const foot = threadFoot(offer, box)
+  const foot = threadFoot(offer, box, actions.blocked.length > 0)
   return (
     <section className="inbox-thread">
       <div className="thread-head">
@@ -43,7 +43,7 @@ const OfferThread = ({ offer, messages, viewerId, box, listPath, show }: OfferTh
         </Link>
         <OfferMenu keys={offerMenuKeys(offer, box)} personId={person.id} personName={person.displayName} busy={actions.menu.isPending} onAction={actions.menu.mutate} />
       </div>
-      <OfferBubbles offer={offer} entries={threadEntries(offer, messages, viewerId)} declined={declineMarked(offer, box)} />
+      <OfferBubbles offer={offer} entries={[...threadEntries(offer, messages, viewerId), ...actions.blocked]} declined={declineMarked(offer, box)} />
       {foot === 'composer' ? (
         <div className="thread-foot">
           <OfferComposer sending={actions.send.isPending} onSend={actions.send.mutateAsync} />

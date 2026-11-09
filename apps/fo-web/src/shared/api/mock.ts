@@ -2115,7 +2115,7 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
     // push-be answers this before any role or body check while PAYMENTS_ENABLED is off.
     if (mockSwitch('payments-disabled') && PAYMENT_TAILS.has(tail)) return failure(503, 'PAYMENTS_DISABLED', '지금은 결제할 수 없어요')
     if (mockSwitch('inbox-cant-send') && /^\/me\/offers\/[^/]+\/messages$/.test(tail)) {
-      return failure(403, 'OFFER_CLOSED', '이 대화에는 더 이상 메시지를 보낼 수 없어요')
+      return failure(403, 'BLOCKED', 'this user is not accepting messages from you')
     }
     if (mockSwitch('signup-taken-employer') && tail === '/auth/email/signup') {
       const payload = await readJson(input, init)

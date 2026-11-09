@@ -1,7 +1,7 @@
-import type { Offer, OfferMessage } from '@push/api-client'
+import { ApiError, type Offer, type OfferMessage } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
 
-import { threadEntries } from './thread-entries'
+import { blockedSend, threadEntries } from './thread-entries'
 import { declineMarked, threadFoot } from './thread-foot'
 
 const party = (id: string) => ({ id, displayName: id, avatarUrl: null, companyName: null, headline: '' })
@@ -25,6 +25,9 @@ describe('threadFoot', () => {
     expect(threadFoot(at('ACCEPTED', { canSend: false }), 'received')).toBe('closed')
     expect(threadFoot(at('ACCEPTED'), 'sent')).toBe('composer')
   })
+  it('closes the composer once a send came back BLOCKED', () => {
+    expect(threadFoot(at('ACCEPTED', { canSend: true }), 'received', true)).toBe('closed')
+  })
   it('marks the decline only on the recipient side', () => {
     expect(declineMarked(at('DECLINED'), 'received')).toBe(true)
     expect(declineMarked(at('DECLINED'), 'sent')).toBe(false)
@@ -43,5 +46,22 @@ describe('threadEntries', () => {
     const entries = threadEntries({ ...offer, sender: party('me') }, [reply('a', 'me', 'FAILED')], 'me')
     expect(entries.map((item) => item.mine)).toEqual([true, true])
     expect(entries.map((item) => item.failed)).toEqual([false, true])
+  })
+})
+
+describe('blockedSend', () => {
+  it('keeps a BLOCKED send as a failed bubble of the viewer', () => {
+    const now = new Date('2026-11-10T01:00:00.000Z')
+    expect(blockedSend(new ApiError('blocked', 'BLOCKED', 403), '안녕하세요', now)).toEqual({
+      id: `blocked-${now.getTime()}`,
+      mine: true,
+      body: '안녕하세요',
+      createdAt: '2026-11-10T01:00:00.000Z',
+      failed: true,
+    })
+  })
+  it('leaves any other failure to the retry toast', () => {
+    expect(blockedSend(new ApiError('boom', 'INTERNAL', 500), '안녕하세요')).toBeNull()
+    expect(blockedSend(new Error('offline'), '안녕하세요')).toBeNull()
   })
 })
