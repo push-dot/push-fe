@@ -3,7 +3,7 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
@@ -271,8 +271,12 @@ export const createApi = (c: Client) => ({
     verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
       unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    update: (body: UpdateCompanyInput) => unwrap(c.patch<DataEnvelope<Company>>('companies/me', { body })),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invites: () => unwrap(c.get<DataEnvelope<CompanyInvite[]>>('companies/me/invites')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    resendInvite: (id: string) => unwrap(c.post<DataEnvelope<CompanyInvite>>(`companies/me/invites/${id}/resend`)),
+    cancelInvite: (id: string) => c.delete<void>(`companies/me/invites/${id}`),
     acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>

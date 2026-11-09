@@ -223,9 +223,6 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .lock-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
 .field input[type="file"]{height:auto;padding:8px 0;border:0;background:transparent}
 .field input[type="file"]:disabled{opacity:.55}
-.plan-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.plan-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px;background:var(--fill)}
-.plan-card .primary{width:100%}
 
 .browser,.browser *,.browser *::before,.browser *::after{box-sizing:border-box}
 .browser.auth-shell{display:flex;flex-direction:column;background:var(--bg2);color:var(--t1)}
@@ -585,13 +582,44 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .stage-list button:disabled{opacity:.45}
 .browser .doc-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
 .browser .doc-row{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:20px;background:var(--bg2)}
+.browser .plan-main{gap:24px}
+.browser .plan-main>.h1{margin:0}
+.browser .plan-banner{display:flex;gap:12px;padding:16px 18px;border-radius:16px;background:var(--bg2);margin-top:-8px}
+.browser .plan-banner>svg{flex:none;color:var(--t3);margin-top:1px}
+.browser .plan-usage{display:flex;flex-direction:column;gap:12px;padding:22px}
+.browser .plan-usage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.browser .plan-meter{display:block;height:10px;border-radius:5px;background:var(--fill);overflow:hidden}
+.browser .plan-meter i{display:block;height:100%;border-radius:5px;background:var(--ac)}
+.browser .plan-hr{height:1px;background:var(--line)}
+.browser .plan-buy{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.browser .plan-buy-actions{display:flex;gap:8px;flex:none}
+.browser .plan-lead{margin:0 0 -10px}
 .browser .plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none;margin:0;padding:0}
-.browser .plan-card{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:24px;border-radius:24px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
-.browser .plan-card.now{box-shadow:inset 0 0 0 2px var(--ac)}
-.browser .plan-card .btn{margin-top:auto}
-.browser .plan-features{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.browser .plan-features li{font-size:14px;line-height:20px;color:var(--t1)}
+.browser .plan-card{display:flex;flex-direction:column;gap:14px;padding:26px;border-radius:24px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.browser .plan-card.featured{background:var(--acSoft);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .plan-card .h2{margin:0}
+.browser .plan-price{display:flex;align-items:baseline;gap:4px;margin:0}
+.browser .plan-price b{font-size:32px;letter-spacing:-.03em}
+.browser .plan-features{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.browser .plan-features li{display:flex;align-items:center;gap:8px;color:var(--t1)}
+.browser .plan-features .on>svg{color:var(--acText)}
 .browser .plan-features .off{color:var(--t4)}
+.browser .plan-card .btn{margin-top:auto}
+.browser .plan-card .btn.now:disabled{opacity:1}
+.browser .plan-secure{display:flex;align-items:center;gap:6px;margin-top:-16px}
+.browser .plan-dialog{gap:8px}
+.browser .plan-dialog-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:4px}
+.browser .plan-dialog-head>div{flex:1;display:flex;flex-direction:column;gap:4px}
+.browser .plan-close{background:var(--fill)}
+.browser .plan-ledger{list-style:none;margin:0;padding:0}
+.browser .plan-ledger li{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.browser .plan-ledger-copy{flex:1;min-width:0}
+.browser .plan-buy-form{display:flex;flex-direction:column;gap:16px}
+@media (max-width:600px){
+.browser .plan-grid{gap:12px}
+.browser .plan-usage{padding:18px}
+.browser .plan-buy{flex-direction:column;align-items:stretch}
+}
 .browser .company-hero{display:flex;align-items:center;gap:14px;padding:20px}
 .browser .company-hero .biz-mark{width:56px;height:56px;border-radius:18px;font-size:22px}
 .browser .company-hero>span:last-child{display:flex;flex-direction:column;gap:2px}

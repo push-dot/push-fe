@@ -1,6 +1,6 @@
-import { ApiError, QueueBusyError, type AccessMode, type ToolRunState } from '@push/api-client'
+import { ApiError, QueueBusyError, type AccessMode, type LedgerEntry, type ToolRunState } from '@push/api-client'
 import type { ApprovalFailure } from '../../features/employer-chat'
-import { creditCount, creditText } from '../../entities/billing'
+import { creditText } from '../../entities/billing'
 
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
@@ -178,20 +178,69 @@ export const PLANS_TITLE = '기업 요금제'
 export const PLANS_LOADING = '요금제를 불러오고 있어요'
 export const PLANS_PERSONAL = '기업 요금제는 기업 계정에서 구독해요'
 export const PLAN_CURRENT = '지금 쓰는 중'
-export const PLAN_NOW = '지금'
-export const PLAN_DEPTH = '사용량 ↑ · 더 깊이 분석'
-export const PLAN_RECOMMENDED = '추천'
 export const PLAN_SUBSCRIBE = '구독하기'
-export const PLAN_TOPUP = '충전'
-export const PLAN_AMOUNT = '충전할 팩 수 (1팩 1,500크레딧)'
-export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어요'
-export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
 export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
-export const TOPUP_DONE = '크레딧을 충전했어요'
 export const PAYMENTS_CLOSED = '결제는 아직 준비 중이에요'
 export const planActionError = (error: unknown) =>
   error instanceof ApiError && error.code === 'PAYMENTS_DISABLED' ? PAYMENTS_CLOSED : PLAN_ACTION_FAILED
-export const planStarted = (name: string) => `${name} 구독을 시작했어요`
+export const PLAN_USAGE_TITLE = '이번 달 사용량'
+export const PLAN_USAGE_RESET = '매월 1일에 사용량이 다시 채워져요.'
+export const PLAN_BUY_TITLE = '크레딧 구매'
+export const PLAN_BUY_HINT = '이번 달 크레딧이 모자라면 더 살 수 있어요'
+export const PLAN_BUY = '구매'
+export const PLAN_BUY_PACKS = '구매할 팩 수'
+export const PLAN_BUY_PACK_HINT = '1팩에 1,500크레딧 · $10예요. 한 번에 20팩까지 살 수 있어요.'
+export const buyTotal = (packs: number) => `${creditText(packs * 1500)}크레딧 · $${packs * 10}`
+export const PLAN_HISTORY = '결제 내역'
+export const PLAN_CLOSE = '닫기'
+export const PLAN_CANCEL = '취소'
+export const PLAN_LEAD = '요금제마다 쓸 수 있는 양이 달라요'
+export const PLAN_PER_MONTH = '/ 월'
+export const PLAN_NOTE = '요금제는 에이전트에만 적용돼요. 공고 등록과 지원자 관리는 요금제 없이도 쓸 수 있어요. 결제와 변경은 관리자만 해요 · 월 구독 · USD'
+export const PLAN_SECURE = 'Stripe로 안전하게 결제돼요'
+export const PLAN_CANCELED_TITLE = '결제를 취소했어요'
+export const PLAN_CANCELED_BODY = '요금은 나가지 않았어요. 요금제와 크레딧은 그대로예요.'
+export const PLAN_VIEWER_TITLE = '요금제는 관리자만 바꿀 수 있어요'
+export const planViewerBody = (admin?: string) =>
+  admin ? `바꾸거나 크레딧을 사려면 관리자 ${admin} 님에게 말해 주세요.` : '바꾸거나 크레딧을 사려면 관리자에게 말해 주세요.'
+export const TOPUP_DONE = '크레딧을 구매했어요'
+export const LEDGER_LOADING = '결제 내역을 불러오고 있어요'
+export const LEDGER_FAILED = '결제 내역을 불러오지 못했어요'
+export const LEDGER_EMPTY = '아직 결제 내역이 없어요'
+export const LEDGER_REFUND = '환불'
+export const LEDGER_RECEIPT = '영수증'
+
+export const PLAN_BLURB = {
+  BASIC: '기본 사용량',
+  PRO: 'Basic의 5배 사용량',
+  ULTRA: 'Pro의 2배 사용량',
+} as const
+
+const endsWithVowel = (name: string) => /[aeiouy]$/i.test(name)
+
+export const planPaid = (name: string) => `결제를 마쳤어요. 이제 ${name}${endsWithVowel(name) ? '를' : '을'} 써요`
+
+export const planUsedPercent = (spentMicroCredits: number, monthlyMicroCredits: number) =>
+  monthlyMicroCredits > 0 ? Math.min(100, Math.max(0, Math.round((spentMicroCredits / monthlyMicroCredits) * 100))) : 0
+
+export const planUsed = (percent: number) => `이번 달 ${percent}% 썼어요`
+
+export const ledgerSubtitle = (company: string, count: number) => `${company} · 최근 ${count}건`
+
+export const ledgerDate = (iso: string) =>
+  new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' }).format(new Date(iso))
+
+const usd = (amount: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: Number.isInteger(amount) ? 0 : 2 }).format(amount)
+
+// A refund row is negative in USD; the sign goes before the dollar sign.
+// 결제 내역 = Stripe payments only (rows with amountUsd), in the server's order. A refund row whose label is missing reads 환불.
+export const ledgerPayments = (rows: readonly LedgerEntry[]) =>
+  rows.flatMap(({ id, type, description, amountUsd, receiptUrl, createdAt }) =>
+    amountUsd === null ? [] : [{ id, createdAt, amountUsd, receiptUrl, title: description ?? (type === 'REFUND' ? LEDGER_REFUND : PLAN_HISTORY) }],
+  )
+
+export const ledgerUsd = (amountUsd: number) => (amountUsd < 0 ? `-${usd(-amountUsd)}` : usd(amountUsd))
 
 export const PLAN_FEATURES = {
   BASIC: [
@@ -224,10 +273,8 @@ export const INVITE_DIALOG_TITLE = '담당자 초대'
 export const INVITE_CANCEL = '취소'
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`
 
-export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${creditText(creditCount(balanceMicroCredits))}`
-
 export const planSwitchLabel = (name: string, current: boolean, higher: boolean, hasPlan: boolean) => {
   if (current) return PLAN_CURRENT
   if (!hasPlan) return PLAN_SUBSCRIBE
-  return higher ? `${name}로 올리기` : `${name}로 바꾸기`
+  return `${name}${endsWithVowel(name) ? '로' : '으로'} ${higher ? '올리기' : '바꾸기'}`
 }
