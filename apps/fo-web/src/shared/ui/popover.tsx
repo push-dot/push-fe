@@ -22,7 +22,6 @@ export const Popover = ({ label, onClose, className, style, children }: PopoverP
     return () => document.removeEventListener('pointerdown', onDown)
   }, [narrow, onClose])
   if (narrow) {
-    // The header's backdrop-filter is a containing block for position:fixed, so the sheet leaves it.
     return createPortal(
       <div className="msheet-scrim" role="presentation" onClick={onClose}>
         <div className={['msheet', className ?? ''].filter(Boolean).join(' ')} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}>
