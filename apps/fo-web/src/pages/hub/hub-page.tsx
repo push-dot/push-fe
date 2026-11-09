@@ -56,8 +56,7 @@ const HubPage = () => {
         <div className="hub-filter">
           <button
             type="button"
-            className="chip"
-            aria-pressed={open}
+            className={open ? 'chip open' : 'chip'}
             aria-expanded={open}
             onClick={() => {
               setDraft(applied)
