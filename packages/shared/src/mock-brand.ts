@@ -1,4 +1,4 @@
-// Board colours for the mock fixtures. Mock builds only (web ?mock, app EXPO_PUBLIC_API_MOCK), so it is a separate entry.
+// Board colours for the mock fixtures, companies and person avatars. Mock builds only (web ?mock, app EXPO_PUBLIC_API_MOCK), so it is a separate entry.
 import { registerBrandColors } from './brand-of'
 
 export const MOCK_BRAND_COLORS: Record<string, string> = {
@@ -27,6 +27,17 @@ export const MOCK_BRAND_COLORS: Record<string, string> = {
   이하은: '#0C8599',
   오예린: '#1864AB',
   정민재: '#2F9E44',
+  임건우: '#1864AB',
+  한민재: '#1C7ED6',
+  강민호: '#2F9E44',
+  한서윤: '#E64980',
+  윤수아: '#F08C00',
+  한유나: '#C2255C',
+  오지호: '#2B8A3E',
+  정해린: '#D6336C',
+  윤현우: '#1864AB',
+  // The board draws 이수빈 #1971C2 on Social and #C2255C on HomeStates; the social feed wins.
+  이수빈: '#1971C2',
 }
 
 export const registerMockBrandColors = () => registerBrandColors(MOCK_BRAND_COLORS)
