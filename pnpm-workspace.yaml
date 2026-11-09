@@ -6,3 +6,5 @@ allowBuilds:
   unrs-resolver: true
 patchedDependencies:
   expo-router@58.0.24: patches/expo-router@58.0.24.patch
+overrides:
+  react-native-drawer-layout: '-'
