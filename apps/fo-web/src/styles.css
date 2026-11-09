@@ -570,7 +570,9 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .biz-crumb:has(a+svg+a){flex-wrap:nowrap}
 .browser .biz-crumb a+svg+a{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .browser .biz-crumb:has(a+svg+a)>.biz-crumb-now{flex:none}
-.browser :is(.biz-row,.member-row):last-child{border-bottom:0}
+/* No overflow clip (row menus open past the card), so the last row's line bends with the card's corners. */
+@media (min-width:601px){.browser .biz-card .biz-row:last-child{border-radius:0 0 20px 20px}}
+.browser .member-list>.member-row:last-child{border-radius:0 0 20px 20px}
 .browser .biz-head{display:flex;gap:16px;padding:12px 20px;border-radius:20px 20px 0 0;background:var(--bg2)}
 .browser .biz-list{list-style:none;margin:0;padding:0}
 .browser .biz-row{display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--line)}
