@@ -48,8 +48,9 @@ export const uploadSub = (source: Described, now = new Date()) =>
 
 export const fileBadge = (fileName: string) => fileName.split('.').pop()?.toUpperCase() ?? ''
 
+// a no-break space keeps 경력 2개 / 기술 8개 whole when the line wraps at 390
 export const profileSub = (roleLine: string, careers: number, skills: number) =>
-  [roleLine, `경력 ${careers}개`, `기술 ${skills}개`].filter(Boolean).join(' · ')
+  [roleLine, `경력\u00a0${careers}개`, `기술\u00a0${skills}개`].filter(Boolean).join(' · ')
 
 export const defaultPicked = (sources: Pick<ListedSource, 'id' | 'origin'>[]) => {
   const firstPush = sources.find((source) => source.origin === 'AI')
