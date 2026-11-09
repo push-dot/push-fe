@@ -37,7 +37,6 @@ import {
   DRAFT_REPLY,
   APPLICATIONS,
   BLOCK_SEEDS,
-  BROWSER_BOOKMARKS,
   CALENDAR_EVENTS,
   CANT_SEND_REPLY,
   CATALOG_TOTALS,
@@ -281,21 +280,13 @@ const HOME_RAIL_SIZE = 5
 
 const listings: Posting[] = LISTINGS.map((item) => ({ ...item }))
 
-type PostingFlags = Map<string, { bookmarked: boolean; applied: boolean }>
-
-const webViewFlags: PostingFlags = new Map(listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]))
-
-const browserFlags: PostingFlags = new Map(
-  listings.map((item) => [item.id, { bookmarked: BROWSER_BOOKMARKS.includes(item.id), applied: item.applied }]),
-)
-
-const postingFlags = () => (isWebView() ? webViewFlags : browserFlags)
+const flags = new Map(listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]))
 
 const signedOf = (input: RequestInfo | URL, init?: RequestInit) =>
   new Headers(input instanceof Request ? input.headers : init?.headers).has('Authorization')
 
 const present = (item: Posting, signed: boolean): Posting => {
-  const flag = postingFlags().get(item.id)
+  const flag = flags.get(item.id)
   if (!signed) return { ...item, bookmarked: false, applied: false }
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
 }
@@ -516,7 +507,7 @@ const revisionConflict = (currentRevision: number) =>
 const ownedPostingResponse = (id: string) => {
   const owned = companyPostings.find((item) => item.id === id)
   if (!owned) return null
-  const flag = postingFlags().get(id)
+  const flag = flags.get(id)
   return json(200, {
     data: {
       ...owned,
@@ -634,6 +625,11 @@ let meProfile: Profile = { ...ME_PROFILE }
 
 let feed: Post[] = FEED.map((item) => ({ ...item }))
 
+// shortcut: 김서준's seeded posts stay out of the /posts feed because WebSocial draws none of them; merge them once the boards agree.
+const myPosts: Post[] = MY_POSTS.map((item) => ({ ...item }))
+
+const postById = (id: string) => feed.find((item) => item.id === id) ?? myPosts.find((item) => item.id === id)
+
 const commentThreads = new Map<string, Comment[]>(COMMENT_THREADS.map(([id, list]) => [id, list.map((item) => ({ ...item }))]))
 
 let receivedOffers: Offer[] = RECEIVED_OFFERS.map((item) => ({ ...item }))
@@ -711,12 +707,24 @@ const employerPersona = () => {
   return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra' || kind === 'employer-new'
 }
 
+type CompanyInvite = { id: string; email: string; expiresAt: string }
+
 type CompanyRecord = {
   company: Company
   members: CompanyMember[]
+  invites: CompanyInvite[]
 }
 
+const INVITE_MS = 7 * 86_400_000
+
+const pendingInvite = (email: string): CompanyInvite => ({
+  id: `inv-${++inviteSeq}`,
+  email,
+  expiresAt: new Date(Date.now() + INVITE_MS).toISOString(),
+})
+
 const companyRecords = new Map<string, CompanyRecord>()
+
 let inviteSeq = 0
 
 const personaKey = () => mockPersona() ?? 'default'
@@ -740,6 +748,7 @@ const memberSeats = (plan: Company['plan'], verifiedAt: string): CompanyRecord =
     { userId: MEMBER_USER.id, email: MEMBER_USER.email, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
     { userId: 'u-sora', email: 'sora.park@moapay.kr', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
   ],
+  invites: [],
 })
 
 const seedCompany = (): CompanyRecord | null => {
@@ -761,6 +770,7 @@ const seedCompany = (): CompanyRecord | null => {
         seats: { used: 0, limit: 0 },
       },
       members: [adminMember(verifiedAt)],
+      invites: [],
     }
   }
   if (kind === 'employer-pro') {
@@ -778,6 +788,7 @@ const seedCompany = (): CompanyRecord | null => {
         adminMember(verifiedAt),
         { userId: 'u-member', email: 'jiho.han@moapay.kr', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
       ],
+      invites: [],
     }
   }
   if (kind === 'employer-ultra') {
@@ -792,6 +803,7 @@ const seedCompany = (): CompanyRecord | null => {
         seats: { used: 0, limit: 5 },
       },
       members: [adminMember(verifiedAt)],
+      invites: [],
     }
   }
   return null
@@ -966,7 +978,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   const commentsMatch = tail.match(/^\/posts\/([^/]+)\/comments$/)
   if (commentsMatch) {
     const postId = commentsMatch[1] ?? ''
-    const postItem = feed.find((item) => item.id === postId)
+    const postItem = postById(postId)
     if (!postItem) return json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
     if (method === 'GET') {
       const data = commentThreads.get(postId) ?? []
@@ -997,7 +1009,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   }
   const postMatch = tail.match(/^\/posts\/([^/]+)$/)
   if (postMatch && method === 'GET') {
-    const postItem = feed.find((item) => item.id === postMatch[1])
+    const postItem = postById(postMatch[1] ?? '')
     return postItem ? json(200, { data: postItem }) : json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
   }
   if (tail === '/me/profile' && method === 'GET') return json(200, { data: meProfile })
@@ -1049,7 +1061,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   if (method === 'GET' && tail === '/me/posts') {
     const mine = employerPersona()
       ? feed.filter((item) => item.author.employer === true)
-      : [...feed.filter((item) => item.author.id === 'u1' && item.author.employer !== true), ...MY_POSTS]
+      : [...feed.filter((item) => item.author.id === 'u1' && item.author.employer !== true), ...myPosts]
     return json(200, slicePage(url, mine, (item) => item.id))
   }
   if (method === 'GET' && tail === '/me/commented-posts') {
@@ -1224,7 +1236,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       role: 'ADMIN',
       seats: { used: 0, limit: 0 },
     }
-    rememberCompany({ company, members: [adminMember(verifiedAt)] })
+    rememberCompany({ company, members: [adminMember(verifiedAt)], invites: [] })
     return json(201, { data: company })
   }
   if (method === 'GET' && tail === '/companies/me/members') {
@@ -1232,22 +1244,32 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
     return json(200, { data: record.members })
   }
+  if (method === 'GET' && tail === '/companies/me/invites') {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    return json(200, { data: record.invites })
+  }
   if (method === 'POST' && tail === '/companies/me/invites') {
     const record = companyRecord()
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
     if (record.company.role !== 'ADMIN') return adminOnly()
+    const payload = await readJson(input, init)
+    const email = String(payload.email ?? '')
+    const same = (other: string) => other.toLowerCase() === email.toLowerCase()
+    if (record.members.some((member) => same(member.email))) {
+      return json(409, { error: { code: 'CONFLICT', message: '이미 담당자예요' } })
+    }
+    const pending = record.invites.find((item) => same(item.email))
+    if (pending) {
+      pending.expiresAt = new Date(Date.now() + INVITE_MS).toISOString()
+      return json(201, { data: { email } })
+    }
     if (record.company.seats.used >= record.company.seats.limit) {
       return json(403, { error: { code: 'SEAT_LIMIT', message: '담당자 수를 넘었어요' } })
     }
-    const payload = await readJson(input, init)
-    record.members.push({
-      userId: `u-invite-${++inviteSeq}`,
-      email: String(payload.email ?? ''),
-      role: 'MEMBER',
-      joinedAt: new Date().toISOString(),
-    })
+    record.invites.push(pendingInvite(email))
     record.company.seats.used += 1
-    return json(201, { data: { email: String(payload.email ?? '') } })
+    return json(201, { data: { email } })
   }
   const memberPath = tail.match(/^\/companies\/me\/members\/([^/]+)$/)
   if (memberPath && (method === 'DELETE' || method === 'PATCH')) {
@@ -1672,6 +1694,8 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
       const plan = asEmployerPlan(planId)
       const record = companyRecord()
       if (plan && record) {
+        const { spentMicroCredits } = companyBillingStatus()
+        creditBalances.set(personaKey(), Math.max(0, (MONTHLY_MICRO[plan] ?? 0) - spentMicroCredits))
         record.company.plan = plan
         record.company.seats = { ...record.company.seats, limit: seatLimitFor(plan) }
       }
@@ -1837,10 +1861,10 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
   return null
 }
 
-const flagFor = (id: string) => postingFlags().get(id) ?? { bookmarked: false, applied: false }
+const flagFor = (id: string) => flags.get(id) ?? { bookmarked: false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
-  postingFlags().set(id, { ...flagFor(id), ...patch })
+  flags.set(id, { ...flagFor(id), ...patch })
 }
 
 export const mockFetch: typeof fetch = async (input, init) => {
@@ -1947,7 +1971,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
     const payload = await readJson(input, init)
     const email = String(payload.email ?? '')
     const password = String(payload.password ?? '')
-    if (password.length < 8 || email === 'bad@push.app') {
+    if (password.length < 8 || password.includes('wrong') || email === 'bad@push.app') {
       return json(401, { error: { code: 'INVALID_CREDENTIALS', message: 'no' } })
     }
     if (email === 'unverified@push.app') {
