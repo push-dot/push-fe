@@ -565,6 +565,10 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .biz-crumb a{color:inherit;text-decoration:none;white-space:nowrap}
 .browser .biz-crumb>svg{flex:none}
 .browser .biz-crumb-now{min-width:0;color:var(--t1)}
+/* Applicant detail: the posting title gives way so the crumb stays on one line like the board. */
+.browser .biz-crumb:has(a+svg+a){flex-wrap:nowrap}
+.browser .biz-crumb a+svg+a{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.browser .biz-crumb:has(a+svg+a)>.biz-crumb-now{flex:none}
 .browser .biz-card{overflow:hidden}
 .browser .biz-head{display:flex;gap:16px;padding:12px 20px;background:var(--bg2)}
 .browser .biz-list{list-style:none;margin:0;padding:0}
@@ -695,9 +699,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .biz-label{display:inline;margin-right:4px;color:var(--t3);font-weight:500}
 .browser .stage-pick>.chip{width:auto}
 .browser .stage-pick{width:auto}
-.browser .resume-stage{padding:16px}
 .browser .resume-note{margin-left:0}
-.browser .resume-sheet{padding:24px 20px}
 .browser .editor-row.three{grid-template-columns:repeat(2,minmax(0,1fr))}
 .browser .editor-bar .msq{width:52px;padding:0}
 .browser .editor-bar .msq-text{display:none}
