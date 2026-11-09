@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   applicationsList as fetchApplications,
   calendarEvents as fetchCalendar,
+  integrationsGoogle as fetchGoogle,
   postingsApplicant as fetchApplicant,
   postingsApplicants as fetchApplicants,
 } from '../../shared/api/operations'
@@ -21,6 +22,9 @@ export const useCalendar = (from: string, to: string, enabled: boolean) =>
     queryFn: () => calendarEvents(from, to),
     enabled,
   })
+
+export const useGoogleIntegration = (enabled: boolean) =>
+  useQuery({ queryKey: ['integrations', 'google'], queryFn: () => fetchGoogle(), enabled, retry: false })
 
 export const useEmployerApplicant = (postingId: string | undefined, applicationId: string | undefined) =>
   useQuery({

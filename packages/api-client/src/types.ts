@@ -586,8 +586,22 @@ export type CalendarEvent = {
   source: 'LOCAL' | 'GOOGLE'
   externalId: string | null
   notes: string
+  remindAt?: string | null
+  location?: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type CreateCalendarEventInput = Pick<CalendarEvent, 'type' | 'title' | 'startsAt' | 'endsAt'> &
+  Partial<Pick<CalendarEvent, 'timeZone' | 'notes' | 'remindAt' | 'location' | 'applicationId'>>
+
+export type GoogleIntegration = {
+  enabled: boolean
+  connected: boolean
+  scopes: string[]
+  gmailStatus: 'CONNECTED' | 'DISCONNECTED' | 'DISABLED'
+  calendarStatus: 'CONNECTED' | 'DISCONNECTED'
+  lastSyncedAt: string | null
 }
 
 export type ConversationAttachment = { id: string }

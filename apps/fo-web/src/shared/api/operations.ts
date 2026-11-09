@@ -29,6 +29,10 @@ export const billingTopup = (...args: Parameters<Api['billing']['topup']>) => ap
 
 export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) => api.calendar.events(...args)
 
+export const calendarCreate = (...args: Parameters<Api['calendar']['create']>) => api.calendar.create(...args)
+
+export const integrationsGoogle = (...args: Parameters<Api['integrations']['google']>) => api.integrations.google(...args)
+
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
@@ -66,6 +70,10 @@ export const meAddLink = (...args: Parameters<Api['me']['addLink']>) => api.me.a
 
 export const meBookmarks = (...args: Parameters<Api['me']['bookmarks']>) => api.me.bookmarks(...args)
 
+export const meBlocks = (...args: Parameters<Api['me']['blocks']>) => api.me.blocks(...args)
+
+export const meCommentedPosts = (...args: Parameters<Api['me']['commentedPosts']>) => api.me.commentedPosts(...args)
+
 export const meConsents = (...args: Parameters<Api['me']['consents']>) => api.me.consents(...args)
 
 export const meDeclineOffer = (...args: Parameters<Api['me']['declineOffer']>) => api.me.declineOffer(...args)
@@ -97,6 +105,8 @@ export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']
 export const meUpdateProfile = (...args: Parameters<Api['me']['updateProfile']>) => api.me.updateProfile(...args)
 
 export const meUpdateSettings = (...args: Parameters<Api['me']['updateSettings']>) => api.me.updateSettings(...args)
+
+export const meUnblockUser = (...args: Parameters<Api['me']['unblockUser']>) => api.me.unblockUser(...args)
 
 export const meWebNotifications = (...args: Parameters<Api['me']['webNotifications']>) => api.me.webNotifications(...args)
 

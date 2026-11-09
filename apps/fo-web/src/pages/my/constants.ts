@@ -26,10 +26,60 @@ export const DOCUMENT_ORIGINAL = '원본'
 export const DOCUMENT_UPLOADED = '이력서 파일을 올렸어요'
 export const DOCUMENT_INGEST = { reading: '읽는 중', failed: '읽지 못했어요' } as const
 export const APPLICATION_EMPTY = '아직 지원한 공고가 없어요.'
-export const CALENDAR_EMPTY = '일정이 없어요'
+export const CALENDAR_EMPTY = '이날은 일정이 없어요.'
 export const BOOKMARK_EMPTY = '북마크한 공고가 없어요.'
 export const FOLLOW_EMPTY = '아직 팔로우한 사람이 없어요.'
 export const POST_EMPTY = '아직 쓴 글이 없어요.'
+export const BOOKMARK_EMPTY_SUB = '공고에서 북마크를 누르면 여기에 모여요.'
+export const FOLLOW_EMPTY_SUB = '허브에서 관심 있는 사람을 팔로우해 보세요.'
+export const FOLLOW_EMPTY_ACTION = '허브 둘러보기'
+export const POST_EMPTY_SUB = '소셜에 첫 글을 올려 보세요.'
+export const POST_EMPTY_ACTION = '글쓰기'
+export const COMMENTED_EMPTY = '아직 댓글 단 글이 없어요.'
+export const FOLLOWING_LABEL = '팔로잉'
+export const bookmarkCount = (count: number) => `북마크한 공고 ${count}개`
+export const followCount = (count: number) => `팔로우한 사람 ${count}명`
+
+export const APPLY_FILTERS = [
+  { key: 'all', label: '전체' },
+  { key: 'active', label: '진행 중' },
+  { key: 'done', label: '끝남' },
+] as const
+
+export const APPLY_HEAD = { posting: '공고', fit: '적합도', stage: '단계' } as const
+
+export const POSTS_VIEWS = [
+  { key: 'mine', label: '내가 쓴 글' },
+  { key: 'commented', label: '댓글 단 글' },
+] as const
+export const POSTS_VIEW_LABEL = '보기'
+
+export const EVENT_KINDS = [
+  { key: 'INTERVIEW', label: '면접', tone: 'orange' },
+  { key: 'DEADLINE', label: '마감', tone: 'red' },
+  { key: 'FOLLOW_UP', label: '후속 연락', tone: 'grey' },
+  { key: 'COFFEE_CHAT', label: '커피챗', tone: 'green' },
+  { key: 'CUSTOM', label: '직접 추가', tone: 'ac' },
+] as const
+
+export const CALENDAR_COPY = {
+  prev: '이전 달',
+  next: '다음 달',
+  add: '일정 추가',
+  google: { on: 'Google 캘린더 연결됨', off: 'Google 연결 안 됨' },
+  dialogTitle: '어떤 일정을 추가할까요?',
+  titleLabel: '일정 이름',
+  kindLabel: '일정 종류',
+  dateLabel: '날짜',
+  timeLabel: '시간',
+  submit: '일정 추가하기',
+  close: '닫기',
+  added: '일정을 추가했어요',
+  failed: '일정을 추가하지 못했어요. 잠시 후 다시 시도해 주세요.',
+  defaultTime: '14:00',
+} as const
+
+export const CALENDAR_WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'] as const
 export const COMPANY_UNVERIFIED = '사업자 인증이 필요해요'
 export const PLAN_NONE = '없음'
 export const PROFILE_SAVED = '프로필을 저장했어요'
@@ -40,7 +90,7 @@ export const LINK_EMPTY = '아직 링크가 없어요'
 export const LINK_FAILED = '링크를 불러오지 못했어요.'
 export const LINK_ADD_FAILED = '링크를 추가하지 못했어요. 잠시 후 다시 시도해 주세요.'
 export const LINK_NOTE = '앱의 AI 채팅에서 @언급으로 불러와 서류를 고칠 때 근거로 써요.'
-export const FIT_NOTE = '적합도는 앱에서 계산한 점수예요. 자세한 항목과 고칠 점은 앱의 AI 채팅에서 볼 수 있어요.'
+export const FIT_NOTE = '적합도는 앱에서 계산한 점수예요. 자세한 항목과 고칠 점은 앱의 에이전트에서 볼 수 있어요.'
 export const LINK_KINDS = [
   { key: 'all', label: '전체' },
   { key: 'job', label: '공고' },
@@ -79,3 +129,5 @@ export const EMPLOYER_ACTIVITY_MENU = [
   { label: '팔로우', to: '/me?tab=activity&chip=follows', icon: 'people' },
   { label: '게시글', to: '/me?tab=activity&chip=posts', icon: 'chat' },
 ] as const
+export const ACTIVITY_LOAD_ERROR = '목록을 불러오지 못했어요.'
+export const listTotal = (envelope: { data: unknown[]; page: { total?: number } }) => envelope.page.total ?? envelope.data.length
