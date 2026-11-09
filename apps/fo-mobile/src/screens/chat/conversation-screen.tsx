@@ -100,12 +100,14 @@ const ConversationScreen = ({ id }: { id: string }) => {
   const keyboard = useKeyboardHeight()
   const showPanel = chat.approval && !saying
   const lastResultId = chat.items.findLast((i) => i.type === 'result')?.id
+  // Kept out of the measured height: the keyboard toggles it, and a late onLayout left the thread short of its end.
+  const composerPad = showPanel ? 0 : Platform.OS === 'android' ? (keyboard ? spacing[2] : insets.bottom + COMPOSER_BOTTOM) : keyboard ? Math.max(insets.bottom, 6) : insets.bottom + COMPOSER_BOTTOM
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
         ref={scroll}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset({ bottomH, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android', status: !!chat.working || !!chat.awaiting }) }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', gap: 18, paddingHorizontal: spacing[5], paddingTop: insets.top + 64, paddingBottom: threadInset({ bottomH: bottomH + composerPad, keyboard, navBar: insets.bottom, approval: !!showPanel, android: Platform.OS === 'android', status: !!chat.working || !!chat.awaiting }) }}
         onScroll={(e) => {
           const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent
           atBottom.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - 48
@@ -150,7 +152,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
             </Pressable>
           </Appear>
         ) : null}
-        <View onLayout={(e) => setBottomH(e.nativeEvent.layout.height)}>
+        <View onLayout={(e) => setBottomH(e.nativeEvent.layout.height)} style={{ marginBottom: composerPad }}>
           {showPanel ? (
             <ApprovalPanel
               key={chat.approval!.id}
@@ -161,7 +163,7 @@ const ConversationScreen = ({ id }: { id: string }) => {
               onMaterials={() => (setSayingFor(chat.approval?.id), router.push(materialsPath()))}
             />
           ) : (
-            <View style={{ paddingHorizontal: spacing[3], paddingBottom: Platform.OS === 'android' ? (keyboard ? spacing[2] : insets.bottom + COMPOSER_BOTTOM) : keyboard ? Math.max(insets.bottom, 6) : insets.bottom + COMPOSER_BOTTOM }}>
+            <View style={{ paddingHorizontal: spacing[3] }}>
               <ComposerArea
                 inputRef={input}
                 placeholder={saying ? '어떻게 할지 말해 주세요' : placeholder}
