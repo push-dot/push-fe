@@ -72,7 +72,7 @@ const CompanyPanel = () => {
         {company.role === 'ADMIN' ? (
           <>
             <button type="button" className="btn sec sm" disabled={logo.isPending} onClick={() => file.current?.click()}>
-              <Icon name="upload" size={16} />
+              <Icon name="image" size={16} />
               {COMPANY_LOGO}
             </button>
             <input

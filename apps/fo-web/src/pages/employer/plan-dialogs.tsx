@@ -58,7 +58,7 @@ export const LedgerDialog = ({ company, onClose }: { company: string; onClose: (
               </div>
               <span className="b2 w7 num">{ledgerUsd(row.amountUsd)}</span>
               {row.receiptUrl ? (
-                <a className="c1 w6 ac plan-receipt" href={row.receiptUrl} target="_blank" rel="noreferrer">
+                <a className="c1 w6 plan-receipt" href={row.receiptUrl} target="_blank" rel="noreferrer">
                   {LEDGER_RECEIPT}
                   <Icon name="ext" size={14} />
                 </a>

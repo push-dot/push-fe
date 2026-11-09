@@ -55,7 +55,7 @@ export const MemberRow = ({
 }) => (
   <Row
     avatar={
-      <span className="av" style={{ background: brandColor(email) }}>
+      <span className="av" style={{ background: brandColor(name) }}>
         {memberInitials(name)}
       </span>
     }
@@ -77,7 +77,7 @@ export const InviteRow = ({ expiry, busy, onResend, onRevoke }: { expiry: string
   <Row
     avatar={
       <span className="av member-pending">
-        <Icon name="user" size={20} />
+        <Icon name="mail" size={20} />
       </span>
     }
     title={<span className="b1 w7">{INVITE_PENDING_TITLE}</span>}

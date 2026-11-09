@@ -609,7 +609,9 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .plan-close{background:var(--fill)}
 .browser .plan-ledger{list-style:none;margin:0;padding:0}
 .browser .plan-ledger li{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
-.browser .plan-ledger-copy{flex:1;min-width:0}
+.browser .plan-ledger-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.browser .plan-receipt{display:flex;align-items:center;gap:4px;color:var(--t1);text-decoration:none}
+.browser .plan-dialog .sheet-actions>.btn{flex:none}
 .browser .plan-buy-form{display:flex;flex-direction:column;gap:16px}
 @media (max-width:600px){
 .browser .plan-grid{gap:12px}
@@ -623,7 +625,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .company-hero img.av{background:var(--fill)}
 .browser .facts{margin:0;overflow:hidden}
 .browser .facts div{display:flex;align-items:center;min-height:58px;padding:0 20px;border-bottom:1px solid var(--line);font-size:16px;line-height:24px}
-.browser .facts dt{flex:none;width:180px;color:var(--t3)}
+.browser .facts dt{width:180px;color:var(--t3)}
 .browser .facts dd{flex:1;margin:0;display:flex;align-items:center;gap:8px}
 .browser .member-main{gap:24px}
 .browser .member-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:-8px}
@@ -641,7 +643,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .member-copy{display:flex;flex-direction:column;min-width:0;flex:1}
 .browser .member-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .browser .member-end{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:150px}
-.browser .member-remove{color:var(--red)}
+.browser .member-row .btn.member-remove{color:var(--red)}
 .browser .perm{display:flex;flex-direction:column;gap:6px;padding:18px 20px}
 .browser .seat-note{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-radius:14px;background:var(--orangeSoft)}
 .browser .seat-note .ic{color:var(--orange)}
