@@ -480,6 +480,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .name-field>.num{align-self:flex-end}
 .browser .name-box{position:relative;display:block}
 .browser .sheet .name-box input:not([type=checkbox]):not([type=radio]){width:100%;padding-right:48px}
+.browser .sheet .name-box input:focus-visible{background:var(--bg)}
 .browser .name-clear{position:absolute;top:15px;right:14px;width:22px;height:22px;border-radius:11px;background:var(--fill2);color:var(--t2);display:flex;align-items:center;justify-content:center}
 .browser .mp{display:flex;flex-direction:column;gap:24px}
 .browser .mp-sub{margin-top:-14px}
