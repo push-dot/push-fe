@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { AI_POSTING, FILTER_ALL, NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_LOADING, POSTINGS_TITLE, STATUS_CLOSED, STATUS_OPEN } from './constants'
+import { AI_POSTING, FILTER_ALL, NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_HEAD, POSTINGS_LOADING, POSTINGS_TITLE, STATUS_CLOSED, STATUS_OPEN } from './constants'
 import { Icon } from '../../shared/ui/icon'
 import PostingRow from './posting-row'
 import { useMyPostings } from '../../entities/posting'
@@ -30,6 +30,7 @@ const PostingsPage = () => {
     )
   }
   const rows = postings.data.data
+  const complete = !postings.data.page.hasMore
   const open = rows.filter((item) => !item.closedAt)
   const closed = rows.filter((item) => item.closedAt)
   const visible = filter === 'open' ? open : filter === 'closed' ? closed : rows
@@ -38,11 +39,11 @@ const PostingsPage = () => {
       <header className="head biz-bar">
         <h1 className="h1">{POSTINGS_TITLE}</h1>
         <span className="biz-actions">
-          <Link className="btn sec" to="/employer/chat/new">
+          <Link className="btn sec sm" to="/employer/chat/new">
             <Icon name="spark" size={16} filled />
             {AI_POSTING}
           </Link>
-          <Link className="btn pri" to="/employer/postings/new">
+          <Link className="btn pri sm" to="/employer/postings/new">
             <Icon name="plus" size={16} width={2.4} />
             {NEW_POSTING}
           </Link>
@@ -51,35 +52,30 @@ const PostingsPage = () => {
       <div className="chips">
         {(
           [
-            ['all', `${FILTER_ALL} ${rows.length}`],
-            ['open', `${STATUS_OPEN} ${open.length}`],
-            ['closed', `${STATUS_CLOSED} ${closed.length}`],
+            ['all', FILTER_ALL, rows],
+            ['open', STATUS_OPEN, open],
+            ['closed', STATUS_CLOSED, closed],
           ] as const
-        ).map(([key, label]) => (
+        ).map(([key, label, group]) => (
           <button key={key} type="button" className="chip" aria-pressed={filter === key} onClick={() => setFilter(key)}>
-            {label}
+            {complete ? `${label} ${group.length}` : label}
           </button>
         ))}
       </div>
       {visible.length === 0 ? (
         <p className="b2 t3">{POSTINGS_EMPTY}</p>
       ) : (
-        <div className="biz-table-wrap">
-          <table className="biz-table">
-            <thead>
-              <tr>
-                <th>공고</th>
-                <th>상태</th>
-                <th>지원자</th>
-                <th>마감</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((posting) => (
-                <PostingRow key={posting.id} posting={posting} />
-              ))}
-            </tbody>
-          </table>
+        <div className="box jobs-card posting-cols">
+          <div className="jobs-head c1 w7 t3" aria-hidden="true">
+            {POSTINGS_HEAD.map((label) => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
+          <ul className="jobs-list">
+            {visible.map((posting) => (
+              <PostingRow key={posting.id} posting={posting} />
+            ))}
+          </ul>
         </div>
       )}
     </main>

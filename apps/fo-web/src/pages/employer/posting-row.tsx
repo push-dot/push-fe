@@ -15,23 +15,20 @@ const PostingRow = ({ posting }: { posting: Posting }) => {
   const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
   const closed = Boolean(posting.closedAt)
   return (
-    <tr>
-      <td>
-        <Link to={`/employer/postings/${posting.id}/edit`}>
-          <strong className="b1">{posting.title}</strong>
-          <span className="c1 t3">{[career === '신입' ? career : `경력 ${career}`, employment].filter(Boolean).join(' · ')}</span>
-        </Link>
-      </td>
-      <td>
-        <span className={closed ? 'badge grey' : 'badge green'}>{closed ? STATUS_CLOSED : STATUS_OPEN}</span>
-      </td>
-      <td>
-        <Link className="text-link" to={`/employer/postings/${posting.id}/applicants`}>
-          {APPLICANTS_LINK}
-        </Link>
-      </td>
-      <td className="num">{closed && !posting.deadline ? '–' : deadlineLabel(posting.deadline)}</td>
-    </tr>
+    <li className="jobs-row">
+      <Link className="jobs-who" to={`/employer/postings/${posting.id}/edit`}>
+        <strong className="b1 cap">{posting.title}</strong>
+        <span className="c1 t3">{[career === '신입' ? career : `경력 ${career}`, employment].filter(Boolean).join(' · ')}</span>
+      </Link>
+      <span className={closed ? 'badge grey' : 'badge green'}>{closed ? STATUS_CLOSED : STATUS_OPEN}</span>
+      <Link className="b2 w7 ac posting-link" to={`/employer/postings/${posting.id}/applicants`}>
+        {APPLICANTS_LINK}
+      </Link>
+      <span className="b2 t2 num">
+        <span className="jobs-label">{STATUS_CLOSED}</span>
+        {closed && !posting.deadline ? '–' : deadlineLabel(posting.deadline)}
+      </span>
+    </li>
   )
 }
 
