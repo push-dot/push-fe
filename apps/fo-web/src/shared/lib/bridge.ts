@@ -28,9 +28,12 @@ export const pushEnv = (): PushEnv => {
 
 export const isWebView = () => typeof window !== 'undefined' && !!window.ReactNativeWebView
 
+export const mockBuild = import.meta.env.DEV || import.meta.env.VITE_PUSH_MOCK === '1'
+
 let mockLatched = false
 
 export const isMock = () => {
+  if (!mockBuild) return false
   if (mockLatched) return true
   if (typeof window === 'undefined') return false
   mockLatched = !!pushEnv().mock || new URLSearchParams(location.search).has('mock')

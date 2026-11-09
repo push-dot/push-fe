@@ -1,3 +1,4 @@
+import { GithubMark, GoogleMark } from '../../shared/ui/icon'
 import { PROVIDER_LABEL } from './constants'
 
 const AuthProviderButton = ({
@@ -10,15 +11,7 @@ const AuthProviderButton = ({
   onClick: () => void
 }) => (
   <button type="button" className="auth-btn line" disabled={disabled} onClick={onClick}>
-    {provider === 'google' ? (
-      <span className="auth-google" aria-hidden="true">
-        <span />
-      </span>
-    ) : (
-      <span className="auth-github" aria-hidden="true">
-        GH
-      </span>
-    )}
+    {provider === 'google' ? <GoogleMark /> : <GithubMark />}
     {PROVIDER_LABEL[provider]}
   </button>
 )

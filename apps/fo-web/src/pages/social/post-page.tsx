@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { compactCount, relativeTime } from '../../shared/lib/format'
 import { authorLabel, usePost, usePostComments } from '../../entities/post'
+import { Icon } from '../../shared/ui/icon'
 import CommentItem from './comment-item'
 import { COMMENT_MAX, COMMENT_PLACEHOLDER, EMPLOYER_BADGE } from './constants'
 import { postsComment } from '../../features/comment-on-post'
@@ -38,7 +39,8 @@ const PostPage = () => {
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
   return (
     <main className="page">
-      <Link to="/social" className="back">
+      <Link to="/social" className="back b2">
+        <Icon name="back" size={18} width={2.2} />
         소셜
       </Link>
       <article className="stack post-detail">

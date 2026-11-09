@@ -1,3 +1,5 @@
+import { Icon } from '../../shared/ui/icon'
+
 const VerifyField = ({
   label,
   hint,
@@ -25,11 +27,7 @@ const VerifyField = ({
         onChange={(event) => onChange(event.target.value)}
       />
       {invalid ? (
-        <svg className="auth-warn" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 3l9 16H3z" />
-          <path d="M12 10v4" />
-          <path d="M12 16.5h.01" />
-        </svg>
+        <Icon name="warn" size={20} className="auth-warn" />
       ) : null}
     </span>
     {hint ? <span className="auth-hint">{hint}</span> : null}

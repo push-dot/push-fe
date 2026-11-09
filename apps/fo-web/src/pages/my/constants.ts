@@ -51,23 +51,23 @@ export const LINK_KINDS = [
 ] as const
 
 export const PERSONAL_MENU = [
-  { label: '프로필', to: '/me?tab=profile' },
-  { label: '서류', to: '/me?tab=documents' },
-  { label: '내 링크', to: '/me?tab=links' },
+  { label: '프로필', to: '/me?tab=profile', icon: 'user' },
+  { label: '서류', to: '/me?tab=documents', icon: 'doc' },
+  { label: '내 링크', to: '/me?tab=links', icon: 'link' },
 ] as const
 
 export const PERSONAL_ACTIVITY_MENU = [
-  { label: '지원활동', to: '/me?tab=activity&chip=applications' },
-  { label: '캘린더', to: '/me?tab=activity&chip=calendar' },
-  { label: '북마크', to: '/me?tab=activity&chip=bookmarks' },
-  { label: '팔로우', to: '/me?tab=activity&chip=follows' },
-  { label: '게시글', to: '/me?tab=activity&chip=posts' },
+  { label: '지원활동', to: '/me?tab=activity&chip=applications', icon: 'brief' },
+  { label: '캘린더', to: '/me?tab=activity&chip=calendar', icon: 'calendar' },
+  { label: '북마크', to: '/me?tab=activity&chip=bookmarks', icon: 'bookmark' },
+  { label: '팔로우', to: '/me?tab=activity&chip=follows', icon: 'people' },
+  { label: '게시글', to: '/me?tab=activity&chip=posts', icon: 'chat' },
 ] as const
 
 export const EMPLOYER_MENU = [
-  { label: '회사 정보', to: '/me?tab=company' },
-  { label: '담당자 관리', to: '/employer/members' },
-  { label: '기업 요금제', to: '/employer/plans' },
+  { label: '회사 정보', to: '/me?tab=company', icon: 'company' },
+  { label: '담당자 관리', to: '/employer/members', icon: 'people' },
+  { label: '기업 요금제', to: '/employer/plans', icon: 'card' },
 ] as const
 
 export const COMPANY_LOCKED = '사업자 정보는 바꿀 수 없어요. 상호가 바뀌었다면 고객센터로 알려 주세요.'
@@ -75,7 +75,7 @@ export const COMPANY_NO_HUB = '기업 계정에는 허브 프로필이 없어요
 export const COMPANY_VERIFIED = '확인됨'
 
 export const EMPLOYER_ACTIVITY_MENU = [
-  { label: '북마크', to: '/me?tab=activity&chip=bookmarks' },
-  { label: '팔로우', to: '/me?tab=activity&chip=follows' },
-  { label: '게시글', to: '/me?tab=activity&chip=posts' },
+  { label: '북마크', to: '/me?tab=activity&chip=bookmarks', icon: 'bookmark' },
+  { label: '팔로우', to: '/me?tab=activity&chip=follows', icon: 'people' },
+  { label: '게시글', to: '/me?tab=activity&chip=posts', icon: 'chat' },
 ] as const

@@ -115,7 +115,7 @@ describe('posting list filters', () => {
       data: { company: string; jobCategory: string }[]
       page: { total: number }
     }
-    const both = (await (await mockFetch('http://localhost/api/v1/postings?category=dev,design&sort=latest&limit=4')).json()) as {
+    const both = (await (await mockFetch('http://localhost/api/v1/postings?category=dev,design&sort=latest&limit=12')).json()) as {
       data: { jobCategory: string }[]
       page: { total: number }
     }
@@ -124,7 +124,7 @@ describe('posting list filters', () => {
     expect(dev.data.some((item) => item.company === '누리클라우드')).toBe(true)
     expect(design.page.total).toBeGreaterThan(0)
     expect(design.data.every((item) => item.jobCategory === 'design')).toBe(true)
-    expect(design.data.some((item) => item.company === '하루랩스')).toBe(true)
+    expect(design.data.some((item) => item.company === '온새미로')).toBe(true)
     expect(both.page.total).toBe(dev.page.total + design.page.total)
     expect(new Set(both.data.map((item) => item.jobCategory))).toEqual(new Set(['dev', 'design']))
   })
@@ -133,15 +133,25 @@ describe('posting list filters', () => {
 describe('posting detail mock', () => {
   it('returns the listing whose id was requested', async () => {
     setMockPersona('personal')
-    const response = await mockFetch('http://localhost/api/v1/postings/p2')
+    const response = await mockFetch('http://localhost/api/v1/postings/p9')
     expect(response.status).toBe(200)
     const body = (await response.json()) as { data: { id: string; company: string; title: string; jobCategory: string } }
     expect(body.data).toMatchObject({
-      id: 'p2',
+      id: 'p9',
       company: '누리클라우드',
-      title: '프론트엔드 개발자',
+      title: '백엔드 개발자',
       jobCategory: 'dev',
     })
+  })
+
+  it('shows a guest the posting unbookmarked and a signed-in member the saved one', async () => {
+    setMockPersona('personal')
+    const guest = await read<{ data: { bookmarked: boolean } }>(await mockFetch('http://localhost/api/v1/postings/p1'))
+    expect(guest.data.bookmarked).toBe(false)
+    const member = await read<{ data: { bookmarked: boolean } }>(
+      await mockFetch('http://localhost/api/v1/postings/p1', { headers: { Authorization: 'Bearer mock-access' } }),
+    )
+    expect(member.data.bookmarked).toBe(true)
   })
 })
 
@@ -283,30 +293,30 @@ describe('employer billing mock', () => {
 
   it('returns each persona company plan without putting Basic on a personal account', async () => {
     setMockPersona('employer')
-    const basic = await read<{ data: { plan: string; audience: string; balanceMicroCredits: number; subscriptionStatus: string; periodEndsAt: null; reservedMicroCredits: number } }>(
+    const basic = await read<{ data: { plan: string; audience: string; balanceMicroCredits: number; subscriptionStatus: string; periodEndsAt: string; reservedMicroCredits: number } }>(
       await billing(),
     )
     expect(basic.data).toEqual({
       plan: 'BASIC',
       audience: 'EMPLOYER',
-      balanceMicroCredits: 3000000,
+      balanceMicroCredits: 11_280_000,
       subscriptionStatus: 'active',
-      periodEndsAt: null,
+      periodEndsAt: '2026-11-01T00:00:00.000Z',
       reservedMicroCredits: 0,
-      monthlyMicroCredits: 0,
-      spentMicroCredits: 0,
+      monthlyMicroCredits: 18_000_000,
+      spentMicroCredits: 6_720_000,
     })
 
     setMockPersona('employer-pro')
     const pro = await read<{ data: { plan: string; balanceMicroCredits: number; audience: string } }>(await billing())
     expect(pro.data.plan).toBe('PRO')
     expect(pro.data.audience).toBe('EMPLOYER')
-    expect(pro.data.balanceMicroCredits).toBe(15000000)
+    expect(pro.data.balanceMicroCredits).toBe(30_960_000)
 
     setMockPersona('employer-ultra')
     const ultra = await read<{ data: { plan: string; balanceMicroCredits: number } }>(await billing())
     expect(ultra.data.plan).toBe('ULTRA')
-    expect(ultra.data.balanceMicroCredits).toBe(30000000)
+    expect(ultra.data.balanceMicroCredits).toBe(154_740_000)
 
     setMockPersona('employer-new')
     const fresh = await read<{ data: { plan: null; audience: string; balanceMicroCredits: number } }>(await billing())
@@ -331,13 +341,15 @@ describe('employer billing mock', () => {
     expect(checkoutUrl.searchParams.get('checkout')).toBe('PRO')
     const afterCheckout = await read<{ data: { plan: string } }>(await billing())
     expect(afterCheckout.data.plan).toBe('PRO')
-    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 }))
+    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { packs: 2 }))
     const topupUrl = new URL(topup.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(topupUrl.origin).toBe('http://localhost:5175')
     expect(topupUrl.pathname).toBe('/employer/plans')
-    expect(topupUrl.searchParams.get('topup')).toBe('3000')
+    expect(topupUrl.searchParams.get('topup')).toBe('2')
+    expect((await postJson('http://localhost/api/v1/billing/topup', { packs: 21 })).status).toBe(400)
+    expect((await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 })).status).toBe(400)
     const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
-    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(3000000)
+    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(18_000_000)
     expect(afterTopup.data.plan).toBe('PRO')
     await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' })
 
@@ -355,7 +367,7 @@ describe('employer billing mock', () => {
     const forbiddenTopup = await mockFetch('http://localhost/api/v1/billing/topup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 10 }),
+      body: JSON.stringify({ packs: 1 }),
     })
     expect(forbiddenTopup.status).toBe(403)
     await mockFetch('http://localhost/api/v1/companies/me/members/u1', {
@@ -739,7 +751,7 @@ describe('mock route coverage', () => {
         const response = await get('/applications')
         expect(response.status).toBe(200)
         const body = await read<{ data: { fitScore?: number }[] }>(response)
-        expect(body.data.some((item) => item.fitScore === 6.9)).toBe(true)
+        expect(body.data.some((item) => item.fitScore === 8.4)).toBe(true)
       },
     },
     {
@@ -948,7 +960,7 @@ describe('mock route coverage', () => {
       ['POST', '/postings/job-1/close', 200, { expectedRevision: 2 }],
       ['POST', '/companies/me/invites', 403, { email: 'seat@push.app' }],
       ['POST', '/companies/invites/invite-token/accept', 204, undefined],
-      ['POST', '/billing/topup', 200, { amount: 3000 }],
+      ['POST', '/billing/topup', 200, { packs: 1 }],
       ['GET', '/billing/ledger', 200, undefined],
       ['POST', '/conversations', 201, { title: '서류 검토', audience: 'EMPLOYER' }],
     ]
@@ -957,13 +969,14 @@ describe('mock route coverage', () => {
       expect(response.status, `${method} ${path}`).toBe(status)
     }
 
-    setMockPersona('employer-pro')
+    setMockPersona('employer-ultra')
     const invited = await send('POST', '/companies/me/invites', { email: 'seat@push.app' })
     expect(invited.status).toBe(201)
-    const members = await read<{ data: { userId: string; email: string }[] }>(await get('/companies/me/members'))
-    const added = members.data.find((member) => member.email === 'seat@push.app')
-    expect(added?.userId).toBeTruthy()
-    const removed = await send('DELETE', `/companies/me/members/${added?.userId}`)
-    expect(removed.status).toBe(204)
+    const members = await read<{ data: { email: string }[] }>(await get('/companies/me/members'))
+    expect(members.data.map((member) => member.email)).not.toContain('seat@push.app')
+    const invites = await read<{ data: { email: string }[] }>(await get('/companies/me/invites'))
+    expect(invites.data.map((item) => item.email)).toEqual(['seat@push.app'])
+    const company = await read<{ data: { seats: { used: number } } }>(await get('/companies/me'))
+    expect(company.data.seats.used).toBe(1)
   }, 20_000)
 })

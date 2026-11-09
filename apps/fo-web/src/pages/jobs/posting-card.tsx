@@ -1,5 +1,6 @@
 import type { Posting } from '@push/api-client'
-import { brandOf, cardCareerLabel } from '@push/shared'
+import { brandColor, cardCareerLabel } from '@push/shared'
+import { brandGradient } from '../../shared/lib/brand/brand'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
@@ -31,7 +32,7 @@ const PostingCard = ({ posting }: { posting: Posting }) => {
   const letter = [...posting.company][0]
   return (
     <article className="jc">
-      <div className="ph" style={{ background: posting.imageUrl ? undefined : brandOf(posting.company) }}>
+      <div className="ph" style={{ background: posting.imageUrl ? undefined : brandGradient(brandColor(posting.company)) }}>
         <Link to={`/postings/${posting.id}`} className="ph-hit">
           {posting.imageUrl ? <img src={assetUrl(posting.imageUrl)} alt="" /> : <b>{letter}</b>}
         </Link>

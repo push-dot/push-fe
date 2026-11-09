@@ -1,10 +1,12 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
-import { brandOf, careerLabel } from '@push/shared'
+import { brandColor, careerLabel } from '@push/shared'
+import { brandGradient } from '../../shared/lib/brand/brand'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { send } from '../../shared/lib/bridge'
 import { dDay } from '../../shared/lib/format'
 import type { PostingView } from '../../shared/api/mock'
+import { Icon } from '../../shared/ui/icon'
 import Toast from '../../shared/ui/toast'
 import PostingActions from './posting-actions'
 import { NAV } from '../../app/constants'
@@ -26,16 +28,17 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
   return (
     <main className="page browser-posting">
       <Link to="/jobs" className="back b2">
+        <Icon name="back" size={18} width={2.2} />
         {NAV.jobs}
       </Link>
       <div className="job-detail">
         <div className="split-sections">
-          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandOf(posting.company) }}>
+          <div className="cover" style={{ background: posting.imageUrl ? undefined : brandGradient(brandColor(posting.company)) }}>
             {posting.imageUrl ? <img src={assetUrl(posting.imageUrl)} alt="" /> : [...posting.company][0]}
           </div>
           <header className="head">
             <div className="cover-meta">
-              <span className="av hd-av" style={{ background: brandOf(posting.company) }}>
+              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
               <span className="b1 w7">{posting.company}</span>
@@ -54,7 +57,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           </header>
           {duties.length ? (
             <section className="section">
-              <h2 className="h2">하는 일</h2>
+              <h2 className="sect">하는 일</h2>
               <ul className="b1 t2">
                 {duties.map((item) => (
                   <li key={item}>{item}</li>
@@ -64,7 +67,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.requirements.length ? (
             <section className="section">
-              <h2 className="h2">자격 요건</h2>
+              <h2 className="sect">자격 요건</h2>
               <ul className="b1 t2">
                 {posting.requirements.map((item) => (
                   <li key={item}>{item}</li>
@@ -74,7 +77,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.preferred?.length ? (
             <section className="section">
-              <h2 className="h2">우대 사항</h2>
+              <h2 className="sect">우대 사항</h2>
               <ul className="b1 t2">
                 {posting.preferred.map((item) => (
                   <li key={item}>{item}</li>
@@ -84,7 +87,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {conditions.length || deadline ? (
             <section className="section">
-              <h2 className="h2">근무 조건</h2>
+              <h2 className="sect">근무 조건</h2>
               <div className="card cond b1">
                 {conditions.map((line) => {
                   const split = line.indexOf(' · ')
@@ -108,13 +111,14 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.sourceUrl ? (
             <a
-              className="b2 w6 t2"
+              className="b2 w6 t2 source-link"
               href={posting.sourceUrl}
               onClick={(event) => {
                 event.preventDefault()
                 send({ type: 'external', url: posting.sourceUrl! })
               }}
             >
+              <Icon name="ext" size={18} />
               원문 보기 · {posting.company} 채용 사이트
             </a>
           ) : null}

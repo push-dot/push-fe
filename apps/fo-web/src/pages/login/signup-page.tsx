@@ -3,7 +3,8 @@ import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { EMAIL_TAKEN_EMPLOYER_COPY, EMAIL_TAKEN_PERSONAL_COPY, PASSWORD_LENGTH_COPY } from '../../shared/model/constants'
-import { emailTakenCopy, passwordError } from '../../shared/model/login-providers'
+import { emailSignupInput, emailTakenCopy, passwordError } from '../../shared/model/login-providers'
+import { Icon } from '../../shared/ui/icon'
 import AccountTypeControl from './account-type-control'
 import AuthPasswordField from './auth-password-field'
 import {
@@ -55,17 +56,12 @@ const SignupPage = () => {
       setError(invalid)
       return
     }
-    if (!terms) return
+    const input = emailSignupInput({ email, password, accountType, displayName, terms, consent })
+    if (!input) return
     setError(null)
     setPending(true)
     try {
-      await authEmailSignup({
-        email,
-        password,
-        accountType,
-        displayName,
-        consentReference: consent,
-      })
+      await authEmailSignup(input)
       setDone(true)
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === 'EMAIL_TAKEN') {
@@ -136,11 +132,7 @@ const SignupPage = () => {
               }}
             />
             {emailTaken ? (
-              <svg className="auth-warn" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3l9 16H3z" />
-                <path d="M12 10v4" />
-                <path d="M12 16.5h.01" />
-              </svg>
+              <Icon name="warn" size={20} className="auth-warn" />
             ) : null}
           </span>
           {emailTaken ? (

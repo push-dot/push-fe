@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { AI_POSTING, FILTER_ALL, NEW_POSTING, POSTINGS_EMPTY, POSTINGS_FAILED, POSTINGS_LOADING, POSTINGS_TITLE, STATUS_CLOSED, STATUS_OPEN } from './constants'
+import { Icon } from '../../shared/ui/icon'
 import PostingRow from './posting-row'
 import { useMyPostings } from '../../entities/posting'
 
@@ -38,9 +39,11 @@ const PostingsPage = () => {
         <h1 className="h1">{POSTINGS_TITLE}</h1>
         <span className="biz-actions">
           <Link className="btn sec" to="/employer/chat/new">
+            <Icon name="spark" size={16} filled />
             {AI_POSTING}
           </Link>
           <Link className="btn pri" to="/employer/postings/new">
+            <Icon name="plus" size={16} width={2.4} />
             {NEW_POSTING}
           </Link>
         </span>

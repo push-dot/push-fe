@@ -5,7 +5,7 @@ export const authMe = (...args: Parameters<typeof fetchAuthMe>) => fetchAuthMe(.
 export const meSettings = (...args: Parameters<typeof fetchSettings>) => fetchSettings(...args)
 export const meConsents = (...args: Parameters<typeof fetchConsents>) => fetchConsents(...args)
 
-export const useAuthMe = () => useQuery({ queryKey: ['auth', 'me'], queryFn: () => authMe() })
+export const useAuthMe = (enabled = true) => useQuery({ queryKey: ['auth', 'me'], queryFn: () => authMe(), enabled })
 
 export const useSettings = () => useQuery({ queryKey: ['settings'], queryFn: () => meSettings() })
 

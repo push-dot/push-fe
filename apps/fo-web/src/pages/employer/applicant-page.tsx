@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { NAV } from '../../app/constants'
+import { AgentMark } from '../../shared/ui/icon'
 import Toast, { useToast } from '../../shared/ui/toast'
 import ApplicantDocument from './applicant-document'
 import ApplicantStageActions from './applicant-stage-actions'
@@ -75,12 +77,18 @@ const ApplicantPage = () => {
               {failure}
             </p>
           ) : null}
-          <Link className="btn sec" to="/employer/chat">
-            {AI_REVIEW}
-          </Link>
-          <Link className="btn sec" to="/employer/chat">
-            {AI_INTERVIEW}
-          </Link>
+          <div className="box agent-card">
+            <span className="b2 w7 agent-card-title">
+              <AgentMark />
+              {NAV.chat}
+            </span>
+            <Link className="btn sec block" to="/employer/chat">
+              {AI_REVIEW}
+            </Link>
+            <Link className="btn sec block" to="/employer/chat">
+              {AI_INTERVIEW}
+            </Link>
+          </div>
         </aside>
       </div>
       <Toast message={toast.message} />

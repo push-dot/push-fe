@@ -7,11 +7,12 @@ import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
   checkoutTarget,
+  paymentsOpen,
   showEmployerCheckout,
   topupReady,
 } from '../../shared/model/employer-plans'
 import {
-  PLAN_ACTION_FAILED,
+  PAYMENTS_CLOSED,
   PLAN_ADMIN_ONLY,
   PLAN_AMOUNT,
   PLAN_DEPTH,
@@ -22,6 +23,7 @@ import {
   PLANS_PERSONAL,
   PLANS_TITLE,
   TOPUP_DONE,
+  planActionError,
   planStarted,
   planSwitchLabel,
   remainingCredits,
@@ -40,7 +42,7 @@ const PlansPage = () => {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const queryClient = useQueryClient()
-  const [amountText, setAmountText] = useState('')
+  const [packsText, setPacksText] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
   const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
   const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
@@ -63,17 +65,17 @@ const PlansPage = () => {
     onSuccess: (result) => {
       void openLocal(result.url)
     },
-    onError: () => {
-      setActionError(PLAN_ACTION_FAILED)
+    onError: (error) => {
+      setActionError(planActionError(error))
     },
   })
   const topup = useMutation({
-    mutationFn: (amount: number) => billingTopup(amount),
+    mutationFn: (packs: number) => billingTopup(packs),
     onSuccess: (result) => {
       void openLocal(result.url)
     },
-    onError: () => {
-      setActionError(PLAN_ACTION_FAILED)
+    onError: (error) => {
+      setActionError(planActionError(error))
     },
   })
   const billingReady = billing.isSuccess || billing.isError
@@ -100,15 +102,16 @@ const PlansPage = () => {
   }
   const missing = companyMissing(company.error)
   const canManage = canChangeEmployerPlan(company.data?.role, missing)
-  const amount = Number(amountText)
+  const canPay = canManage && paymentsOpen(billing.data)
+  const packs = Number(packsText)
   const submitTopup = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canManage || !topupReady(amount) || topup.isPending) return
+    if (!canPay || !topupReady(packs) || topup.isPending) return
     setActionError(null)
-    topup.mutate(amount)
+    topup.mutate(packs)
   }
   const subscribe = (planId: EmployerPlan) => {
-    if (!canManage || checkout.isPending) return
+    if (!canPay || checkout.isPending) return
     setActionError(null)
     checkout.mutate(planId)
   }
@@ -128,6 +131,11 @@ const PlansPage = () => {
           </p>
         ) : null}
         <p className="b2 t2">{PLAN_RENEWAL}</p>
+        {billing.data && !paymentsOpen(billing.data) ? (
+          <p className="b1" role="status">
+            {PAYMENTS_CLOSED}
+          </p>
+        ) : null}
         {notice ? (
           <p className="b1" role="status">
             {notice}
@@ -146,7 +154,7 @@ const PlansPage = () => {
             current={card.id === currentPlan}
             action={planSwitchLabel(card.name, card.id === currentPlan, currentPlan ? rank[card.id] > rank[currentPlan] : false, currentPlan !== null)}
             pending={checkout.isPending}
-            onSubscribe={canManage && card.id !== currentPlan ? () => subscribe(card.id) : undefined}
+            onSubscribe={canPay && card.id !== currentPlan ? () => subscribe(card.id) : undefined}
           />
         ))}
       </ul>
@@ -155,20 +163,20 @@ const PlansPage = () => {
           {actionError}
         </p>
       ) : null}
-      {canManage ? (
+      {canPay ? (
         <form className="stack form" onSubmit={submitTopup}>
           <label className="field">
             <span>{PLAN_AMOUNT}</span>
-            <input type="number" inputMode="decimal" value={amountText} onChange={(event) => setAmountText(event.target.value)} />
+            <input type="number" inputMode="numeric" min={1} max={20} step={1} value={packsText} onChange={(event) => setPacksText(event.target.value)} />
           </label>
-          <button type="submit" className="primary" disabled={!topupReady(amount) || topup.isPending}>
+          <button type="submit" className="primary" disabled={!topupReady(packs) || topup.isPending}>
             {PLAN_TOPUP}
           </button>
         </form>
-      ) : company.data?.role === 'MEMBER' ? (
+      ) : canManage ? null : company.data?.role === 'MEMBER' ? (
         <p className="b2 stack">{PLAN_ADMIN_ONLY}</p>
       ) : null}
-      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 기업 AI에만 적용돼요.`}</p> : null}
+      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 에이전트에만 적용돼요.`}</p> : null}
       </div>
     </main>
   )

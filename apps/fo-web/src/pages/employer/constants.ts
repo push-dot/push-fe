@@ -6,7 +6,7 @@ export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
 
 export const VERIFY_TITLE = '사업자를 확인할게요'
-export const VERIFY_LEAD = '국세청 정보와 맞으면 바로 끝나요. 확인을 마쳐야 공고를 올리고 기업 AI를 쓸 수 있어요.'
+export const VERIFY_LEAD = '국세청 정보와 맞으면 바로 끝나요. 확인을 마쳐야 공고를 올리고 에이전트를 쓸 수 있어요.'
 export const LABEL_BNO = '사업자등록번호'
 export const LABEL_PNM = '대표자명'
 export const LABEL_START = '개업일자'
@@ -21,10 +21,10 @@ export const VERIFY_MISMATCH = '국세청 정보와 맞지 않아요'
 export const VERIFY_MISMATCH_DETAIL = '대표자명과 개업일자를 사업자등록증과 똑같이 적어 주세요.'
 export const VERIFY_RETRY = '개업 직후라면 1–2일 뒤 다시 시도해 주세요'
 export const VERIFY_STATUS = '계속사업자'
-export const VERIFY_DONE_LEAD = '이제 공고를 올리고 기업 AI를 쓸 수 있어요.'
+export const VERIFY_DONE_LEAD = '이제 공고를 올리고 에이전트를 쓸 수 있어요.'
 export const VERIFY_DONE_ADMIN = '처음 확인한 분이 관리자가 돼요.'
 export const VERIFY_FIRST_POSTING = '첫 공고 올리기'
-export const VERIFY_AI_POSTING = '기업 AI로 공고 만들기'
+export const VERIFY_AI_POSTING = '에이전트로 공고 만들기'
 export const STEP_ACCOUNT = '계정 만들기'
 export const STEP_VERIFY = '사업자 확인'
 export const STEP_START = '시작하기'
@@ -47,7 +47,7 @@ export const INVITE_ACCEPT_FAILED = '초대를 받지 못했어요. 링크를 �
 export const INVITE_TITLE = '초대를 받았어요'
 export const INVITE_LEAD = '채용 담당자로 초대했어요.'
 export const INVITE_CAN = '들어가면 함께 쓸 수 있어요'
-export const INVITE_PERKS = ['공고와 지원자 관리', '기업 AI 대화 (회사가 함께 봐요)', '사업자 확인 없이 바로 시작'] as const
+export const INVITE_PERKS = ['공고와 지원자 관리', '에이전트 대화 (회사가 함께 봐요)', '사업자 확인 없이 바로 시작'] as const
 export const INVITE_GOOGLE = 'Google로 수락하기'
 export const INVITE_EMAIL_ACCEPT = '이메일로 가입하고 수락하기'
 export const INVITE_LIMIT = '초대받은 이메일로만 들어올 수 있어요 · 7일 뒤 만료돼요'
@@ -76,7 +76,7 @@ export const APPLICANTS_FAILED = '지원자를 불러오지 못했어요'
 export const APPLICANTS_NOTE = '단계를 바꾸면 지원자의 지원활동이 같이 바뀌고 알림이 가요.'
 export const STAGE_APPLIED = '지원함'
 export const stageNotice = (name: string) => (name ? `바꾸면 ${name} 님에게 “지원 상태 변경” 알림이 가요.` : '바꾸면 지원자에게 “지원 상태 변경” 알림이 가요.')
-export const AI_REVIEW = '기업 AI 서류 검토하기'
+export const AI_REVIEW = '서류 검토하기'
 export const AI_INTERVIEW = '면접 질문 만들기'
 export const APPLICANT_FILTER_ALL = '전체'
 export const APPLICANT_LOADING = '지원 내용을 불러오고 있어요'
@@ -100,7 +100,7 @@ export const CLOSE_POSTING = '마감하기'
 export const EDITOR_LOADING = '공고를 불러오고 있어요'
 export const CLOSED_STATE = '마감된 공고예요'
 
-export const CHAT_TITLE = '기업 AI'
+export const CHAT_TITLE = '에이전트'
 export const CHAT_LOADING = '대화를 불러오고 있어요'
 export const CHAT_CREATING = '대화를 만들고 있어요'
 export const CHAT_FAILED = '대화를 불러오지 못했어요'
@@ -125,7 +125,7 @@ export const CHAT_TOPUP = '충전하기'
 export const COMPOSER_PLACEHOLDER = '메시지를 입력하세요'
 export const ATTACH_LABEL = '공고·지원자'
 export const CHAT_USER = '나'
-export const CHAT_ASSISTANT = '기업 AI'
+export const CHAT_ASSISTANT = '에이전트'
 export const ACCESS_MODE_GROUP = 'AI 실행 방식'
 export const ACCESS_MODES = [
   { value: 'ALWAYS_ASK', label: '항상 묻기', description: '바꾸기 전에 매번 물어봐요' },
@@ -140,6 +140,8 @@ export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
   failed: '답을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
 }
 export const CHAT_CREDITS = '크레딧이 모자라요. 충전하고 다시 보내 주세요.'
+export const CHAT_CREDITS_CLOSED = '크레딧이 다 떨어졌어요. 결제는 아직 준비 중이에요.'
+export const PLAN_REQUIRED_CLOSED = '이 기능은 상위 요금제에서 쓸 수 있어요. 결제는 아직 준비 중이에요.'
 export const CHAT_BUSY = '지금 요청이 많아요. 잠시 후 다시 보내 주세요.'
 export const STREAM_ERROR_TEXT: Record<string, string> = {
   NOT_CONFIGURED: '지금은 에이전트를 쓸 수 없어요. 잠시 뒤에 다시 해 주세요.',
@@ -158,11 +160,18 @@ const retryAfterSec = (error: ApiError) => {
   return typeof value === 'number' ? value : undefined
 }
 
-export const streamErrorText = (error: unknown) => {
+const CLOSED_STREAM_ERROR_TEXT: Record<string, string> = {
+  PLAN_REQUIRED: PLAN_REQUIRED_CLOSED,
+  FEATURE_DISABLED: CHAT_CREDITS_CLOSED,
+  INSUFFICIENT_CREDITS: CHAT_CREDITS_CLOSED,
+}
+
+// While payments are closed the credit and plan lines state the fact instead of sending people to pay.
+export const streamErrorText = (error: unknown, paymentsOpen = true) => {
   if (!(error instanceof ApiError)) return DEFAULT_STREAM_ERROR_TEXT
   const sec = error.code === 'QUEUE_BUSY' ? retryAfterSec(error) : undefined
   if (sec) return queueBusyText(sec)
-  return STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
+  return (paymentsOpen ? undefined : CLOSED_STREAM_ERROR_TEXT[error.code]) ?? STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
 }
 
 export const PLANS_TITLE = '기업 요금제'
@@ -174,11 +183,14 @@ export const PLAN_DEPTH = '사용량 ↑ · 더 깊이 분석'
 export const PLAN_RECOMMENDED = '추천'
 export const PLAN_SUBSCRIBE = '구독하기'
 export const PLAN_TOPUP = '충전'
-export const PLAN_AMOUNT = '충전 금액'
+export const PLAN_AMOUNT = '충전할 팩 수 (1팩 1,500크레딧)'
 export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어요'
 export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
 export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
 export const TOPUP_DONE = '크레딧을 충전했어요'
+export const PAYMENTS_CLOSED = '결제는 아직 준비 중이에요'
+export const planActionError = (error: unknown) =>
+  error instanceof ApiError && error.code === 'PAYMENTS_DISABLED' ? PAYMENTS_CLOSED : PLAN_ACTION_FAILED
 export const planStarted = (name: string) => `${name} 구독을 시작했어요`
 
 export const PLAN_FEATURES = {
@@ -207,7 +219,7 @@ export const PLAN_FEATURES = {
 
 export const MEMBER_SELF = '나'
 export const MEMBERS_ADMIN_CAN = '관리자 · 결제, 요금제 변경, 담당자 초대·내보내기'
-export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 기업 AI 대화를 함께 써요'
+export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 에이전트 대화를 함께 써요'
 export const INVITE_DIALOG_TITLE = '담당자 초대'
 export const INVITE_CANCEL = '취소'
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`

@@ -60,11 +60,11 @@ tags:
 - waitForAnimationToEnd
 - takeScreenshot: MyPostsAllMenuNoSort
 
-# The archive route fails from the start, so confirming the delete leaves the failure toast on the document.
+# The archive and file delete routes fail from the start: the Push document keeps its failure toast, and an uploaded file comes back to the list with the toast DeleteDocFail draws.
 - runFlow:
     file: _login_mock.yaml
     env:
-      MOCK: "push://sign-in?mock=fail:POST:documents/.*/archive"
+      MOCK: "push://sign-in?mock=fail:POST:documents/.*/archive,fail:DELETE:sources/.*"
       READY: "새로 올라온 공고"
 - tapOn: "마이"
 - extendedWaitUntil:
@@ -101,4 +101,46 @@ tags:
 - extendedWaitUntil:
     visible: "서류를 삭제하지 못했어요"
     timeout: 10000
+- tapOn: "뒤로"
+- extendedWaitUntil:
+    visible: "올린 파일"
+    timeout: 10000
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          point: "90%,56%"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          point: "90%,52%"
+- extendedWaitUntil:
+    visible: "서류 삭제하기"
+    timeout: 5000
+- tapOn: "서류 삭제하기"
+- extendedWaitUntil:
+    visible: "이 서류를 삭제할까요?"
+    timeout: 10000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "삭제"
+- runFlow:
+    when:
+      platform: Android
+    file: ../flows/_tap_sheet_button.yaml
+    env:
+      TEXT: "삭제"
+- extendedWaitUntil:
+    visible: "서류를 삭제했어요"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "서류를 삭제하지 못했어요"
+    timeout: 15000
+- waitForAnimationToEnd
 - takeScreenshot: DeleteDocFail
