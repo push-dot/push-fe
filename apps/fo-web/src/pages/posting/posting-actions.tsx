@@ -1,4 +1,4 @@
-import { brandOf, monthDay } from '@push/shared'
+import { brandColor, monthDay } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { assetUrl } from '../../shared/api/client'
 import { isWebView } from '../../shared/lib/bridge'
 import { dDay } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
+import { Icon } from '../../shared/ui/icon'
 import { useSession } from '../../shared/auth/use-session'
 import { canUseEmployerAi } from '../../shared/model/employer-plan'
 import type { PostingView } from '../../shared/api/mock'
@@ -105,7 +106,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
             {posting.imageUrl ? (
               <img className="av hd-av" src={assetUrl(posting.imageUrl)} alt="" />
             ) : (
-              <span className="av hd-av" style={{ background: brandOf(posting.company) }}>
+              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
             )}
@@ -124,9 +125,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
                   : EMPLOYER_VERIFY_PATH
               }
             >
-              <svg className="ic spark" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M11 3c.6 4 2.7 6.1 6.7 6.7-4 .6-6.1 2.7-6.7 6.7-.6-4-2.7-6.1-6.7-6.7C8.3 9.1 10.4 7 11 3Z" />
-              </svg>
+              <Icon name="spark" size={18} filled />
               {EMPLOYER_POSTING_CTA}
             </Link>
           ) : (
@@ -137,9 +136,11 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
           {mode === 'employer' ? <p className="c1 t3">{EMPLOYER_POSTING_NOTE}</p> : null}
           <div className="apply-row">
             <button type="button" className="btn sec" aria-pressed={posting.bookmarked} disabled={bookmark.isPending} onClick={onBookmark}>
+              <Icon name="bookmark" size={18} width={2.2} filled={posting.bookmarked} />
               {posting.bookmarked ? BOOKMARK_SAVED : BOOKMARK_LABEL}
             </button>
             <button type="button" className="btn sec" onClick={() => void share()}>
+              <Icon name="share" size={18} width={2.2} />
               {SHARE_LABEL}
             </button>
           </div>

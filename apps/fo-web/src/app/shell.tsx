@@ -1,14 +1,15 @@
-import { brandOf } from '@push/shared'
-import { useEffect, useState, type FormEvent } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { initials } from '../shared/lib/format'
+import { AgentMark, Icon } from '../shared/ui/icon'
 import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
-import EmployerChip from './employer-chip'
+import AccountMenu from './account-menu'
 import { EMPLOYER_LINKS, topEndLinks } from './shell-links'
+import TabBar from './tab-bar'
+import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
 
@@ -40,17 +41,23 @@ const Shell = () => {
   }, [queryText])
   const employer = session?.user.accountType === 'EMPLOYER'
   const chatScreen = !auth && location.pathname.startsWith('/employer/chat')
+  const navRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    navRef.current?.querySelector('a.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    const strip = document.querySelector<HTMLElement>('.side')
+    const on = strip?.querySelector<HTMLElement>('.side-link.on')
+    if (strip && on && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = on.offsetLeft - strip.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2
+  }, [location.pathname, location.search, employer])
   const end = topEndLinks(Boolean(session))
   const live = Boolean(session) && !auth
   const notes = useNotifications(live)
   const received = useOffers('received', live)
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
+  const tabs = !auth && tabBarShown(location.pathname)
+  const shellClass = ['shell', 'browser', auth ? 'auth-shell' : '', chatScreen ? 'chat-screen' : '', tabs ? 'has-tabs' : ''].filter(Boolean).join(' ')
   return (
-    <div
-      className={auth ? 'shell browser auth-shell' : chatScreen ? 'shell browser chat-screen' : 'shell browser'}
-      data-theme="light"
-    >
+    <div className={shellClass}>
       {auth ? (
         <header className="auth-bar">
           <NavLink to="/" end className="auth-logo">
@@ -79,18 +86,17 @@ const Shell = () => {
       ) : (
         <header className="hd">
           <div className="wrap">
-            <NavLink to="/" end className="logo">
+            <NavLink to="/" end className="wordmark">
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </NavLink>
-            <nav className="nav">
+            <nav className="nav" ref={navRef}>
               {MAIN_NAV.map((link) => (
                 <NavLink key={link.to} to={link.to} end={link.end} className={() => (navOn(location.pathname, link.to) ? 'on' : '')}>
                   {link.label}
                   {!session && link.lock ? (
                     <svg className="ic lock" viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="6" y="11" width="12" height="9" rx="2" />
-                      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                      <path d="M6.5 10.5h11a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19v-7a1.5 1.5 0 0 1 1.5-1.5Zm2-.2V7.5a3.5 3.5 0 0 1 7 0v2.8" />
                     </svg>
                   ) : null}
                 </NavLink>
@@ -98,11 +104,7 @@ const Shell = () => {
               {employer
                 ? EMPLOYER_LINKS.map((link) => (
                     <NavLink key={link.to} to={link.to} className={() => (navOn(location.pathname, link.to) ? 'on' : '')}>
-                      {link.to === '/employer/chat' ? (
-                        <svg className="ic spark" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M11 3c.6 4 2.7 6.1 6.7 6.7-4 .6-6.1 2.7-6.7 6.7-.6-4-2.7-6.1-6.7-6.7C8.3 9.1 10.4 7 11 3ZM18.5 14.5c.3 2 1.2 2.9 3 3.2-1.8.3-2.7 1.2-3 3.2-.3-2-1.2-2.9-3-3.2 1.8-.3 2.7-1.2 3-3.2Z" />
-                        </svg>
-                      ) : null}
+                      {link.to === '/employer/chat' ? <AgentMark /> : null}
                       {link.label}
                     </NavLink>
                   ))
@@ -123,10 +125,9 @@ const Shell = () => {
                   navigate(search ? `/search?${search}` : '/search')
                 }}
               >
-                <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="M20 20l-3.2-3.2" />
-                </svg>
+                <button type="submit" className="sbox-go" aria-label={NAV.search}>
+                  <Icon name="search" size={20} width={2.2} />
+                </button>
                 <input aria-label={NAV.search} placeholder={SEARCH_PLACEHOLDER} value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} />
               </form>
             ) : null}
@@ -135,33 +136,18 @@ const Shell = () => {
                 .filter((link) => link.to === '/notifications')
                 .map((link) => (
                   <NavLink key={link.to} to={link.to} className="hbtn" aria-label={unread > 0 ? `${link.label} ${unread}개` : link.label}>
-                    <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M6 9a6 6 0 0 1 12 0c0 7 2 7 2 7H4s2 0 2-7" />
-                      <path d="M10 19a2 2 0 0 0 4 0" />
-                    </svg>
+                    <Icon name="bell" size={22} />
                     {unread > 0 ? <span className="nb">{unread}</span> : null}
                   </NavLink>
                 ))}
               {session ? (
                 <NavLink to="/offers" className="hbtn" aria-label={offerCount > 0 ? `${NAV.offers} ${offerCount}개` : NAV.offers}>
-                  <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 6h16v12H4z" />
-                    <path d="m4 7 8 6 8-6" />
-                  </svg>
+                  <Icon name="inbox" size={22} />
                   {offerCount > 0 ? <span className="nb">{offerCount}</span> : null}
                 </NavLink>
               ) : null}
-              {session && employer ? (
-                <EmployerChip />
-              ) : session ? (
-                <NavLink to="/me" className="me-chip" aria-label={NAV.my}>
-                  <span className="av hd-av" style={{ background: brandOf(session.user.displayName) }}>
-                    {initials(session.user.displayName)}
-                  </span>
-                  <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </NavLink>
+              {session ? (
+                <AccountMenu />
               ) : (
                 <>
                   <NavLink to="/login" className="btn sec sm">
@@ -182,19 +168,24 @@ const Shell = () => {
       {auth || chatScreen ? null : (
         <footer className="ft">
           <div className="wrap">
-            <span className="logo">
+            <span className="wordmark">
               {BRAND.slice(0, -1)}
               <i>{BRAND.slice(-1)}</i>
             </span>
-            {FOOTER_LINKS.map((label) => (
-              <span key={label} className={label === '개인정보 처리방침' ? 'w7' : undefined}>
-                {label}
-              </span>
-            ))}
+            {FOOTER_LINKS.map((link) =>
+              'to' in link ? (
+                <Link key={link.label} to={link.to} className={link.to === '/privacy' ? 'w7' : undefined}>
+                  {link.label}
+                </Link>
+              ) : (
+                <span key={link.label}>{link.label}</span>
+              ),
+            )}
             <span className="ft-mark">{FOOTER_MARK}</span>
           </div>
         </footer>
       )}
+      {tabs ? <TabBar kind={!session ? 'guest' : employer ? 'employer' : 'personal'} /> : null}
     </div>
   )
 }

@@ -13,6 +13,11 @@
       ;(function () {
         var params = new URLSearchParams(location.search)
         var theme = params.get('theme')
+        if (theme !== 'light' && theme !== 'dark' && !window.ReactNativeWebView) {
+          try {
+            theme = localStorage.getItem('push-theme')
+          } catch (error) {}
+        }
         if (!document.documentElement.hasAttribute('data-theme') && (theme === 'light' || theme === 'dark')) {
           document.documentElement.dataset.theme = theme
         }

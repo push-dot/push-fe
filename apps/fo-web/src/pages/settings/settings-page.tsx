@@ -7,6 +7,7 @@ import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
 import { useAuthMe, useConsents, useSettings } from '../../entities/session'
+import { THEME_CHOICES, setTheme, useTheme } from '../../shared/lib/theme'
 import { meDeleteAccount, meUpdateConsents, meUpdateSettings } from '../../features/update-settings'
 import {
   CAREER_VISIBILITY,
@@ -23,6 +24,7 @@ import {
   NOTIFY_ROWS,
   SETTINGS_CHANNEL_NOTE,
   SETTINGS_LOAD_ERROR,
+  THEME_LABEL,
 } from './constants'
 
 const SettingsPage = () => {
@@ -32,6 +34,7 @@ const SettingsPage = () => {
   const account = useAuthMe()
   const settingsQuery = useSettings()
   const consentQuery = useConsents()
+  const theme = useTheme()
   const [confirming, setConfirming] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const saveSettings = useMutation({
@@ -113,6 +116,16 @@ const SettingsPage = () => {
               ))}
             </select>
           </label>
+          <div className="switch-row">
+            <span className="b1">테마</span>
+            <div className="seg" role="group" aria-label="테마">
+              {THEME_CHOICES.map((choice) => (
+                <button key={choice} type="button" aria-pressed={theme === choice} onClick={() => setTheme(choice)}>
+                  {THEME_LABEL[choice]}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
         <section className="box">
           <h2 className="side-label">허브 공개</h2>

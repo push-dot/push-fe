@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../../shared/ui/icon'
 import { HIDE_PASSWORD, SHOW_PASSWORD } from './constants'
 
 const AuthPasswordField = ({
@@ -36,11 +37,7 @@ const AuthPasswordField = ({
         aria-label={visible ? HIDE_PASSWORD : SHOW_PASSWORD}
         onClick={() => setVisible((current) => !current)}
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-          <circle cx="12" cy="12" r="3" />
-          {visible ? null : <path d="M4 4l16 16" />}
-        </svg>
+        <Icon name={visible ? 'eyeOff' : 'eye'} size={20} />
       </button>
     </span>
   )
