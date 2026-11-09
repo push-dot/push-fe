@@ -224,7 +224,9 @@ describe('employer credits and seats', () => {
     expect((await company()).seats).toEqual({ used: 2, limit: 2 })
     const members = await get<{ data: Record<string, unknown>[] }>('/companies/me/members')
     expect(members.data.map((item) => item.email)).toEqual(['mina.lee@moapay.kr', 'jiho.han@moapay.kr'])
-    expect(members.data.every((item) => Object.keys(item).sort().join() === 'email,joinedAt,role,userId')).toBe(true)
+    // push-be CompanyMember: userId, email, displayName, role, joinedAt
+    expect(members.data.every((item) => Object.keys(item).sort().join() === 'displayName,email,joinedAt,role,userId')).toBe(true)
+    expect(members.data.map((item) => item.displayName)).toEqual(['이민아', '한지호'])
     const invites = await get<{ data: { email: string; expiresAt: string }[] }>('/companies/me/invites')
     expect(invites.data.map((item) => item.email)).toEqual(['sora.park@moapay.kr'])
     expect((await post('/companies/me/invites', { email: 'sora.park@moapay.kr' })).status).toBe(201)

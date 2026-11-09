@@ -33,6 +33,8 @@ export const billingCompanyStatus = (...args: Parameters<Api['billing']['company
 
 export const billingTopup = (...args: Parameters<Api['billing']['topup']>) => api.billing.topup(...args)
 
+export const billingLedger = (...args: Parameters<Api['billing']['ledger']>) => api.billing.ledger(...args)
+
 export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) => api.calendar.events(...args)
 
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
@@ -40,6 +42,14 @@ export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acce
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
 
 export const companiesInvitePreview = (...args: Parameters<Api['companies']['invitePreview']>) => api.companies.invitePreview(...args)
+
+export const companiesInvites = (...args: Parameters<Api['companies']['invites']>) => api.companies.invites(...args)
+
+export const companiesResendInvite = (...args: Parameters<Api['companies']['resendInvite']>) => api.companies.resendInvite(...args)
+
+export const companiesCancelInvite = (...args: Parameters<Api['companies']['cancelInvite']>) => api.companies.cancelInvite(...args)
+
+export const companiesUpdate = (...args: Parameters<Api['companies']['update']>) => api.companies.update(...args)
 
 export const companiesMe = (...args: Parameters<Api['companies']['me']>) => api.companies.me(...args)
 
@@ -111,6 +121,10 @@ export const meUpdateSettings = (...args: Parameters<Api['me']['updateSettings']
 export const meWebNotifications = (...args: Parameters<Api['me']['webNotifications']>) => api.me.webNotifications(...args)
 
 export const postingsApplicant = (...args: Parameters<Api['postings']['applicant']>) => api.postings.applicant(...args)
+
+export const postingsApplicantFile = (...args: Parameters<Api['postings']['applicantFile']>) => api.postings.applicantFile(...args)
+
+export const postingsApplicantCounts = (...args: Parameters<Api['postings']['applicantCounts']>) => api.postings.applicantCounts(...args)
 
 export const postingsApplicants = (...args: Parameters<Api['postings']['applicants']>) => api.postings.applicants(...args)
 
