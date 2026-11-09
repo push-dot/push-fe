@@ -19,9 +19,18 @@ describe('termsPending', () => {
     await expect(termsPending(session('PERSONAL'), read)).resolves.toBe(false)
   })
 
-  it('never asks an employer account', async () => {
-    const read = vi.fn()
+  it('asks a new employer Google account until the consent step saves the terms', async () => {
+    // push-be records terms only on the email sign-up; a Google employer starts with none.
+    let stored: Consent = { referenceData: false, updatedAt: null }
+    const read = vi.fn(async () => stored)
+    await expect(termsPending(session('EMPLOYER'), read)).resolves.toBe(true)
+    stored = { ...stored, terms: agreed }
     await expect(termsPending(session('EMPLOYER'), read)).resolves.toBe(false)
-    expect(read).not.toHaveBeenCalled()
+    expect(read).toHaveBeenCalledWith('at')
+  })
+
+  it('lets an employer that agreed on the email sign-up form through', async () => {
+    const read = async () => ({ referenceData: true, updatedAt: null, terms: agreed }) as Consent
+    await expect(termsPending(session('EMPLOYER'), read)).resolves.toBe(false)
   })
 })

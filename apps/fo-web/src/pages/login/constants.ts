@@ -129,6 +129,7 @@ export const RESET_SEND_FAILED = '메일을 보내지 못했어요. 잠시 후 �
 
 export const MISSING_VERIFY_COPY = '인증 링크가 없어요'
 export const LOGIN_FAILED_COPY = '로그인에 실패했어요'
+export const TERMS_READ_FAILED = '번호는 확인했지만 로그인을 마치지 못했어요. 새 인증번호를 받아 다시 시도해 주세요.'
 export const BAD_CREDENTIALS_COPY = '이메일 또는 비밀번호가 맞지 않아요. 다시 확인해 주세요.'
 export const EMAIL_LABEL = '이메일'
 export const PASSWORD_LABEL = '비밀번호'

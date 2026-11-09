@@ -52,13 +52,17 @@ export const createClient = (config: ClientConfig) => {
     hooks: {
       beforeRequest: [
         async (request) => {
+          // A caller's own token (a session not saved yet) wins over the stored one.
+          if (request.headers.has('Authorization')) return
           const token = await config.getToken()
           if (token) request.headers.set('Authorization', `Bearer ${token}`)
         },
       ],
       afterResponse: [
-        async (request, _options, response, { retryCount }) => {
+        async (request, options, response, { retryCount }) => {
           if (response.status !== HTTP_UNAUTHORIZED || !config.refresh || retryCount >= RETRY_LIMIT) return
+          // Refreshing renews the stored session, which is not the one a caller's own token belongs to.
+          if (options.context.ownToken) return
           if (!(await config.refresh())) return
           const headers = new Headers(request.headers)
           const token = await config.getToken()
@@ -81,6 +85,7 @@ export const createClient = (config: ClientConfig) => {
         json: options.form || options.body === undefined ? undefined : options.body,
         body: options.form,
         signal: options.signal,
+        context: { ownToken: new Headers(options.headers).has('Authorization') },
       })
     } catch (error) {
       throw await toApiError(error)

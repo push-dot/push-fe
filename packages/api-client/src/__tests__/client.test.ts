@@ -40,6 +40,16 @@ describe('createClient', () => {
     expect(bodies).toEqual(['{"a":1}', '{"a":1}'])
   })
 
+  it("keeps a caller's own bearer over the stored token and does not refresh the stored session for it", async () => {
+    const fetch = vi.fn(async () => json(401, { error: { code: 'TOKEN_EXPIRED', message: 'x' } }))
+    const refresh = vi.fn(async () => true)
+    const c = createClient({ baseUrl: 'http://x', getToken: () => 'stored', refresh, fetch })
+    await expect(c.get('me/consents', { headers: { Authorization: 'Bearer fresh' } })).rejects.toMatchObject({ status: 401 })
+    expect(reqOf(fetch.mock.calls[0]!).headers.get('Authorization')).toBe('Bearer fresh')
+    expect(refresh).not.toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
   it('throws ApiError with server code', async () => {
     const fetch = vi.fn(async () => json(409, { error: { code: 'CONFLICT', message: 'dup', details: null } }))
     const c = createClient({ baseUrl: 'http://x', getToken: () => null, fetch })

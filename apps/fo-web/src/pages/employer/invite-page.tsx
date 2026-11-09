@@ -256,7 +256,7 @@ const InvitePage = () => {
   }
   const viaEmail = () => {
     if (session) return void accept()
-    saveSignupReturnTo(`/invites/${token}`)
+    saveSignupReturnTo(`/invites/${token}`, invite.email)
     navigate(`/signup?accountType=EMPLOYER&email=${encodeURIComponent(invite.email)}`)
   }
   const busy = accepting || oauth.pending

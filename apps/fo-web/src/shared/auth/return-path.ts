@@ -18,33 +18,40 @@ export const takeReturnTo = () => {
 }
 
 // push-be's email sign-up takes no return path and the verification mail may open in a new tab (empty sessionStorage),
-// so the page that started the sign-up is kept in localStorage for the link's 24 hours.
-export const saveSignupReturnTo = (value: string, now = Date.now()) => {
+// so the page that started the sign-up is kept in localStorage for the link's 24 hours, tied to the email it is for:
+// on a shared browser another person's verification link must not land on it.
+export const saveSignupReturnTo = (value: string, email: string, now = Date.now()) => {
   saveReturnTo(value)
   browserLocalStorage()?.setItem(
     SIGNUP_RETURN_TO_KEY,
-    JSON.stringify({ path: sanitizeReturnTo(value), until: now + VERIFY_LINK_MS }),
+    JSON.stringify({ path: sanitizeReturnTo(value), email: email.toLowerCase(), until: now + VERIFY_LINK_MS }),
   )
 }
 
-export const takeSignupReturnTo = (now = Date.now()) => {
+export const takeSignupReturnTo = (email: string, now = Date.now()) => {
   const inTab = takeReturnTo()
   const storage = browserLocalStorage()
   const raw = storage?.getItem(SIGNUP_RETURN_TO_KEY) ?? null
   storage?.removeItem(SIGNUP_RETURN_TO_KEY)
   try {
-    const saved = JSON.parse(raw ?? 'null') as { path?: unknown; until?: unknown } | null
+    const saved = JSON.parse(raw ?? 'null') as { path?: unknown; email?: unknown; until?: unknown } | null
     if (
       saved &&
       typeof saved.path === 'string' &&
       typeof saved.until === 'number' &&
-      saved.until > now
+      saved.until > now &&
+      email !== '' &&
+      saved.email === email.toLowerCase()
     )
       return sanitizeReturnTo(saved.path)
   } catch {
     // A broken entry falls back to this tab's path.
   }
   return inTab
+}
+
+export const forgetSignupReturnTo = () => {
+  browserLocalStorage()?.removeItem(SIGNUP_RETURN_TO_KEY)
 }
 
 export const gateAccount = (session: Session | null) => {

@@ -30,6 +30,7 @@ import {
   PHONE_TAKEN_TITLE,
   PHONE_TITLE,
   PROVIDER_NAME,
+  TERMS_READ_FAILED,
   codeLimitTitle,
   providerLogin,
 } from './constants'
@@ -125,7 +126,12 @@ const PhoneFlow = ({
     try {
       const result = await authPhoneVerify({ phone: toE164(phone), code, ...(pendingToken ? { pendingToken } : {}) })
       const { created: _created, linked: _linked, provider: _provider, ...session } = result
-      if (await termsPending(session)) setConsent(session)
+      // The code is spent once verified, so a failed terms read asks for a new code rather than a retry.
+      const pendingTerms = await termsPending(session).catch(() => null)
+      if (pendingTerms === null) {
+        setCode('')
+        setError(TERMS_READ_FAILED)
+      } else if (pendingTerms) setConsent(session)
       else onDone(session)
     } catch (caught) {
       const failure = phoneFailure(caught)
