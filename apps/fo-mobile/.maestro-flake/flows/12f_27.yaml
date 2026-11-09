@@ -1,5 +1,5 @@
 appId: app.push.mobile
-name: flake 12h run 27
+name: flake 12i run 27
 ---
 - runFlow: _login.yaml
 - runFlow: _dismiss_logbox.yaml
