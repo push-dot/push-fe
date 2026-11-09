@@ -41,6 +41,7 @@ import {
   VERIFY_LINK,
 } from './constants'
 import { useEmployerApplicants } from '../../entities/application'
+import { usePaymentsOpen } from '../../entities/billing'
 import { useEmployerPlan } from '../../entities/company'
 import { useEmployerConversations, useEmployerMessages } from '../../entities/conversation'
 import { useMyPostings } from '../../entities/posting'
@@ -63,6 +64,7 @@ const ChatThreadPage = () => {
   const routed = chatRouteState(location.state)
   const [intent, setIntent] = useState<ChatIntent>(routed.intent)
   const { plan, settled } = useEmployerPlan()
+  const payable = usePaymentsOpen()
   const queryClient = useQueryClient()
   const [text, setText] = useState('')
   const [applicationId, setApplicationId] = useState('')
@@ -113,7 +115,7 @@ const ChatThreadPage = () => {
       return
     }
     if (next === 'failed' || next === 'busy' || next === 'credits') {
-      setRunAlert(streamErrorText(error))
+      setRunAlert(streamErrorText(error, payable))
       return
     }
     setRunAlert(null)

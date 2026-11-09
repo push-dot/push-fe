@@ -15,10 +15,10 @@ const sourceFiles = (dir: string): string[] =>
   )
 
 describe('mock brand colours', () => {
-  it('keeps the palette pick until the mock url registers the board colours', () => {
-    applyMockSearch('', store())
+  it('keeps the palette pick until the mock url registers the board colours', async () => {
+    await applyMockSearch('', store())
     expect(brandColor('누리클라우드')).not.toBe('#2B8A3E')
-    applyMockSearch('?mock&as=personal', store())
+    await applyMockSearch('?mock&as=personal', store())
     expect(brandColor('누리클라우드')).toBe('#2B8A3E')
     expect(brandColor('김서준')).toBe('#3B5BDB')
     expect(brandColor('이지우')).not.toBe(brandColor('최지우'))

@@ -1,5 +1,7 @@
 import type { Settings } from '@push/api-client'
 
+import type { ThemeChoice } from '../../shared/lib/theme'
+
 export const CONSENT_COPY = '내 서류와 평가 결과를 가공해 다른 사용자와 기업의 AI가 참고 자료로 써요'
 
 export const DELETE_CONFIRM =
@@ -50,3 +52,5 @@ export const LOCALES: { key: Settings['locale']; label: string }[] = [
   { key: 'ko', label: '한국어' },
   { key: 'en', label: 'English' },
 ]
+
+export const THEME_LABEL: Record<ThemeChoice, string> = { light: '라이트', dark: '다크', system: '시스템' }

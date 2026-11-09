@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { emailTakenCopy, loginProviders, passwordError } from './login-providers'
+import { emailSignupInput, emailTakenCopy, loginProviders, passwordError } from './login-providers'
 
 describe('loginProviders', () => {
   it('offers google, apple, github, and phone for a personal account, never email', () => {
@@ -33,5 +33,17 @@ describe('passwordError', () => {
   it('accepts passwords from 8 through 128 characters', () => {
     expect(passwordError('12345678')).toBeNull()
     expect(passwordError('a'.repeat(128))).toBeNull()
+  })
+})
+
+describe('emailSignupInput', () => {
+  const form = { email: 'hr@acme.kr', password: 'password1', accountType: 'EMPLOYER' as const, displayName: '김서준' }
+
+  it('sends agreeTerms true once the terms checkbox is ticked', () => {
+    expect(emailSignupInput({ ...form, terms: true, consent: false })).toEqual({ ...form, agreeTerms: true, consentReference: false })
+  })
+
+  it('sends nothing while the terms checkbox is off', () => {
+    expect(emailSignupInput({ ...form, terms: false, consent: true })).toBeNull()
   })
 })

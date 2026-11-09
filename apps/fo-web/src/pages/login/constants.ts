@@ -69,7 +69,7 @@ export const SIGNUP_LEAD = '인증 메일의 링크를 누르면 계정이 만�
 export const SIGNUP_SUBMIT_COPY = '인증 메일 보내기'
 export const SIGNUP_HAS_ACCOUNT = '이미 계정이 있나요?'
 export const PASSWORD_HINT = '8자 이상, 영문과 숫자를 섞어 주세요'
-export const TERMS_LABEL = '이용약관과 개인정보 처리방침에 동의해요'
+export const TERMS_LABEL = '만 14세 이상이며 이용약관과 개인정보 처리방침에 동의해요'
 export const TERMS_REQUIRED = '필수'
 
 export const VERIFY_MAIL_TITLE = '메일을 확인해 주세요'

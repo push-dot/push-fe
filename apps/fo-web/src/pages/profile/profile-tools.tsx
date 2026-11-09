@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { useSession } from '../../shared/auth/use-session'
+import { Icon } from '../../shared/ui/icon'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { LINK_COPIED, OFFER_ONCE } from './constants'
 import OfferSheet from './offer-sheet'
@@ -40,6 +41,7 @@ const ProfileTools = ({ profile }: { profile: Profile }) => {
         <div className="box profile-apply">
           {self ? null : (
             <button type="button" className="btn pri lg block" disabled={profile.offered === true} onClick={() => setOfferOpen(true)}>
+              <Icon name="send" size={18} />
               제안하기
             </button>
           )}
@@ -50,6 +52,7 @@ const ProfileTools = ({ profile }: { profile: Profile }) => {
               </button>
             )}
             <button type="button" className="btn sec" onClick={() => void share()}>
+              <Icon name="share" size={18} width={2.2} />
               공유
             </button>
           </div>

@@ -139,7 +139,9 @@ describe('css', () => {
 
 describe('icons', () => {
   it('register every svg file by name', () => {
-    expect(Object.keys(LINE_ICONS)).toHaveLength(61)
+    expect(Object.keys(LINE_ICONS)).toHaveLength(64)
+    expect(LINE_ICONS.flag).toContain('M5.5 21V4.5')
+    expect(LINE_ICONS.block).toContain('M6 6l12 12')
     expect(Object.keys(ICONS_3D)).toHaveLength(32)
     expect(Object.keys(BRAND)).toEqual(['push-mascot-on-dark', 'push-mascot-on-light'])
   })

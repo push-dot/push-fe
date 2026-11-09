@@ -1,43 +1,57 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MOCK_SWITCHES, mockFetch, setMockPersona, setMockSwitches } from './mock'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { dDay } from '../lib/format'
+import { MOCK_SWITCHES, mockFetch, mockFit, setMockSwitches } from './mock'
 
 const API = 'http://localhost/api/v1'
+const SIGNED = { headers: { Authorization: 'Bearer mock-access' } }
 
-const POSTING_IDS = Array.from({ length: 25 }, (_, at) => `p${at + 1}`)
-const PROFILE_IDS = ['me', ...Array.from({ length: 12 }, (_, at) => `u${at + 1}`), 'u-doyun', 'u-hyunwoo', 'u-jihyun', 'u-seoyeon', 'u-subin']
+const APP_POSTING_IDS = Array.from({ length: 25 }, (_, at) => `p${at + 1}`)
+const APP_PROFILE_IDS = ['me', 'u1', 'u2', 'u3', 'u4', 'u5', 'u-haeun', 'u-jihyun']
 
-const PATHS = [...POSTING_IDS.map((id) => `/postings/${id}`), ...PROFILE_IDS.map((id) => `/profiles/${id}`)]
+// The WebView pages render neither the bookmark/apply nor the follow/offer flags (posting actions return null in the WebView).
+const UNRENDERED = new Set(['bookmarked', 'applied', 'following', 'offered'])
 
-const answers = async (signed: boolean) => {
-  const list = await Promise.all(PATHS.map((path) => answer(path, signed)))
-  return Object.fromEntries(PATHS.map((path, at) => [path, list[at]]))
+const rendered = (data: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(data)
+      .filter(([key]) => !UNRENDERED.has(key))
+      .map(([key, value]) => (key === 'deadline' ? [key, dDay(value as string | null)] : [key, value])),
+  )
+
+const read = async (path: string, init?: RequestInit) => {
+  const response = await mockFetch(`${API}${path}`, init)
+  const body = (await response.json()) as { data?: Record<string, unknown> }
+  return { status: response.status, data: body.data ? rendered(body.data) : body }
 }
 
-const answer = async (path: string, signed: boolean) => {
-  const response = await mockFetch(`${API}${path}`, signed ? { headers: { Authorization: 'Bearer app-token' } } : undefined)
-  return { status: response.status, body: (await response.json()) as unknown }
+const pinned = async () => {
+  const paths = [...APP_POSTING_IDS.map((id) => `/postings/${id}`), ...APP_PROFILE_IDS.map((id) => `/profiles/${id}`), '/auth/me']
+  const signed = await Promise.all(paths.map(async (path) => [path, await read(path, SIGNED)] as const))
+  const guest = await Promise.all(paths.map(async (path) => [path, await read(path)] as const))
+  return JSON.stringify({ signed: Object.fromEntries(signed), guest: Object.fromEntries(guest), fit: mockFit }, null, 2)
 }
-
-beforeEach(() => {
-  vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
-  vi.useFakeTimers({ now: Date.parse('2026-10-21T01:00:00Z'), toFake: ['Date'] })
-  setMockPersona(null)
-})
 
 afterEach(() => {
-  vi.useRealTimers()
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
-describe('app WebView detail data', () => {
-  it.each([true, false])('serves the PR #180 fixtures (signed %s)', async (signed) => {
-    expect(await answers(signed)).toMatchSnapshot()
+describe('app WebView data', () => {
+  it('stays as fix/web-mock 03f4169 serves it', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-21T10:00:00+09:00'))
+    vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
+    await expect(await pinned()).toMatchFileSnapshot('./__snapshots__/webview-pin.json')
   })
 
   it('ignores every ms= switch', async () => {
-    const plain = await answers(true)
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-21T10:00:00+09:00'))
+    vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
+    const plain = await pinned()
     setMockSwitches(MOCK_SWITCHES.join(','))
-    expect(await answers(true)).toEqual(plain)
+    const switched = await pinned()
     setMockSwitches(null)
+    expect(switched).toEqual(plain)
   })
 })

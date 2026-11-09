@@ -45,13 +45,14 @@ const session = {
 }
 
 describe('employer api', () => {
-  it('posts email signup with account type and optional consent', async () => {
+  it('posts email signup with account type, the terms agreement, and optional consent', async () => {
     const { api, hits } = harness(() => noContent(202))
     await api.auth.emailSignup({
       email: 'a@push.app',
       password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     await api.auth.emailSignup({
@@ -67,6 +68,7 @@ describe('employer api', () => {
       password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     expect(bodyOf(hits[1]!)).toEqual({
@@ -207,14 +209,14 @@ describe('employer api', () => {
       if (path.endsWith('/iap/verify')) return json(200, { data: { plan: 'BASIC', periodEndsAt: '2026-11-21T00:00:00.000Z' } })
       return json(200, { data: { url: 'https://pay.example/next' } })
     })
-    await expect(api.billing.topup(3000)).resolves.toEqual({ url: 'https://pay.example/next' })
+    await expect(api.billing.topup(2)).resolves.toEqual({ url: 'https://pay.example/next' })
     await expect(api.billing.portal()).resolves.toEqual({ url: 'https://pay.example/next' })
     await expect(api.billing.ledger({ limit: 10, cursor: 'c1' })).resolves.toEqual(ledger)
     await expect(
       api.billing.verifyIap({ platform: 'APP_STORE', productId: 'push.basic', signedTransaction: 'jws' }),
     ).resolves.toEqual({ plan: 'BASIC', periodEndsAt: '2026-11-21T00:00:00.000Z' })
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/billing/topup')
-    expect(bodyOf(hits[0]!)).toEqual({ amount: 3000 })
+    expect(bodyOf(hits[0]!)).toEqual({ packs: 2 })
     expect(hits[1]!.method).toBe('POST')
     expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/billing/portal')
     expect(hits[1]!.body).toBe('')
