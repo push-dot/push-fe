@@ -436,6 +436,8 @@ export type BillingStatus = {
   spentMicroCredits: number
   audience?: BillingAudience
   source?: BillingSource
+  /** False while push-be has payments closed (PAYMENTS_ENABLED off); missing on servers before push-be #246. */
+  paymentsEnabled?: boolean
 }
 
 export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
@@ -547,6 +549,8 @@ export type EmailSignupInput = {
   password: string
   accountType: AccountType
   displayName: string
+  /** The 약관·개인정보처리방침 checkbox; push-be #240 requires true for every email signup. */
+  agreeTerms?: boolean
   consentReference?: boolean
 }
 

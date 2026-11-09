@@ -179,6 +179,9 @@ export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어�
 export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
 export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
 export const TOPUP_DONE = '크레딧을 충전했어요'
+export const PAYMENTS_CLOSED = '결제는 아직 준비 중이에요'
+export const planActionError = (error: unknown) =>
+  error instanceof ApiError && error.code === 'PAYMENTS_DISABLED' ? PAYMENTS_CLOSED : PLAN_ACTION_FAILED
 export const planStarted = (name: string) => `${name} 구독을 시작했어요`
 
 export const PLAN_FEATURES = {

@@ -10,6 +10,9 @@ export const showEmployerCheckout = (audience: 'PERSONAL' | 'EMPLOYER' | undefin
 export const canChangeEmployerPlan = (role: 'ADMIN' | 'MEMBER' | undefined, companyMissing: boolean): boolean =>
   role === 'ADMIN' || (companyMissing && role === undefined)
 
+// Servers before push-be #246 send no paymentsEnabled and keep payments open.
+export const paymentsOpen = (billing: { paymentsEnabled?: boolean } | undefined): boolean => billing?.paymentsEnabled !== false
+
 export const topupReady = (amount: number): boolean => Number.isFinite(amount) && amount > 0
 
 export const checkoutTarget = (url: string, currentHref: string) => {

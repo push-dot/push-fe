@@ -23,6 +23,12 @@ describe('usage exhausted copy', () => {
     expect(usageExhausted('ULTRA')).toEqual({ body: ULTRA_BODY, actions: [{ id: 'credits', label: '크레딧 구매', variant: 'primary' }] })
   })
 
+  it('offers no buy button while payments are closed', () => {
+    for (const plan of ['FREE', 'PRO', 'ULTRA'] as const) {
+      expect(usageExhausted(plan, false)).toEqual({ body: '이번 달 사용량을 다 썼어요. 결제는 아직 준비 중이에요.', actions: [] })
+    }
+  })
+
   it('drops 충전, an AI key, and a yearly discount', () => {
     const text = JSON.stringify([usageExhausted('FREE'), usageExhausted('ULTRA'), ERROR_TEXT])
     expect(text).not.toContain('충전')
