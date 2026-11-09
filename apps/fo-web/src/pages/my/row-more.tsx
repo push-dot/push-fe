@@ -12,6 +12,7 @@ const RowMore = ({ label, items }: { label: string; items: MenuItem[] }) => {
         type="button"
         className="hbtn"
         aria-label={`${label} ${MORE_LABEL}`}
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
