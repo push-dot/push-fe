@@ -68,6 +68,10 @@ export const meAcceptOffer = (...args: Parameters<Api['me']['acceptOffer']>) => 
 
 export const meAddLink = (...args: Parameters<Api['me']['addLink']>) => api.me.addLink(...args)
 
+export const meArchiveOffer = (...args: Parameters<Api['me']['archiveOffer']>) => api.me.archiveOffer(...args)
+
+export const meBlockUser = (...args: Parameters<Api['me']['blockUser']>) => api.me.blockUser(...args)
+
 export const meBookmarks = (...args: Parameters<Api['me']['bookmarks']>) => api.me.bookmarks(...args)
 
 export const meBlocks = (...args: Parameters<Api['me']['blocks']>) => api.me.blocks(...args)
@@ -96,9 +100,13 @@ export const meProfile = (...args: Parameters<Api['me']['profile']>) => api.me.p
 
 export const meReadNotifications = (...args: Parameters<Api['me']['readNotifications']>) => api.me.readNotifications(...args)
 
+export const meReportOffer = (...args: Parameters<Api['me']['reportOffer']>) => api.me.reportOffer(...args)
+
 export const meSendOfferMessage = (...args: Parameters<Api['me']['sendOfferMessage']>) => api.me.sendOfferMessage(...args)
 
 export const meSettings = (...args: Parameters<Api['me']['settings']>) => api.me.settings(...args)
+
+export const meUnarchiveOffer = (...args: Parameters<Api['me']['unarchiveOffer']>) => api.me.unarchiveOffer(...args)
 
 export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']>) => api.me.updateConsents(...args)
 
