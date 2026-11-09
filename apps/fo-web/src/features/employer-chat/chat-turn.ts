@@ -87,6 +87,13 @@ const recordOf = (value: unknown): Record<string, unknown> =>
 
 const text = (value: unknown) => (typeof value === 'string' ? value : undefined)
 
+// The row colour goes into a style attribute: only a hex colour passes, anything else falls back to the name's brand colour.
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
+const hexColor = (value: unknown) => {
+  const color = text(value)
+  return color && HEX_COLOR.test(color) ? color : undefined
+}
+
 const moveRows = (args: unknown): MoveRow[] => {
   const rows = recordOf(args).rows
   if (!Array.isArray(rows)) return []
@@ -105,7 +112,7 @@ const moveRows = (args: unknown): MoveRow[] => {
         initial: initial ?? name,
         from,
         to,
-        ...(text(item.color) ? { color: text(item.color) } : {}),
+        ...(hexColor(item.color) ? { color: hexColor(item.color) } : {}),
       },
     ]
   })

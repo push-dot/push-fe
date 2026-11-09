@@ -34,8 +34,8 @@ const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: 
             <div key={label} className="draft-group">
               <span className="sect">{label}</span>
               <ul className="b2 t2">
-                {items.map((item) => (
-                  <li key={item}>{item}</li>
+                {items.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
                 ))}
               </ul>
             </div>

@@ -347,3 +347,26 @@ describe('cancelTurn', () => {
     await expect(cancelTurn(down, 'c1')).rejects.toMatchObject({ status: 500 })
   })
 })
+
+describe('approval row colour', () => {
+  const rowsOf = (color: unknown) => {
+    const turn = applyTurnEvent(EMPTY_TURN, {
+      type: 'approval',
+      id: 'a1',
+      kind: 'TOOL_ACTION',
+      title: '단계를 바꿔요',
+      summary: '단계를 바꿔요',
+      toolName: 'change_applicant_stage',
+      args: { rows: [{ name: '김태윤', initial: '태윤', from: '서류', to: '면접', color }] },
+      options: [{ id: 'approve', label: '실행' }],
+    } as StreamEvent)
+    const card = turn.blocks[0]
+    return card?.kind === 'approval' ? card.rows : []
+  }
+
+  it('keeps a hex colour and drops anything that could break out of the style attribute', () => {
+    expect(rowsOf('#3B5BDB')[0]?.color).toBe('#3B5BDB')
+    expect(rowsOf('red; background:url(x)')[0]?.color).toBeUndefined()
+    expect(rowsOf('url(javascript:x)')[0]?.color).toBeUndefined()
+  })
+})

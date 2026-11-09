@@ -17,8 +17,8 @@ const ChatApprovalCard = ({ approval }: { approval: TurnApproval }) => {
       <span className="h3">{approval.title}</span>
       {approval.rows.length > 0 ? (
         <div className="chat-approval-rows">
-          {approval.rows.map((row) => (
-            <div key={row.name} className="chat-approval-row">
+          {approval.rows.map((row, index) => (
+            <div key={`${row.name}-${index}`} className="chat-approval-row">
               <span
                 className="av chat-av"
                 style={{ background: row.color ?? brandColor(row.name) }}
