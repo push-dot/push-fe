@@ -1,3 +1,5 @@
+import type { EmailSignupInput } from '@push/api-client'
+
 import type { AccountType } from './access'
 import {
   EMAIL_TAKEN_EMPLOYER_COPY,
@@ -22,3 +24,9 @@ export const passwordError = (password: string) => {
   if (password.length < PASSWORD_MIN || password.length > PASSWORD_MAX) return PASSWORD_LENGTH_COPY
   return null
 }
+
+type SignupForm = Omit<EmailSignupInput, 'agreeTerms' | 'consentReference'> & { terms: boolean; consent: boolean }
+
+// push-be records the 약관·처리방침 agreement from agreeTerms, so it is sent only after the checkbox is ticked.
+export const emailSignupInput = ({ terms, consent, ...form }: SignupForm): EmailSignupInput | null =>
+  terms ? { ...form, agreeTerms: true, consentReference: consent } : null

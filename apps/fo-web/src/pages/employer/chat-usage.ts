@@ -1,9 +1,9 @@
 import type { BillingStatus } from '@push/api-client'
-import { useCompanyBilling } from '../../entities/billing'
+import { useCompanyBilling, usePaymentsOpen } from '../../entities/billing'
 import { useEmployerPlan } from '../../entities/company'
 import { PLAN_NAME } from '../../shared/model/employer-plan'
 
-export type ChatUsage = { plan: string; percent: number; full: boolean }
+export type ChatUsage = { plan: string; percent: number; full: boolean; topup: boolean }
 
 export const usedPercent = (billing: Pick<BillingStatus, 'monthlyMicroCredits' | 'spentMicroCredits' | 'balanceMicroCredits'>) => {
   const { monthlyMicroCredits: monthly, spentMicroCredits: spent, balanceMicroCredits: balance } = billing
@@ -14,7 +14,8 @@ export const usedPercent = (billing: Pick<BillingStatus, 'monthlyMicroCredits' |
 export const useChatUsage = (): ChatUsage | null => {
   const { plan } = useEmployerPlan()
   const billing = useCompanyBilling()
+  const topup = usePaymentsOpen()
   if (!billing.data) return null
   const percent = usedPercent(billing.data)
-  return { plan: plan ? `기업 ${PLAN_NAME[plan]}` : '기업', percent, full: percent >= 100 || billing.data.balanceMicroCredits <= 0 }
+  return { plan: plan ? `기업 ${PLAN_NAME[plan]}` : '기업', percent, full: percent >= 100 || billing.data.balanceMicroCredits <= 0, topup }
 }

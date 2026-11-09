@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { radius, selectedRing, spacing, useColors } from '../../../theme'
 import { Badge, Button, GlassButton, Icon, Menu, SettingsGroup, Text } from '@/shared/components'
-import { usePersonalPurchase } from '@/features/billing'
+import { PAYMENTS_CLOSED_MESSAGE, paymentsOpen, usePersonalPurchase } from '@/features/billing'
 import { type Account } from '../api/schemas'
 import { TONES, tintOf, useMySettings, useUpdateSettings } from '@/features/my'
 import { useAccessMode, useChatAccount, useChatDocs, useMe } from '../api/hooks'
@@ -11,7 +11,9 @@ import { useLeaveSidebar } from '../hooks'
 import { ACCESS_MODES, ACCOUNT_REFERENCE_NOTE, ACCOUNT_REFERENCE_TITLE, PLAN_FOOTER, PLAN_HEADER } from '../constants'
 import { accessMenu, currentRole, toneLabel, toneMenu, usagePercent } from '../utils/account-menus'
 import { Appear } from './motion'
+import GroupTitle from './group-title'
 import Mark from './mark'
+import Note from './note'
 import PageModal from './page-modal'
 
 
@@ -30,6 +32,10 @@ export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'accou
       footer={
         !plan ? undefined : account.data!.plan === 'ULTRA' ? (
           <Button label="지금 ULTRA를 쓰고 있어요" disabled />
+        ) : !paymentsOpen(account.data) ? (
+          <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
+            {PAYMENTS_CLOSED_MESSAGE}
+          </Text>
         ) : (
           <Button label="ULTRA로 업그레이드" onPress={() => purchase.buyPlan('ULTRA')} disabled={purchase.pending} />
         )
@@ -83,6 +89,10 @@ const UsageRow = ({ percent }: { percent: number }) => {
   )
 }
 
+// The boards pad a group title 22 above and 8 below, and the page stacks its blocks 4 apart.
+const TITLE = { paddingTop: 22, paddingBottom: spacing[2], paddingHorizontal: spacing[6] } as const
+const GROUP = { paddingHorizontal: spacing[5], marginTop: 14 } as const
+
 const AccountPage = ({ account, onPlan }: { account?: Account; onPlan: () => void }) => {
   const me = useMe()
   const settings = useMySettings(true)
@@ -103,17 +113,24 @@ const AccountPage = ({ account, onPlan }: { account?: Account; onPlan: () => voi
           {me.name}
         </Text>
       </View>
-      <View style={{ paddingHorizontal: spacing[5], paddingTop: 14, gap: 26 }}>
+      <View style={GROUP}>
         <SettingsGroup>
           <AccountRow label={account?.plan ?? ' '} bold onPress={onPlan} />
           {usage == null ? null : <UsageRow percent={usage} />}
         </SettingsGroup>
-        <SettingsGroup title={ACCOUNT_REFERENCE_TITLE} note={ACCOUNT_REFERENCE_NOTE}>
+      </View>
+      <GroupTitle style={TITLE}>{ACCOUNT_REFERENCE_TITLE}</GroupTitle>
+      <View style={{ paddingHorizontal: spacing[5] }}>
+        <SettingsGroup>
           <AccountRow label={currentRole(me.profile) || '희망 직무'} onPress={toMy} />
           <AccountRow label={me.profile?.tenureYears != null ? `${me.profile.tenureYears}년차` : '연차'} onPress={toMy} />
           <AccountRow label={docs.data?.find((d) => !d.aiMade)?.fileName ?? '기본 서류'} onPress={toMy} />
         </SettingsGroup>
-        <SettingsGroup title="대화">
+      </View>
+      <Note style={{ paddingTop: spacing[2] }}>{ACCOUNT_REFERENCE_NOTE}</Note>
+      <GroupTitle style={TITLE}>대화</GroupTitle>
+      <View style={{ paddingHorizontal: spacing[5] }}>
+        <SettingsGroup>
           <Menu stretch accessibilityLabel="말투" actions={toneMenu(tone?.key, (defaultTone) => save.mutate({ defaultTone }))}>
             <View>
               <AccountRow label={toneLabel(tone)} />
@@ -175,6 +192,7 @@ const LINK = { minHeight: 44, justifyContent: 'center' } as const
 const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnType<typeof usePersonalPurchase> }) => {
   const c = useColors()
   const paid = account.plan === 'FREE' ? null : account.plan
+  const open = paymentsOpen(account)
   return (
     <Appear kind="fade">
       <Text v="h2" style={{ paddingTop: spacing[1], paddingHorizontal: spacing[6], paddingBottom: spacing[4] }}>
@@ -186,21 +204,23 @@ const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnTyp
             key={p.key}
             plan={p}
             current={p.key === account.plan}
-            disabled={purchase.pending || p.key === 'FREE' || p.key === account.plan}
+            disabled={!open || purchase.pending || p.key === 'FREE' || p.key === account.plan}
             onPress={() => purchase.buyPlan(p.key as 'PRO' | 'ULTRA')}
           />
         ))}
       </View>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => !purchase.pending && purchase.buyCredits()}
-        style={{ minHeight: 56, marginTop: spacing[3], marginHorizontal: spacing[5], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2, flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}
-      >
-        <Text v="b2" weight="700" style={{ flex: 1 }}>
-          크레딧 구매
-        </Text>
-        <Icon name="chev" size={18} color="t3" />
-      </Pressable>
+      {open ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => !purchase.pending && purchase.buyCredits()}
+          style={{ minHeight: 56, marginTop: spacing[3], marginHorizontal: spacing[5], paddingHorizontal: spacing[4], borderRadius: radius.card, backgroundColor: c.bg2, flexDirection: 'row', alignItems: 'center', gap: spacing[3] }}
+        >
+          <Text v="b2" weight="700" style={{ flex: 1 }}>
+            크레딧 구매
+          </Text>
+          <Icon name="chev" size={18} color="t3" />
+        </Pressable>
+      ) : null}
       <View style={{ paddingTop: spacing[3], paddingHorizontal: spacing[6], gap: spacing[1] }}>
         {PLAN_FOOTER.map((line) => (
           <Text key={line} v="c1" color="t3">
@@ -210,7 +230,7 @@ const PlanPage = ({ account, purchase }: { account: Account; purchase: ReturnTyp
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[5], paddingHorizontal: spacing[6] }}>
         {paid ? <PlanLink label="요금제 낮추기" onPress={() => purchase.manage(paid)} /> : null}
-        <PlanLink label="구매 복원" onPress={() => !purchase.pending && purchase.restore()} />
+        {open ? <PlanLink label="구매 복원" onPress={() => !purchase.pending && purchase.restore()} /> : null}
       </View>
     </Appear>
   )

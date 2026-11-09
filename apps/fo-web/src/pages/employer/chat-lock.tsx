@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { usePaymentsOpen } from '../../entities/billing'
 import { Icon } from '../../shared/ui/icon'
 import { useChatActions } from './chat-actions'
 import { LOCK_ADMIN_ONLY, LOCK_BODY, LOCK_REVIEW_ONLY, LOCK_TITLE, REVIEW_ASK } from './chat-copy'
@@ -6,6 +7,7 @@ import { PLANS_LINK } from './constants'
 
 const ChatLock = () => {
   const { busy, send } = useChatActions()
+  const payable = usePaymentsOpen()
   return (
     <section className="chat-lock" role="status">
       <span className="chat-lock-icon">
@@ -15,9 +17,11 @@ const ChatLock = () => {
         <span className="h3">{LOCK_TITLE}</span>
         <span className="b2 t2">{LOCK_BODY}</span>
         <span className="chat-lock-actions">
-          <Link className="btn pri sm" to="/employer/plans">
-            {PLANS_LINK}
-          </Link>
+          {payable ? (
+            <Link className="btn pri sm" to="/employer/plans">
+              {PLANS_LINK}
+            </Link>
+          ) : null}
           <button type="button" className="btn sec sm" disabled={busy} onClick={() => send(REVIEW_ASK, 'review')}>
             {LOCK_REVIEW_ONLY}
           </button>

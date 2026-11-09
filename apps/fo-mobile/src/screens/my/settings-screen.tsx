@@ -8,6 +8,8 @@ import {
   deleteAccountSession,
   AGENT_NOTE,
   AGENT_TITLE,
+  BLOCKED_COPY,
+  blockedCount,
   LANGS,
   NOTIFY_SUB,
   LOGIN_LABEL,
@@ -17,6 +19,7 @@ import {
   signOutSession,
   TONES,
   useAuthMe,
+  useBlocked,
   useMyProfile,
   useReferenceConsent,
   useSettings,
@@ -85,6 +88,7 @@ const SettingsScreen = () => {
   const consent = useReferenceConsent()
   const { data: me } = useMyProfile()
   const { data: account } = useAuthMe()
+  const blocked = useBlocked()
   const login = LOGIN_LABEL[account?.provider ?? ''] ?? ''
   if (!s) {
     return (
@@ -145,11 +149,7 @@ const SettingsScreen = () => {
         />
         <SettingsRow
           label="테마"
-          right={
-            <View style={{ width: 196 }}>
-              <SegmentedControl items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />
-            </View>
-          }
+          right={<SegmentedControl compact items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />}
         />
       </SettingsGroup>
 
@@ -176,6 +176,11 @@ const SettingsScreen = () => {
           value={CONTACT.find((v) => v.key === s.contactVisibility)?.label ?? ''}
           onPress={() => router.push({ pathname: '/settings/pick', params: { kind: 'contact' } })}
         />
+        <SettingsRow
+          label={BLOCKED_COPY.title}
+          value={blockedCount(blocked.data?.page.total)}
+          onPress={() => router.push('/settings/blocked')}
+        />
       </SettingsGroup>
 
       <SettingsGroup title={AGENT_TITLE} note={AGENT_NOTE}>
@@ -183,10 +188,6 @@ const SettingsScreen = () => {
           label="기본 말투"
           value={TONES.find((t) => t.key === s.defaultTone)?.label ?? ''}
           onPress={() => router.push({ pathname: '/settings/pick', params: { kind: 'tone' } })}
-        />
-        <SettingsRow
-          label="내 자료 읽기 허용"
-          right={sw('allowAiReadMyFiles', '내 자료 읽기 허용')}
         />
         <SettingsRow
           label={REFERENCE_LABEL}

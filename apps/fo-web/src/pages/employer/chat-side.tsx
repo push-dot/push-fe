@@ -58,9 +58,11 @@ const ChatSide = ({
           <span className="t3">{usedText(usage.percent)}</span>
         </span>
         <UsageMeter usage={usage} className="chat-meter" />
-        <Link className="c1 w7" to="/employer/plans">
-          {CHAT_BUY}
-        </Link>
+        {usage.topup ? (
+          <Link className="c1 w7" to="/employer/plans">
+            {CHAT_BUY}
+          </Link>
+        ) : null}
       </div>
     ) : null}
   </aside>

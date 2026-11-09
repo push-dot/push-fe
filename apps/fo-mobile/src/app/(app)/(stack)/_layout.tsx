@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router'
+import { Platform } from 'react-native'
 import { FULL_SHEET_KIND } from '@/features/jobs'
 import { fullSheetOptions, sheetOptions } from '@/shared/navigation'
 import { useColors } from '@/theme'
@@ -19,21 +20,25 @@ const SignedInStack = () => {
       <Stack.Screen name="notifications" />
       <Stack.Screen name="search" />
       <Stack.Screen name="offers/index" />
+      <Stack.Screen name="offers/archived" />
       <Stack.Screen name="offers/[id]" />
       <Stack.Screen name="offers/[id]/messages" />
       <Stack.Screen name="settings/index" />
       <Stack.Screen name="settings/visibility" />
+      <Stack.Screen name="settings/blocked" />
       <Stack.Screen name="docs/[id]" />
       <Stack.Screen name="docs/push/index" options={{ presentation: 'modal' }} />
       <Stack.Screen name="docs/push/[id]" />
+      <Stack.Screen name="docs/push/[id]/rename" options={sheetOptions(c)} />
       <Stack.Screen name="activity/follows" />
       <Stack.Screen name="activity/posts" />
       <Stack.Screen name="activity/applications/[id]" />
+      <Stack.Screen name="sidebar/index" options={{ animation: 'slide_from_left' }} />
       <Stack.Screen name="sidebar/account" options={{ presentation: 'modal' }} />
       <Stack.Screen name="sidebar/docs" options={{ presentation: 'modal' }} />
       <Stack.Screen name="sidebar/links" options={{ presentation: 'modal' }} />
       <Stack.Screen name="sidebar/bookmarks" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="sidebar/conversations" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="sidebar/conversations" options={{ presentation: 'modal', animation: Platform.OS === 'android' ? 'slide_from_bottom' : 'default' }} />
       <Stack.Screen name="sidebar/link-add" options={sheetOptions(c)} />
       <Stack.Screen name="sidebar/rename/[id]" options={sheetOptions(c)} />
       <Stack.Screen name="access-mode" options={sheetOptions(c)} />

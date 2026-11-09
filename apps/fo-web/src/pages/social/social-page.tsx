@@ -11,6 +11,7 @@ import Skeleton from '../../shared/ui/skeleton'
 import { COMPOSER_ACTION, POPULAR_TITLE, POST_PAGE_SIZE, SOCIAL_EMPTY, SOCIAL_ERROR, SOCIAL_RETRY } from './constants'
 import PostCard from './post-card'
 import { usePostPages } from '../../entities/post'
+import { useMyCompany } from '../../entities/company'
 
 
 const SocialPage = () => {
@@ -20,7 +21,9 @@ const SocialPage = () => {
   const listQuery = usePostPages(category, POST_PAGE_SIZE)
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const popular = [...items].sort((a, b) => b.viewCount - a.viewCount).slice(0, 3)
-  const name = session?.user.displayName ?? ''
+  const employer = session?.user.accountType === 'EMPLOYER'
+  const company = useMyCompany({ enabled: employer && Boolean(session?.user.companyId) })
+  const name = (employer ? company.data?.name : null) || session?.user.displayName || ''
   return (
     <main className="page social-layout">
       <nav className="side" aria-label="소셜">
@@ -32,10 +35,10 @@ const SocialPage = () => {
       </nav>
       <div className="feed">
         <button type="button" className="box composer" onClick={() => setComposing(true)}>
-          <span className="av" style={{ background: brandColor(name || 'Push') }}>
-            {initials(name || '나')}
+          <span className={employer ? 'av biz-mark' : 'av'} style={{ background: brandColor(name || 'Push') }}>
+            {employer ? [...name][0] : initials(name || '나')}
           </span>
-          <span className="t3">{composerPrompt(session?.user.accountType === 'EMPLOYER', name)}</span>
+          <span className="t3">{composerPrompt(employer, name)}</span>
           <span className="btn pri sm">{COMPOSER_ACTION}</span>
         </button>
         <div className="post-list">
