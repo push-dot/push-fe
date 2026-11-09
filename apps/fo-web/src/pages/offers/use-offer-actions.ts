@@ -1,4 +1,5 @@
 import type { Offer } from '@push/api-client'
+import { OFFER_MENU_COPY } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 
@@ -12,8 +13,8 @@ import {
   meUnarchiveOffer,
 } from '../../features/respond-to-offer'
 import type { useToast } from '../../shared/ui/toast'
-import { OFFER_ACCEPTED, OFFER_DECLINED, OFFER_MENU_COPY } from './constants'
-import { offerMenu, type OfferBox, type OfferMenuKey, type OfferToast } from './lib'
+import { OFFER_ACCEPTED, OFFER_DECLINED } from './constants'
+import { offerMenu, offerToast, type OfferBox, type OfferMenuKey, type OfferToast } from './lib'
 
 type Show = ReturnType<typeof useToast>['show']
 
@@ -57,7 +58,7 @@ const useOfferActions = (offer: Offer, box: OfferBox, listPath: string, show: Sh
         block: meBlockUser,
         refresh,
         back: () => navigate(listPath),
-        toast,
+        toast: (t) => toast(offerToast(t)),
       })[key](),
   })
   return { accept, decline, send, menu }

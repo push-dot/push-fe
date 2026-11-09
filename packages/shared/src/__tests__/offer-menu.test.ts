@@ -1,11 +1,9 @@
-import type { Offer } from '@push/api-client'
 import { describe, expect, it, vi } from 'vitest'
+import { offerMenu, offerMenuKeys, otherParty, viewerBox, type MenuOffer, type OfferMenuDeps } from '../offer-menu'
 
-import { offerMenu, offerMenuKeys, otherParty, viewerBox, type OfferMenuDeps } from './offer-menu'
-
-const party = (id: string) => ({ id, displayName: id, avatarUrl: null, companyName: null, headline: '' })
-const offer = { id: 'o1', sender: party('them'), recipient: party('me') } as Offer
-const sent = { ...offer, sender: party('me'), recipient: party('them') } as Offer
+const party = (id: string) => ({ id, displayName: id })
+const offer: MenuOffer = { id: 'o1', sender: party('them'), recipient: party('me') }
+const sent: MenuOffer = { ...offer, sender: party('me'), recipient: party('them') }
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 const deps = (over: Partial<OfferMenuDeps> = {}): OfferMenuDeps => ({
@@ -28,7 +26,7 @@ describe('offerMenu', () => {
     expect(d.block).toHaveBeenCalledWith('them')
     expect(d.back).toHaveBeenCalled()
     expect(d.refresh).toHaveBeenCalled()
-    expect(vi.mocked(d.toast).mock.calls[0]![0]).toEqual({ message: 'them 님을 차단했어요' })
+    expect(vi.mocked(d.toast).mock.calls[0]![0]).toEqual({ kind: 'blocked', message: 'them 님을 차단했어요' })
   })
 
   it('blocks the recipient of a sent offer, never yourself', async () => {
@@ -42,9 +40,8 @@ describe('offerMenu', () => {
     await offerMenu(offer, 'received', d).archive()
     expect(d.back).toHaveBeenCalled()
     const toast = vi.mocked(d.toast).mock.calls[0]![0]
-    expect(toast.message).toBe('제안을 보관했어요')
-    expect(toast.action?.label).toBe('되돌리기')
-    toast.action!.onClick()
+    expect(toast).toMatchObject({ kind: 'archived', message: '제안을 보관했어요' })
+    toast.undo!()
     await flush()
     expect(d.unarchive).toHaveBeenCalledWith('o1')
     expect(d.refresh).toHaveBeenCalledTimes(2)
@@ -53,9 +50,9 @@ describe('offerMenu', () => {
   it('shows the error toast and re-reads when the undo fails', async () => {
     const d = deps({ unarchive: vi.fn(async () => Promise.reject(new Error('x'))) })
     await offerMenu(offer, 'received', d).archive()
-    vi.mocked(d.toast).mock.calls[0]![0].action!.onClick()
+    vi.mocked(d.toast).mock.calls[0]![0].undo!()
     await flush()
-    expect(vi.mocked(d.toast).mock.calls[1]![0]).toEqual({ message: '잠시 뒤에 다시 시도해 주세요.', tone: 'err' })
+    expect(vi.mocked(d.toast).mock.calls[1]![0]).toEqual({ kind: 'failed', message: '잠시 뒤에 다시 시도해 주세요.' })
     expect(d.refresh).toHaveBeenCalledTimes(2)
   })
 
@@ -63,7 +60,7 @@ describe('offerMenu', () => {
     const d = deps({ archive: vi.fn(async () => Promise.reject(new Error('x'))) })
     await offerMenu(offer, 'received', d).archive()
     expect(d.back).not.toHaveBeenCalled()
-    expect(vi.mocked(d.toast).mock.calls[0]![0].tone).toBe('err')
+    expect(vi.mocked(d.toast).mock.calls[0]![0].kind).toBe('failed')
     expect(d.refresh).toHaveBeenCalled()
   })
 
@@ -72,7 +69,7 @@ describe('offerMenu', () => {
     await offerMenu(offer, 'received', d).report()
     expect(d.report).toHaveBeenCalledWith('o1')
     expect(d.back).not.toHaveBeenCalled()
-    expect(vi.mocked(d.toast).mock.calls[0]![0]).toEqual({ message: '신고가 접수됐어요' })
+    expect(vi.mocked(d.toast).mock.calls[0]![0]).toEqual({ kind: 'reported', message: '신고가 접수됐어요' })
   })
 
   it('unarchives without leaving the screen or a toast', async () => {

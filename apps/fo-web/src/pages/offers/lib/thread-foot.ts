@@ -1,6 +1,5 @@
 import type { Offer } from '@push/api-client'
-
-import type { OfferBox } from './offer-menu'
+import type { OfferBox } from '@push/shared'
 
 export type ThreadFoot = 'respond' | 'declined' | 'closed' | 'composer' | 'none'
 

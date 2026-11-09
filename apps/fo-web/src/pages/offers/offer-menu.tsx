@@ -1,9 +1,10 @@
+import { OFFER_MENU_COPY, offerBlockConfirm } from '@push/shared'
 import { useState } from 'react'
 
 import { ConfirmDialog } from '../../shared/ui/dialog'
 import { Icon, type IconName } from '../../shared/ui/icon'
 import { Menu, Popover, type MenuItem } from '../../shared/ui/popover'
-import { OFFER_MENU, OFFER_MENU_COPY, offerBlockConfirm } from './constants'
+import { OFFER_MENU } from './constants'
 import type { OfferMenuKey } from './lib'
 
 type OfferMenuProps = {
