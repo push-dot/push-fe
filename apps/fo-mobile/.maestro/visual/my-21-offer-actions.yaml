@@ -101,8 +101,7 @@ tags:
     visible: "제안 보관하기"
     timeout: 10000
 - assertNotVisible: "보관 풀기"
-- tapOn: ".*받음"
-- waitForAnimationToEnd
+- runFlow: _agent-dismiss-menu.yaml
 - tapOn: "뒤로"
 - extendedWaitUntil:
     notVisible: ".*누리클라우드 채용팀.*"
