@@ -7,8 +7,9 @@ import PostingCard from './posting-card'
 import { Icon } from '../../shared/ui/icon'
 import { Popover } from '../../shared/ui/popover'
 import Skeleton from '../../shared/ui/skeleton'
-import StateBlock from '../../shared/ui/state-block'
-import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, FILTERED_EMPTY_HINT, JOB_PAGE_SIZE, JOB_SORTS, LOAD_MORE_MARGIN, LOADING_MORE, SORT_LABEL, sortFrom, type FilterKey, type JobFilters, type JobSort } from './constants'
+import StateBlock, { ErrorState } from '../../shared/ui/state-block'
+import { onFirstScroll } from './first-scroll'
+import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, FILTERED_EMPTY_HINT, JOB_PAGE_SIZE, JOBS_ERROR, JOB_SORTS, LOAD_MORE_MARGIN, LOADING_MORE, SORT_LABEL, sortFrom, type FilterKey, type JobFilters, type JobSort } from './constants'
 import { usePostingCount, usePostingLocations, usePostingPages } from '../../entities/posting'
 
 
@@ -61,6 +62,7 @@ const JobsPage = () => {
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const total = listQuery.data?.pages[0]?.page.total ?? 0
   const filtered = Object.values(filters).some((value) => value.length > 0)
+  const failed = listQuery.isError && items.length === 0
   const write = (next: JobFilters) => {
     const query = new URLSearchParams(params)
     query.set('sort', sort)
@@ -90,9 +92,7 @@ const JobsPage = () => {
     setParams(query)
     setSortOpen(false)
   }
-  useEffect(() => {
-    window.addEventListener('scroll', () => setScrolled(true), { once: true, passive: true })
-  }, [])
+  useEffect(() => onFirstScroll(window, () => setScrolled(true)), [])
   useEffect(() => {
     if (items.length === 0) return
     let live = true
@@ -159,7 +159,7 @@ const JobsPage = () => {
         ))}
       </div>
       {listQuery.isLoading ? <Skeleton rows={6} /> : null}
-      {listQuery.isLoading ? null : (
+      {listQuery.isLoading || failed ? null : (
         <div className="jobs-meta b2">
           <b className="num">{`공고 ${total}개`}</b>
           {items.length > 0 ? (
@@ -184,7 +184,8 @@ const JobsPage = () => {
           ) : null}
         </div>
       )}
-      {!listQuery.isLoading && items.length === 0 ? (
+      {failed ? <ErrorState title={JOBS_ERROR} onRetry={() => void listQuery.refetch()} /> : null}
+      {listQuery.isSuccess && items.length === 0 ? (
         <StateBlock
           icon="doc"
           title={FILTERED_EMPTY}

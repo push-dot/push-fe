@@ -4,6 +4,7 @@ import {
   applyConfirmLabel,
   applyPair,
   defaultPicked,
+  effectivePicks,
   fileBadge,
   profileSub,
   pushDocSub,
@@ -24,6 +25,13 @@ describe('apply sheet', () => {
     expect(defaultPicked([{ id: 'u1', origin: 'UPLOAD' }, { id: 'a1', origin: 'AI' }, { id: 'a2', origin: 'AI' }])).toEqual([PROFILE_ID, 'a1'])
     expect(defaultPicked([{ id: 'u1', origin: 'UPLOAD' }])).toEqual([PROFILE_ID])
     expect(defaultPicked([])).toEqual([PROFILE_ID])
+  })
+
+  it('leaves the profile out of the picks and the count until it has loaded', () => {
+    const sources = [{ id: 'u1', origin: 'UPLOAD' }]
+    expect(effectivePicks(null, sources, false)).toEqual([])
+    expect(effectivePicks([PROFILE_ID, 'u1'], sources, false)).toEqual(['u1'])
+    expect(effectivePicks(null, sources, true)).toEqual([PROFILE_ID])
   })
 
   it('toggles a row without touching the others', () => {

@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { assetUrl } from '../../shared/api/client'
-import { initials } from '../../shared/lib/format'
+import { initials, lengthCount } from '../../shared/lib/format'
 import { Dialog } from '../../shared/ui/dialog'
 import { Icon } from '../../shared/ui/icon'
 import { OFFER_BLOCKED, OFFER_MAX, OFFER_SENT } from './constants'
@@ -50,7 +50,7 @@ const OfferSheet = ({ profile, onClose, onSent }: { profile: OfferTarget; onClos
       </div>
       <label className="offer-box">
         <textarea aria-label="메시지" value={message} maxLength={OFFER_MAX} rows={5} onChange={(event) => setMessage(event.target.value)} />
-        <span className="c1 t3 num">{`${message.length} / ${OFFER_MAX}`}</span>
+        <span className="c1 t3 num">{lengthCount(message.length, OFFER_MAX)}</span>
       </label>
       {blocked ? (
         <div className="offer-blocked b2 t2" role="alert">
@@ -61,7 +61,7 @@ const OfferSheet = ({ profile, onClose, onSent }: { profile: OfferTarget; onClos
         <p className="c1 t3">{`제안은 ${profile.displayName} 님의 알림과 제안함으로 전달돼요.`}</p>
       )}
       {error ? <p className="auth-error">{error}</p> : null}
-      <button type="button" className="btn pri lg block" disabled={!ready || blocked || send.isPending} onClick={() => send.mutate()}>
+      <button type="button" className="btn pri lg block offer-send" disabled={!ready || blocked || send.isPending} onClick={() => send.mutate()}>
         제안 보내기
       </button>
     </Dialog>

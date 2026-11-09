@@ -55,3 +55,4 @@ export const FILTER_FIELD: Record<FilterKey, keyof JobFilters> = {
   location: 'location',
   employment: 'employmentType',
 }
+export const JOBS_ERROR = '공고를 불러오지 못했어요'

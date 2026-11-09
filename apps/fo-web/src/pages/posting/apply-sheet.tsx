@@ -31,7 +31,7 @@ import {
   PUSH_BADGE,
   applyConfirmLabel,
   applyPair,
-  defaultPicked,
+  effectivePicks,
   fileBadge,
   profileSub,
   pushDocSub,
@@ -72,7 +72,7 @@ const ApplySheet = ({
   const profile = useMyProfile()
   const [pickedIds, setPickedIds] = useState<string[] | null>(null)
   const list: ListedSource[] = sources.data ?? []
-  const picked = pickedIds ?? defaultPicked(list)
+  const picked = effectivePicks(pickedIds, list, Boolean(profile.data))
   const apply = useMutation({
     mutationFn: () => {
       const { documentIds, sourceIds } = applySourceIds(list, picked)

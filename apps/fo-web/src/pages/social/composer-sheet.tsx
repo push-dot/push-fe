@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 
 import { COMPOSER_PROMPT, postsCreate, uploadsImage } from '../../features/compose-post'
+import { lengthCount } from '../../shared/lib/format'
 import { Dialog } from '../../shared/ui/dialog'
 import { Icon } from '../../shared/ui/icon'
 import { invalidFields, type ComposeField } from './compose-fields'
@@ -116,7 +117,7 @@ const ComposerSheet = ({ initialCategory, onClose }: { initialCategory: PostCate
         <button type="button" className="hbtn cmp-image" aria-label="사진 추가" onClick={() => fileInput.current?.click()}>
           <Icon name="image" size={20} />
         </button>
-        <span className="c1 t3 num cmp-count">{`${body.length.toLocaleString()}/${POST_BODY_MAX.toLocaleString()}`}</span>
+        <span className="c1 t3 num cmp-count">{lengthCount(body.length, POST_BODY_MAX)}</span>
         <button type="button" className="btn sec" onClick={onClose}>
           {COMPOSE_CANCEL}
         </button>

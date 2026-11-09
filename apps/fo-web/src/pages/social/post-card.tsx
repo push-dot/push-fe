@@ -34,6 +34,7 @@ const PostCard = ({ post }: { post: Post }) => {
       ) : null}
       <span className="c1 t3 post-count">
         <Icon name="chat" size={15} />
+        <span className="sr-only">댓글</span>
         {post.commentCount}
       </span>
     </Link>

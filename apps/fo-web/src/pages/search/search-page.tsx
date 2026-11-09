@@ -6,10 +6,11 @@ import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
 import { Icon } from '../../shared/ui/icon'
 import Skeleton from '../../shared/ui/skeleton'
-import StateBlock from '../../shared/ui/state-block'
+import StateBlock, { ErrorState } from '../../shared/ui/state-block'
 import {
   SEARCH_CLEAR,
   SEARCH_EMPTY_HINT,
+  SEARCH_ERROR,
   SEARCH_LOGIN_COPY,
   SEARCH_PEOPLE_TITLE,
   SEARCH_PREVIEW_PEOPLE,
@@ -63,7 +64,9 @@ const SearchPage = () => {
   }
   const selectType = (next: SearchType) => {
     const query = new URLSearchParams(params)
-    query.set('type', next)
+    // the 공고 tab is the overview; 공고 N개 모두 보기 opens the full posting list
+    if (next === 'postings') query.delete('type')
+    else query.set('type', next)
     setParams(query)
   }
   const returnTo = `/search?${new URLSearchParams({ q, type }).toString()}`
@@ -95,10 +98,14 @@ const SearchPage = () => {
   const postingRows = (postings.data?.data ?? []) as Posting[]
   const peopleRows = (people.data?.data ?? []) as Profile[]
   const postRows = (posts.data?.data ?? []) as Post[]
+  const waited = overview ? [postings, ...(session ? [people] : [])] : [byType[type]]
+  const retry = () => waited.forEach((query) => void query.refetch())
   let body: ReactNode = null
   if (gated) {
     body = loginNote
-  } else if (ready && (overview ? postings.isLoading : byType[type].isLoading)) {
+  } else if (ready && waited.some((query) => query.isError)) {
+    body = <ErrorState title={SEARCH_ERROR} onRetry={retry} />
+  } else if (ready && waited.some((query) => !query.data)) {
     body = <Skeleton rows={5} />
   } else if (ready && overview) {
     const postingTotal = totalOf('postings') ?? postingRows.length

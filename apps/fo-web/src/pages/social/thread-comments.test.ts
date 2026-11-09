@@ -13,6 +13,11 @@ describe('threadComments', () => {
     ])
   })
 
+  it('keeps replies to replies under the top-level comment, in order', () => {
+    const threads = threadComments([comment('c1'), comment('c2', 'c1'), comment('c3', 'c2'), comment('c4', 'c3')])
+    expect(threads.map((thread) => [thread.root.id, thread.replies.map((reply) => reply.id)])).toEqual([['c1', ['c2', 'c3', 'c4']]])
+  })
+
   it('keeps a reply with a missing parent as its own thread', () => {
     expect(threadComments([comment('c2', 'gone')]).map((thread) => thread.root.id)).toEqual(['c2'])
   })

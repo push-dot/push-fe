@@ -8,11 +8,14 @@ import { postsComment } from '../../features/comment-on-post'
 import { assetUrl } from '../../shared/api/client'
 import { compactCount, relativeTime } from '../../shared/lib/format'
 import { Icon } from '../../shared/ui/icon'
+import { LoadFail } from '../../shared/ui/page-state'
 import { Menu, Popover, type MenuItem } from '../../shared/ui/popover'
+import Skeleton from '../../shared/ui/skeleton'
+import { ErrorState } from '../../shared/ui/state-block'
 import Toast, { useToast } from '../../shared/ui/toast'
 import AuthorAvatar from './author-avatar'
 import CommentItem from './comment-item'
-import { COMMENT_MAX, COMMENT_PLACEHOLDER, LINK_COPIED, SOCIAL_TITLE } from './constants'
+import { COMMENT_EMPTY, COMMENT_ERROR, COMMENT_MAX, COMMENT_PLACEHOLDER, LINK_COPIED, SOCIAL_TITLE } from './constants'
 import EmployerBadge from './employer-badge'
 import ReplyRow from './reply-row'
 import { threadComments } from './thread-comments'
@@ -65,8 +68,13 @@ const PostPage = () => {
       return
     }
   }
-  if (postQuery.isError) return <main className="page"><p className="b2 t3">글을 불러오지 못했어요.</p></main>
-  if (!post) return <main className="page" aria-busy="true" />
+  if (postQuery.isError && !post) return <LoadFail onRetry={() => void postQuery.refetch()} />
+  if (!post)
+    return (
+      <main className="page post-page">
+        <Skeleton rows={5} />
+      </main>
+    )
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
   const items: MenuItem[] = [
     { label: '공유하기', icon: 'share', onSelect: () => void share() },
@@ -110,8 +118,10 @@ const PostPage = () => {
         ) : null}
       </article>
       <section className="post-comments">
-        <h2 className="h3">{`댓글 ${comments.length}`}</h2>
-        {comments.length === 0 ? <p className="b2 t3">아직 댓글이 없어요.</p> : null}
+        <h2 className="h3">{`댓글 ${commentsQuery.data ? comments.length : post.commentCount}`}</h2>
+        {commentsQuery.isLoading ? <Skeleton rows={2} /> : null}
+        {commentsQuery.isError && comments.length === 0 ? <ErrorState title={COMMENT_ERROR} onRetry={() => void commentsQuery.refetch()} /> : null}
+        {commentsQuery.isSuccess && comments.length === 0 ? <p className="b2 t3">{COMMENT_EMPTY}</p> : null}
         <div className="comment-list">
           {threadComments(comments).map(({ root, replies }) => (
             <div key={root.id}>

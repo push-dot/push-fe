@@ -56,4 +56,8 @@ export const defaultPicked = (sources: Pick<ListedSource, 'id' | 'origin'>[]) =>
   return firstPush ? [PROFILE_ID, firstPush.id] : [PROFILE_ID]
 }
 
+// the profile row only counts once the profile has loaded; without it an empty pick would send an empty application
+export const effectivePicks = (picked: string[] | null, sources: Pick<ListedSource, 'id' | 'origin'>[], hasProfile: boolean) =>
+  (picked ?? defaultPicked(sources)).filter((id) => hasProfile || id !== PROFILE_ID)
+
 export const togglePick = (picked: string[], id: string) => (picked.includes(id) ? picked.filter((item) => item !== id) : [...picked, id])

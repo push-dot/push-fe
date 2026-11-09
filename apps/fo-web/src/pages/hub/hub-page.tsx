@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 
 import { Icon } from '../../shared/ui/icon'
 import Skeleton from '../../shared/ui/skeleton'
-import StateBlock from '../../shared/ui/state-block'
-import { HUB_PAGE_SIZE } from './constants'
+import StateBlock, { ErrorState } from '../../shared/ui/state-block'
+import { HUB_ERROR, HUB_PAGE_SIZE } from './constants'
 import HubFilterSheet, { countApplied, type HubDraft } from './hub-filter-sheet'
 import ProfileCard from './profile-card'
 import { useProfilePages } from '../../entities/profile'
@@ -90,9 +90,9 @@ const HubPage = () => {
             <ProfileCard key={profile.userId} profile={profile} />
           ))}
         </div>
-        {listQuery.isError ? <p className="b2 t3">프로필을 불러오지 못했어요.</p> : null}
+        {listQuery.isError && items.length === 0 ? <ErrorState title={HUB_ERROR} onRetry={() => void listQuery.refetch()} /> : null}
         {listQuery.isLoading ? <Skeleton rows={5} /> : null}
-        {!listQuery.isLoading && items.length === 0 ? (
+        {listQuery.isSuccess && items.length === 0 ? (
           <StateBlock
             icon="people"
             title="조건에 맞는 프로필이 없어요."

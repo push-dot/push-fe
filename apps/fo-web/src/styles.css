@@ -493,6 +493,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .apply-item .ck.on{background:var(--ac);box-shadow:none}
 .browser .apply-av{width:34px;height:34px;font-size:11px}
 .browser .apply-copy{flex:1;min-width:0;display:flex;flex-direction:column}
+.browser .apply-copy .c1{word-break:keep-all}
 .browser .apply-hint{padding:12px 14px;border-radius:12px;background:var(--bg2)}
 .browser .apply-error{display:flex;gap:10px;padding:14px 16px;border-radius:14px;background:var(--redSoft)}
 .browser .apply-error>span{display:flex;flex-direction:column;gap:2px}
@@ -613,6 +614,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .sheet .offer-box textarea:focus-visible{box-shadow:none}
 .offer-blocked{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:14px;background:var(--fill)}
 .offer-blocked svg{color:var(--t3)}
+.browser .sheet .btn.offer-send{font-size:16px}
 @media (max-width:1024px){
 .browser:has(.profile-cta){padding-bottom:calc(81px + env(safe-area-inset-bottom))}
 .browser:has(.profile-cta) .toast{bottom:calc(93px + env(safe-area-inset-bottom))}
@@ -722,8 +724,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 @media (max-width:1024px){
 .browser .social-side,.browser .social-layout .popular{position:static}
 .social-cats{flex-direction:row;flex-wrap:wrap;gap:8px}
-.browser .social-cats .side-link{width:auto;height:36px;padding:0 14px;border-radius:18px;background:var(--fill);font-size:14px;line-height:20px;justify-content:center}
-.browser .social-cats .side-link.on{background:var(--acSoft)}
+.browser .social-cats .side-link{width:auto;height:36px;padding:0 14px;border-radius:18px;background:var(--fill);color:var(--t1);font-size:14px;line-height:20px;justify-content:center}
+.browser .social-cats .side-link.on{background:var(--acSoft);color:var(--acText)}
 }
 @media (max-width:600px){
 .post-thumbs,.post-images{grid-template-columns:minmax(0,1fr)}
@@ -890,7 +892,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .ft .w7{color:var(--t2)}
 
 .browser .field{gap:8px;color:var(--t2);font-size:14px;line-height:22px;font-weight:700}
-.browser .field :is(input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea),.browser .sheet :is(input:not([type=checkbox]):not([type=radio]),textarea),.browser .search-form input{min-height:52px;border:0;border-radius:14px;background:var(--fill);color:var(--t1);padding:0 16px;font:inherit;font-size:16px;line-height:24px;font-weight:400}
+.browser .field :where(input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea),.browser .sheet :where(input:not([type=checkbox]):not([type=radio]),textarea),.browser .search-form input{min-height:52px;border:0;border-radius:14px;background:var(--fill);color:var(--t1);padding:0 16px;font:inherit;font-size:16px;line-height:24px;font-weight:400}
 .browser .field textarea,.browser .sheet textarea{padding:14px 16px;min-height:132px}
 .browser :is(.field,.sheet,.search-form) :is(input,select,textarea):focus-visible{outline:none;box-shadow:inset 0 0 0 1.5px var(--ac)}
 .browser :is(input,textarea)::placeholder{color:var(--t4)}

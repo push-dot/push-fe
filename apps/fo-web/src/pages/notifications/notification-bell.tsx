@@ -3,12 +3,13 @@ import { useState } from 'react'
 import { useNotifications } from '../../entities/notification'
 import { Icon } from '../../shared/ui/icon'
 import { Popover } from '../../shared/ui/popover'
-import StateBlock from '../../shared/ui/state-block'
-import { NOTIFICATION_EMPTY, NOTIFICATION_NOTE, NOTIFICATION_READ_ALL, NOTIFICATION_TITLE } from './constants'
+import Skeleton from '../../shared/ui/skeleton'
+import StateBlock, { ErrorState } from '../../shared/ui/state-block'
+import { NOTIFICATION_EMPTY, NOTIFICATION_ERROR, NOTIFICATION_NOTE, NOTIFICATION_READ_ALL, NOTIFICATION_TITLE } from './constants'
 import NoticeRow from './notice-row'
 import { useNoticeActions } from './use-notice-actions'
 
-const NotificationPanel = ({ onClose }: { onClose: () => void }) => {
+export const NotificationPanel = ({ onClose }: { onClose: () => void }) => {
   const query = useNotifications()
   const { read, open } = useNoticeActions(onClose)
   const items = query.data?.data ?? []
@@ -23,15 +24,16 @@ const NotificationPanel = ({ onClose }: { onClose: () => void }) => {
           </button>
         ) : null}
       </div>
+      {query.isLoading ? <Skeleton rows={3} /> : null}
+      {query.isError && items.length === 0 ? <ErrorState title={NOTIFICATION_ERROR} onRetry={() => void query.refetch()} /> : null}
+      {query.isSuccess && items.length === 0 ? <StateBlock icon="bell" title={NOTIFICATION_EMPTY} /> : null}
       {items.length > 0 ? (
         <div className="notif-list">
           {items.map((notice) => (
             <NoticeRow key={notice.id} notice={notice} onOpen={(next) => void open(next)} />
           ))}
         </div>
-      ) : (
-        <StateBlock icon="bell" title={NOTIFICATION_EMPTY} />
-      )}
+      ) : null}
       <p className="c1 t3 notif-foot">{NOTIFICATION_NOTE}</p>
     </>
   )
