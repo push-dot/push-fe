@@ -1,9 +1,10 @@
+import { brandColor } from '@push/shared'
 import { Image } from 'expo-image'
 import { View } from 'react-native'
 import { Text } from '@/shared/components'
 import { onAccent } from '../../../theme'
 import { assetUrl } from '@/shared/utility'
-import { givenName, avatarTint } from '../utils'
+import { givenName } from '../utils'
 
 const Avatar = ({
   name,
@@ -26,7 +27,7 @@ const Avatar = ({
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: avatarTint(name),
+        backgroundColor: brandColor(name),
         alignItems: 'center',
         justifyContent: 'center',
       }}

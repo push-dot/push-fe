@@ -1,5 +1,4 @@
 import type { Settings, Tone } from '@push/api-client'
-import { tile } from '@push/design-system'
 import { TOAST_MS } from '@/shared/components/constants'
 import type { CalendarEventType } from './types'
 
@@ -22,9 +21,6 @@ export const EVENT_TYPES: { key: CalendarEventType; label: string }[] = [
   { key: 'COFFEE_CHAT', label: '커피챗' },
   { key: 'CUSTOM', label: '직접 추가' },
 ]
-
-// Person avatars only (avatarTint).
-export const TINTS = [tile.indigo, tile.cyan, tile.violet, tile.orange, tile.green, tile.navy, tile.rose, tile.blueDeep]
 
 // shortcut: static list; replace with a skills endpoint if push-be adds one.
 export const SKILL_CATALOG = [
