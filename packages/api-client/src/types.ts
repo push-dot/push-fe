@@ -100,6 +100,10 @@ export type Offer = {
   posting: OfferPosting | null
   status: OfferStatus
   readAt: string | null
+  /** When the recipient accepted or declined; null while open. */
+  respondedAt?: string | null
+  /** POST me/offers/:id/messages would succeed: ACCEPTED and the other party has not blocked the caller. */
+  canSend?: boolean
   archivedAt?: string | null
   createdAt: string
 }
@@ -197,6 +201,9 @@ export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> &
   createdAt: string | null
   origin: string
   kind?: string | null
+  /** AI documents only: the application's company and posting title; null for uploads. */
+  company?: string | null
+  postingTitle?: string | null
 }
 export type ProfileDraft = {
   displayName: string
