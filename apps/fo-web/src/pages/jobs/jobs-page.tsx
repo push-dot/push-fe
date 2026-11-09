@@ -67,7 +67,7 @@ const JobsPage = () => {
     setList('careerYears', next.careerYears)
     setList('location', next.location)
     setList('employmentType', next.employmentType)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const open = (key: FilterKey) => {
     setDraft(filters)
