@@ -419,7 +419,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .jobs-sort-pop .mi{justify-content:space-between}
 .browser .jobs-sort-pop .mi.on{background:var(--fill)}
 .browser .jobs-sort-pop .mi svg{color:var(--acText)}
-.browser .pop.jobs-pop{top:calc(100% + 32px);left:0;width:300px}
+.browser .pop.jobs-pop{top:calc(100% + 32px);left:-18px;width:300px}
 .browser .jobs-pop-title{padding:6px 8px 8px}
 .browser .jobs-pop-search{margin:0 4px 6px}
 .browser .jobs-opt{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 8px;text-align:left}
@@ -428,6 +428,9 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .jobs-ck.on{background:var(--ac);box-shadow:none}
 .browser .jobs-pop-actions{display:flex;gap:8px;padding:10px 4px 4px}
 .browser .jobs-pop-actions .btn.pri{flex:1}
+.browser .jobs-page .state-tile{margin-bottom:10px}
+.browser .jobs-page .state-actions{margin-top:16px}
+@media (max-width:1024px){.browser .pop.jobs-pop{left:-10px}.browser .pop.jobs-sort-pop{right:8px}}
 .browser .jobs-loader{display:flex;align-items:center;justify-content:center;gap:8px;padding-top:8px}
 .browser .jobs-spin{width:16px;height:16px;border-radius:8px;border:2px solid var(--fill2);border-top-color:var(--t3);animation:auth-spin .8s linear infinite}
 .browser .sheet-scrim{align-items:flex-start;padding:160px 16px 24px;background:rgba(10,12,16,.42);overflow:auto}
