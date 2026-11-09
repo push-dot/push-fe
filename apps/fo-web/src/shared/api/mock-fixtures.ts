@@ -538,8 +538,8 @@ export const RECEIVED_OFFERS: Offer[] = [
 ]
 
 export const BLOCK_SEEDS = [
-  { user: party('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'), blockedAt: '2026-11-07T01:00:00.000Z' },
-  { user: party('u-minjae-h', '한민재', null, ''), blockedAt: '2026-10-03T01:00:00.000Z' },
+  { user: party('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'), createdAt: '2026-11-07T01:00:00.000Z' },
+  { user: party('u-minjae-h', '한민재', null, ''), createdAt: '2026-10-03T01:00:00.000Z' },
 ]
 
 export const CANT_SEND_REPLY = { id: 'om-3', body: '좋아요, 수요일 4시에 뵐게요', createdAt: '2026-10-21T05:53:00.000Z' }

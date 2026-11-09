@@ -57,6 +57,7 @@ const CalendarAddDialog = ({ day, onClose, onAdded, onFailed }: Props) => {
             <input type="date" aria-label={CALENDAR_COPY.dateLabel} required value={date} onChange={(event) => setDate(event.target.value)} />
           </label>
           <label className="cal-field">
+            <Icon name="clock" size={20} className="t3" />
             <span className="num">{time ? timeChip(time) : ''}</span>
             <input type="time" aria-label={CALENDAR_COPY.timeLabel} required value={time} onChange={(event) => setTime(event.target.value)} />
           </label>

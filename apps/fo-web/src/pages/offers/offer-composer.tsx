@@ -20,7 +20,7 @@ const OfferComposer = ({ sending, onSend }: OfferComposerProps) => {
     <form className="msg-composer" onSubmit={submit}>
       <input className="b1" aria-label={OFFER_MESSAGE} placeholder={OFFER_MESSAGE_PLACEHOLDER} value={draft} onChange={(event) => setDraft(event.target.value)} />
       <button type="submit" className="hbtn msg-send" aria-label={OFFER_SEND} disabled={!body || sending}>
-        <Icon name="send" size={20} width={2.2} />
+        <Icon name="up" size={20} width={2.4} />
       </button>
     </form>
   )

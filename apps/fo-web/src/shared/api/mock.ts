@@ -7,6 +7,7 @@ import type {
   Consent,
   Conversation,
   EmploymentType,
+  GoogleIntegration,
   JobCategory,
   Message,
   Offer,
@@ -893,7 +894,16 @@ const asCareers = (value: unknown): Profile['careers'] | null => {
   })
 }
 
-type Block = { user: Offer['sender']; blockedAt: string }
+const googleIntegration = (connected: boolean): GoogleIntegration => ({
+  enabled: true,
+  connected,
+  scopes: [],
+  gmailStatus: 'DISCONNECTED',
+  calendarStatus: connected ? 'CONNECTED' : 'DISCONNECTED',
+  lastSyncedAt: null,
+})
+
+type Block = { user: Offer['sender']; createdAt: string }
 
 let blocks: Block[] | null = null
 
@@ -1118,7 +1128,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const data = calendarEvents.filter((event) => (!from || event.startsAt >= from) && (!to || event.startsAt < to))
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
-  if (method === 'GET' && tail === '/calendar/google') return json(200, { data: { connected: true } })
+  if (method === 'GET' && tail === '/integrations/google') return json(200, { data: googleIntegration(true) })
   if (method === 'POST' && tail === '/calendar/events') {
     const payload = await readJson(input, init)
     const now = new Date().toISOString()
@@ -1157,7 +1167,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const known = [...receivedOffers.map((item) => item.sender), ...sentOffers.map((item) => item.recipient)].find((item) => item.id === userId)
     const profile = hubProfiles.find((item) => item.userId === userId)
     const user = known ?? { id: userId, displayName: profile?.displayName ?? userId, avatarUrl: null, companyName: null, headline: profile?.headline ?? '' }
-    if (!blockList().some((item) => item.user.id === userId)) blocks = [{ user, blockedAt: new Date().toISOString() }, ...blockList()]
+    if (!blockList().some((item) => item.user.id === userId)) blocks = [{ user, createdAt: new Date().toISOString() }, ...blockList()]
     return new Response(null, { status: 204 })
   }
   const blockMatch = tail.match(/^\/me\/blocks\/([^/]+)$/)
@@ -1941,7 +1951,7 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
       const data = ledgerEntries()
       return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
     }
-    if (mockSwitch('calendar-google-off') && tail === '/calendar/google') return json(200, { data: { connected: false } })
+    if (mockSwitch('calendar-google-off') && tail === '/integrations/google') return json(200, { data: googleIntegration(false) })
   }
   if (method === 'POST') {
     if (/^\/postings\/[^/]+\/apply$/.test(tail)) {

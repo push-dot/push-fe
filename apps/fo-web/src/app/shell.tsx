@@ -55,6 +55,8 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   const tabs = !auth && tabBarShown(location.pathname)
+  // The WebInbox boards fill the viewport with the inbox card and draw no footer.
+  const footer = !auth && !chatScreen && !location.pathname.startsWith('/offers')
   const shellClass = ['shell', 'browser', auth ? 'auth-shell' : '', chatScreen ? 'chat-screen' : '', tabs ? 'has-tabs' : ''].filter(Boolean).join(' ')
   return (
     <div className={shellClass}>
@@ -165,7 +167,7 @@ const Shell = () => {
       <div className="shell-main">
         <Outlet />
       </div>
-      {auth || chatScreen ? null : (
+      {!footer ? null : (
         <footer className="ft">
           <div className="wrap">
             <span className="wordmark">
