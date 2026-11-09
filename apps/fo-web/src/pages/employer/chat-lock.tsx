@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom'
 import { usePaymentsOpen } from '../../entities/billing'
+import { useMyCompany } from '../../entities/company'
 import { Icon } from '../../shared/ui/icon'
 import { useChatActions } from './chat-actions'
-import { lockBody, LOCK_ADMIN_ONLY, LOCK_REVIEW_ONLY, LOCK_TITLE, REVIEW_ASK } from './chat-copy'
+import { lockAdminNote, lockBody, LOCK_REVIEW_ONLY, LOCK_TITLE, REVIEW_ASK } from './chat-copy'
 import { PLANS_LINK } from './constants'
 
 /** 403 PLAN_REQUIRED (Pro) for an interview ask below Pro. */
 const ChatLock = ({ plan }: { plan: string | null }) => {
   const { busy, send } = useChatActions()
   const payable = usePaymentsOpen()
+  const admin = useMyCompany().data?.role === 'ADMIN'
+  const note = lockAdminNote(admin, payable)
   return (
     <section className="chat-lock" role="status">
       <span className="chat-lock-icon">
@@ -32,7 +35,7 @@ const ChatLock = ({ plan }: { plan: string | null }) => {
             {LOCK_REVIEW_ONLY}
           </button>
         </span>
-        <span className="c1 t3">{LOCK_ADMIN_ONLY}</span>
+        {note ? <span className="c1 t3">{note}</span> : null}
       </span>
     </section>
   )

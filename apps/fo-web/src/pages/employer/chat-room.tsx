@@ -350,7 +350,13 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
   const thread = id && !live && !messages.data
   return (
     <ChatActionsContext.Provider value={actions}>
-      <ChatApp screen={screen} activeId={id} title={id ? title : undefined} dock={dock}>
+      <ChatApp
+        screen={screen}
+        activeId={id}
+        title={id ? title : undefined}
+        dock={dock}
+        busy={sending}
+      >
         {!id && items.length === 0 ? (
           file ? (
             <ChatSay text={PDF_NOTE} soft />

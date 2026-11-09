@@ -66,5 +66,15 @@ export const reviewExample = (name: string | undefined) => (name ? `${name} 님 
 export const POSTING_OPEN_KICKER = '공고 · 게시 중'
 export const POSTING_CLOSED_KICKER = '공고 · 마감'
 export const referenceKicker = (company: string) => `참고 공고 · ${company}`
-export const applicantKicker = (posting: string) => (posting ? `지원자 · ${posting}` : '지원자')
+// The board names the posting without its stack suffix: "결제 승인 백엔드 엔지니어 (Kotlin)" reads as the first part.
+export const applicantKicker = (posting: string) => {
+  const name = posting.replace(/\s*\([^)]*\)\s*$/, '')
+  return name ? `지원자 · ${name}` : '지원자'
+}
+/** The chip names the person and what was attached; a stored title that already says so is kept. */
+export const applicantChipTitle = (name: string, title?: string) =>
+  title?.includes(' · ') ? title : `${name} · 이력서 · 포트폴리오`
+/** Only a member who cannot pay is told who can, and only while payments are open. */
+export const lockAdminNote = (admin: boolean, payable: boolean) =>
+  payable && !admin ? LOCK_ADMIN_ONLY : null
 export const quoted = (text: string) => `“${text}”`

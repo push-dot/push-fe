@@ -3,6 +3,7 @@ import type { Attachment } from '../../features/employer-chat'
 import { useEmployerPosting, useMyPostings } from '../../entities/posting'
 import { useChatActions } from './chat-actions'
 import {
+  applicantChipTitle,
   applicantKicker,
   POSTING_CLOSED_KICKER,
   POSTING_OPEN_KICKER,
@@ -63,7 +64,7 @@ const ApplicantChip = ({ id, title }: { id: string; title?: string }) => {
       mark={name.slice(-2)}
       color={brandColor(name)}
       kicker={applicantKicker(person?.postingTitle ?? '')}
-      title={title || name}
+      title={applicantChipTitle(name, title)}
     />
   )
 }

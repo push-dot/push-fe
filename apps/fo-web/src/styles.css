@@ -533,7 +533,6 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .me-chip.biz .biz-mark{width:36px;height:36px;font-size:16px}
 .browser .biz-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:148px}
 .browser .biz-id span{display:block;max-width:148px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.browser.chat-screen:not(.auth-shell) .shell-main{display:flex;flex-direction:column;max-width:none;padding:0}
 .browser .chat-app-main{flex:1;display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 69px)}
 .browser .chat-side{display:flex;flex-direction:column;gap:4px;padding:20px 14px;border-right:1px solid var(--line);min-width:0;background:var(--bg)}
 .browser .chat-side .chat-new{width:100%;margin-bottom:14px}
@@ -871,3 +870,10 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .sheet::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:var(--fill2)}
 .browser .sheet-actions>.btn{flex:1}
 }
+/* agent: the page is one viewport tall, only the message area scrolls and the composer stays at the bottom (board thread) */
+.browser.chat-screen{display:flex;flex-direction:column;height:100vh;height:100dvh;box-sizing:border-box;overflow:hidden}
+.browser.chat-screen>.shell-main{flex:1;min-height:0;display:flex;flex-direction:column;max-width:none;padding:0}
+.browser .chat-app-main{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+.browser .chat-side{min-height:0;overflow-y:auto}
+.browser .chat-thread{min-height:0;overflow:hidden}
+.browser .chat-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain}
