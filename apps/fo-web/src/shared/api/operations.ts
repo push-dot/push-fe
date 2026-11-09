@@ -15,6 +15,10 @@ export const authEmailVerify = (...args: Parameters<Api['auth']['emailVerify']>)
 
 export const authExchange = (...args: Parameters<Api['auth']['exchange']>) => api.auth.exchange(...args)
 
+export const authPhoneSend = (...args: Parameters<Api['auth']['phoneSend']>) => api.auth.phoneSend(...args)
+
+export const authPhoneVerify = (...args: Parameters<Api['auth']['phoneVerify']>) => api.auth.phoneVerify(...args)
+
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
 
 export const authRequestPasswordReset = (...args: Parameters<Api['auth']['requestPasswordReset']>) => api.auth.requestPasswordReset(...args)
@@ -32,6 +36,8 @@ export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) =
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
+
+export const companiesInvitePreview = (...args: Parameters<Api['companies']['invitePreview']>) => api.companies.invitePreview(...args)
 
 export const companiesMe = (...args: Parameters<Api['companies']['me']>) => api.companies.me(...args)
 
@@ -93,6 +99,8 @@ export const meSendOfferMessage = (...args: Parameters<Api['me']['sendOfferMessa
 export const meSettings = (...args: Parameters<Api['me']['settings']>) => api.me.settings(...args)
 
 export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']>) => api.me.updateConsents(...args)
+
+export const meUpdateTerms = (...args: Parameters<Api['me']['updateTerms']>) => api.me.updateTerms(...args)
 
 export const meUpdateProfile = (...args: Parameters<Api['me']['updateProfile']>) => api.me.updateProfile(...args)
 

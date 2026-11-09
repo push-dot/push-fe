@@ -422,6 +422,7 @@ export type GenerateDocumentInput = { expectedRevision: number; evidenceIds?: st
 
 export type AccountType = 'PERSONAL' | 'EMPLOYER'
 export type CompanyRole = 'ADMIN' | 'MEMBER'
+export type InvitePreview = { companyName: string; inviterName: string; inviterRole: CompanyRole; email: string; expiresAt: string }
 export type EmployerPlan = 'BASIC' | 'PRO' | 'ULTRA'
 export type BillingAudience = 'PERSONAL' | 'EMPLOYER'
 export type BillingSource = 'STRIPE' | 'APP_STORE' | 'GOOGLE_PLAY'

@@ -6,7 +6,7 @@ import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
-  Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
+  InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
@@ -17,7 +17,7 @@ const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
 export const createApi = (c: Client) => ({
   auth: {
-    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
+    start: (provider: 'google' | 'github' | 'apple', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
       unwrap(c.get<DataEnvelope<{ authorizationUrl: string; state: string }>>(`auth/${provider}/start`, {
         query: { ...query, codeChallengeMethod: 'S256' },
       })),
@@ -270,6 +270,7 @@ export const createApi = (c: Client) => ({
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    invitePreview: (token: string) => unwrap(c.get<DataEnvelope<InvitePreview>>(`companies/invites/${token}`)),
     acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>

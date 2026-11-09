@@ -38,6 +38,6 @@ export const EMPLOYER_STAGE_ACTIONS = [
 
 export const PASSWORD_MIN = 8
 export const PASSWORD_MAX = 128
-export const PASSWORD_LENGTH_COPY = '비밀번호는 8자 이상이어야 해요'
+export const PASSWORD_LENGTH_COPY = '비밀번호가 너무 짧아요. 8자 이상, 영문과 숫자를 섞어 주세요.'
 export const EMAIL_TAKEN_PERSONAL_COPY = '이 이메일은 개인 계정으로 가입되어 있어요'
-export const EMAIL_TAKEN_EMPLOYER_COPY = '이 이메일은 기업 계정으로 가입되어 있어요'
+export const EMAIL_TAKEN_EMPLOYER_COPY = '이 이메일은 기업 계정으로 가입되어 있어요. 기업 계정은 다른 이메일로 만들어 주세요.'

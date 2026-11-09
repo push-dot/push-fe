@@ -7,9 +7,10 @@ import {
   PASSWORD_MIN,
 } from './constants'
 
-export type LoginProvider = 'google' | 'github' | 'email'
+export type OAuthProvider = 'google' | 'apple' | 'github'
+export type LoginProvider = OAuthProvider | 'phone' | 'email'
 
-const PERSONAL_PROVIDERS: LoginProvider[] = ['google', 'github', 'email']
+const PERSONAL_PROVIDERS: LoginProvider[] = ['google', 'apple', 'github', 'phone']
 const EMPLOYER_PROVIDERS: LoginProvider[] = ['google', 'email']
 
 export const loginProviders = (accountType: AccountType): LoginProvider[] =>
