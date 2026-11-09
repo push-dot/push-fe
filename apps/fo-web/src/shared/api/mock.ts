@@ -147,6 +147,7 @@ export const MOCK_SWITCHES = [
   'login-social-fail',
   'notif-empty',
   'offer-blocked',
+  'payments-disabled',
   'phone-sent',
   'posts-empty',
   'profile-save-fail',
@@ -1702,13 +1703,13 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
 
 const creditBalances = new Map<string, number>()
 
-const MONTHLY_MICRO: Record<string, number> = { BASIC: 3000000, PRO: 15000000, ULTRA: 30000000 }
+const MONTHLY_MICRO: Record<string, number> = { BASIC: 18_000_000, PRO: 90_000_000, ULTRA: 180_000_000 }
 
 const seededBalance = () => {
   const kind = mockPersona()
-  if (kind === 'employer') return 1880000
-  if (kind === 'employer-pro') return 5160000
-  if (kind === 'employer-ultra') return 25790000
+  if (kind === 'employer') return 11_280_000
+  if (kind === 'employer-pro') return 30_960_000
+  if (kind === 'employer-ultra') return 154_740_000
   return 0
 }
 
@@ -1718,7 +1719,9 @@ const asEmployerPlan = (value: unknown): 'BASIC' | 'PRO' | 'ULTRA' | null =>
 const seatLimitFor = (plan: 'BASIC' | 'PRO' | 'ULTRA') =>
   plan === 'ULTRA' ? SEAT_LIMIT_ULTRA : plan === 'PRO' ? SEAT_LIMIT_PRO : SEAT_LIMIT_NONE
 
-const PACK_MICRO = 1_500_000
+const PACK_MICRO = 9_000_000
+
+const PAYMENT_TAILS = new Set(['/billing/checkout', '/billing/topup', '/billing/iap/verify'])
 
 const MAX_PACKS = 20
 
@@ -1771,8 +1774,7 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
       }
       return json(200, { data: { url: localPlansUrl('checkout', planId) } })
     }
-    // shortcut: also takes the old { amount } until api-client sends { packs } (push-be answers it with 400), then drop it.
-    const packs = 'packs' in payload ? payload.packs : 1
+    const packs = payload.packs
     if (typeof packs !== 'number' || !Number.isInteger(packs) || packs < 1 || packs > MAX_PACKS) {
       return failure(400, 'VALIDATION_ERROR', '구매 수량을 확인해 주세요', { field: 'packs' })
     }
@@ -1786,18 +1788,19 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
 const PHONE_CODE_TTL_S = 180
 
 const phoneSent = (cooldownSeconds: number, ttlSeconds = PHONE_CODE_TTL_S) =>
-  json(200, { data: { cooldownSeconds, expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString() } })
+  json(202, { data: { cooldownSeconds, expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString() } })
 
 const handlePhone = (method: string, tail: string) => {
   if (method !== 'POST') return null
   if (tail === '/auth/phone/send') {
-    if (mockSwitch('login-phone-taken')) return failure(409, 'PHONE_TAKEN', '이미 가입된 번호예요', { provider: 'google' })
     if (mockSwitch('login-code-wrong')) return phoneSent(151)
     if (mockSwitch('login-code-expired')) return phoneSent(0, 0)
     if (mockSwitch('phone-sent')) return phoneSent(168)
     return phoneSent(PHONE_CODE_TTL_S)
   }
   if (tail === '/auth/phone/verify') {
+    // push-be sends the code either way and refuses at verify; the board shows this right after send (mock2-requests.md T-auth).
+    if (mockSwitch('login-phone-taken')) return failure(409, 'PHONE_ALREADY_REGISTERED', '이미 가입된 번호예요', { existingProviders: ['google'] })
     if (mockSwitch('login-code-wrong')) return failure(400, 'PHONE_CODE_INVALID', '인증번호가 맞지 않아요', { attemptsLeft: 4 })
     if (mockSwitch('login-code-expired')) return failure(400, 'PHONE_CODE_EXPIRED', '인증번호가 만료됐어요')
     if (mockSwitch('login-code-limit')) {
@@ -1885,12 +1888,13 @@ const LEDGER = [
 
 const PLAN_NAMES = { BASIC: 'Basic', PRO: 'Pro', ULTRA: 'Ultra' } as const
 
-const ledgerEntries = () =>
-  LEDGER.flatMap(([day, plan, amountUsd]) => {
+// Newest first like push-be; balanceAfter is the running company total, so it is filled from the oldest row up.
+const ledgerEntries = () => {
+  const rows = LEDGER.flatMap(([day, plan, amountUsd]) => {
     const createdAt = `${day}T00:00:00.000Z`
-    const credits = MONTHLY_MICRO[plan] ?? 0
     return [
       {
+        id: `ledger-${day}-payment`,
         type: 'PURCHASE',
         createdAt,
         amountMicroCredits: 0,
@@ -1901,10 +1905,11 @@ const ledgerEntries = () =>
         receiptUrl: `https://pay.stripe.com/receipts/mock-${day}`,
       },
       {
+        id: `ledger-${day}-grant`,
         type: 'PURCHASE',
         createdAt,
-        amountMicroCredits: credits,
-        balanceAfter: credits,
+        amountMicroCredits: MONTHLY_MICRO[plan] ?? 0,
+        balanceAfter: 0,
         referenceId: `monthly:${day.slice(0, 7)}:${plan}`,
         description: null,
         amountUsd: null,
@@ -1912,6 +1917,13 @@ const ledgerEntries = () =>
       },
     ]
   })
+  let total = 0
+  for (const row of [...rows].reverse()) {
+    total += row.amountMicroCredits
+    row.balanceAfter = total
+  }
+  return rows
+}
 
 const switchResponse = async (method: string, tail: string, url: URL, input: RequestInfo | URL, init?: RequestInit) => {
   if (switches.size === 0 || isWebView()) return null
@@ -1939,6 +1951,8 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
       return failure(403, 'BLOCKED', '지금은 이 사람에게 제안을 보낼 수 없어요')
     }
     if (mockSwitch('docs-uploading') && tail === '/sources') await hold()
+    // push-be answers this before any role or body check while PAYMENTS_ENABLED is off.
+    if (mockSwitch('payments-disabled') && PAYMENT_TAILS.has(tail)) return failure(503, 'PAYMENTS_DISABLED', '지금은 결제할 수 없어요')
     if (mockSwitch('inbox-cant-send') && /^\/me\/offers\/[^/]+\/messages$/.test(tail)) {
       return failure(403, 'OFFER_CLOSED', '이 대화에는 더 이상 메시지를 보낼 수 없어요')
     }

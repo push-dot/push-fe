@@ -299,24 +299,24 @@ describe('employer billing mock', () => {
     expect(basic.data).toEqual({
       plan: 'BASIC',
       audience: 'EMPLOYER',
-      balanceMicroCredits: 1880000,
+      balanceMicroCredits: 11_280_000,
       subscriptionStatus: 'active',
       periodEndsAt: '2026-11-01T00:00:00.000Z',
       reservedMicroCredits: 0,
-      monthlyMicroCredits: 3000000,
-      spentMicroCredits: 1120000,
+      monthlyMicroCredits: 18_000_000,
+      spentMicroCredits: 6_720_000,
     })
 
     setMockPersona('employer-pro')
     const pro = await read<{ data: { plan: string; balanceMicroCredits: number; audience: string } }>(await billing())
     expect(pro.data.plan).toBe('PRO')
     expect(pro.data.audience).toBe('EMPLOYER')
-    expect(pro.data.balanceMicroCredits).toBe(5160000)
+    expect(pro.data.balanceMicroCredits).toBe(30_960_000)
 
     setMockPersona('employer-ultra')
     const ultra = await read<{ data: { plan: string; balanceMicroCredits: number } }>(await billing())
     expect(ultra.data.plan).toBe('ULTRA')
-    expect(ultra.data.balanceMicroCredits).toBe(25790000)
+    expect(ultra.data.balanceMicroCredits).toBe(154_740_000)
 
     setMockPersona('employer-new')
     const fresh = await read<{ data: { plan: null; audience: string; balanceMicroCredits: number } }>(await billing())
@@ -347,8 +347,9 @@ describe('employer billing mock', () => {
     expect(topupUrl.pathname).toBe('/employer/plans')
     expect(topupUrl.searchParams.get('topup')).toBe('2')
     expect((await postJson('http://localhost/api/v1/billing/topup', { packs: 21 })).status).toBe(400)
+    expect((await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 })).status).toBe(400)
     const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
-    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(3000000)
+    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(18_000_000)
     expect(afterTopup.data.plan).toBe('PRO')
     await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' })
 

@@ -36,9 +36,11 @@ describe('canChangeEmployerPlan', () => {
 })
 
 describe('topupReady', () => {
-  it('accepts only a positive finite amount', () => {
+  it('accepts a whole number of packs from 1 to 20', () => {
     expect(topupReady(1)).toBe(true)
-    expect(topupReady(0.5)).toBe(true)
+    expect(topupReady(20)).toBe(true)
+    expect(topupReady(21)).toBe(false)
+    expect(topupReady(0.5)).toBe(false)
     expect(topupReady(0)).toBe(false)
     expect(topupReady(-1)).toBe(false)
     expect(topupReady(Number.NaN)).toBe(false)

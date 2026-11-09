@@ -211,8 +211,8 @@ describe('employer credits and seats', () => {
       setMockPersona(persona)
       return (await get<{ data: { monthlyMicroCredits: number; spentMicroCredits: number; balanceMicroCredits: number } }>('/billing')).data
     }
-    expect(await spent('employer-pro')).toMatchObject({ monthlyMicroCredits: 15_000_000, balanceMicroCredits: 5_160_000, spentMicroCredits: 9_840_000 })
-    expect(await spent('employer-ultra')).toMatchObject({ monthlyMicroCredits: 30_000_000, spentMicroCredits: 4_210_000 })
+    expect(await spent('employer-pro')).toMatchObject({ monthlyMicroCredits: 90_000_000, balanceMicroCredits: 30_960_000, spentMicroCredits: 59_040_000 })
+    expect(await spent('employer-ultra')).toMatchObject({ monthlyMicroCredits: 180_000_000, spentMicroCredits: 25_260_000 })
     expect(await spent('personal')).toMatchObject({ monthlyMicroCredits: 0, spentMicroCredits: 0 })
   })
 
@@ -237,6 +237,6 @@ describe('employer credits and seats', () => {
     setMockPersona('employer-pro')
     expect((await post('/billing/checkout', { planId: 'ULTRA' })).status).toBe(200)
     const billing = await get<{ data: { monthlyMicroCredits: number; spentMicroCredits: number; balanceMicroCredits: number } }>('/billing')
-    expect(billing.data).toMatchObject({ monthlyMicroCredits: 30_000_000, spentMicroCredits: 9_840_000, balanceMicroCredits: 20_160_000 })
+    expect(billing.data).toMatchObject({ monthlyMicroCredits: 180_000_000, spentMicroCredits: 59_040_000, balanceMicroCredits: 120_960_000 })
   })
 })

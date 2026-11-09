@@ -165,7 +165,7 @@ export const createApi = (c: Client) => ({
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
     companyStatus: () => unwrap(c.get<DataEnvelope<CompanyBillingStatus>>('billing')),
     checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
-    topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
+    topup: (packs: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { packs } })),
     portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
     ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
     verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),

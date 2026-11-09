@@ -34,8 +34,8 @@ afterEach(() => {
 })
 
 describe('ms= switches', () => {
-  it('knows the 52 switches of mock-needs-v2 and ignores unknown names', () => {
-    expect(MOCK_SWITCHES).toHaveLength(52)
+  it('knows the 52 switches of mock-needs-v2 plus payments-disabled and ignores unknown names', () => {
+    expect(MOCK_SWITCHES).toHaveLength(53)
     using('personal', 'nope,docs-empty')
   })
 
@@ -73,7 +73,11 @@ describe('ms= switches', () => {
     using(null, 'login-code-limit')
     expect((await call('/auth/phone/verify', 'POST', { phone: '01012345678', code: '000000' })).status).toBe(429)
     using(null, 'login-phone-taken')
-    expect(await errorCode('/auth/phone/send', 'POST', { phone: '01012345678' })).toMatchObject({ code: 'PHONE_TAKEN', details: { provider: 'google' } })
+    expect((await call('/auth/phone/send', 'POST', { phone: '01012345678' })).status).toBe(202)
+    expect(await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482913' })).toMatchObject({
+      code: 'PHONE_ALREADY_REGISTERED',
+      details: { existingProviders: ['google'] },
+    })
     using(null, 'signup-consent')
     expect((await read<{ data: { created: boolean } }>('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482913' })).body.data.created).toBe(true)
   })
@@ -158,9 +162,26 @@ describe('ms= switches', () => {
     setMockPersona(null)
   })
 
+  it('refuses payments with 503 PAYMENTS_DISABLED like push-be before launch', async () => {
+    using('employer', 'payments-disabled')
+    for (const [path, body] of [
+      ['/billing/checkout', { planId: 'PRO' }],
+      ['/billing/topup', { packs: 1 }],
+      ['/billing/iap/verify', {}],
+    ] as const) {
+      const failed = await call(path, 'POST', body)
+      expect(failed.status).toBe(503)
+      expect((await failed.json()).error.code).toBe('PAYMENTS_DISABLED')
+    }
+    expect((await call('/billing')).status).toBe(200)
+    setMockPersona(null)
+  })
+
   it('lists four ledger rows for billing-ledger', async () => {
     using('employer-pro', 'billing-ledger')
-    const ledger = await read<{ data: { description: string | null; amountUsd: number | null; receiptUrl: string | null }[] }>('/billing/ledger')
+    const ledger = await read<{
+      data: { id: string; amountMicroCredits: number; balanceAfter: number; description: string | null; amountUsd: number | null; receiptUrl: string | null }[]
+    }>('/billing/ledger')
     const payments = ledger.body.data.filter((item) => item.amountUsd != null)
     expect(payments.map((item) => `${item.description} ${item.amountUsd}`)).toEqual([
       'Pro 월 구독 100',
@@ -170,6 +191,12 @@ describe('ms= switches', () => {
     ])
     expect(payments.every((item) => item.receiptUrl?.startsWith('https://'))).toBe(true)
     expect(ledger.body.data.filter((item) => item.amountUsd == null).every((item) => item.description === null)).toBe(true)
+    expect(new Set(ledger.body.data.map((item) => item.id)).size).toBe(ledger.body.data.length)
+    // each balanceAfter is the one below it plus this row, newest first (Basic 3,000 + Pro 15,000 × 3 credits)
+    ledger.body.data.forEach((item, index) => {
+      expect(item.balanceAfter).toBe((ledger.body.data[index + 1]?.balanceAfter ?? 0) + item.amountMicroCredits)
+    })
+    expect(ledger.body.data[0]!.balanceAfter).toBe(18_000_000 + 3 * 90_000_000)
     setMockPersona(null)
   })
 
