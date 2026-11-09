@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -22,7 +23,7 @@ import {
 } from '@/features/my'
 import { ApiError } from '@push/api-client'
 import { Glass, Icon, Skeleton, Text, TopBar } from '@/shared/components'
-import { inputReset } from '@/shared/components/text-field-metrics'
+import { inputReset, iosLineBox } from '@/shared/components/text-field-metrics'
 import { fontFor, onAccent, radius, spacing, type, useColors } from '@/theme'
 
 type Box = 'received' | 'sent'
@@ -73,6 +74,7 @@ const EMPTY_LIFT = 120
 const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
   const c = useColors()
   const insets = useSafeAreaInsets()
+  const { fontScale } = useWindowDimensions()
   const [text, setText] = useState('')
   const [composerH, setComposerH] = useState(0)
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null)
@@ -255,9 +257,11 @@ const OfferMessagesScreen = ({ id, box }: { id: string; box: Box }) => {
               {
                 flex: 1,
                 ...inputReset,
+                ...iosLineBox(type.b1.lineHeight, type.b1.fontSize, fontScale),
                 minHeight: 40,
                 maxHeight: 120,
-                paddingVertical: spacing[2],
+                paddingTop: spacing[2],
+                paddingBottom: spacing[2],
                 paddingHorizontal: spacing[1],
                 fontSize: type.b1.fontSize,
                 lineHeight: type.b1.lineHeight,
