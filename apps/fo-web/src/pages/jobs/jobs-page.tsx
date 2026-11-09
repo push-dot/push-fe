@@ -1,11 +1,14 @@
 import { CAREER_YEARS, chipLabel, EMPLOYMENT_TYPES, JOB_CATEGORIES, withDeadlineWindow, type CareerYears, type EmploymentType, type JobCategory } from '@push/api-client'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import FilterSheet from './filter-sheet'
+import FilterPopover from './filter-popover'
 import PostingCard from './posting-card'
+import { Icon } from '../../shared/ui/icon'
+import { Popover } from '../../shared/ui/popover'
 import Skeleton from '../../shared/ui/skeleton'
-import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, JOB_PAGE_SIZE, JOB_SORTS, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
+import StateBlock from '../../shared/ui/state-block'
+import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, FILTERED_EMPTY_HINT, JOB_PAGE_SIZE, JOB_SORTS, LOADING_MORE, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
 import { usePostingCount, usePostingLocations, usePostingPages } from '../../entities/posting'
 
 
@@ -38,6 +41,9 @@ const JobsPage = () => {
     [params],
   )
   const [facet, setFacet] = useState<FilterKey | null>(null)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const loader = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState<JobFilters>(filters)
   const listQuery = usePostingPages(['postings', params.toString()], withDeadlineWindow({ ...filters, sort, limit: JOB_PAGE_SIZE }))
   const countQuery = usePostingCount(['posting-count', sort, draft], withDeadlineWindow({ ...draft, sort, limit: 1 }), facet !== null)
@@ -52,6 +58,7 @@ const JobsPage = () => {
     }),
     facet === 'location',
   )
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = listQuery
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const total = listQuery.data?.pages[0]?.page.total ?? 0
   const filtered = Object.values(filters).some((value) => value.length > 0)
@@ -70,64 +77,123 @@ const JobsPage = () => {
     setParams(query)
   }
   const open = (key: FilterKey) => {
+    setSortOpen(false)
+    if (facet === key) {
+      setFacet(null)
+      return
+    }
     setDraft(filters)
     setFacet(key)
   }
+  const pickSort = (next: JobSort) => {
+    const query = new URLSearchParams(params)
+    query.set('sort', next)
+    setParams(query)
+    setSortOpen(false)
+  }
+  useEffect(() => {
+    window.addEventListener('scroll', () => setScrolled(true), { once: true, passive: true })
+  }, [])
+  useEffect(() => {
+    const node = loader.current
+    const fits = document.documentElement.scrollHeight <= window.innerHeight
+    if (!node || !hasNextPage || !(scrolled || fits)) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting && !isFetchingNextPage) void fetchNextPage()
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, items.length, scrolled])
   return (
-    <main className="page">
+    <main className="page jobs-page">
       <header className="head">
         <h1 className="h1">채용공고</h1>
-        {listQuery.isLoading ? null : (
-          <div className="jobs-meta">
-            <span className="b2 w7">{`공고 ${total}개`}</span>
-            <span className="c1 t3">{SORT_LABEL[sort]}</span>
-          </div>
-        )}
       </header>
-      <div className="chips">
+      <div className="chips jobs-chips">
         <button type="button" className="chip" aria-pressed={!filtered} onClick={() => write(EMPTY_FILTERS)}>
           전체
         </button>
         {FILTER_CHIPS.map((chip) => (
-          <button key={chip.key} type="button" className="chip" aria-pressed={labelsFor(chip.key, filters).length > 0} onClick={() => open(chip.key)}>
-            {chipLabel(chip.label, labelsFor(chip.key, filters))}
-          </button>
+          <span key={chip.key} className="jobs-facet">
+            <button
+              type="button"
+              className={facet === chip.key ? 'chip open' : 'chip'}
+              aria-pressed={labelsFor(chip.key, filters).length > 0}
+              aria-haspopup="dialog"
+              aria-expanded={facet === chip.key}
+              onClick={() => open(chip.key)}
+            >
+              {chipLabel(chip.label, labelsFor(chip.key, filters))}
+              <Icon name="down" size={14} width={2.4} />
+            </button>
+            {facet === chip.key ? (
+              <FilterPopover
+                facet={chip.key}
+                draft={draft}
+                locations={locationQuery.data ?? []}
+                total={countQuery.data?.page.total ?? 0}
+                onChange={setDraft}
+                onClose={() => setFacet(null)}
+                onApply={() => {
+                  write(draft)
+                  setFacet(null)
+                }}
+              />
+            ) : null}
+          </span>
         ))}
       </div>
       {listQuery.isLoading ? <Skeleton rows={6} /> : null}
-      {!listQuery.isLoading && filtered && items.length === 0 ? (
-        <div className="empty-block">
-          <p className="b1 w7">{FILTERED_EMPTY}</p>
-          <button type="button" className="btn sec" onClick={() => write(EMPTY_FILTERS)}>
-            {FILTER_RESET}
-          </button>
+      {listQuery.isLoading ? null : (
+        <div className="jobs-meta b2">
+          <b className="num">{`공고 ${total}개`}</b>
+          {items.length > 0 ? (
+            <span className="jobs-sort">
+              <button type="button" className="t2 w6 jobs-sort-btn" aria-haspopup="menu" aria-expanded={sortOpen} onClick={() => setSortOpen((value) => !value)}>
+                {SORT_LABEL[sort]}
+                <Icon name="down" size={14} width={2.4} />
+              </button>
+              {sortOpen ? (
+                <Popover label="정렬" onClose={() => setSortOpen(false)} className="jobs-sort-pop">
+                  <div className="menu" role="menu">
+                    {JOB_SORTS.map((key) => (
+                      <button key={key} type="button" role="menuitemradio" aria-checked={key === sort} className={key === sort ? 'mi w7 on' : 'mi'} onClick={() => pickSort(key)}>
+                        <span>{SORT_LABEL[key]}</span>
+                        {key === sort ? <Icon name="check" size={18} width={2.4} /> : null}
+                      </button>
+                    ))}
+                  </div>
+                </Popover>
+              ) : null}
+            </span>
+          ) : null}
         </div>
+      )}
+      {!listQuery.isLoading && items.length === 0 ? (
+        <StateBlock
+          icon="doc"
+          title={FILTERED_EMPTY}
+          description={FILTERED_EMPTY_HINT}
+          action={
+            filtered ? (
+              <button type="button" className="btn sec sm" onClick={() => write(EMPTY_FILTERS)}>
+                <Icon name="retry" size={16} width={2.2} />
+                {FILTER_RESET}
+              </button>
+            ) : undefined
+          }
+        />
       ) : null}
       <div className="job-grid">
-        {listQuery.isLoading
-          ? null
-          : items.map((posting) => (
-              <PostingCard key={posting.id} posting={posting} />
-            ))}
+        {items.map((posting) => (
+          <PostingCard key={posting.id} posting={posting} />
+        ))}
       </div>
-      {listQuery.hasNextPage ? (
-        <button type="button" className="more" disabled={listQuery.isFetchingNextPage} onClick={() => void listQuery.fetchNextPage()}>
-          더 보기
-        </button>
-      ) : null}
-      {facet ? (
-        <FilterSheet
-          facet={facet}
-          draft={draft}
-          locations={locationQuery.data ?? []}
-          total={countQuery.data?.page.total ?? 0}
-          onChange={setDraft}
-          onClose={() => setFacet(null)}
-          onApply={() => {
-            write(draft)
-            setFacet(null)
-          }}
-        />
+      {hasNextPage ? (
+        <div ref={loader} className="jobs-loader c1 t3">
+          <span className="jobs-spin" />
+          {LOADING_MORE}
+        </div>
       ) : null}
     </main>
   )

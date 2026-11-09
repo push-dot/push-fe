@@ -6,18 +6,21 @@ export type JobSort = (typeof JOB_SORTS)[number]
 
 export const SORT_LABEL: Record<JobSort, string> = {
   latest: '최신순',
-  deadline: '마감 임박',
-  popular: '많이 본',
+  deadline: '마감 임박순',
+  popular: '인기순',
 }
 
-export const SKILL_OPTIONS = ['Kotlin', 'Java', 'Spring', 'React', 'TypeScript', 'Python', 'AWS'] as const
+export const SKILL_OPTIONS = ['Kotlin', 'Java', 'Spring Boot', 'Go', 'React', 'Python'] as const
 
-export const JOB_PAGE_SIZE = 4
-export const FILTERED_EMPTY = '조건에 맞는 공고가 없어요.\n필터를 줄여 보세요.'
+export const JOB_PAGE_SIZE = 12
+export const FILTERED_EMPTY = '조건에 맞는 공고가 없어요.'
+export const FILTERED_EMPTY_HINT = '필터를 줄여 보세요.'
+export const LOADING_MORE = '공고를 더 불러오는 중'
+export const SKILL_SEARCH = '기술 스택 검색'
 export const FILTER_RESET = '필터 초기화'
 
 export const FILTER_CHIPS = [
-  { key: 'category', label: '직군' },
+  { key: 'category', label: '직무' },
   { key: 'skills', label: '기술 스택' },
   { key: 'career', label: '경력' },
   { key: 'location', label: '지역' },
@@ -40,4 +43,12 @@ export const EMPTY_FILTERS: JobFilters = {
   careerYears: [],
   location: [],
   employmentType: [],
+}
+
+export const FILTER_FIELD: Record<FilterKey, keyof JobFilters> = {
+  category: 'category',
+  skills: 'skills',
+  career: 'careerYears',
+  location: 'location',
+  employment: 'employmentType',
 }
