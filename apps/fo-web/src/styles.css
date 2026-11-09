@@ -470,6 +470,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .notice{border-radius:0}
 .browser .settings .box{display:flex;flex-direction:column}
 .browser .settings .switch-row,.browser .settings .settings-row,.browser .settings .field{min-height:64px;padding:14px 18px;box-shadow:inset 0 -1px 0 var(--line)}
+.browser .settings .seg{height:40px}
 .browser .settings .field{align-items:stretch}
 .browser .switch-row input[type="checkbox"]{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--fill2);position:relative;flex:none}
 .browser .switch-row input[type="checkbox"]::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18)}
@@ -478,9 +479,9 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .inbox-list,.browser .inbox-thread{display:flex;flex-direction:column;min-width:0;min-height:640px}
 .browser .inbox-list{border-right:1px solid var(--line)}
 .browser .inbox-thread{padding:24px}
-.browser .seg{display:grid;grid-template-columns:1fr 1fr;height:44px;padding:4px;border-radius:22px;background:var(--fill)}
+.browser .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;height:44px;padding:4px;border-radius:22px;background:var(--fill)}
 .browser .seg button{padding:0 18px;border-radius:18px;font-size:15px;line-height:22px;font-weight:600;color:var(--t3)}
-.browser .seg button[aria-selected="true"]{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .seg button[aria-selected="true"],.browser .seg button[aria-pressed="true"]{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
 .browser .bubble{display:flex;flex-direction:column;gap:4px;max-width:80%}
 .browser .bubble.mine{margin-left:auto;align-items:flex-end}
 .browser .bubble p{margin:0;padding:12px 14px;border-radius:16px;background:var(--fill)}
@@ -517,6 +518,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .source-list .check>span{min-width:0}
 .browser .source-list .check .b2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .browser .badge.biz{background:var(--t1);color:var(--bg);gap:3px}
+:root[data-theme=dark] .browser .badge.biz{color:#16191D}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .browser .badge.biz{color:#16191D}}
 .browser .biz-mark{border-radius:12px}
 .browser .agent-card{padding:20px;display:flex;flex-direction:column;gap:10px}
 .browser .agent-card-title{display:flex;align-items:center;gap:6px}
