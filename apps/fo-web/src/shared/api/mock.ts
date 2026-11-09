@@ -6,6 +6,7 @@ import type {
   CompanyMember,
   Consent,
   Conversation,
+  ConversationTurn,
   EmploymentType,
   JobCategory,
   Message,
@@ -1475,6 +1476,8 @@ type ChatBucket = {
   conversations: Conversation[]
   messages: Map<string, Message[]>
   postingIds: Map<string, string>
+  // Finished jobs, oldest first: push-be stores every streamed job and GET .../turns replays them.
+  turns: Map<string, ConversationTurn[]>
 }
 
 const chatBuckets = new Map<string, ChatBucket>()
@@ -1482,7 +1485,7 @@ let chatSeq = 0
 let messageSeq = 0
 
 const seededChat = (): ChatBucket => {
-  const bucket: ChatBucket = { conversations: [], messages: new Map(), postingIds: new Map() }
+  const bucket: ChatBucket = { conversations: [], messages: new Map(), postingIds: new Map(), turns: new Map() }
   if (!companyMe()) return bucket
   for (const seed of CHAT_SEEDS) {
     bucket.conversations.push({
@@ -1627,23 +1630,37 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     const bucket = chatBucket()
     const conversation = bucket.conversations.find((item) => item.id === id)
     if (!conversation) return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
-    const remember = (events: StreamEvent[]) => () => {
+    const remember = (events: StreamEvent[], userMessageId: string | null) => () => {
       const text = tokensOf(events)
-      if (text) bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), chatMessage(id, 'ASSISTANT', text)])
+      const reply = text ? chatMessage(id, 'ASSISTANT', text) : null
+      if (reply) bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), reply])
       conversation.updatedAt = new Date().toISOString()
+      bucket.turns.set(id, [
+        ...(bucket.turns.get(id) ?? []),
+        {
+          jobId: `mock-job-${bucket.turns.get(id)?.length ?? 0}`,
+          status: 'DONE',
+          createdAt: conversation.updatedAt,
+          userMessageId,
+          assistantMessageId: reply?.id ?? null,
+          answer: null,
+          events: events.filter((event): event is ConversationTurn['events'][number] => event.type !== 'status' && event.type !== 'done'),
+        },
+      ])
     }
     if (streamPath[2]) {
       const next = pendingFollow.get(id)
       if (method !== 'GET' || !next) return new Response(null, { status: 204 })
       pendingFollow.delete(id)
-      return eventStream(CHAT_SCRIPTS[next].events, false, remember(CHAT_SCRIPTS[next].events))
+      return eventStream(CHAT_SCRIPTS[next].events, false, remember(CHAT_SCRIPTS[next].events, null))
     }
     if (method !== 'POST') return null
     const payload = await readJson(input, init)
     if (mockSwitch('chat-limit')) return creditsSpent()
     if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
     const text = String(payload.text ?? '')
-    bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), chatMessage(id, 'USER', text)])
+    const question = chatMessage(id, 'USER', text)
+    bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), question])
     const live = LIVE_SCRIPTS.find(([name]) => mockSwitch(name))
     const script = live ? CHAT_SCRIPTS[live[1]] : null
     if (script?.title) conversation.title = script.title
@@ -1653,7 +1670,7 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
       { type: 'token', text: reply },
       { type: 'done', operation: null },
     ]
-    return eventStream(events, script?.stall ?? false, remember(events))
+    return eventStream(events, script?.stall ?? false, remember(events, question.id))
   }
   const cancelPath = tail.match(/^\/conversations\/([^/]+)\/stream\/cancel$/)
   if (cancelPath && method === 'POST') {
@@ -1672,7 +1689,10 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
   }
   const turnsPath = tail.match(/^\/conversations\/([^/]+)\/turns$/)
   if (turnsPath && method === 'GET') {
-    const data = mockSwitch('chat-turns') ? (CHAT_TURNS[decodeURIComponent(turnsPath[1] ?? '')] ?? []) : []
+    const turnsId = decodeURIComponent(turnsPath[1] ?? '')
+    const seeded = mockSwitch('chat-turns') ? (CHAT_TURNS[turnsId] ?? []) : []
+    // Newest first, as push-be pages them.
+    const data = [...(chatBucket().turns.get(turnsId) ?? [])].reverse().concat(seeded)
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && tail === '/conversations') {

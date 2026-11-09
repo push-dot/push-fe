@@ -223,6 +223,19 @@ describe('ms= switches', () => {
     setMockPersona(null)
   })
 
+  it('stores a streamed job so GET turns replays it, newest first, like push-be', async () => {
+    using('employer-pro', 'chat-approve')
+    const created = await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })
+    const id = created.body.data.id
+    const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '서류 통과한 사람 면접 단계로 옮겨 줘', accessMode: 'AUTO' })
+    for await (const event of readEvents<{ type: string }>(response.body!)) void event
+    const turns = await read<{ data: { userMessageId: string | null; assistantMessageId: string | null; events: { type: string }[] }[] }>(`/conversations/${id}/turns`)
+    expect(turns.body.data).toHaveLength(1)
+    expect(turns.body.data[0]!.userMessageId).not.toBeNull()
+    expect(turns.body.data[0]!.events.map((event) => event.type)).toEqual(['tool', 'tool', 'token', 'approval'])
+    setMockPersona(null)
+  })
+
   it('spends the month for chat-limit', async () => {
     using('employer-ultra', 'chat-limit')
     expect((await read<{ data: { balanceMicroCredits: number } }>('/billing')).body.data.balanceMicroCredits).toBe(0)
