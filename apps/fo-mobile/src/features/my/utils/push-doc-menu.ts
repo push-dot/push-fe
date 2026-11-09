@@ -3,8 +3,8 @@ import type { MenuAction, MenuSection } from '@/shared/components/menu-action'
 export type PushDocAction = 'posting' | 'export' | 'rename' | 'delete'
 
 const ITEMS: Record<PushDocAction, Omit<MenuAction, 'key' | 'onPress'>> = {
-  posting: { label: '공고 보기', systemImage: 'safari', icon: 'ext' },
-  export: { label: 'PDF로 내보내기', systemImage: 'arrow.down.doc', icon: 'download-pdf' },
+  posting: { label: '공고 보기', systemImage: 'arrow.up.right.square', icon: 'ext' },
+  export: { label: 'PDF로 내보내기', systemImage: 'arrow.down.to.line', icon: 'download-pdf' },
   rename: { label: '이름 바꾸기', systemImage: 'pencil', icon: 'edit' },
   delete: { label: '삭제하기', systemImage: 'trash', icon: 'delete', destructive: true },
 }
