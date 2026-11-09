@@ -5,7 +5,7 @@ import { brandColor } from '@push/shared'
 import { describe, expect, it } from 'vitest'
 import { createSessionStore } from '../auth/session'
 import { applyMockSearch } from '../../app/mock-bootstrap'
-import { MOCK_BRAND_COLORS } from './mock-brand'
+import { MOCK_BRAND_COLORS } from '@push/shared/mock-brand'
 
 const store = () => createSessionStore({ getItem: () => null, setItem: () => {}, removeItem: () => {} })
 
