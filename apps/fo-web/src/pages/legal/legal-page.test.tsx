@@ -1,0 +1,52 @@
+import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router-dom'
+import { LEGAL_DOCUMENTS, LEGAL_VERSION, legalEffectiveLabel } from '@push/shared'
+import { describe, expect, it } from 'vitest'
+import LegalPage from './legal-page'
+
+const html = (kind: 'terms' | 'privacy') =>
+  renderToStaticMarkup(
+    <MemoryRouter>
+      <LegalPage kind={kind} />
+    </MemoryRouter>,
+  )
+
+const CASES = [
+  { kind: 'terms', doc: LEGAL_DOCUMENTS.termsOfService },
+  { kind: 'privacy', doc: LEGAL_DOCUMENTS.privacyPolicy },
+] as const
+
+const esc = (text: string) =>
+  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+
+describe.each(CASES)('LegalPage $kind', ({ kind, doc }) => {
+  const markup = html(kind)
+
+  it('shows the same document the app shows, not a placeholder', () => {
+    expect(markup).not.toMatch(/\[조문 내용\]|\[자리 표시\]|원문이 확정되면/)
+    expect(markup).toContain(esc(doc.title))
+    expect(markup).toContain(legalEffectiveLabel(doc))
+    expect(doc.version).toBe(LEGAL_VERSION)
+  })
+
+  it('lists every article heading of the shared document in order', () => {
+    const headings = [...markup.matchAll(/<h2[^>]*>(.*?)<\/h2>/g)].map((match) => match[1])
+    expect(headings).toEqual(doc.articles.map((article) => esc(article.heading)))
+  })
+
+  it('renders every table as a real table', () => {
+    const tables = doc.articles
+      .flatMap((article) => article.blocks)
+      .concat(doc.intro)
+      .filter((block) => block.kind === 'table').length
+    expect(markup.match(/<table/g)?.length ?? 0).toBe(tables)
+  })
+})
+
+describe('LegalPage operator facts', () => {
+  it('names the privacy officer and the support mailbox', () => {
+    const markup = html('privacy')
+    expect(markup).toContain('채영준')
+    expect(markup).toContain('support@push.devcyjoon.tech')
+  })
+})

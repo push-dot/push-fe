@@ -695,11 +695,11 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .legal article{display:flex;flex-direction:column;width:100%;max-width:760px;margin:0 auto}
 .browser .legal .tabs{margin-bottom:32px}
 .browser .legal-date{margin-top:8px}
-.browser .legal-note{display:flex;align-items:center;gap:10px;margin-top:24px;padding:14px 16px}
-.browser .legal-body{display:flex;flex-direction:column;gap:36px;margin-top:40px}
-.browser .legal-section{display:flex;flex-direction:column;gap:14px}
-.browser .legal-bars{display:flex;flex-direction:column;gap:10px}
-.browser .legal-bars i{display:block;height:12px;border-radius:6px;background:var(--fill)}
+.browser .legal-body{display:flex;flex-direction:column;gap:14px;margin-top:40px;word-break:keep-all;overflow-wrap:break-word}
+.browser .legal-section{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.browser .legal-list{margin:0;padding-left:1.6em;display:flex;flex-direction:column;gap:8px}
+.browser .legal-table th,.browser .legal-table td{vertical-align:top}
+.browser .legal-table td:first-child{font-weight:700;min-width:6em}
 .browser .mtab{display:none}
 
 @media (max-width:1024px){
