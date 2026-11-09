@@ -181,7 +181,7 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
           <span className="c1 t3 w6 cap">{posting.company}</span>
           <span className="b1 w7 cap">{posting.title}</span>
         </span>
-        {secondary('job-bar-btn')}
+        {secondary('lg job-bar-btn')}
         {primary('job-bar-cta')}
       </div>
       {applyOpen ? (

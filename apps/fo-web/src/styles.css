@@ -917,17 +917,18 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .job-cta,.browser .job-secondary .btn{display:none}
 .browser .job-bar{display:flex;align-items:center;gap:8px;padding:12px 24px calc(12px + env(safe-area-inset-bottom))}
 .browser .job-sum{flex:1;min-width:0;display:flex;flex-direction:column}
-.browser .job-bar-btn{padding:0 18px}
-.browser .job-bar-cta{min-width:220px;padding:0 22px}
+.browser .job-bar .job-bar-btn{padding:0 18px}
+.browser .job-bar .job-bar-cta{min-width:220px;padding:0 22px}
+.browser .job-bar .btn.on{color:var(--acText)}
 }
 @media (max-width:600px){
-.browser .browser-posting .cover{height:200px;font-size:80px}
+.browser .browser-posting .cover{height:200px;font-size:72px}
 .browser .cond{grid-template-columns:96px minmax(0,1fr)}
 .browser .cond.card{padding:20px}
 .browser .job-bar{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
 .browser .job-sum,.browser .job-bar .job-lbl{display:none}
 .browser .job-bar .btn.lg{height:52px}
-.browser .job-bar-btn{flex:none;width:52px;padding:0}
-.browser .job-bar-cta{flex:1;min-width:0}
+.browser .job-bar .job-bar-btn{flex:none;width:52px;padding:0}
+.browser .job-bar .job-bar-cta{flex:1;min-width:0}
 .browser .sheet.guest-apply,.browser .sheet.apply-empty{padding-top:36px}
 }
