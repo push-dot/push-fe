@@ -14,14 +14,16 @@ const Chip = ({
   color,
   kicker,
   title,
+  company,
 }: {
   mark: string
   color: string
   kicker: string
   title: string
+  company?: boolean
 }) => (
   <span className="chat-attach-chip">
-    <span className="av chat-av" style={{ background: color }}>
+    <span className={company ? 'av chat-av co' : 'av chat-av'} style={{ background: color }}>
       {mark}
     </span>
     <span className="chat-attach-copy">
@@ -44,6 +46,7 @@ const PostingChip = ({ id, title }: { id: string; title?: string }) => {
       : POSTING_OPEN_KICKER
   return (
     <Chip
+      company
       mark={company.slice(0, 1)}
       color={brandColor(company)}
       kicker={kicker}

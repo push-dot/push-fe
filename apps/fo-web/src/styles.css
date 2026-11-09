@@ -550,7 +550,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .chat-top{display:none}
 .browser .chat-scroll{flex:1;display:flex;flex-direction:column}
 .browser .chat-scroll:has(.chat-start){justify-content:center}
-.browser .chat-col{width:100%;max-width:800px;margin:0 auto;padding:32px 32px 24px;display:flex;flex-direction:column;gap:22px}
+.browser .chat-col{width:100%;max-width:800px;margin:0 auto;padding:32px 32px 24px;display:flex;flex-direction:column;gap:22px;word-break:keep-all}
 .browser .chat-dock{width:100%;max-width:800px;margin:0 auto;padding:0 32px 28px}
 .browser .chat-start{display:flex;flex-direction:column;gap:28px}
 .browser .chat-hero{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
@@ -559,13 +559,13 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .chat-start-icon{width:40px;height:40px;border-radius:12px;background:var(--acSoft);color:var(--ac);display:flex;align-items:center;justify-content:center;flex:none}
 .browser .chat-start-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .browser .chat-user{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.browser .chat-bubble{max-width:80%;padding:12px 18px;border-radius:22px;background:var(--fill);white-space:pre-wrap;overflow-wrap:anywhere}
+.browser .chat-bubble{max-width:80%;padding:12px 18px;border-radius:22px;background:var(--fill);white-space:pre-wrap;overflow-wrap:break-word}
 .browser .chat-attach-chip{display:inline-flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);max-width:100%}
 .browser .chat-attach-copy{display:flex;flex-direction:column;min-width:0}
 .browser .chat-av{width:36px;height:36px;border-radius:50%;font-size:11px}
-.browser .chat-attach-chip .chat-av{border-radius:11px;font-size:15px}
+.browser .chat-av.co{border-radius:11px;font-size:15px}
 .browser .chat-say{display:flex;gap:12px}
-.browser .chat-say>.b1{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.browser .chat-say>.b1{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:break-word}
 .browser .ai-dot{width:8px;height:8px;border-radius:4px;flex:none;margin-top:8px;background:var(--ac)}
 .browser .ai-dot.ok{background:var(--green);margin-top:7px}
 .browser .ai-dot.err{background:var(--red);margin-top:7px}
@@ -726,9 +726,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .hub-grid,.browser .plan-grid{grid-template-columns:minmax(0,1fr)}
 .browser .chat-top{padding:0 12px 0 8px}
 .browser .chat-col{padding:32px 16px 24px}
-.browser .chat-dock{padding:0 16px 16px}
+.browser .chat-dock{padding:0 16px 28px}
 .browser .chat-bubble{max-width:90%}
-.browser .chat-note,.browser .chat-writing,.browser .chat-follow,.browser .chat-evidence{padding-left:0}
 .browser .chat-questions,.browser .chat-queue,.browser .chat-lock{margin-left:0}
 .browser .draft-body{padding:18px}
 .browser .draft-foot{flex-wrap:wrap;row-gap:8px}

@@ -173,15 +173,20 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         intent: out.intent,
         applicationId: out.applicationId || undefined,
       }
+      let first = true
       await runTurn(
         chatTurnDeps,
         conversationId,
         body,
-        (event) =>
+        (event) => {
+          // The job names the conversation when it starts; the list should not wait for the end of a long run.
+          if (first) void queryClient.invalidateQueries({ queryKey: ['employer-conversations'] })
+          first = false
           setLive(
             (current) =>
               current && { ...current, turn: applyTurnEvent(current.turn ?? EMPTY_TURN, event) },
-          ),
+          )
+        },
         controller.signal,
       )
     } catch (error) {
