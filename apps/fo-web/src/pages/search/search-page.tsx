@@ -55,19 +55,19 @@ const SearchPage = () => {
     setRecent(saveRecentSearch(next))
     const query = new URLSearchParams(params)
     query.set('q', next)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const clearQuery = () => {
     const query = new URLSearchParams(params)
     query.delete('q')
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const selectType = (next: SearchType) => {
     const query = new URLSearchParams(params)
     // the 공고 tab is the overview; 공고 N개 모두 보기 opens the full posting list
     if (next === 'postings') query.delete('type')
     else query.set('type', next)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const returnTo = `/search?${new URLSearchParams({ q, type }).toString()}`
   const loginNote = (

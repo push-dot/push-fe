@@ -75,7 +75,7 @@ const JobsPage = () => {
     setList('careerYears', next.careerYears)
     setList('location', next.location)
     setList('employmentType', next.employmentType)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const open = (key: FilterKey) => {
     setSortOpen(false)
@@ -89,7 +89,7 @@ const JobsPage = () => {
   const pickSort = (next: JobSort) => {
     const query = new URLSearchParams(params)
     query.set('sort', next)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
     setSortOpen(false)
   }
   useEffect(() => onFirstScroll(window, () => setScrolled(true)), [])
