@@ -66,6 +66,7 @@ const PhoneFlow = ({
   const [refused, setRefused] = useState(false)
   const phoneInput = useRef<HTMLInputElement>(null)
   const codeInput = useRef<HTMLInputElement>(null)
+  const takenCard = useRef<HTMLDivElement>(null)
   const firstStep = useRef(true)
   const errorId = useId()
   const codeErrorId = useId()
@@ -75,7 +76,9 @@ const PhoneFlow = ({
       firstStep.current = false
       return
     }
-    ;(step === 'code' ? codeInput : phoneInput).current?.focus()
+    // A taken number comes back read-only, so focus goes to the card's first way out.
+    if (step === 'code') codeInput.current?.focus()
+    else (takenCard.current?.querySelector('button') ?? phoneInput.current)?.focus()
   }, [step])
 
   const waiting = resendAt - now
@@ -175,7 +178,7 @@ const PhoneFlow = ({
             </p>
           ) : null}
           {taken ? (
-            <div className="auth-taken" role="alert">
+            <div ref={takenCard} className="auth-taken" role="alert">
               <div className="auth-taken-head">
                 <span className="auth-taken-mark" aria-hidden="true">
                   <Icon name="user" size={20} width={1.8} />
