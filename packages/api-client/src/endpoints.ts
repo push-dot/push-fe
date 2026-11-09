@@ -145,6 +145,8 @@ export const createApi = (c: Client) => ({
     consents: (accessToken?: string) => unwrap(c.get<DataEnvelope<Consent>>('me/consents', { headers: bearer(accessToken) })),
     updateConsents: (referenceData: boolean) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
+    updateMarketing: (marketing: boolean) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body: { marketing } })),
     updateTerms: (body: SignupTermsInput, accessToken?: string) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body, headers: bearer(accessToken) })),
   },
