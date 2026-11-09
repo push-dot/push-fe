@@ -8,15 +8,20 @@ import {
   deleteAccountSession,
   AGENT_NOTE,
   AGENT_TITLE,
+  BLOCKED_COPY,
+  blockedCount,
   LANGS,
   NOTIFY_SUB,
   LOGIN_LABEL,
+  MARKETING_COPY,
   NOTIFICATION_ROWS,
   REFERENCE_LABEL,
   REFERENCE_SUB,
   signOutSession,
   TONES,
   useAuthMe,
+  useBlocked,
+  useMarketingConsent,
   useMyProfile,
   useReferenceConsent,
   useSettings,
@@ -83,8 +88,10 @@ const SettingsScreen = () => {
   const theme = useThemePreference((state) => state.choice)
   const setTheme = useThemePreference((state) => state.setChoice)
   const consent = useReferenceConsent()
+  const marketing = useMarketingConsent()
   const { data: me } = useMyProfile()
   const { data: account } = useAuthMe()
+  const blocked = useBlocked()
   const login = LOGIN_LABEL[account?.provider ?? ''] ?? ''
   if (!s) {
     return (
@@ -145,11 +152,7 @@ const SettingsScreen = () => {
         />
         <SettingsRow
           label="테마"
-          right={
-            <View style={{ width: 196 }}>
-              <SegmentedControl items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />
-            </View>
-          }
+          right={<SegmentedControl compact items={[...THEME_CHOICES]} value={theme} onChange={(k) => void setTheme(k)} />}
         />
       </SettingsGroup>
 
@@ -162,6 +165,11 @@ const SettingsScreen = () => {
             right={sw(row.key, row.label)}
           />
         ))}
+        <SettingsRow
+          label={MARKETING_COPY.label}
+          sub={MARKETING_COPY.sub}
+          right={<Switch label={MARKETING_COPY.label} value={marketing.on} onValueChange={(v) => marketing.save(v)} />}
+        />
       </SettingsGroup>
 
       <SettingsGroup title="허브 공개">
@@ -176,6 +184,11 @@ const SettingsScreen = () => {
           value={CONTACT.find((v) => v.key === s.contactVisibility)?.label ?? ''}
           onPress={() => router.push({ pathname: '/settings/pick', params: { kind: 'contact' } })}
         />
+        <SettingsRow
+          label={BLOCKED_COPY.title}
+          value={blockedCount(blocked.data?.page.total)}
+          onPress={() => router.push('/settings/blocked')}
+        />
       </SettingsGroup>
 
       <SettingsGroup title={AGENT_TITLE} note={AGENT_NOTE}>
@@ -183,10 +196,6 @@ const SettingsScreen = () => {
           label="기본 말투"
           value={TONES.find((t) => t.key === s.defaultTone)?.label ?? ''}
           onPress={() => router.push({ pathname: '/settings/pick', params: { kind: 'tone' } })}
-        />
-        <SettingsRow
-          label="내 자료 읽기 허용"
-          right={sw('allowAiReadMyFiles', '내 자료 읽기 허용')}
         />
         <SettingsRow
           label={REFERENCE_LABEL}
@@ -206,9 +215,9 @@ const SettingsScreen = () => {
       </SettingsGroup>
 
       <SettingsGroup title="기타">
-        {/* shortcut: support/terms URLs aren't decided yet; wire these rows when they are. */}
+        {/* shortcut: the support URL isn't decided yet; wire this row when it is. */}
         <SettingsRow label="고객센터" right={<Icon name="chev" size={18} color="t4" />} />
-        <SettingsRow label="약관 및 정책" right={<Icon name="chev" size={18} color="t4" />} />
+        <SettingsRow label="약관 및 정책" onPress={() => router.push('/settings/legal')} right={<Icon name="chev" size={18} color="t4" />} />
         <SettingsRow label="로그아웃" danger onPress={logout} right={<View />} />
         <SettingsRow label="회원 탈퇴" danger onPress={withdraw} right={<View />} />
       </SettingsGroup>

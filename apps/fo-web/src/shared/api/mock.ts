@@ -37,7 +37,6 @@ import {
   DRAFT_REPLY,
   APPLICATIONS,
   BLOCK_SEEDS,
-  BROWSER_BOOKMARKS,
   CALENDAR_EVENTS,
   CANT_SEND_REPLY,
   CATALOG_TOTALS,
@@ -148,6 +147,7 @@ export const MOCK_SWITCHES = [
   'login-social-fail',
   'notif-empty',
   'offer-blocked',
+  'payments-disabled',
   'phone-sent',
   'posts-empty',
   'profile-save-fail',
@@ -281,21 +281,13 @@ const HOME_RAIL_SIZE = 5
 
 const listings: Posting[] = LISTINGS.map((item) => ({ ...item }))
 
-type PostingFlags = Map<string, { bookmarked: boolean; applied: boolean }>
-
-const webViewFlags: PostingFlags = new Map(listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]))
-
-const browserFlags: PostingFlags = new Map(
-  listings.map((item) => [item.id, { bookmarked: BROWSER_BOOKMARKS.includes(item.id), applied: item.applied }]),
-)
-
-const postingFlags = () => (isWebView() ? webViewFlags : browserFlags)
+const flags = new Map(listings.map((item) => [item.id, { bookmarked: item.bookmarked, applied: item.applied }]))
 
 const signedOf = (input: RequestInfo | URL, init?: RequestInit) =>
   new Headers(input instanceof Request ? input.headers : init?.headers).has('Authorization')
 
 const present = (item: Posting, signed: boolean): Posting => {
-  const flag = postingFlags().get(item.id)
+  const flag = flags.get(item.id)
   if (!signed) return { ...item, bookmarked: false, applied: false }
   return flag ? { ...item, bookmarked: flag.bookmarked, applied: flag.applied } : item
 }
@@ -516,7 +508,7 @@ const revisionConflict = (currentRevision: number) =>
 const ownedPostingResponse = (id: string) => {
   const owned = companyPostings.find((item) => item.id === id)
   if (!owned) return null
-  const flag = postingFlags().get(id)
+  const flag = flags.get(id)
   return json(200, {
     data: {
       ...owned,
@@ -634,6 +626,11 @@ let meProfile: Profile = { ...ME_PROFILE }
 
 let feed: Post[] = FEED.map((item) => ({ ...item }))
 
+// shortcut: 김서준's seeded posts stay out of the /posts feed because WebSocial draws none of them; merge them once the boards agree.
+const myPosts: Post[] = MY_POSTS.map((item) => ({ ...item }))
+
+const postById = (id: string) => feed.find((item) => item.id === id) ?? myPosts.find((item) => item.id === id)
+
 const commentThreads = new Map<string, Comment[]>(COMMENT_THREADS.map(([id, list]) => [id, list.map((item) => ({ ...item }))]))
 
 let receivedOffers: Offer[] = RECEIVED_OFFERS.map((item) => ({ ...item }))
@@ -711,12 +708,50 @@ const employerPersona = () => {
   return kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra' || kind === 'employer-new'
 }
 
+type CompanyInvite = { id: string; email: string; expiresAt: string; invitedAt: string; sentAt: number }
+
+type CompanyProfile = {
+  legalName: string | null
+  representativeName: string | null
+  industry: string | null
+  website: string | null
+  intro: string | null
+  logoKey: string | null
+  logoUrl: string | null
+}
+
 type CompanyRecord = {
-  company: Company
+  company: Company & CompanyProfile
   members: CompanyMember[]
+  invites: CompanyInvite[]
+}
+
+const INVITE_MS = 7 * 86_400_000
+
+const pendingInvite = (email: string): CompanyInvite => ({ id: `inv-${++inviteSeq}`, email, ...inviteWindow() })
+
+const inviteWindow = () => ({
+  invitedAt: new Date().toISOString(),
+  expiresAt: new Date(Date.now() + INVITE_MS).toISOString(),
+  sentAt: Date.now(),
+})
+
+const RESEND_COOLDOWN_SEC = 60
+
+const inviteView = ({ sentAt: _sentAt, ...item }: CompanyInvite) => item
+
+const MOAPAY_PROFILE: CompanyProfile = {
+  legalName: '모아페이 주식회사',
+  representativeName: '박정우',
+  industry: '핀테크',
+  website: 'moapay.kr',
+  intro: '결제와 정산을 직접 만드는 핀테크 회사예요.',
+  logoKey: null,
+  logoUrl: null,
 }
 
 const companyRecords = new Map<string, CompanyRecord>()
+
 let inviteSeq = 0
 
 const personaKey = () => mockPersona() ?? 'default'
@@ -734,12 +769,13 @@ const COMPANY_BRAND = '모아페이'
 const COMPANY_BNO = '2148703921'
 
 const memberSeats = (plan: Company['plan'], verifiedAt: string): CompanyRecord => ({
-  company: { id: 'co-1', bNo: COMPANY_BNO, name: COMPANY_BRAND, plan, verifiedAt, role: 'MEMBER', seats: { used: 2, limit: 2 } },
+  company: { id: 'co-1', bNo: COMPANY_BNO, name: COMPANY_BRAND, ...MOAPAY_PROFILE, plan, verifiedAt, role: 'MEMBER', seats: { used: 2, limit: 2 } },
   members: [
     { userId: 'u-admin', email: MEMBER_EMAIL, role: 'ADMIN', joinedAt: verifiedAt },
     { userId: MEMBER_USER.id, email: MEMBER_USER.email, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
     { userId: 'u-sora', email: 'sora.park@moapay.kr', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
   ],
+  invites: [],
 })
 
 const seedCompany = (): CompanyRecord | null => {
@@ -755,12 +791,14 @@ const seedCompany = (): CompanyRecord | null => {
         id: 'co-1',
         bNo: COMPANY_BNO,
         name: COMPANY_BRAND,
+        ...MOAPAY_PROFILE,
         plan: 'BASIC',
         verifiedAt,
         role: 'ADMIN',
         seats: { used: 0, limit: 0 },
       },
       members: [adminMember(verifiedAt)],
+      invites: [],
     }
   }
   if (kind === 'employer-pro') {
@@ -769,6 +807,7 @@ const seedCompany = (): CompanyRecord | null => {
         id: 'co-1',
         bNo: COMPANY_BNO,
         name: COMPANY_BRAND,
+        ...MOAPAY_PROFILE,
         plan: 'PRO',
         verifiedAt,
         role: 'ADMIN',
@@ -778,6 +817,7 @@ const seedCompany = (): CompanyRecord | null => {
         adminMember(verifiedAt),
         { userId: 'u-member', email: 'jiho.han@moapay.kr', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
       ],
+      invites: [],
     }
   }
   if (kind === 'employer-ultra') {
@@ -786,12 +826,14 @@ const seedCompany = (): CompanyRecord | null => {
         id: 'co-1',
         bNo: COMPANY_BNO,
         name: COMPANY_BRAND,
+        ...MOAPAY_PROFILE,
         plan: 'ULTRA',
         verifiedAt,
         role: 'ADMIN',
         seats: { used: 0, limit: 5 },
       },
       members: [adminMember(verifiedAt)],
+      invites: [],
     }
   }
   return null
@@ -861,6 +903,17 @@ const CANT_SEND_OFFER = 'offer-1'
 
 const cantSend = (offerId: string) => mockSwitch('inbox-cant-send') && offerId === CANT_SEND_OFFER
 
+const respondedAt = new Map<string, string>([['offer-4', '2026-10-15T01:00:00.000Z']])
+
+const offerView = (offer: Offer) => {
+  const blocked = blockList().some((item) => item.user.id === offer.sender.id || item.user.id === offer.recipient.id)
+  return {
+    ...offer,
+    respondedAt: offer.status === 'SENT' ? null : (respondedAt.get(offer.id) ?? offer.readAt),
+    canSend: offer.status === 'ACCEPTED' && !blocked && !cantSend(offer.id),
+  }
+}
+
 const failedReply = (offerId: string) => ({
   ...CANT_SEND_REPLY,
   offerId,
@@ -902,7 +955,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     }
     if (method === 'PATCH') {
       const payload = await readJson(input, init)
-      if (typeof payload.title === 'string' && payload.title.trim()) found.fileName = payload.title.trim()
+      if (typeof payload.fileName === 'string' && payload.fileName.trim()) found.fileName = payload.fileName.trim()
       return json(200, { data: found })
     }
   }
@@ -966,7 +1019,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   const commentsMatch = tail.match(/^\/posts\/([^/]+)\/comments$/)
   if (commentsMatch) {
     const postId = commentsMatch[1] ?? ''
-    const postItem = feed.find((item) => item.id === postId)
+    const postItem = postById(postId)
     if (!postItem) return json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
     if (method === 'GET') {
       const data = commentThreads.get(postId) ?? []
@@ -997,7 +1050,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   }
   const postMatch = tail.match(/^\/posts\/([^/]+)$/)
   if (postMatch && method === 'GET') {
-    const postItem = feed.find((item) => item.id === postMatch[1])
+    const postItem = postById(postMatch[1] ?? '')
     return postItem ? json(200, { data: postItem }) : json(404, { error: { code: 'NOT_FOUND', message: '글을 찾지 못했어요' } })
   }
   if (tail === '/me/profile' && method === 'GET') return json(200, { data: meProfile })
@@ -1049,7 +1102,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   if (method === 'GET' && tail === '/me/posts') {
     const mine = employerPersona()
       ? feed.filter((item) => item.author.employer === true)
-      : [...feed.filter((item) => item.author.id === 'u1' && item.author.employer !== true), ...MY_POSTS]
+      : [...feed.filter((item) => item.author.id === 'u1' && item.author.employer !== true), ...myPosts]
     return json(200, slicePage(url, mine, (item) => item.id))
   }
   if (method === 'GET' && tail === '/me/commented-posts') {
@@ -1087,12 +1140,11 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
   if (method === 'GET' && tail === '/me/offers') {
     const box = url.searchParams.get('box')
     const blocked = new Set(blockList().map((item) => item.user.id))
+    const archived = url.searchParams.get('archived') === '1'
     const received = receivedOffers.filter((item) => !blocked.has(item.sender.id))
     const data = employerPersona()
       ? []
-      : box === 'sent'
-        ? sentOffers
-        : received.filter((item) => (box === 'archived') === Boolean(item.archivedAt))
+      : (box === 'sent' ? sentOffers : received).filter((item) => archived === Boolean(item.archivedAt)).map(offerView)
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
   if (method === 'GET' && tail === '/me/blocks') {
@@ -1119,7 +1171,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
     if (offerAction[2] === 'report') return new Response(null, { status: 204 })
     found.archivedAt = offerAction[2] === 'archive' ? new Date().toISOString() : null
-    return json(200, { data: found })
+    return json(200, { data: offerView(found) })
   }
   const offerMessages = tail.match(/^\/me\/offers\/([^/]+)\/messages$/)
   if (offerMessages) {
@@ -1150,6 +1202,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
     const payload = await readJson(input, init)
     found.status = 'ACCEPTED'
+    respondedAt.set(found.id, new Date().toISOString())
     if (typeof payload.reply === 'string' && payload.reply.trim()) {
       const list = offerThreads.get(found.id) ?? []
       list.push({
@@ -1161,20 +1214,21 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       })
       offerThreads.set(found.id, list)
     }
-    return json(200, { data: found })
+    return json(200, { data: offerView(found) })
   }
   const offerDecline = tail.match(/^\/me\/offers\/([^/]+)\/decline$/)
   if (offerDecline && method === 'POST') {
     const found = offerById(offerDecline[1] ?? '')
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
     found.status = 'DECLINED'
-    return json(200, { data: found })
+    respondedAt.set(found.id, new Date().toISOString())
+    return json(200, { data: offerView(found) })
   }
   const offerDetail = tail.match(/^\/me\/offers\/([^/]+)$/)
   if (offerDetail && method === 'GET') {
     const found = offerById(offerDetail[1] ?? '')
     if (!found) return json(404, { error: { code: 'NOT_FOUND', message: '제안을 찾지 못했어요' } })
-    return json(200, { data: cantSend(found.id) ? { ...found, canSend: false } : found })
+    return json(200, { data: offerView(found) })
   }
   if (method === 'POST' && tail === '/me/notifications/read') {
     const payload = await readJson(input, init)
@@ -1215,16 +1269,24 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       return json(409, { error: { code: 'COMPANY_EXISTS', message: '이미 등록된 사업자번호예요' } })
     }
     const verifiedAt = new Date().toISOString()
-    const company: Company = {
+    const legalName = String(payload.legalName ?? '').trim()
+    const company: CompanyRecord['company'] = {
       id: 'co-1',
       bNo,
       name: String(payload.bNm ?? ''),
+      legalName: legalName || null,
+      representativeName: null,
+      industry: null,
+      website: null,
+      intro: null,
+      logoKey: null,
+      logoUrl: null,
       plan: null,
       verifiedAt,
       role: 'ADMIN',
       seats: { used: 0, limit: 0 },
     }
-    rememberCompany({ company, members: [adminMember(verifiedAt)] })
+    rememberCompany({ company, members: [adminMember(verifiedAt)], invites: [] })
     return json(201, { data: company })
   }
   if (method === 'GET' && tail === '/companies/me/members') {
@@ -1232,22 +1294,49 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
     return json(200, { data: record.members })
   }
+  if (method === 'GET' && tail === '/companies/me/invites') {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    return json(200, { data: record.invites.map(inviteView) })
+  }
   if (method === 'POST' && tail === '/companies/me/invites') {
     const record = companyRecord()
     if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
     if (record.company.role !== 'ADMIN') return adminOnly()
+    const payload = await readJson(input, init)
+    const email = String(payload.email ?? '')
+    const same = (other: string) => other.toLowerCase() === email.toLowerCase()
+    if (record.members.some((member) => same(member.email))) {
+      return json(409, { error: { code: 'CONFLICT', message: '이미 담당자예요' } })
+    }
+    const pending = record.invites.find((item) => same(item.email))
+    if (pending) {
+      Object.assign(pending, inviteWindow())
+      return json(201, { data: { email } })
+    }
     if (record.company.seats.used >= record.company.seats.limit) {
       return json(403, { error: { code: 'SEAT_LIMIT', message: '담당자 수를 넘었어요' } })
     }
-    const payload = await readJson(input, init)
-    record.members.push({
-      userId: `u-invite-${++inviteSeq}`,
-      email: String(payload.email ?? ''),
-      role: 'MEMBER',
-      joinedAt: new Date().toISOString(),
-    })
+    record.invites.push(pendingInvite(email))
     record.company.seats.used += 1
-    return json(201, { data: { email: String(payload.email ?? '') } })
+    return json(201, { data: { email } })
+  }
+  const invitePath = tail.match(/^\/companies\/me\/invites\/([^/]+)(\/resend)?$/)
+  if (invitePath && ((method === 'POST' && invitePath[2]) || (method === 'DELETE' && !invitePath[2]))) {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    if (record.company.role !== 'ADMIN') return adminOnly()
+    const invite = record.invites.find((item) => item.id === decodeURIComponent(invitePath[1] ?? ''))
+    if (!invite) return failure(404, 'NOT_FOUND', '초대를 찾지 못했어요')
+    if (method === 'DELETE') {
+      record.invites = record.invites.filter((item) => item !== invite)
+      record.company.seats.used = Math.max(0, record.company.seats.used - 1)
+      return new Response(null, { status: 204 })
+    }
+    const wait = RESEND_COOLDOWN_SEC - Math.floor((Date.now() - invite.sentAt) / 1000)
+    if (wait > 0) return failure(429, 'RATE_LIMITED', '잠시 후 다시 보내 주세요', { retryAfterSec: wait })
+    Object.assign(invite, inviteWindow())
+    return json(200, { data: inviteView(invite) })
   }
   const memberPath = tail.match(/^\/companies\/me\/members\/([^/]+)$/)
   if (memberPath && (method === 'DELETE' || method === 'PATCH')) {
@@ -1614,13 +1703,13 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
 
 const creditBalances = new Map<string, number>()
 
-const MONTHLY_MICRO: Record<string, number> = { BASIC: 3000000, PRO: 15000000, ULTRA: 30000000 }
+const MONTHLY_MICRO: Record<string, number> = { BASIC: 18_000_000, PRO: 90_000_000, ULTRA: 180_000_000 }
 
 const seededBalance = () => {
   const kind = mockPersona()
-  if (kind === 'employer') return 1880000
-  if (kind === 'employer-pro') return 5160000
-  if (kind === 'employer-ultra') return 25790000
+  if (kind === 'employer') return 11_280_000
+  if (kind === 'employer-pro') return 30_960_000
+  if (kind === 'employer-ultra') return 154_740_000
   return 0
 }
 
@@ -1629,6 +1718,12 @@ const asEmployerPlan = (value: unknown): 'BASIC' | 'PRO' | 'ULTRA' | null =>
 
 const seatLimitFor = (plan: 'BASIC' | 'PRO' | 'ULTRA') =>
   plan === 'ULTRA' ? SEAT_LIMIT_ULTRA : plan === 'PRO' ? SEAT_LIMIT_PRO : SEAT_LIMIT_NONE
+
+const PACK_MICRO = 9_000_000
+
+const PAYMENT_TAILS = new Set(['/billing/checkout', '/billing/topup', '/billing/iap/verify'])
+
+const MAX_PACKS = 20
 
 const localPlansUrl = (key: 'checkout' | 'topup', value: string) =>
   `/employer/plans?${key}=${encodeURIComponent(value)}`
@@ -1648,6 +1743,7 @@ const companyBillingStatus = (): CompanyBillingStatus => {
     reservedMicroCredits: 0,
     monthlyMicroCredits: monthly,
     spentMicroCredits: Math.max(0, monthly - balance),
+    ...(mockSwitch('payments-disabled') ? { paymentsEnabled: false } : {}),
   }
 }
 
@@ -1672,15 +1768,19 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
       const plan = asEmployerPlan(planId)
       const record = companyRecord()
       if (plan && record) {
+        const { spentMicroCredits } = companyBillingStatus()
+        creditBalances.set(personaKey(), Math.max(0, (MONTHLY_MICRO[plan] ?? 0) - spentMicroCredits))
         record.company.plan = plan
         record.company.seats = { ...record.company.seats, limit: seatLimitFor(plan) }
       }
       return json(200, { data: { url: localPlansUrl('checkout', planId) } })
     }
-    const amount = Number(payload.amount ?? 0)
-    const nextBalance = (creditBalances.get(personaKey()) ?? seededBalance()) + (Number.isFinite(amount) ? amount * 1000 : 0)
-    creditBalances.set(personaKey(), nextBalance)
-    return json(200, { data: { url: localPlansUrl('topup', String(payload.amount ?? '')) } })
+    const packs = payload.packs
+    if (typeof packs !== 'number' || !Number.isInteger(packs) || packs < 1 || packs > MAX_PACKS) {
+      return failure(400, 'VALIDATION_ERROR', '구매 수량을 확인해 주세요', { field: 'packs' })
+    }
+    creditBalances.set(personaKey(), (creditBalances.get(personaKey()) ?? seededBalance()) + packs * PACK_MICRO)
+    return json(200, { data: { url: localPlansUrl('topup', String(packs)) } })
   }
   if (method === 'GET' && tail === '/billing') return json(200, { data: companyBillingStatus() })
   return null
@@ -1689,21 +1789,24 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
 const PHONE_CODE_TTL_S = 180
 
 const phoneSent = (cooldownSeconds: number, ttlSeconds = PHONE_CODE_TTL_S) =>
-  json(200, { data: { cooldownSeconds, expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString() } })
+  json(202, { data: { cooldownSeconds, expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString() } })
 
 const handlePhone = (method: string, tail: string) => {
   if (method !== 'POST') return null
   if (tail === '/auth/phone/send') {
-    if (mockSwitch('login-phone-taken')) return failure(409, 'PHONE_TAKEN', '이미 가입된 번호예요', { provider: 'google' })
     if (mockSwitch('login-code-wrong')) return phoneSent(151)
     if (mockSwitch('login-code-expired')) return phoneSent(0, 0)
     if (mockSwitch('phone-sent')) return phoneSent(168)
     return phoneSent(PHONE_CODE_TTL_S)
   }
   if (tail === '/auth/phone/verify') {
-    if (mockSwitch('login-code-wrong')) return failure(400, 'CODE_WRONG', '인증번호가 맞지 않아요')
-    if (mockSwitch('login-code-expired')) return failure(400, 'CODE_EXPIRED', '인증번호가 만료됐어요')
-    if (mockSwitch('login-code-limit')) return failure(429, 'CODE_ATTEMPTS_EXCEEDED', '인증번호를 5번 잘못 입력했어요')
+    // push-be sends the code either way and refuses at verify; the board shows this right after send (mock2-requests.md T-auth).
+    if (mockSwitch('login-phone-taken')) return failure(409, 'PHONE_ALREADY_REGISTERED', '이미 가입된 번호예요', { existingProviders: ['google'] })
+    if (mockSwitch('login-code-wrong')) return failure(400, 'PHONE_CODE_INVALID', '인증번호가 맞지 않아요', { attemptsLeft: 4 })
+    if (mockSwitch('login-code-expired')) return failure(400, 'PHONE_CODE_EXPIRED', '인증번호가 만료됐어요')
+    if (mockSwitch('login-code-limit')) {
+      return failure(429, 'RATE_LIMITED', '인증번호를 5번 잘못 입력했어요', { reason: 'TOO_MANY_ATTEMPTS', maxAttempts: 5 })
+    }
     return json(200, { data: { ...mockSession('personal'), created: mockSwitch('signup-consent') } })
   }
   return null
@@ -1741,8 +1844,10 @@ const INVITE = {
 }
 
 const inviteFailure = (token: string) => {
-  if (mockSwitch('invite-invalid') || token === 'bad-token') return failure(404, 'INVITE_NOT_FOUND', '초대 링크를 열 수 없어요')
-  if (mockSwitch('invite-expired') || token === 'expired-token') return failure(410, 'INVITE_EXPIRED', '초대가 만료됐어요', INVITE)
+  if (mockSwitch('invite-invalid') || token === 'bad-token') return failure(404, 'NOT_FOUND', '초대 링크를 열 수 없어요', { reason: 'INVALID' })
+  if (mockSwitch('invite-expired') || token === 'expired-token') {
+    return failure(404, 'NOT_FOUND', '초대가 만료됐어요', { reason: 'EXPIRED', companyName: INVITE.companyName })
+  }
   return null
 }
 
@@ -1752,9 +1857,9 @@ const handleInvite = async (method: string, tail: string) => {
   const token = decodeURIComponent(match[1] ?? '')
   const failed = inviteFailure(token)
   if (failed) return failed
-  if (method === 'GET' && !match[2]) return json(200, { data: { ...INVITE, status: 'PENDING' } })
+  if (method === 'GET' && !match[2]) return json(200, { data: INVITE })
   if (method !== 'POST' || !match[2]) return null
-  if (mockSwitch('invite-other-account')) return failure(403, 'INVITE_EMAIL_MISMATCH', '초대받은 이메일로만 들어올 수 있어요', { email: INVITE.email })
+  if (mockSwitch('invite-other-account')) return failure(403, 'FORBIDDEN', '초대받은 이메일로만 들어올 수 있어요', { reason: 'EMAIL_MISMATCH' })
   if (mockSwitch('invite-accept-wait')) await hold()
   return new Response(null, { status: 204 })
 }
@@ -1776,22 +1881,50 @@ const EMPTY_LISTS: [MockSwitch, string][] = [
 ]
 
 const LEDGER = [
-  ['Pro 월 구독', '2026-10-01', 10000, 'PRO'],
-  ['Pro 월 구독', '2026-09-01', 10000, 'PRO'],
-  ['Pro 월 구독', '2026-08-01', 10000, 'PRO'],
-  ['Basic 월 구독', '2026-07-01', 2000, 'BASIC'],
+  ['2026-10-01', 'PRO', 100],
+  ['2026-09-01', 'PRO', 100],
+  ['2026-08-01', 'PRO', 100],
+  ['2026-07-01', 'BASIC', 20],
 ] as const
 
-const ledgerEntries = () =>
-  LEDGER.map(([description, day, amountUsdCents, plan]) => ({
-    type: 'PURCHASE',
-    createdAt: `${day}T00:00:00.000Z`,
-    amountMicroCredits: MONTHLY_MICRO[plan] ?? 0,
-    balanceAfter: MONTHLY_MICRO[plan] ?? 0,
-    description,
-    amountUsdCents,
-    receiptUrl: `https://pay.stripe.com/receipts/mock-${day}`,
-  }))
+const PLAN_NAMES = { BASIC: 'Basic', PRO: 'Pro', ULTRA: 'Ultra' } as const
+
+// Newest first like push-be; balanceAfter is the running company total, so it is filled from the oldest row up.
+const ledgerEntries = () => {
+  const rows = LEDGER.flatMap(([day, plan, amountUsd]) => {
+    const createdAt = `${day}T00:00:00.000Z`
+    return [
+      {
+        id: `ledger-${day}-payment`,
+        type: 'PURCHASE',
+        createdAt,
+        amountMicroCredits: 0,
+        balanceAfter: 0,
+        referenceId: `cs_mock_${day}`,
+        description: `${PLAN_NAMES[plan]} 월 구독`,
+        amountUsd,
+        receiptUrl: `https://pay.stripe.com/receipts/mock-${day}`,
+      },
+      {
+        id: `ledger-${day}-grant`,
+        type: 'PURCHASE',
+        createdAt,
+        amountMicroCredits: MONTHLY_MICRO[plan] ?? 0,
+        balanceAfter: 0,
+        referenceId: `monthly:${day.slice(0, 7)}:${plan}`,
+        description: null,
+        amountUsd: null,
+        receiptUrl: null,
+      },
+    ]
+  })
+  let total = 0
+  for (const row of [...rows].reverse()) {
+    total += row.amountMicroCredits
+    row.balanceAfter = total
+  }
+  return rows
+}
 
 const switchResponse = async (method: string, tail: string, url: URL, input: RequestInfo | URL, init?: RequestInit) => {
   if (switches.size === 0 || isWebView()) return null
@@ -1819,6 +1952,8 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
       return failure(403, 'BLOCKED', '지금은 이 사람에게 제안을 보낼 수 없어요')
     }
     if (mockSwitch('docs-uploading') && tail === '/sources') await hold()
+    // push-be answers this before any role or body check while PAYMENTS_ENABLED is off.
+    if (mockSwitch('payments-disabled') && PAYMENT_TAILS.has(tail)) return failure(503, 'PAYMENTS_DISABLED', '지금은 결제할 수 없어요')
     if (mockSwitch('inbox-cant-send') && /^\/me\/offers\/[^/]+\/messages$/.test(tail)) {
       return failure(403, 'OFFER_CLOSED', '이 대화에는 더 이상 메시지를 보낼 수 없어요')
     }
@@ -1837,10 +1972,10 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
   return null
 }
 
-const flagFor = (id: string) => postingFlags().get(id) ?? { bookmarked: false, applied: false }
+const flagFor = (id: string) => flags.get(id) ?? { bookmarked: false, applied: false }
 
 const setFlag = (id: string, patch: Partial<{ bookmarked: boolean; applied: boolean }>) => {
-  postingFlags().set(id, { ...flagFor(id), ...patch })
+  flags.set(id, { ...flagFor(id), ...patch })
 }
 
 export const mockFetch: typeof fetch = async (input, init) => {
@@ -1947,7 +2082,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
     const payload = await readJson(input, init)
     const email = String(payload.email ?? '')
     const password = String(payload.password ?? '')
-    if (password.length < 8 || email === 'bad@push.app') {
+    if (password.length < 8 || password.includes('wrong') || email === 'bad@push.app') {
       return json(401, { error: { code: 'INVALID_CREDENTIALS', message: 'no' } })
     }
     if (email === 'unverified@push.app') {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 
 import { NARROW, useMedia } from '../lib/use-media'
@@ -21,12 +22,13 @@ export const Popover = ({ label, onClose, className, style, children }: PopoverP
     return () => document.removeEventListener('pointerdown', onDown)
   }, [narrow, onClose])
   if (narrow) {
-    return (
+    return createPortal(
       <div className="msheet-scrim" role="presentation" onClick={onClose}>
         <div className={['msheet', className ?? ''].filter(Boolean).join(' ')} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}>
           {children}
         </div>
-      </div>
+      </div>,
+      document.querySelector('.browser') ?? document.body,
     )
   }
   return (

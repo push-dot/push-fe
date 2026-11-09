@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutTarget, showEmployerCheckout, topupReady } from './employer-plans'
+import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutTarget, paymentsOpen, showEmployerCheckout, topupReady } from './employer-plans'
 
 const FORBIDDEN_MODEL_NAMES = ['Sonnet', 'Opus', 'Fable']
 
@@ -36,9 +36,11 @@ describe('canChangeEmployerPlan', () => {
 })
 
 describe('topupReady', () => {
-  it('accepts only a positive finite amount', () => {
+  it('accepts a whole number of packs from 1 to 20', () => {
     expect(topupReady(1)).toBe(true)
-    expect(topupReady(0.5)).toBe(true)
+    expect(topupReady(20)).toBe(true)
+    expect(topupReady(21)).toBe(false)
+    expect(topupReady(0.5)).toBe(false)
     expect(topupReady(0)).toBe(false)
     expect(topupReady(-1)).toBe(false)
     expect(topupReady(Number.NaN)).toBe(false)
@@ -76,5 +78,20 @@ describe('checkoutTarget', () => {
       stay: false,
       href: 'https://example.test/checkout?plan=PRO',
     })
+  })
+})
+
+describe('paymentsOpen', () => {
+  it('closes checkout and top-up when the server reports payments off', () => {
+    expect(paymentsOpen({ paymentsEnabled: false })).toBe(false)
+  })
+
+  it('keeps them open when the server allows payments or predates the flag', () => {
+    expect(paymentsOpen({ paymentsEnabled: true })).toBe(true)
+    expect(paymentsOpen({})).toBe(true)
+  })
+
+  it('keeps them closed until billing loads', () => {
+    expect(paymentsOpen(undefined)).toBe(false)
   })
 })

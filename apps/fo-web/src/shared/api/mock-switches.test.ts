@@ -34,8 +34,8 @@ afterEach(() => {
 })
 
 describe('ms= switches', () => {
-  it('knows the 52 switches of mock-needs-v2 and ignores unknown names', () => {
-    expect(MOCK_SWITCHES).toHaveLength(52)
+  it('knows the 52 switches of mock-needs-v2 plus payments-disabled and ignores unknown names', () => {
+    expect(MOCK_SWITCHES).toHaveLength(53)
     using('personal', 'nope,docs-empty')
   })
 
@@ -69,11 +69,15 @@ describe('ms= switches', () => {
     using(null, 'phone-sent')
     expect((await read<{ data: { cooldownSeconds: number } }>('/auth/phone/send', 'POST', { phone: '01012345678' })).body.data.cooldownSeconds).toBe(168)
     using(null, 'login-code-wrong')
-    expect((await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482931' })).code).toBe('CODE_WRONG')
+    expect((await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482931' })).code).toBe('PHONE_CODE_INVALID')
     using(null, 'login-code-limit')
     expect((await call('/auth/phone/verify', 'POST', { phone: '01012345678', code: '000000' })).status).toBe(429)
     using(null, 'login-phone-taken')
-    expect(await errorCode('/auth/phone/send', 'POST', { phone: '01012345678' })).toMatchObject({ code: 'PHONE_TAKEN', details: { provider: 'google' } })
+    expect((await call('/auth/phone/send', 'POST', { phone: '01012345678' })).status).toBe(202)
+    expect(await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482913' })).toMatchObject({
+      code: 'PHONE_ALREADY_REGISTERED',
+      details: { existingProviders: ['google'] },
+    })
     using(null, 'signup-consent')
     expect((await read<{ data: { created: boolean } }>('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482913' })).body.data.created).toBe(true)
   })
@@ -99,23 +103,35 @@ describe('ms= switches', () => {
     expect((await call('/companies/invites/bad-token/accept', 'POST')).status).toBe(404)
     using('employer-new', 'invite-expired')
     expect(await errorCode('/companies/invites/expired-token/accept', 'POST')).toMatchObject({
-      code: 'INVITE_EXPIRED',
-      details: { companyName: '모아페이', inviterName: '이민아' },
+      code: 'NOT_FOUND',
+      details: { reason: 'EXPIRED', companyName: '모아페이' },
     })
     using('personal', 'invite-other-account')
-    expect((await errorCode('/companies/invites/demo-token/accept', 'POST')).code).toBe('INVITE_EMAIL_MISMATCH')
+    expect(await errorCode('/companies/invites/demo-token/accept', 'POST')).toMatchObject({ code: 'FORBIDDEN', details: { reason: 'EMAIL_MISMATCH' } })
+  })
+
+  it('resends an invite after the cooldown and cancels it', async () => {
+    using('employer-ultra', '')
+    await call('/companies/me/invites', 'POST', { email: 'sora.park@moapay.kr' })
+    const [invite] = (await read<{ data: { id: string; invitedAt: string; expiresAt: string }[] }>('/companies/me/invites')).body.data
+    expect(invite).toMatchObject({ id: expect.any(String), invitedAt: expect.any(String), expiresAt: expect.any(String) })
+    expect(await errorCode(`/companies/me/invites/${invite!.id}/resend`, 'POST')).toMatchObject({ code: 'RATE_LIMITED', details: { retryAfterSec: 60 } })
+    expect((await call(`/companies/me/invites/${invite!.id}`, 'DELETE')).status).toBe(204)
+    expect((await read<{ data: unknown[] }>('/companies/me/invites')).body.data).toEqual([])
+    expect((await read<{ data: { seats: { used: number } } }>('/companies/me')).body.data.seats.used).toBe(0)
+    setMockPersona(null)
   })
 
   it('archives, blocks and reports offers', async () => {
     using('personal', 'blocks-list')
-    const names = async (box: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?box=${box}`)).body.data.map((item) => item.sender.displayName)
-    expect(await names('archived')).toEqual(['정하린'])
-    expect(await names('received')).not.toContain('오지현')
+    const names = async (query: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?${query}`)).body.data.map((item) => item.sender.displayName)
+    expect(await names('box=received&archived=1')).toEqual(['정하린'])
+    expect(await names('box=received')).not.toContain('오지현')
     expect((await read<{ data: { user: { displayName: string } }[] }>('/me/blocks')).body.data.map((item) => item.user.displayName)).toEqual(['오지현', '한민재'])
     await call('/me/blocks/u-jihyun', 'DELETE')
-    expect(await names('received')).toEqual(['오지현', '박도윤', '최지우'])
+    expect(await names('box=received')).toEqual(['오지현', '박도윤', '최지우'])
     await call('/me/offers/offer-1/archive', 'POST')
-    expect(await names('archived')).toEqual(['오지현', '정하린'])
+    expect(await names('box=received&archived=1')).toEqual(['오지현', '정하린'])
     await call('/me/offers/offer-1/unarchive', 'POST')
     expect((await call('/me/offers/offer-1/report', 'POST', {})).status).toBe(204)
   })
@@ -127,6 +143,16 @@ describe('ms= switches', () => {
     expect((await read<{ data: { canSend?: boolean } }>('/me/offers/offer-1')).body.data.canSend).toBe(false)
   })
 
+  it('answers when each offer was responded to and whether a message can go', async () => {
+    using('personal', '')
+    const offers = await read<{ data: { id: string; respondedAt: string | null; canSend: boolean }[] }>('/me/offers?box=received')
+    expect(offers.body.data.map(({ id, respondedAt, canSend }) => [id, respondedAt, canSend])).toEqual([
+      ['offer-1', '2026-10-21T04:20:00.000Z', true],
+      ['offer-3', null, false],
+      ['offer-4', '2026-10-15T01:00:00.000Z', false],
+    ])
+  })
+
   it('shows the member view of a Pro company', async () => {
     using('employer-pro', 'role-member')
     const company = await read<{ data: { role: string; seats: { used: number; limit: number } } }>('/companies/me')
@@ -136,15 +162,43 @@ describe('ms= switches', () => {
     setMockPersona(null)
   })
 
+  it('refuses payments with 503 PAYMENTS_DISABLED like push-be before launch', async () => {
+    using('employer', 'payments-disabled')
+    for (const [path, body] of [
+      ['/billing/checkout', { planId: 'PRO' }],
+      ['/billing/topup', { packs: 1 }],
+      ['/billing/iap/verify', {}],
+    ] as const) {
+      const failed = await call(path, 'POST', body)
+      expect(failed.status).toBe(503)
+      expect((await failed.json()).error.code).toBe('PAYMENTS_DISABLED')
+    }
+    const billing = await read<{ data: { paymentsEnabled?: boolean } }>('/billing')
+    expect(billing.status).toBe(200)
+    expect(billing.body.data.paymentsEnabled).toBe(false)
+    setMockPersona(null)
+  })
+
   it('lists four ledger rows for billing-ledger', async () => {
     using('employer-pro', 'billing-ledger')
-    const ledger = await read<{ data: { description: string; amountUsdCents: number }[] }>('/billing/ledger')
-    expect(ledger.body.data.map((item) => `${item.description} ${item.amountUsdCents}`)).toEqual([
-      'Pro 월 구독 10000',
-      'Pro 월 구독 10000',
-      'Pro 월 구독 10000',
-      'Basic 월 구독 2000',
+    const ledger = await read<{
+      data: { id: string; amountMicroCredits: number; balanceAfter: number; description: string | null; amountUsd: number | null; receiptUrl: string | null }[]
+    }>('/billing/ledger')
+    const payments = ledger.body.data.filter((item) => item.amountUsd != null)
+    expect(payments.map((item) => `${item.description} ${item.amountUsd}`)).toEqual([
+      'Pro 월 구독 100',
+      'Pro 월 구독 100',
+      'Pro 월 구독 100',
+      'Basic 월 구독 20',
     ])
+    expect(payments.every((item) => item.receiptUrl?.startsWith('https://'))).toBe(true)
+    expect(ledger.body.data.filter((item) => item.amountUsd == null).every((item) => item.description === null)).toBe(true)
+    expect(new Set(ledger.body.data.map((item) => item.id)).size).toBe(ledger.body.data.length)
+    // each balanceAfter is the one below it plus this row, newest first (Basic 3,000 + Pro 15,000 × 3 credits)
+    ledger.body.data.forEach((item, index) => {
+      expect(item.balanceAfter).toBe((ledger.body.data[index + 1]?.balanceAfter ?? 0) + item.amountMicroCredits)
+    })
+    expect(ledger.body.data[0]!.balanceAfter).toBe(18_000_000 + 3 * 90_000_000)
     setMockPersona(null)
   })
 
