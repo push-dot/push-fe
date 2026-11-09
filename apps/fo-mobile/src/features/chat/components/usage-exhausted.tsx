@@ -10,7 +10,7 @@ import { Appear } from './motion'
 export const UsageExhausted = ({ onPlan, onCredits }: { onPlan: () => void; onCredits: () => void }) => {
   const c = useColors()
   const account = useChatAccount(true)
-  const u = usageExhausted(account.data?.plan ?? 'FREE', paymentsOpen(account.data))
+  const u = usageExhausted(account.data?.plan, paymentsOpen(account.data))
   return (
     <Appear style={{ gap: spacing[4], padding: spacing[5], borderRadius: radius.card, backgroundColor: c.bg2 }}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing[3] }}>

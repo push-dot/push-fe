@@ -88,7 +88,10 @@ describe('paymentsOpen', () => {
   it('keeps buying open when billing allows it or predates the flag', () => {
     expect(paymentsOpen({ paymentsEnabled: true })).toBe(true)
     expect(paymentsOpen({})).toBe(true)
-    expect(paymentsOpen(undefined)).toBe(true)
+  })
+
+  it('keeps buying closed until the account loads', () => {
+    expect(paymentsOpen(undefined)).toBe(false)
   })
 })
 

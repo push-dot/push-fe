@@ -42,7 +42,7 @@ const PlansPage = () => {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const queryClient = useQueryClient()
-  const [amountText, setAmountText] = useState('')
+  const [packsText, setPacksText] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
   const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
   const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
@@ -70,7 +70,7 @@ const PlansPage = () => {
     },
   })
   const topup = useMutation({
-    mutationFn: (amount: number) => billingTopup(amount),
+    mutationFn: (packs: number) => billingTopup(packs),
     onSuccess: (result) => {
       void openLocal(result.url)
     },
@@ -103,12 +103,12 @@ const PlansPage = () => {
   const missing = companyMissing(company.error)
   const canManage = canChangeEmployerPlan(company.data?.role, missing)
   const canPay = canManage && paymentsOpen(billing.data)
-  const amount = Number(amountText)
+  const packs = Number(packsText)
   const submitTopup = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canPay || !topupReady(amount) || topup.isPending) return
+    if (!canPay || !topupReady(packs) || topup.isPending) return
     setActionError(null)
-    topup.mutate(amount)
+    topup.mutate(packs)
   }
   const subscribe = (planId: EmployerPlan) => {
     if (!canPay || checkout.isPending) return
@@ -131,11 +131,11 @@ const PlansPage = () => {
           </p>
         ) : null}
         <p className="b2 t2">{PLAN_RENEWAL}</p>
-        {paymentsOpen(billing.data) ? null : (
+        {billing.data && !paymentsOpen(billing.data) ? (
           <p className="b1" role="status">
             {PAYMENTS_CLOSED}
           </p>
-        )}
+        ) : null}
         {notice ? (
           <p className="b1" role="status">
             {notice}
@@ -167,9 +167,9 @@ const PlansPage = () => {
         <form className="stack form" onSubmit={submitTopup}>
           <label className="field">
             <span>{PLAN_AMOUNT}</span>
-            <input type="number" inputMode="decimal" value={amountText} onChange={(event) => setAmountText(event.target.value)} />
+            <input type="number" inputMode="numeric" min={1} max={20} step={1} value={packsText} onChange={(event) => setPacksText(event.target.value)} />
           </label>
-          <button type="submit" className="primary" disabled={!topupReady(amount) || topup.isPending}>
+          <button type="submit" className="primary" disabled={!topupReady(packs) || topup.isPending}>
             {PLAN_TOPUP}
           </button>
         </form>

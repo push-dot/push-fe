@@ -33,7 +33,9 @@ export const AccountModal = ({ initialPage = 'account' }: { initialPage?: 'accou
         !plan ? undefined : account.data!.plan === 'ULTRA' ? (
           <Button label="지금 ULTRA를 쓰고 있어요" disabled />
         ) : !paymentsOpen(account.data) ? (
-          <Button label={PAYMENTS_CLOSED_MESSAGE} disabled />
+          <Text v="b2" color="t3" style={{ textAlign: 'center' }}>
+            {PAYMENTS_CLOSED_MESSAGE}
+          </Text>
         ) : (
           <Button label="ULTRA로 업그레이드" onPress={() => purchase.buyPlan('ULTRA')} disabled={purchase.pending} />
         )

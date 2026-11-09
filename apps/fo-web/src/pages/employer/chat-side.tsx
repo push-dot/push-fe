@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
 import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED, CHAT_TOPUP } from './constants'
 
-export type ChatUsage = { plan: string; remain: string; allowance: string; ratio: number }
+export type ChatUsage = { plan: string; remain: string; allowance: string; ratio: number; topup: boolean }
 
 const ChatSide = ({
   conversations,
@@ -47,9 +47,11 @@ const ChatSide = ({
         <span className="chat-meter" aria-hidden="true">
           <span style={{ width: `${usage.ratio}%` }} />
         </span>
-        <Link className="c1 w7" to="/employer/plans">
-          {CHAT_TOPUP}
-        </Link>
+        {usage.topup ? (
+          <Link className="c1 w7" to="/employer/plans">
+            {CHAT_TOPUP}
+          </Link>
+        ) : null}
       </div>
     ) : null}
   </aside>
