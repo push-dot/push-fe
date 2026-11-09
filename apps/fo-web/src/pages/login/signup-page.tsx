@@ -12,7 +12,6 @@ import AuthCheck from './auth-check'
 import AuthPasswordField from './auth-password-field'
 import {
   EMAIL_LABEL,
-  LEGAL_PLACEHOLDER,
   LOGIN_FAILED_COPY,
   LOGIN_SUBMIT_COPY,
   NAME_LABEL,
@@ -23,7 +22,9 @@ import {
   SIGNUP_LEAD,
   SIGNUP_SUBMIT_COPY,
   TERMS_LABEL,
+  TERMS_PRIVACY_POLICY,
   TERMS_REQUIRED,
+  TERMS_SERVICE_LINK,
 } from './constants'
 import { useOAuthStart } from './oauth-start'
 import PhoneFlow from './phone-flow'
@@ -168,9 +169,16 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
                 {TERMS_LABEL}
                 <span className="auth-req">{TERMS_REQUIRED}</span>
               </span>
-              <span className="auth-check-detail">{LEGAL_PLACEHOLDER}</span>
             </span>
           </AuthCheck>
+          <span className="auth-legal-links">
+            <a href="/terms" target="_blank" rel="noreferrer">
+              {TERMS_SERVICE_LINK}
+            </a>
+            <a href="/privacy" target="_blank" rel="noreferrer">
+              {TERMS_PRIVACY_POLICY}
+            </a>
+          </span>
         </div>
         {error && !emailTaken && !passwordInvalid ? (
           <p className="auth-error" role="alert">

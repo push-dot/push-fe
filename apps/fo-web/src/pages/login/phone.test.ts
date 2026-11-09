@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockOf, formatPhone, linkedProvider, phoneFailure, toE164, validPhone } from './phone'
+import { clockOf, formatPhone, linkedProvider, phoneFailure, sendCooldown, toE164, validPhone } from './phone'
 
 describe('phone number entry', () => {
   it('groups a Korean mobile number as it is typed', () => {
@@ -55,5 +55,18 @@ describe('phoneFailure', () => {
     expect(phoneFailure(error('RATE_LIMITED', { retryAfterSec: 60 }))).toEqual({ kind: 'failed' })
     expect(phoneFailure(new Error('network'))).toEqual({ kind: 'failed' })
     expect(phoneFailure(undefined)).toEqual({ kind: 'failed' })
+  })
+})
+
+describe('send cooldown', () => {
+  it('reads the wait push-be gives with a send refused for this number', () => {
+    expect(sendCooldown({ code: 'RATE_LIMITED', details: { retryAfterSec: 40 } })).toBe(40)
+  })
+
+  it('has no wait for other refusals, so the page says to try later instead', () => {
+    expect(sendCooldown({ code: 'RATE_LIMITED' })).toBeNull()
+    expect(sendCooldown({ code: 'RATE_LIMITED', details: { retryAfterSec: 0 } })).toBeNull()
+    expect(sendCooldown({ code: 'NOT_CONFIGURED' })).toBeNull()
+    expect(sendCooldown(new Error('offline'))).toBeNull()
   })
 })

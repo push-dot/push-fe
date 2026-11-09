@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { authMe, useAuthMe } from '../../entities/session'
 import { companiesAcceptInvite, companiesInvitePreview } from '../../features/accept-invite'
-import { saveReturnTo } from '../../shared/auth/return-path'
+import { saveReturnTo, saveSignupReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
 import { ROLE_NAME } from '../../shared/model/employer-plan'
@@ -36,9 +36,11 @@ import {
   INVITE_LEAD_SUBJECT,
   INVITE_LIMIT,
   INVITE_LOGIN,
+  INVITE_OTHER_ACCOUNT,
   INVITE_OTHER_AS,
   INVITE_OTHER_NEED,
   INVITE_OTHER_NOW,
+  INVITE_OTHER_PERSONAL,
   INVITE_OTHER_TITLE,
   INVITE_PERKS,
   INVITE_RELOGIN,
@@ -203,7 +205,7 @@ const InvitePage = () => {
           detail={
             <>
               {INVITE_OTHER_NOW}
-              <b>{me.data?.email}</b>
+              <b>{me.data?.email || (personal ? INVITE_OTHER_PERSONAL : INVITE_OTHER_ACCOUNT)}</b>
               {INVITE_OTHER_AS}
               <b>{invite.email}</b>
               {INVITE_OTHER_NEED}
@@ -254,7 +256,7 @@ const InvitePage = () => {
   }
   const viaEmail = () => {
     if (session) return void accept()
-    saveReturnTo(`/invites/${token}`)
+    saveSignupReturnTo(`/invites/${token}`)
     navigate(`/signup?accountType=EMPLOYER&email=${encodeURIComponent(invite.email)}`)
   }
   const busy = accepting || oauth.pending

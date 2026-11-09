@@ -262,6 +262,14 @@ describe('employer api', () => {
     expect(bodyOf(hits[3]!)).toEqual({ role: 'ADMIN' })
   })
 
+  it('keeps an invite token inside its own path segment', async () => {
+    const { api, hits } = harness((req) => (req.method === 'POST' ? noContent(204) : json(200, { data: {} })))
+    await api.companies.invitePreview('../../me/members')
+    await api.companies.acceptInvite('a/../../b?x=1#y')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/companies/invites/..%2F..%2Fme%2Fmembers')
+    expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/companies/invites/a%2F..%2F..%2Fb%3Fx%3D1%23y/accept')
+  })
+
   it('creates, updates, and closes a posting', async () => {
     const input = {
       title: '백엔드',

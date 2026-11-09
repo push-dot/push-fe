@@ -1,6 +1,6 @@
 import type { Session } from '@push/api-client'
 import { LEGAL_VERSION } from '@push/shared'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 import { meUpdateTerms } from '../../features/sign-up'
 import { Icon } from '../../shared/ui/icon'
@@ -38,6 +38,8 @@ const PhoneConsent = ({ session, onDone }: { session: Session; onDone: (session:
   const [terms, setTerms] = useState<Terms>(NONE)
   const [pending, setPending] = useState(false)
   const [failed, setFailed] = useState(false)
+  const title = useRef<HTMLHeadingElement>(null)
+  useEffect(() => title.current?.focus(), [])
   const all = ROWS.every((row) => terms[row.key])
   const ready = ROWS.every((row) => !row.required || terms[row.key])
 
@@ -61,7 +63,9 @@ const PhoneConsent = ({ session, onDone }: { session: Session; onDone: (session:
   return (
     <main className="auth-card">
       <header className="auth-lead">
-        <h1>{CONSENT_TITLE}</h1>
+        <h1 ref={title} tabIndex={-1}>
+          {CONSENT_TITLE}
+        </h1>
         <p>{CONSENT_LEAD}</p>
       </header>
       <form className="auth-stack" onSubmit={(event) => void submit(event)}>

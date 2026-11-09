@@ -1,5 +1,5 @@
-import { ApiError } from '@push/api-client'
-import { useEffect, useRef, useState } from 'react'
+import { ApiError, type Session } from '@push/api-client'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { takePkceVerifier } from '../../shared/auth/pkce'
@@ -11,6 +11,8 @@ import { ProviderMark } from './auth-provider-button'
 import { EXCHANGE_CANCEL, EXCHANGE_EMPLOYER, EXCHANGE_PERSONAL, EXCHANGE_TAIL, PROVIDER_NAME } from './constants'
 import type { LoginState } from './login-page'
 import { clearPendingLogin, readPendingLogin } from './pending-login'
+import PhoneConsent from './phone-consent'
+import { termsPending } from './terms-gate'
 
 const failureDetail = (caught: unknown) => {
   if (caught instanceof ApiError && caught.code === 'EMAIL_TAKEN') return emailTakenCopy(caught.details?.accountType)
@@ -23,7 +25,15 @@ const CallbackPage = () => {
   const navigate = useNavigate()
   const started = useRef(false)
   const [{ provider, accountType }] = useState(() => readPendingLogin(params))
+  const [consent, setConsent] = useState<Session | null>(null)
   const loginPath = accountType === 'EMPLOYER' ? '/login?accountType=EMPLOYER' : '/login'
+  const finish = useCallback(
+    (session: Session) => {
+      sessionStore.save(session)
+      navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
+    },
+    [navigate],
+  )
 
   useEffect(() => {
     if (started.current) return
@@ -43,8 +53,9 @@ const CallbackPage = () => {
         const result = await authExchange({ code, codeVerifier: verifier })
         clearPendingLogin()
         if ('accessToken' in result) {
-          sessionStore.save(result)
-          navigate(pathAfterAuth(takeReturnTo(), result), { replace: true })
+          // The session is kept only once the terms are on record, so leaving the consent step asks again next time.
+          if (await termsPending(result)) setConsent(result)
+          else finish(result)
           return
         }
         // First personal social login: push-be holds the identity until a phone number is verified.
@@ -54,7 +65,9 @@ const CallbackPage = () => {
       }
     }
     void run()
-  }, [code, loginPath, navigate, provider])
+  }, [code, finish, loginPath, navigate, provider])
+
+  if (consent) return <PhoneConsent session={consent} onDone={finish} />
 
   return (
     <main className="auth-card" aria-busy="true">

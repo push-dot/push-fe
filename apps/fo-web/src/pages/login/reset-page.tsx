@@ -1,4 +1,3 @@
-import { ApiError } from '@push/api-client'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -28,23 +27,24 @@ import {
   RESET_EXPIRED_TITLE,
   RESET_EXPIRED_WHY,
   RESET_GOOGLE_NOTE,
+  RESET_INVALID_TITLE,
+  RESET_INVALID_WHY,
   RESET_LEAD,
+  RESET_LIMIT,
   RESET_NEW_LINK,
   RESET_RESEND,
   RESET_SEND_COPY,
   RESET_SENT_NEXT,
   RESET_SENT_TAIL,
+  RESET_SEND_FAILED,
   RESET_SENT_TITLE,
   RESET_SPAM,
   RESET_TITLE,
   VERIFY_MAIL_MISSING,
 } from './constants'
+import { linkOutcome, requestOutcome } from './reset-outcome'
 
 const EMPLOYER_LOGIN = '/login?accountType=EMPLOYER'
-
-// push-be answers 410 TOKEN_EXPIRED with details.email for a reset link past its hour (lookup and confirm alike).
-const expiredEmail = (caught: unknown) =>
-  caught instanceof ApiError && caught.code === 'TOKEN_EXPIRED' ? String(caught.details?.email ?? '') : null
 
 const EmailField = ({ email, onChange }: { email: string; onChange: (value: string) => void }) => (
   <label className="auth-block">
@@ -55,10 +55,17 @@ const EmailField = ({ email, onChange }: { email: string; onChange: (value: stri
   </label>
 )
 
+const FormError = ({ text }: { text?: string }) =>
+  text ? (
+    <p className="auth-error" role="alert">
+      {text}
+    </p>
+  ) : null
+
 const ResetPage = () => {
   const [params] = useSearchParams()
   const token = params.get('token')
-  const [view, setView] = useState<'form' | 'sent' | 'done' | 'expired'>('form')
+  const [view, setView] = useState<'form' | 'sent' | 'done' | 'expired' | 'invalid'>('form')
   const [email, setEmail] = useState('')
   const [account, setAccount] = useState<string | null>(null)
   const [password, setPassword] = useState('')
@@ -72,10 +79,10 @@ const ResetPage = () => {
     authPasswordResetEmail(token)
       .then((found) => live && setAccount(found.email))
       .catch((caught: unknown) => {
-        const expired = expiredEmail(caught)
-        if (!live || expired === null) return
-        setEmail(expired)
-        setView('expired')
+        const outcome = linkOutcome(caught)
+        if (!live || outcome.view === 'form') return
+        if (outcome.view === 'expired') setEmail(outcome.email)
+        setView(outcome.view)
       })
     return () => {
       live = false
@@ -84,10 +91,18 @@ const ResetPage = () => {
 
   const requestReset = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault()
+    setError(null)
     setPending(true)
-    // push-be answers 202 whether or not the email has an account, so the page never says which.
-    await authRequestPasswordReset(email).catch(() => undefined)
-    setView('sent')
+    let caught: unknown = null
+    try {
+      // push-be answers 202 whether or not the email has an account, so the page never says which.
+      await authRequestPasswordReset(email)
+    } catch (failure) {
+      caught = failure
+    }
+    const outcome = requestOutcome(caught)
+    if (outcome === 'sent') setView('sent')
+    else setError({ field: 'form', text: outcome === 'limit' ? RESET_LIMIT : RESET_SEND_FAILED })
     setPending(false)
   }
 
@@ -109,11 +124,12 @@ const ResetPage = () => {
       await authConfirmPasswordReset(token, password)
       setView('done')
     } catch (caught) {
-      const expired = expiredEmail(caught)
-      if (expired !== null) {
-        setEmail(expired)
-        setView('expired')
-      } else setError({ field: 'form', text: LOGIN_FAILED_COPY })
+      const outcome = linkOutcome(caught)
+      if (outcome.view === 'form') setError({ field: 'form', text: LOGIN_FAILED_COPY })
+      else {
+        if (outcome.view === 'expired') setEmail(outcome.email)
+        setView(outcome.view)
+      }
     } finally {
       setPending(false)
     }
@@ -132,6 +148,7 @@ const ResetPage = () => {
           <strong>{VERIFY_MAIL_MISSING}</strong>
           <span>{RESET_SPAM}</span>
         </div>
+        <FormError text={error?.text} />
         <button type="button" className="auth-btn sec" disabled={pending} onClick={() => void requestReset()}>
           {RESET_RESEND}
         </button>
@@ -157,16 +174,18 @@ const ResetPage = () => {
     )
   }
 
-  if (view === 'expired') {
+  if (view === 'expired' || view === 'invalid') {
+    const expired = view === 'expired'
     return (
       <main className="auth-card">
-        <AuthResult icon="clock" tone="grey" title={RESET_EXPIRED_TITLE}>
-          {RESET_EXPIRED_WHY}
+        <AuthResult icon={expired ? 'clock' : 'link'} tone={expired ? 'grey' : 'red'} title={expired ? RESET_EXPIRED_TITLE : RESET_INVALID_TITLE}>
+          {expired ? RESET_EXPIRED_WHY : RESET_INVALID_WHY}
           <br />
           {RESET_EXPIRED_NEXT}
         </AuthResult>
         <form className="auth-stack" onSubmit={(event) => void requestReset(event)}>
           <EmailField email={email} onChange={setEmail} />
+          <FormError text={error?.text} />
           <button type="submit" className="auth-btn pri" disabled={pending}>
             {RESET_NEW_LINK}
           </button>
@@ -213,11 +232,7 @@ const ResetPage = () => {
             placeholder={CONFIRM_PASSWORD_PLACEHOLDER}
             error={error?.field === 'confirm' ? error.text : null}
           />
-          {error?.field === 'form' ? (
-            <p className="auth-error" role="alert">
-              {error.text}
-            </p>
-          ) : null}
+          <FormError text={error?.field === 'form' ? error.text : undefined} />
           <button type="submit" className={error && error.field !== 'form' ? 'auth-btn pri dis' : 'auth-btn pri'} disabled={pending}>
             {RESET_CONFIRM_COPY}
           </button>
@@ -235,6 +250,7 @@ const ResetPage = () => {
       </header>
       <form className="auth-stack" onSubmit={(event) => void requestReset(event)}>
         <EmailField email={email} onChange={setEmail} />
+        <FormError text={error?.text} />
         <button type="submit" className="auth-btn pri" disabled={pending}>
           {RESET_SEND_COPY}
         </button>

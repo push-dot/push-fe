@@ -65,6 +65,7 @@ export const TERMS_MARKETING = '혜택·이벤트 알림 받기'
 export const TERMS_VIEW = '보기'
 // privacyConsent (packages/shared legal) names this link on the sign-up consent screen.
 export const TERMS_PRIVACY_POLICY = '개인정보 처리방침 보기'
+export const TERMS_SERVICE_LINK = '이용약관 보기'
 export const LEGAL_PLACEHOLDER = '[자리 표시]'
 export const CONSENT_SUBMIT = '동의하고 시작하기'
 
@@ -121,6 +122,10 @@ export const RESET_EXPIRED_TITLE = '링크가 만료됐어요'
 export const RESET_EXPIRED_WHY = '링크는 1시간 동안 쓸 수 있어요.'
 export const RESET_EXPIRED_NEXT = '새 링크를 받아 다시 바꿔 주세요.'
 export const RESET_NEW_LINK = '새 링크 받기'
+export const RESET_INVALID_TITLE = '쓸 수 없는 링크예요'
+export const RESET_INVALID_WHY = '이미 쓴 링크이거나 주소가 잘못됐어요.'
+export const RESET_LIMIT = '메일은 1분에 3번까지 보낼 수 있어요. 잠시 후 다시 보내 주세요.'
+export const RESET_SEND_FAILED = '메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'
 
 export const MISSING_VERIFY_COPY = '인증 링크가 없어요'
 export const LOGIN_FAILED_COPY = '로그인에 실패했어요'

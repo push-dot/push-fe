@@ -1,5 +1,5 @@
 import type { Session } from '@push/api-client'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 
 import { authPhoneSend, authPhoneVerify } from '../../features/sign-in'
 import type { OAuthProvider } from '../../shared/model/login-providers'
@@ -33,8 +33,9 @@ import {
   codeLimitTitle,
   providerLogin,
 } from './constants'
-import { clockOf, codeDigits, formatPhone, phoneFailure, toE164, validPhone, type PhoneFailure } from './phone'
+import { clockOf, codeDigits, formatPhone, phoneFailure, sendCooldown, toE164, validPhone, type PhoneFailure } from './phone'
 import PhoneConsent from './phone-consent'
+import { termsPending } from './terms-gate'
 
 type CodeState = Extract<PhoneFailure, { kind: 'wrong' | 'expired' | 'limit' }> | null
 
@@ -60,8 +61,22 @@ const PhoneFlow = ({
   const [taken, setTaken] = useState<{ provider: OAuthProvider | null } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-  const [created, setCreated] = useState<Session | null>(null)
+  const [consent, setConsent] = useState<Session | null>(null)
+  // The wait shows in the resend states (board: none) only after push-be refused a resend.
+  const [refused, setRefused] = useState(false)
   const phoneInput = useRef<HTMLInputElement>(null)
+  const codeInput = useRef<HTMLInputElement>(null)
+  const firstStep = useRef(true)
+  const errorId = useId()
+  const codeErrorId = useId()
+
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false
+      return
+    }
+    ;(step === 'code' ? codeInput : phoneInput).current?.focus()
+  }, [step])
 
   const waiting = resendAt - now
   useEffect(() => {
@@ -79,9 +94,23 @@ const PhoneFlow = ({
       setNow(Date.now())
       setCode('')
       setCodeState(null)
+      setRefused(false)
       setStep('code')
     } catch (caught) {
-      setError((caught as { code?: string } | null)?.code === 'RATE_LIMITED' ? CODE_SEND_LATER : LOGIN_FAILED_COPY)
+      const wait = sendCooldown(caught)
+      if (wait === null) {
+        setError((caught as { code?: string } | null)?.code === 'RATE_LIMITED' ? CODE_SEND_LATER : LOGIN_FAILED_COPY)
+        return
+      }
+      // A code went to this number moments ago: go (back) to the code step so it can still be entered, like the app.
+      setResendAt(Date.now() + wait * 1000)
+      setNow(Date.now())
+      setRefused(true)
+      if (step === 'number') {
+        setCode('')
+        setCodeState(null)
+        setStep('code')
+      }
     } finally {
       setPending(false)
     }
@@ -92,8 +121,8 @@ const PhoneFlow = ({
     setPending(true)
     try {
       const result = await authPhoneVerify({ phone: toE164(phone), code, ...(pendingToken ? { pendingToken } : {}) })
-      const { created: isNew, linked: _linked, provider: _provider, ...session } = result
-      if (isNew) setCreated(session)
+      const { created: _created, linked: _linked, provider: _provider, ...session } = result
+      if (await termsPending(session)) setConsent(session)
       else onDone(session)
     } catch (caught) {
       const failure = phoneFailure(caught)
@@ -112,7 +141,7 @@ const PhoneFlow = ({
     }
   }
 
-  if (created) return <PhoneConsent session={created} onDone={onDone} />
+  if (consent) return <PhoneConsent session={consent} onDone={onDone} />
 
   if (step === 'number') {
     const submitNumber = (event: FormEvent<HTMLFormElement>) => {
@@ -135,12 +164,13 @@ const PhoneFlow = ({
               value={phone}
               placeholder="010-0000-0000"
               aria-label={PHONE_LABEL}
+              aria-describedby={error ? errorId : undefined}
               readOnly={Boolean(taken)}
               onChange={(event) => setPhone(formatPhone(event.target.value))}
             />
           </span>
           {error ? (
-            <p className="auth-error" role="alert">
+            <p id={errorId} className="auth-error" role="alert">
               {error}
             </p>
           ) : null}
@@ -211,6 +241,7 @@ const PhoneFlow = ({
         <div className="auth-block">
           <span className={controlClass}>
             <input
+              ref={codeInput}
               className="auth-code"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -218,6 +249,7 @@ const PhoneFlow = ({
               placeholder={CODE_PLACEHOLDER}
               aria-label={CODE_PLACEHOLDER}
               aria-invalid={codeError ? true : undefined}
+              aria-describedby={[codeError ? codeErrorId : '', error ? errorId : ''].filter(Boolean).join(' ') || undefined}
               disabled={codeState?.kind === 'limit'}
               onChange={(event) => {
                 setCode(codeDigits(event.target.value))
@@ -227,17 +259,25 @@ const PhoneFlow = ({
             {codeState?.kind === 'expired' ? <span className="auth-clock">{clockOf(0)}</span> : null}
           </span>
           {codeError ? (
-            <span className="auth-error" role="alert">
+            <span id={codeErrorId} className="auth-error" role="alert">
               {codeError}
             </span>
           ) : null}
           {error ? (
-            <span className="auth-error" role="alert">
+            <span id={errorId} className="auth-error" role="alert">
               {error}
             </span>
           ) : null}
           <div className="auth-code-row">
-            <span>{waiting > 0 && !again ? `${clockOf(waiting)}${CODE_COOLDOWN_TAIL}` : ''}</span>
+            {waiting > 0 ? (
+              <span>{!again || refused ? `${clockOf(waiting)}${CODE_COOLDOWN_TAIL}` : ''}</span>
+            ) : again ? (
+              <span />
+            ) : (
+              <button type="button" className="auth-link" disabled={pending} onClick={() => void send()}>
+                {CODE_RESEND}
+              </button>
+            )}
             <button
               type="button"
               className="auth-link"

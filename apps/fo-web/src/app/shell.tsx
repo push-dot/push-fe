@@ -69,7 +69,7 @@ const Shell = () => {
           </NavLink>
           {verifyBar && session ? (
             <>
-              <span className="auth-biz">{AUTH_BIZ}</span>
+              <span className="badge biz auth-biz">{AUTH_BIZ}</span>
               <span className="auth-session">
                 {`${me.data?.email ?? session.user.displayName} · `}
                 <button

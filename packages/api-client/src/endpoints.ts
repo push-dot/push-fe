@@ -275,8 +275,8 @@ export const createApi = (c: Client) => ({
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
-    invitePreview: (token: string) => unwrap(c.get<DataEnvelope<InvitePreview>>(`companies/invites/${token}`)),
-    acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
+    invitePreview: (token: string) => unwrap(c.get<DataEnvelope<InvitePreview>>(`companies/invites/${encodeURIComponent(token)}`)),
+    acceptInvite: (token: string) => c.post<void>(`companies/invites/${encodeURIComponent(token)}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>
       c.patch<void>(`companies/me/members/${userId}`, { body: { role: 'ADMIN' } }),

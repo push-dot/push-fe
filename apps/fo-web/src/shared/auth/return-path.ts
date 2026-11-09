@@ -1,8 +1,8 @@
 import type { Session } from '@push/api-client'
-import { browserSessionStorage } from '../lib/storage'
+import { browserLocalStorage, browserSessionStorage } from '../lib/storage'
 import { employerGate } from '../model/access'
 import { sanitizeReturnTo } from '../model/return-to'
-import { AUTH_ENTRY_PATHS, RETURN_TO_KEY } from './constants'
+import { AUTH_ENTRY_PATHS, RETURN_TO_KEY, SIGNUP_RETURN_TO_KEY, VERIFY_LINK_MS } from './constants'
 
 const authEntries = new Set<string>(AUTH_ENTRY_PATHS)
 
@@ -15,6 +15,36 @@ export const takeReturnTo = () => {
   const stored = storage?.getItem(RETURN_TO_KEY) ?? null
   storage?.removeItem(RETURN_TO_KEY)
   return sanitizeReturnTo(stored)
+}
+
+// push-be's email sign-up takes no return path and the verification mail may open in a new tab (empty sessionStorage),
+// so the page that started the sign-up is kept in localStorage for the link's 24 hours.
+export const saveSignupReturnTo = (value: string, now = Date.now()) => {
+  saveReturnTo(value)
+  browserLocalStorage()?.setItem(
+    SIGNUP_RETURN_TO_KEY,
+    JSON.stringify({ path: sanitizeReturnTo(value), until: now + VERIFY_LINK_MS }),
+  )
+}
+
+export const takeSignupReturnTo = (now = Date.now()) => {
+  const inTab = takeReturnTo()
+  const storage = browserLocalStorage()
+  const raw = storage?.getItem(SIGNUP_RETURN_TO_KEY) ?? null
+  storage?.removeItem(SIGNUP_RETURN_TO_KEY)
+  try {
+    const saved = JSON.parse(raw ?? 'null') as { path?: unknown; until?: unknown } | null
+    if (
+      saved &&
+      typeof saved.path === 'string' &&
+      typeof saved.until === 'number' &&
+      saved.until > now
+    )
+      return sanitizeReturnTo(saved.path)
+  } catch {
+    // A broken entry falls back to this tab's path.
+  }
+  return inTab
 }
 
 export const gateAccount = (session: Session | null) => {

@@ -233,7 +233,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-bar{display:flex;align-items:center;height:72px;padding:0 40px;background:var(--bg2)}
 .browser .auth-logo{color:var(--t1);font-size:24px;font-weight:800;letter-spacing:-.04em;text-decoration:none}
 .browser .auth-logo i{font-style:normal;color:var(--ac)}
-.browser .auth-biz{margin-left:10px;display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:6px;background:var(--t1);color:var(--bg);font-size:12px;font-weight:700}
+.browser .auth-biz{margin-left:10px}
 .browser .auth-session{margin-left:auto;min-width:0;color:var(--t3);font-size:15px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .browser .auth-session button{color:var(--t3);font-weight:600}
 .browser .auth-card{width:100%;max-width:460px;margin:48px auto;padding:40px;border-radius:28px;background:var(--bg);box-shadow:0 1px 2px rgba(16,24,40,.04);display:flex;flex-direction:column;gap:20px}
@@ -303,6 +303,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-code-row{display:flex;align-items:center;gap:12px;margin-top:10px}
 .browser .auth-code-row span{flex:1;color:var(--t3);font-size:13px;line-height:18px;font-variant-numeric:tabular-nums}
 .browser .auth-link{color:var(--t1);font-size:13px;line-height:18px;font-weight:700}
+.browser .auth-code-row .auth-link:first-child{flex:1;text-align:left;color:var(--acText)}
+.browser .auth-lead h1:focus{outline:none}
 .browser .auth-consents{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:18px;background:var(--bg2)}
 .browser .auth-check{position:relative;display:flex;gap:12px;align-items:flex-start}
 .browser .auth-check input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -314,6 +316,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-req{color:var(--red)}
 .browser .auth-opt{color:var(--t3)}
 .browser .auth-check-detail{display:block;margin-top:2px;color:var(--t4);font-size:13px;line-height:18px}
+.browser .auth-legal-links{display:flex;flex-wrap:wrap;gap:4px 14px;margin:-12px 0 0 34px;font-size:13px;line-height:18px}
+.browser .auth-legal-links a{color:var(--t2);text-decoration:underline}
 .browser .auth-consents.plain{gap:16px;padding:4px 0;border-radius:0;background:none}
 .browser .auth-consents.plain>.auth-check{align-items:center}
 .browser .auth-consents.plain>.auth-rule{flex:none}
@@ -360,8 +364,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-alert{display:flex;gap:12px;padding:16px 18px;border-radius:16px;background:var(--redSoft);color:var(--red)}
 .browser .auth-alert.bang{align-items:flex-start;padding:16px;color:var(--t1)}
 .browser .auth-alert.orange{background:var(--orangeSoft)}
-.browser .auth-alert-mark{width:22px;height:22px;margin-top:1px;border-radius:11px;background:var(--redFill);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:14px;line-height:1;font-weight:800}
-.browser .auth-alert.orange .auth-alert-mark{background:var(--orange)}
+.browser .auth-alert-mark{width:22px;height:22px;margin-top:1px;border-radius:11px;background:var(--redFill);color:var(--onFill);display:flex;align-items:center;justify-content:center;flex:none;font-size:14px;line-height:1;font-weight:800}
+.browser .auth-alert.orange .auth-alert-mark{background:var(--orangeFill)}
 .browser .auth-alert-copy{flex:1;min-width:0}
 .browser .auth-alert .auth-btn.sm{margin-top:10px}
 .browser .auth-alert-copy{display:flex;flex-direction:column;gap:2px}
@@ -382,8 +386,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-center.invite{gap:12px}
 .browser .auth-center.invite h1{margin-top:6px}
 .browser .auth-invite-mark{position:relative;display:flex}
-.browser .auth-invite-mark .av{width:76px;height:76px;border-radius:24px;color:#fff;font-size:30px;font-weight:700}
-.browser .auth-invite-done{position:absolute;right:-6px;bottom:-6px;width:30px;height:30px;border-radius:15px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--bg)}
+.browser .auth-invite-mark .av{width:76px;height:76px;border-radius:24px;color:var(--onFill);font-size:30px;font-weight:700}
+.browser .auth-invite-done{position:absolute;right:-6px;bottom:-6px;width:30px;height:30px;border-radius:15px;background:var(--green);color:var(--onFill);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--bg)}
 .browser .auth-btn .auth-spin{flex:none}
 .browser .auth-spin{width:18px;height:18px;border-radius:50%;border:2.5px solid #fff;border-right-color:rgba(255,255,255,.35);border-bottom-color:rgba(255,255,255,.35);animation:auth-spin .8s linear infinite}
 @keyframes auth-spin{to{transform:rotate(1turn)}}

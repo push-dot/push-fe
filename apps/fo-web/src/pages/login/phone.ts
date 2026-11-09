@@ -50,3 +50,10 @@ export const phoneFailure = (caught: unknown): PhoneFailure => {
   if (code === 'PHONE_TAKEN') return { kind: 'taken', provider: null }
   return { kind: 'failed' }
 }
+
+// POST auth/phone/send: 429 with details.retryAfterSec = a code went to this number moments ago. A 429 without it is the per-IP bucket.
+export const sendCooldown = (caught: unknown) => {
+  const { code, details } = (caught ?? {}) as ErrorLike
+  const wait = Number(details?.retryAfterSec)
+  return code === 'RATE_LIMITED' && Number.isFinite(wait) && wait > 0 ? wait : null
+}

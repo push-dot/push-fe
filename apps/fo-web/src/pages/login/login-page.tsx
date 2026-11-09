@@ -184,7 +184,8 @@ const LoginPage = () => {
           <p className="auth-switch">
             <Link to="/signup?accountType=EMPLOYER">{SIGNUP_LINK_COPY}</Link>
             <span aria-hidden="true">·</span>
-            <Link className="quiet" to="/auth/reset">
+            {/* Board WebLoginBizWrongPw: after a wrong password the way out is as strong as sign-up. */}
+            <Link className={error === BAD_CREDENTIALS_COPY ? undefined : 'quiet'} to="/auth/reset">
               {FORGOT_COPY}
             </Link>
           </p>

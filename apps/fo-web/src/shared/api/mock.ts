@@ -22,7 +22,7 @@ import type {
   UserLink,
   WebNotification,
 } from '@push/api-client'
-import { searchHangul } from '@push/shared'
+import { LEGAL_VERSION, searchHangul } from '@push/shared'
 import { sessionStore } from '../auth/session'
 import { isWebView } from '../lib/bridge'
 import { SEAT_LIMIT_NONE, SEAT_LIMIT_PRO, SEAT_LIMIT_ULTRA } from '../model/constants'
@@ -669,7 +669,20 @@ let settings: Settings = {
   confirmBeforeEdit: true,
 }
 
-let consent: Consent = { referenceData: false, updatedAt: null }
+// The mock persona agreed at sign-up; the signup-consent switch serves an account that has not (push-be stores terms apart).
+let consent: Consent = {
+  referenceData: false,
+  updatedAt: null,
+  terms: {
+    version: LEGAL_VERSION,
+    age14At: '2026-10-01T00:00:00.000Z',
+    serviceTermsAt: '2026-10-01T00:00:00.000Z',
+    privacyAt: '2026-10-01T00:00:00.000Z',
+    marketing: false,
+    marketingAt: null,
+  },
+}
+const consentNow = (): Consent => (mockSwitch('signup-consent') ? { ...consent, terms: undefined } : consent)
 
 const applications: Application[] = APPLICATIONS.map((item) => ({ ...item }))
 
@@ -1247,10 +1260,19 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     settings = { ...settings, ...(payload as Partial<Settings>) }
     return json(200, { data: settings })
   }
-  if (tail === '/me/consents' && method === 'GET') return json(200, { data: consent })
+  if (tail === '/me/consents' && method === 'GET') return json(200, { data: consentNow() })
   if (tail === '/me/consents' && method === 'PUT') {
     const payload = await readJson(input, init)
-    consent = { referenceData: Boolean(payload.referenceData), updatedAt: new Date().toISOString() }
+    consent = { ...consent, referenceData: Boolean(payload.referenceData), updatedAt: new Date().toISOString() }
+    return json(200, { data: consentNow() })
+  }
+  if (tail === '/me/consents/terms' && method === 'PUT') {
+    const payload = await readJson(input, init)
+    const at = new Date().toISOString()
+    consent = {
+      ...consent,
+      terms: { version: LEGAL_VERSION, age14At: at, serviceTermsAt: at, privacyAt: at, marketing: Boolean(payload.marketing), marketingAt: payload.marketing ? at : null },
+    }
     return json(200, { data: consent })
   }
   if (method === 'POST' && tail === '/companies/verify') {

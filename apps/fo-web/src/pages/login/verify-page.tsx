@@ -2,7 +2,7 @@ import { ApiError } from '@push/api-client'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
-import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
+import { pathAfterAuth, takeSignupReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import AuthResult from './auth-result'
 import {
@@ -34,7 +34,7 @@ const VerifyPage = () => {
       try {
         const session = await authEmailVerify(token)
         sessionStore.save(session)
-        navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
+        navigate(pathAfterAuth(takeSignupReturnTo(), session), { replace: true })
       } catch (caught) {
         // 410 TOKEN_EXPIRED carries the sign-up email; a new link comes from sending the sign-up form again.
         if (caught instanceof ApiError && caught.code === 'TOKEN_EXPIRED') setExpired(String(caught.details?.email ?? ''))
