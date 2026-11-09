@@ -52,12 +52,12 @@ const SearchPage = () => {
     const query = new URLSearchParams(params)
     query.set('q', next)
     query.set('type', type)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const selectType = (next: SearchType) => {
     const query = new URLSearchParams(params)
     query.set('type', next)
-    setParams(query)
+    setParams(query, { preventScrollReset: true })
   }
   const returnTo = `/search?${new URLSearchParams({ q, type }).toString()}`
   const loginNote = (

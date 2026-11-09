@@ -22,3 +22,9 @@ describe('v2 selected styles', () => {
     }
   })
 })
+
+describe('links', () => {
+  it('inherit the text colour with no underline, so no browser blue shows', () => {
+    expect(css).toMatch(/(^|\n)a\{color:inherit;text-decoration:none\}/)
+  })
+})

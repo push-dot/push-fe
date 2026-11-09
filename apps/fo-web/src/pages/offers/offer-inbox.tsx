@@ -78,10 +78,10 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
         <section className="inbox-list">
           <div className="inbox-head">
             <div className="seg" role="tablist">
-              <button type="button" role="tab" aria-selected={box === 'received'} onClick={() => setParams({ box: 'received' })}>
+              <button type="button" role="tab" aria-selected={box === 'received'} onClick={() => setParams({ box: 'received' }, { preventScrollReset: true })}>
                 {`받은 제안 ${received.data?.data.length ?? 0}`}
               </button>
-              <button type="button" role="tab" aria-selected={box === 'sent'} onClick={() => setParams({ box: 'sent' })}>
+              <button type="button" role="tab" aria-selected={box === 'sent'} onClick={() => setParams({ box: 'sent' }, { preventScrollReset: true })}>
                 {`보낸 제안 ${sent.data?.data.length ?? 0}`}
               </button>
             </div>
@@ -90,7 +90,7 @@ const OfferInbox = ({ selectedId }: { selectedId?: string }) => {
           {items.map((item) => {
             const who = box === 'received' ? item.sender : item.recipient
             return (
-              <Link key={item.id} to={`/offers/${item.id}?box=${box}`} className={item.id === selectedId ? 'offer-line-row on' : 'offer-line-row'}>
+              <Link key={item.id} to={`/offers/${item.id}?box=${box}`} preventScrollReset className={item.id === selectedId ? 'offer-line-row on' : 'offer-line-row'}>
                 <span className="av hd-av" style={{ background: brandColor(who.displayName) }}>
                   {initials(who.displayName)}
                 </span>
