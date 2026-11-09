@@ -654,6 +654,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .invite-form{display:flex;flex-direction:column;gap:16px}
 .browser .invite-form .sheet-actions{gap:10px}
 .browser .invite-form .sheet-actions>.btn.pri{flex:1}
+.browser .invite-form .sheet-actions>.btn.sec{flex:none}
 .browser .who .biz-mark{border-radius:14px;font-size:19px}
 .browser .who>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
 @media (max-width:1024px){
