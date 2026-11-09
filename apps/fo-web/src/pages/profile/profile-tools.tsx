@@ -3,9 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { useSession } from '../../shared/auth/use-session'
+import { Icon } from '../../shared/ui/icon'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { LINK_COPIED, OFFER_ONCE } from './constants'
 import OfferSheet from './offer-sheet'
+import { SendIcon } from './send-icon'
 import { profilesFollow, profilesUnfollow } from '../../features/follow-profile'
 
 
@@ -38,28 +40,31 @@ const ProfileTools = ({ profile }: { profile: Profile }) => {
     <>
       <aside className="profile-aside">
         <div className="box profile-apply">
-          {self ? null : (
-            <button type="button" className="btn pri lg block" disabled={profile.offered === true} onClick={() => setOfferOpen(true)}>
-              제안하기
-            </button>
-          )}
-          <div className="apply-row">
+          <div className="profile-cta">
             {self ? null : (
-              <button type="button" className="btn sec" aria-pressed={profile.following === true} disabled={follow.isPending} onClick={() => follow.mutate()}>
-                {profile.following ? '팔로우 취소' : '팔로우'}
+              <button type="button" className="btn pri lg block offer-btn" disabled={profile.offered === true} onClick={() => setOfferOpen(true)}>
+                <SendIcon />
+                제안하기
               </button>
             )}
-            <button type="button" className="btn sec" onClick={() => void share()}>
-              공유
-            </button>
+            <div className="apply-row">
+              {self ? null : (
+                <button type="button" className="btn sec" aria-pressed={profile.following === true} disabled={follow.isPending} onClick={() => follow.mutate()}>
+                  {profile.following ? '팔로우 취소' : '팔로우'}
+                </button>
+              )}
+              <button type="button" className="btn sec share-btn" aria-label="공유" onClick={() => void share()}>
+                <Icon name="share" size={18} width={2.2} />
+                <span>공유</span>
+              </button>
+            </div>
           </div>
           {self ? null : <p className="c1 t3">{OFFER_ONCE}</p>}
         </div>
       </aside>
       {offerOpen ? (
         <OfferSheet
-          userId={profile.userId}
-          name={profile.displayName}
+          profile={profile}
           onClose={() => setOfferOpen(false)}
           onSent={(text) => {
             setOfferOpen(false)
