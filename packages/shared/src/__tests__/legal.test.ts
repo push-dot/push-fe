@@ -70,6 +70,10 @@ describe('legal documents', () => {
     expect(sections).toEqual(sections.map((_, index) => index + 1))
   })
 
+  it('ships no unfilled placeholder in the published texts', () => {
+    for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document)).not.toMatch(/\[[^\]]+\]/)
+  })
+
   it('keeps every table row as wide as its header', () => {
     for (const document of Object.values(LEGAL_DOCUMENTS))
       for (const block of document.articles.flatMap((article) => article.blocks))
