@@ -5,7 +5,7 @@ import type { LegalDocument, LegalOperator } from './types'
 const SMS_VENDOR = '솔라피 주식회사'
 
 export const REFERENCE_STORED =
-  '가공한 결과에는 직무, 연차, 적합도 점수와 항목별 점수, 요금제, 서류의 특징(수치를 쓴 문장이 있는지, 기술을 얼마나 구체적으로 썼는지 등)과 서류의 문장을 저장합니다. 문장은 이메일 주소와 전화번호, 링크(https://나 www.로 시작하는 주소와 .com, .io, .dev, .net, .org, .kr, .me, .co로 끝나는 주소), 숫자, 따옴표 안의 말, "주식회사 ○○", "○○ Inc.", "○○ 프로젝트"처럼 회사나 프로젝트 이름의 형태를 갖춘 말을 가린 채로 저장합니다. 이 형태에 맞지 않는 사람 이름, 학교 이름, 프로젝트 이름은 가려지지 않고 남을 수 있습니다.'
+  '가공한 결과에는 직무, 연차, 적합도 점수와 항목별 점수, 요금제, 서류의 특징(수치를 쓴 문장이 있는지, 기술을 얼마나 구체적으로 썼는지 등)과 서류의 문장을 저장합니다. 문장은 이메일 주소와 전화번호, 링크(https://나 www.로 시작하는 주소와 .com, .io, .ai, .kr 같은 흔한 도메인으로 끝나는 주소), 숫자, 따옴표 안의 말, "주식회사 ○○", "○○ Inc.", "○○ 프로젝트"처럼 회사나 프로젝트 이름의 형태를 갖춘 말을 가린 채로 저장합니다. 이 형태에 맞지 않는 사람 이름, 학교 이름, 프로젝트 이름은 가려지지 않고 남을 수 있습니다.'
 
 export const REFERENCE_USE =
   '다른 이용자의 가린 문장은 AI에게 문장 구조의 예시로만 주고 화면에 따로 보여 주지 않습니다. 다만 AI가 답변에서 비슷한 문장 구조를 쓸 수 있습니다. 같은 직무, 연차, 점수대의 표본(분석 1건마다 1개)이 30개보다 적으면 참고 데이터를 쓰지 않습니다.'
@@ -183,7 +183,7 @@ export const privacyPolicy = (operator: LegalOperator): LegalDocument => ({
           ['이전받는 자(연락처)', '국가', '이전 항목', '목적', '보유 기간'],
           ['OpenRouter, Inc.(privacy@openrouter.ai)', '미국', '에이전트 요청, 대화와 첨부 자료, 서류와 프로필 중 요청에 필요한 부분', '요청을 AI 모델 제공사에 전달', '요청을 전달하고 응답을 받을 때까지'],
           ['Anthropic, PBC(privacy@anthropic.com)', '미국', 'OpenRouter와 같음', 'AI 모델로 요청 처리', '응답을 만든 뒤 제공사 정책에 따른 기간'],
-          ['Together AI(privacy@together.ai), Fireworks.ai(privacy@fireworks.ai), Novita AI(novita.ai)', '미국', 'OpenRouter와 같음', 'AI 모델로 요청 처리', '응답을 만든 뒤 제공사 정책에 따른 기간'],
+          ['Together AI(privacy@together.ai), Fireworks.ai(privacy@fireworks.ai), Novita AI(support@novita.ai)', '미국', 'OpenRouter와 같음', 'AI 모델로 요청 처리', '응답을 만든 뒤 제공사 정책에 따른 기간'],
           ['Exa Labs, Inc.(privacy@exa.ai)', '미국', '웹 검색어(이용자의 질문, 또는 공고의 회사 이름과 내용 일부)', '웹 검색', 'Exa 정책에 따른 기간'],
           ['Neon, LLC(privacy@databricks.com)', '싱가포르', '1항의 모든 정보', '데이터베이스 보관', '6항의 보관 기간'],
           ['Cloudflare, Inc.(privacyquestions@cloudflare.com)', '미국 등 Cloudflare 데이터센터가 있는 국가', '요청 내용, IP 주소', 'API 서버 운영, 네트워크 보안', '요청을 처리할 때까지. 요청 기록은 최대 7일'],
@@ -238,7 +238,7 @@ export const privacyPolicy = (operator: LegalOperator): LegalDocument => ({
         ),
       ],
     },
-    { heading: '13. 문의처', blocks: [...privacyOfficerBlocks(operator), p('운영자는 문의를 받은 날부터 10일 안에 답합니다.')] },
+    { heading: '13. 문의처', blocks: [...privacyOfficerBlocks(operator), p('운영자는 문의를 받은 날부터 7일 안에 답합니다. 열람, 정정, 삭제 같은 권리 행사 요청은 9항에 따라 10일 안에 처리합니다.')] },
     {
       heading: '14. 권익 침해 구제 방법',
       blocks: [
