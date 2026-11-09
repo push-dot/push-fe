@@ -626,6 +626,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .facts{margin:0;overflow:hidden}
 .browser .facts div{display:flex;align-items:center;min-height:58px;padding:0 20px;border-bottom:1px solid var(--line);font-size:16px;line-height:24px}
 .browser .facts dt{width:180px;color:var(--t3)}
+.browser .facts .num{white-space:nowrap}
 .browser .facts dd{flex:1;margin:0;display:flex;align-items:center;gap:8px}
 .browser .member-main{gap:24px}
 .browser .member-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:-8px}
