@@ -5,10 +5,12 @@ import { DRAFT_TOOL, PENDING_TOOL_STATES } from './constants'
 export type TurnBody = { text: string; accessMode: AccessMode; intent?: ChatIntent; applicationId?: string }
 
 export type TurnDeps = {
-  stream: (id: string, body: TurnBody) => AsyncIterable<StreamEvent>
-  follow: (id: string, after?: number) => AsyncIterable<StreamEvent>
+  stream: (id: string, body: TurnBody, signal?: AbortSignal) => AsyncIterable<StreamEvent>
+  follow: (id: string, after?: number, signal?: AbortSignal) => AsyncIterable<StreamEvent>
   resolve: (id: string, approvalId: string, optionId: string) => Promise<Pick<ApprovalResolution, 'jobId'>>
 }
+
+export type TurnText = { kind: 'text'; key: string; text: string }
 
 export type TurnTool = {
   kind: 'tool'
@@ -16,23 +18,45 @@ export type TurnTool = {
   name: string
   state: ToolRunState
   summary: string
+  target?: string
+  resultLine?: string
+  extra?: string[]
   error?: string
   draft?: PostingDraft
   postingId?: string
 }
 
-export type TurnApproval = { kind: 'approval'; id: string; title: string; options: StreamOption[] }
+export type MoveRow = { name: string; initial: string; color?: string; from: string; to: string }
 
-export type TurnItem = TurnTool | TurnApproval
+export type TurnApproval = { kind: 'approval'; id: string; title: string; options: StreamOption[]; rows: MoveRow[]; foot?: string }
 
-export type ChatTurn = { text: string; items: TurnItem[]; awaiting: 'approval' | 'choice' | null }
+export type TurnChoice = { kind: 'choice'; id: string; title?: string; options: StreamOption[]; recommended?: string }
 
-export const EMPTY_TURN: ChatTurn = { text: '', items: [], awaiting: null }
+export type TurnPlan = { kind: 'plan'; id: string; rows: { tag: string; label: string; note: string }[] }
+
+export type TurnBlock = TurnText | TurnTool | TurnApproval | TurnChoice | TurnPlan
+
+export type ChatTurn = { blocks: TurnBlock[]; awaiting: 'approval' | 'choice' | null; queued: number | null }
+
+export const EMPTY_TURN: ChatTurn = { blocks: [], awaiting: null, queued: null }
 
 const recordOf = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
 
-const toolItem = (event: Extract<StreamEvent, { type: 'tool' }>, key: string): TurnTool => {
+const text = (value: unknown) => (typeof value === 'string' ? value : undefined)
+
+const moveRows = (args: unknown): MoveRow[] => {
+  const rows = recordOf(args).rows
+  if (!Array.isArray(rows)) return []
+  return rows.flatMap((row) => {
+    const item = recordOf(row)
+    const [name, initial, from, to] = [text(item.name), text(item.initial), text(item.from), text(item.to)]
+    if (!name || !from || !to) return []
+    return [{ name, initial: initial ?? name, from, to, ...(text(item.color) ? { color: text(item.color) } : {}) }]
+  })
+}
+
+const toolBlock = (event: Extract<StreamEvent, { type: 'tool' }>, key: string): TurnTool => {
   const result = recordOf(event.result)
   const draft = event.name === DRAFT_TOOL && event.state === 'ok' ? toPostingDraft(result.draft) : null
   const postingId = recordOf(result.draft).id
@@ -42,34 +66,73 @@ const toolItem = (event: Extract<StreamEvent, { type: 'tool' }>, key: string): T
     name: event.name,
     state: event.state,
     summary: event.summary,
+    ...(event.target ? { target: event.target } : {}),
+    ...(event.resultLine ? { resultLine: event.resultLine } : {}),
+    ...(event.extra?.length ? { extra: event.extra } : {}),
     ...(typeof result.error === 'string' ? { error: result.error } : {}),
     ...(draft ? { draft, ...(typeof postingId === 'string' ? { postingId } : {}) } : {}),
   }
 }
 
-const upsertTool = (items: TurnItem[], event: Extract<StreamEvent, { type: 'tool' }>) => {
-  const index = items
-    .map((item) => item.kind === 'tool' && item.name === event.name && PENDING_TOOL_STATES.includes(item.state))
+const upsertTool = (blocks: TurnBlock[], event: Extract<StreamEvent, { type: 'tool' }>) => {
+  const index = blocks
+    .map((block) => block.kind === 'tool' && block.name === event.name && PENDING_TOOL_STATES.includes(block.state))
     .lastIndexOf(true)
-  if (index < 0) return [...items, toolItem(event, `${event.name}-${items.length}`)]
-  return items.map((item, i) => (i === index ? toolItem(event, item.kind === 'tool' ? item.key : '') : item))
+  if (index < 0) return [...blocks, toolBlock(event, `${event.name}-${blocks.length}`)]
+  return blocks.map((block, i) => (i === index ? toolBlock(event, block.kind === 'tool' ? block.key : '') : block))
+}
+
+const appendText = (blocks: TurnBlock[], value: string): TurnBlock[] => {
+  const last = blocks.at(-1)
+  if (last?.kind === 'text') return [...blocks.slice(0, -1), { ...last, text: last.text + value }]
+  return [...blocks, { kind: 'text', key: `text-${blocks.length}`, text: value }]
+}
+
+const hasCard = (blocks: TurnBlock[], kind: 'approval' | 'choice', id: string) => blocks.some((block) => block.kind === kind && block.id === id)
+
+const queuedAhead = (event: Extract<StreamEvent, { type: 'status' }>, current: number | null) => {
+  if (event.text !== 'queued') return null
+  const ahead = recordOf(event).ahead
+  return typeof ahead === 'number' ? ahead : (current ?? 0)
 }
 
 export const applyTurnEvent = (turn: ChatTurn, event: StreamEvent): ChatTurn => {
   switch (event.type) {
+    case 'status':
+      return { ...turn, queued: queuedAhead(event, turn.queued) }
     case 'token':
-      return { ...turn, text: turn.text + event.text }
+      return { ...turn, queued: null, blocks: appendText(turn.blocks, event.text) }
     case 'tool':
-      return { ...turn, items: upsertTool(turn.items, event) }
+      return { ...turn, queued: null, blocks: upsertTool(turn.blocks, event) }
     case 'approval':
-      if (turn.items.some((item) => item.kind === 'approval' && item.id === event.id)) return turn
-      return { ...turn, items: [...turn.items, { kind: 'approval', id: event.id, title: event.title, options: event.options }] }
+      if (hasCard(turn.blocks, 'approval', event.id)) return turn
+      return {
+        ...turn,
+        blocks: [
+          ...turn.blocks,
+          { kind: 'approval', id: event.id, title: event.title, options: event.options, rows: moveRows(event.args), ...(event.foot ? { foot: event.foot } : {}) },
+        ],
+      }
+    case 'choice':
+      if (hasCard(turn.blocks, 'choice', event.id)) return turn
+      return {
+        ...turn,
+        blocks: [
+          ...turn.blocks,
+          { kind: 'choice', id: event.id, options: event.options, ...(event.title ? { title: event.title } : {}), ...(event.recommended ? { recommended: event.recommended } : {}) },
+        ],
+      }
+    case 'plan':
+      return { ...turn, blocks: [...turn.blocks, { kind: 'plan', id: event.id, rows: event.rows }] }
     case 'done':
-      return { ...turn, awaiting: event.awaiting ?? null }
+      return { ...turn, queued: null, awaiting: event.awaiting ?? null }
     default:
       return turn
   }
 }
+
+export const turnText = (turn: ChatTurn) =>
+  turn.blocks.flatMap((block) => (block.kind === 'text' ? [block.text] : [])).join('')
 
 const streamError = (error: { code: string; message: string; details?: unknown }) => {
   const details = recordOf(error.details)
@@ -87,9 +150,9 @@ const consume = async (source: AsyncIterable<StreamEvent>, onEvent: (event: Stre
   return { ended: false, seq }
 }
 
-export const runTurn = async (deps: TurnDeps, id: string, body: TurnBody, onEvent: (event: StreamEvent) => void) => {
-  const first = await consume(deps.stream(id, body), onEvent)
-  if (!first.ended) await consume(deps.follow(id, first.seq), onEvent)
+export const runTurn = async (deps: TurnDeps, id: string, body: TurnBody, onEvent: (event: StreamEvent) => void, signal?: AbortSignal) => {
+  const first = await consume(deps.stream(id, body, signal), onEvent)
+  if (!first.ended && !signal?.aborted) await consume(deps.follow(id, first.seq, signal), onEvent)
 }
 
 export const answerApproval = async (

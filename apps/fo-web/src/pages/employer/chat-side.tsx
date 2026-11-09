@@ -1,9 +1,16 @@
 import type { Conversation } from '@push/api-client'
 import { Link } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
-import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED, CHAT_TOPUP } from './constants'
+import { Icon } from '../../shared/ui/icon'
+import { CHAT_BUY, usedText } from './chat-copy'
+import type { ChatUsage } from './chat-usage'
+import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED } from './constants'
 
-export type ChatUsage = { plan: string; remain: string; allowance: string; ratio: number }
+export const UsageMeter = ({ usage, className }: { usage: ChatUsage; className: string }) => (
+  <span className={usage.full ? `${className} full` : className} aria-hidden="true">
+    <i style={{ width: `${usage.percent}%` }} />
+  </span>
+)
 
 const ChatSide = ({
   conversations,
@@ -19,21 +26,27 @@ const ChatSide = ({
   usage: ChatUsage | null
 }) => (
   <aside className="chat-side">
-    <Link className="btn pri" to="/employer/chat/new">
+    <Link className="btn pri chat-new" to="/employer/chat/new">
+      <Icon name="plus" size={18} width={2.4} />
       {CHAT_NEW}
     </Link>
     <p className="c1 w7 t3 chat-shared">{CHAT_SHARED}</p>
     {failed ? (
-      <p className="b2" role="alert">
+      <p className="b2 chat-side-note" role="alert">
         {CHAT_FAILED}
       </p>
     ) : null}
-    {loading ? <p className="c1 t3">{CHAT_LOADING}</p> : null}
-    {!loading && conversations.length === 0 ? <p className="c1 t3">{CHAT_EMPTY}</p> : null}
-    <nav>
+    {loading ? <p className="c1 t3 chat-side-note">{CHAT_LOADING}</p> : null}
+    {!loading && !failed && conversations.length === 0 ? <p className="c1 t3 chat-side-note">{CHAT_EMPTY}</p> : null}
+    <nav className="chat-rooms">
       {conversations.map((conversation) => (
-        <Link key={conversation.id} className={conversation.id === activeId ? 'chat-link on' : 'chat-link'} to={`/employer/chat/${conversation.id}`}>
-          <span className="b2 w7 cap">{conversation.title || '에이전트'}</span>
+        <Link
+          key={conversation.id}
+          className={conversation.id === activeId ? 'chat-link on' : 'chat-link'}
+          aria-current={conversation.id === activeId ? 'page' : undefined}
+          to={`/employer/chat/${conversation.id}`}
+        >
+          <span className="b2 w7 cap">{conversation.title || CHAT_NEW}</span>
           <span className="c1 t3">{relativeTime(conversation.updatedAt)}</span>
         </Link>
       ))}
@@ -42,13 +55,11 @@ const ChatSide = ({
       <div className="chat-usage">
         <span className="c1 chat-usage-line">
           <span className="w7">{usage.plan}</span>
-          <span className="t3 num">{usage.allowance ? `${usage.remain} / ${usage.allowance}` : usage.remain}</span>
+          <span className="t3">{usedText(usage.percent)}</span>
         </span>
-        <span className="chat-meter" aria-hidden="true">
-          <span style={{ width: `${usage.ratio}%` }} />
-        </span>
+        <UsageMeter usage={usage} className="chat-meter" />
         <Link className="c1 w7" to="/employer/plans">
-          {CHAT_TOPUP}
+          {CHAT_BUY}
         </Link>
       </div>
     ) : null}

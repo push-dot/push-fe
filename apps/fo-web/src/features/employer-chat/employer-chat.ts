@@ -14,7 +14,7 @@ export const conversationsSend = (...args: Parameters<typeof call2>) => call2(..
 export const conversationsStream = (...args: Parameters<typeof call3>) => call3(...args)
 
 export const chatTurnDeps: TurnDeps = {
-  stream: (id, body) => call3(id, body),
-  follow: (id, after) => call4(id, after),
+  stream: (id, body, signal) => call3(id, body, signal),
+  follow: (id, after, signal) => call4(id, after, signal),
   resolve: (id, approvalId, optionId) => call5(id, approvalId, optionId),
 }

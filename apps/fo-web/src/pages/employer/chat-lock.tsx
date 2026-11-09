@@ -1,13 +1,31 @@
 import { Link } from 'react-router-dom'
+import { Icon } from '../../shared/ui/icon'
+import { useChatActions } from './chat-actions'
+import { LOCK_ADMIN_ONLY, LOCK_BODY, LOCK_REVIEW_ONLY, LOCK_TITLE, REVIEW_ASK } from './chat-copy'
 import { PLANS_LINK } from './constants'
 
-const ChatLock = ({ message }: { message: string }) => (
-  <section className="lock-card" role="status">
-    <h2 className="h3">{message}</h2>
-    <Link className="btn pri" to="/employer/plans">
-      {PLANS_LINK}
-    </Link>
-  </section>
-)
+const ChatLock = () => {
+  const { busy, send } = useChatActions()
+  return (
+    <section className="chat-lock" role="status">
+      <span className="chat-lock-icon">
+        <Icon name="lock" size={26} />
+      </span>
+      <span className="chat-lock-copy">
+        <span className="h3">{LOCK_TITLE}</span>
+        <span className="b2 t2">{LOCK_BODY}</span>
+        <span className="chat-lock-actions">
+          <Link className="btn pri sm" to="/employer/plans">
+            {PLANS_LINK}
+          </Link>
+          <button type="button" className="btn sec sm" disabled={busy} onClick={() => send(REVIEW_ASK, 'review')}>
+            {LOCK_REVIEW_ONLY}
+          </button>
+        </span>
+        <span className="c1 t3">{LOCK_ADMIN_ONLY}</span>
+      </span>
+    </section>
+  )
+}
 
 export default ChatLock

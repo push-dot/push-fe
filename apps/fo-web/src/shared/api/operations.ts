@@ -51,6 +51,8 @@ export const conversationsList = (...args: Parameters<Api['conversations']['list
 
 export const conversationsMessages = (...args: Parameters<Api['conversations']['messages']>) => api.conversations.messages(...args)
 
+export const conversationsTurns = (...args: Parameters<Api['conversations']['turns']>) => api.conversations.turns(...args)
+
 export const conversationsSend = (...args: Parameters<Api['conversations']['send']>) => api.conversations.send(...args)
 
 export const conversationsStream = (...args: Parameters<Api['conversations']['stream']>) => api.conversations.stream(...args)

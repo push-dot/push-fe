@@ -1,7 +1,7 @@
 import { ApiError, type StreamEvent } from '@push/api-client'
 import { describe, expect, it, vi } from 'vitest'
 import { chatGateFrom } from './chat-gate'
-import { answerApproval, applyTurnEvent, EMPTY_TURN, runTurn, type TurnDeps } from './chat-turn'
+import { answerApproval, applyTurnEvent, EMPTY_TURN, runTurn, turnText, type TurnDeps } from './chat-turn'
 
 const frames = async function* (...events: StreamEvent[]) {
   yield* events
@@ -40,8 +40,8 @@ describe('runTurn', () => {
     })
     const { events, onEvent } = collect()
     await runTurn(deps, 'c1', { text: '공고 써 줘', accessMode: 'BYPASS', intent: 'posting' }, onEvent)
-    expect(deps.stream).toHaveBeenCalledWith('c1', { text: '공고 써 줘', accessMode: 'BYPASS', intent: 'posting' })
-    expect(deps.follow).toHaveBeenCalledWith('c1', 3)
+    expect(deps.stream).toHaveBeenCalledWith('c1', { text: '공고 써 줘', accessMode: 'BYPASS', intent: 'posting' }, undefined)
+    expect(deps.follow).toHaveBeenCalledWith('c1', 3, undefined)
     expect(events.map((event) => event.seq)).toEqual([3, 4, 5])
   })
 
@@ -90,30 +90,36 @@ describe('answerApproval', () => {
 })
 
 describe('applyTurnEvent', () => {
-  it('collects reply text, tool log, approval cards, the saved draft, and the awaiting state', () => {
+  it('keeps text, tools and cards in stream order with the saved draft and the awaiting state', () => {
     const events: StreamEvent[] = [
       { type: 'token', text: '초안을 ' },
-      { type: 'tool', name: 'draft_posting', state: 'run', summary: '공고 초안을 저장해요' },
-      { type: 'tool', name: 'draft_posting', state: 'ok', summary: '공고 초안을 저장해요', result: { draft } },
+      { type: 'token', text: '쓸게요' },
+      { type: 'tool', name: 'draft_posting', state: 'run', summary: '공고 초안 쓰기', target: '결제 승인 · 4–6년' },
+      { type: 'tool', name: 'draft_posting', state: 'ok', summary: '공고 초안 쓰기', target: '결제 승인 · 4–6년', resultLine: '제목 · 하는 일 3', result: { draft } },
       { type: 'token', text: '저장했어요' },
-      { type: 'tool', name: 'publish_posting', state: 'wait', summary: '공고를 게시해요', tier: 'RISKY_WRITE' },
       {
-        type: 'approval', id: 'a1', kind: 'TOOL_ACTION', title: '공고를 게시해요', summary: '공고를 게시해요',
-        options: [{ id: 'approve', label: '실행' }, { id: 'reject', label: '취소' }],
+        type: 'approval', id: 'a1', kind: 'TOOL_ACTION', title: '3명을 면접 단계로 옮길까요?', foot: '알림이 가요.',
+        args: { rows: [{ name: '김태윤', initial: '태윤', from: '서류 통과', to: '면접' }, { name: '이름 없음' }] },
+        options: [{ id: 'reject', label: '취소' }, { id: 'approve', label: '옮기기' }],
       },
       { type: 'done', operation: null, awaiting: 'approval' },
     ]
     const turn = events.reduce(applyTurnEvent, EMPTY_TURN)
-    expect(turn.text).toBe('초안을 저장했어요')
+    expect(turnText(turn)).toBe('초안을 쓸게요저장했어요')
     expect(turn.awaiting).toBe('approval')
-    expect(turn.items).toEqual([
+    expect(turn.blocks).toEqual([
+      { kind: 'text', key: 'text-0', text: '초안을 쓸게요' },
       {
-        kind: 'tool', key: 'draft_posting-0', name: 'draft_posting', state: 'ok', summary: '공고 초안을 저장해요',
-        postingId: 'p1',
+        kind: 'tool', key: 'draft_posting-1', name: 'draft_posting', state: 'ok', summary: '공고 초안 쓰기', target: '결제 승인 · 4–6년',
+        resultLine: '제목 · 하는 일 3', postingId: 'p1',
         draft: { title: '백엔드 엔지니어', description: '결제 API를 만들어요', requirements: ['서버 개발 경력'], preferred: [], workConditions: { 근무: '주 5일' } },
       },
-      { kind: 'tool', key: 'publish_posting-1', name: 'publish_posting', state: 'wait', summary: '공고를 게시해요' },
-      { kind: 'approval', id: 'a1', title: '공고를 게시해요', options: [{ id: 'approve', label: '실행' }, { id: 'reject', label: '취소' }] },
+      { kind: 'text', key: 'text-2', text: '저장했어요' },
+      {
+        kind: 'approval', id: 'a1', title: '3명을 면접 단계로 옮길까요?', foot: '알림이 가요.',
+        rows: [{ name: '김태윤', initial: '태윤', from: '서류 통과', to: '면접' }],
+        options: [{ id: 'reject', label: '취소' }, { id: 'approve', label: '옮기기' }],
+      },
     ])
   })
 
@@ -123,12 +129,19 @@ describe('applyTurnEvent', () => {
       { type: 'tool', name: 'close_posting', state: 'err', summary: '공고를 마감해요', result: { error: 'REVISION_CONFLICT' } },
       { type: 'tool', name: 'close_posting', state: 'run', summary: '공고를 마감해요' },
     ].reduce((t, e) => applyTurnEvent(t, e as StreamEvent), EMPTY_TURN)
-    expect(turn.items.map((item) => (item.kind === 'tool' ? item.state : item.kind))).toEqual(['err', 'run'])
+    expect(turn.blocks.map((block) => (block.kind === 'tool' ? block.state : block.kind))).toEqual(['err', 'run'])
   })
 
-  it('ignores a repeated approval frame', () => {
+  it('ignores a repeated approval or choice frame', () => {
     const approval: StreamEvent = { type: 'approval', id: 'a1', kind: 'TOOL_ACTION', title: 't', options: [{ id: 'approve', label: '실행' }] }
-    const turn = [approval, approval].reduce(applyTurnEvent, EMPTY_TURN)
-    expect(turn.items).toHaveLength(1)
+    const choice: StreamEvent = { type: 'choice', id: 'need', title: '누구예요?', recommended: '1', options: [{ id: '1', label: '결제' }] }
+    const turn = [approval, approval, choice, choice].reduce(applyTurnEvent, EMPTY_TURN)
+    expect(turn.blocks.map((block) => block.kind)).toEqual(['approval', 'choice'])
+  })
+
+  it('shows the queue position until the job starts', () => {
+    const queued = applyTurnEvent(EMPTY_TURN, { type: 'status', text: 'queued', ahead: 3 } as StreamEvent)
+    expect(queued.queued).toBe(3)
+    expect(applyTurnEvent(queued, { type: 'token', text: '시작' }).queued).toBeNull()
   })
 })
