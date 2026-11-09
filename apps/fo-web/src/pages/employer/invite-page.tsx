@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { GoogleMark } from '../../shared/ui/icon'
 import { companiesAcceptInvite } from '../../features/accept-invite'
 import {
   INVITE_ACCEPT_FAILED,
@@ -75,9 +76,7 @@ const InvitePage = () => {
       ) : null}
       <div className="auth-stack tight">
         <button type="button" className="auth-btn line" disabled={pending} onClick={() => void accept()}>
-          <span className="auth-google" aria-hidden="true">
-            <span />
-          </span>
+          <GoogleMark />
           {INVITE_GOOGLE}
         </button>
         <button type="button" className="auth-btn pri" disabled={pending} onClick={() => void accept()}>

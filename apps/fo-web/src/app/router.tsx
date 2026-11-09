@@ -29,6 +29,8 @@ import PostingEditorPage from '../pages/employer/posting-editor-page'
 import PlansPage from '../pages/employer/plans-page'
 import PostingsPage from '../pages/employer/postings-page'
 import EmployerVerifyPage from '../pages/employer/verify-page'
+import LegalPage from '../pages/legal/legal-page'
+import NotFoundPage from '../pages/not-found/not-found-page'
 import RequireAuth from './require-auth'
 import Shell from './shell'
 
@@ -56,6 +58,8 @@ const AppRouter = () => {
           <Route path="/auth/verify" element={<EmailVerifyPage />} />
           <Route path="/auth/reset" element={<ResetPage />} />
           <Route path="/postings/:id" element={<PostingPage />} />
+          <Route path="/terms" element={<LegalPage kind="terms" />} />
+          <Route path="/privacy" element={<LegalPage kind="privacy" />} />
           <Route element={<RequireAuth />}>
             <Route path="/profiles/:id" element={<ProfilePage />} />
             <Route path="/hub" element={<HubPage />} />
@@ -79,6 +83,7 @@ const AppRouter = () => {
             <Route path="/employer/plans" element={<PlansPage />} />
             <Route path="/invites/:token" element={<InvitePage />} />
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

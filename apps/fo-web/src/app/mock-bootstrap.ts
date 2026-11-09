@@ -13,7 +13,8 @@ const personaFrom = (value: string | null): MockPersona | null => PERSONAS.find(
 export const applyMockSearch = async (search: string, store: SessionStore) => {
   const params = new URLSearchParams(search)
   if (!mockBuild || !params.has('mock')) return
-  const { mockSession, mockSwitch, setMockPersona, setMockSwitches } = await loadMock()
+  const [{ mockSession, mockSwitch, setMockPersona, setMockSwitches }, { registerMockBrandColors }] = await Promise.all([loadMock(), import('../shared/api/mock-brand')])
+  registerMockBrandColors()
   setMockSwitches(params.get('ms'))
   if (mockSwitch('auth-exchange-wait')) savePkceVerifier('mock-verifier')
   const persona = personaFrom(params.get('as'))

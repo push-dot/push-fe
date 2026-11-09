@@ -1,9 +1,10 @@
 import { CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
-import { brandOf } from '@push/shared'
+import { brandColor } from '@push/shared'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { NAV } from '../../app/constants'
 import { initials, periodLabel } from '../../shared/lib/format'
+import { Icon } from '../../shared/ui/icon'
 import ProfileTools from './profile-tools'
 
 const statusClass = (status: Profile['careerStatus']) => (status === 'seeking' ? 'green' : status === 'feedback' ? 'orange' : 'grey')
@@ -14,6 +15,7 @@ const BrowserProfile = ({ profile }: { profile: Profile }) => {
   return (
     <main className="page browser-profile">
       <Link to="/hub" className="back b2">
+        <Icon name="back" size={18} width={2.2} />
         {NAV.hub}
       </Link>
       <div className="profile-layout">
@@ -22,7 +24,7 @@ const BrowserProfile = ({ profile }: { profile: Profile }) => {
             {profile.avatarUrl ? (
               <img className="av" src={assetUrl(profile.avatarUrl)} alt="" />
             ) : (
-              <span className="av" style={{ background: brandOf(profile.displayName) }}>
+              <span className="av" style={{ background: brandColor(profile.displayName) }}>
                 {initials(profile.displayName)}
               </span>
             )}

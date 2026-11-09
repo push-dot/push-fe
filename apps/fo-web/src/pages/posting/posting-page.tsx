@@ -1,5 +1,5 @@
 import { EMPLOYMENT_TYPES, workConditionLines } from '@push/api-client'
-import { brandOf, careerLabel } from '@push/shared'
+import { brandColor, careerLabel } from '@push/shared'
 import { useParams } from 'react-router-dom'
 import { assetUrl } from '../../shared/api/client'
 import { isWebView, send } from '../../shared/lib/bridge'
@@ -33,7 +33,7 @@ const PostingPage = () => {
           {p.imageUrl ? (
             <img className="logo" src={assetUrl(p.imageUrl)} alt="" />
           ) : (
-            <div className="logo" style={{ background: brandOf(p.company) }} aria-hidden="true">
+            <div className="logo" style={{ background: brandColor(p.company) }} aria-hidden="true">
               {[...p.company][0]}
             </div>
           )}

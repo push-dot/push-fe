@@ -9,7 +9,7 @@ export const NAV = {
   social: '소셜',
   my: '마이',
   postings: '공고 관리',
-  chat: '기업 AI',
+  chat: '에이전트',
   login: '로그인',
   search: '검색',
   notifications: '알림',
@@ -18,7 +18,21 @@ export const NAV = {
 } as const
 
 export const SEARCH_PLACEHOLDER = '공고, 사람, 글 검색'
-export const FOOTER_LINKS = ['이용약관', '개인정보 처리방침', '고객센터', '기업 서비스'] as const
+
+export const ACCOUNT_MENU = {
+  label: '계정 메뉴',
+  settings: '설정',
+  logout: '로그아웃',
+  company: '회사 정보',
+  members: '담당자 관리',
+  plans: '기업 요금제',
+} as const
+export const FOOTER_LINKS = [
+  { label: '이용약관', to: '/terms' },
+  { label: '개인정보 처리방침', to: '/privacy' },
+  { label: '고객센터' },
+  { label: '기업 서비스' },
+] as const
 export const FOOTER_MARK = '© 2026 Push'
 
 export const SOON_TITLE = {
@@ -33,7 +47,7 @@ export const SOON_TITLE = {
   settings: '설정',
   verify: '사업자 확인',
   postings: '내 공고',
-  chat: '기업 AI',
+  chat: '에이전트',
   members: '담당자',
   plans: '기업 요금제',
   invite: '초대 수락',

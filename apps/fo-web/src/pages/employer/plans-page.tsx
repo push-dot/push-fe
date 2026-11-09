@@ -168,7 +168,7 @@ const PlansPage = () => {
       ) : company.data?.role === 'MEMBER' ? (
         <p className="b2 stack">{PLAN_ADMIN_ONLY}</p>
       ) : null}
-      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 기업 AI에만 적용돼요.`}</p> : null}
+      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 에이전트에만 적용돼요.`}</p> : null}
       </div>
     </main>
   )

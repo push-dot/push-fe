@@ -2,6 +2,7 @@ import { ApiError, type Company } from '@push/api-client'
 import { useState, type FormEvent } from 'react'
 
 import { sessionStore } from '../../shared/auth/session'
+import { Icon } from '../../shared/ui/icon'
 import {
   BNO_DIGITS,
   COMPANY_EXISTS_COPY,
@@ -95,10 +96,13 @@ const VerifyPage = () => {
       </header>
       {mismatch ? (
         <div className="auth-alert" role="alert">
-          <strong>{VERIFY_MISMATCH}</strong>
-          <p>
-            {VERIFY_MISMATCH_DETAIL} {VERIFY_RETRY}
-          </p>
+          <Icon name="warn" size={22} />
+          <span className="auth-alert-copy">
+            <strong>{VERIFY_MISMATCH}</strong>
+            <p>
+              {VERIFY_MISMATCH_DETAIL} {VERIFY_RETRY}
+            </p>
+          </span>
         </div>
       ) : null}
       {error && !mismatch ? (
@@ -126,11 +130,7 @@ const VerifyPage = () => {
           onChange={setStartDt}
         />
         <p className="auth-status-note">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8" />
-            <path d="M12 11v5" />
-            <path d="M12 8h.01" />
-          </svg>
+          <Icon name="shield" size={16} />
           <span>{VERIFY_STATUS_NOTE}</span>
         </p>
         <button type="submit" className={ready ? 'auth-btn pri' : 'auth-btn pri dis'} disabled={!ready || pending}>
