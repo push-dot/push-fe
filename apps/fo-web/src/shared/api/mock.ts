@@ -311,7 +311,11 @@ const detailFor = (item: Posting, signed: boolean): PostingView => {
   }
 }
 
-type CompanyPosting = PostingDetail & { revision: number; closedAt: string | null }
+type CompanyPosting = PostingDetail &
+  Required<Pick<PostingDetail, 'status' | 'applicantCount' | 'newApplicantCount' | 'createdBy' | 'draftSource'>> & {
+    revision: number
+    closedAt: string | null
+  }
 
 const JOB_CATEGORY_KEYS = ['dev', 'data', 'design', 'plan', 'marketing', 'sales', 'hr', 'ops'] as const
 const EMPLOYMENT_TYPE_KEYS = ['full_time', 'contract', 'intern', 'freelance', 'dispatch'] as const
@@ -367,6 +371,11 @@ const companyPosting = (patch: Partial<CompanyPosting> & Pick<CompanyPosting, 'i
   workConditions: { 조건: '주 5일' },
   revision: 1,
   closedAt: null,
+  status: 'OPEN',
+  applicantCount: 0,
+  newApplicantCount: 0,
+  createdBy: null,
+  draftSource: null,
   ...patch,
 })
 
@@ -391,6 +400,9 @@ const companyPostings: CompanyPosting[] = [
     deadline: '2026-11-03',
     skills: ['Kotlin', 'Spring Boot', 'MySQL', 'Kafka'],
     createdAt: '2026-10-20T01:00:00.000Z',
+    applicantCount: 38,
+    newApplicantCount: 6,
+    createdBy: { displayName: '이민아' },
     ...POSTING_DRAFT_BODY,
   }),
   companyPosting({
@@ -400,6 +412,9 @@ const companyPostings: CompanyPosting[] = [
     careerMax: 9,
     deadline: '2026-11-20',
     createdAt: '2026-10-19T01:00:00.000Z',
+    applicantCount: 14,
+    newApplicantCount: 2,
+    createdBy: { displayName: '한지호' },
   }),
   companyPosting({
     id: 'job-3',
@@ -408,6 +423,7 @@ const companyPostings: CompanyPosting[] = [
     careerMax: 6,
     deadline: null,
     createdAt: '2026-10-18T01:00:00.000Z',
+    applicantCount: 21,
   }),
   companyPosting({
     id: 'job-4',
@@ -417,15 +433,19 @@ const companyPostings: CompanyPosting[] = [
     careerMax: 6,
     deadline: null,
     createdAt: '2026-10-20T00:00:00.000Z',
+    status: 'DRAFT',
+    draftSource: 'AGENT',
   }),
   companyPosting({
     id: 'job-5',
     title: 'iOS 개발자',
     careerMin: 1,
     careerMax: 3,
-    deadline: null,
+    deadline: '2026-09-30',
     closedAt: '2026-09-30T00:00:00.000Z',
     createdAt: '2026-09-01T00:00:00.000Z',
+    status: 'CLOSED',
+    applicantCount: 52,
   }),
 ]
 
@@ -456,9 +476,7 @@ const toCard = (item: CompanyPosting): Posting => ({
 
 type ApplicantRecord = {
   application: Application
-  displayName: string
-  headline: string
-  documents: { id: string; title: string; content: string }[]
+  seed: (typeof APPLICANT_SEEDS)[number]
 }
 
 const applicantRecord = (seed: (typeof APPLICANT_SEEDS)[number]): ApplicantRecord => ({
@@ -472,10 +490,69 @@ const applicantRecord = (seed: (typeof APPLICANT_SEEDS)[number]): ApplicantRecor
     appliedAt: seed.appliedAt,
     createdAt: seed.appliedAt,
   },
-  displayName: seed.displayName,
-  headline: seed.headline,
-  documents: seed.documents,
+  seed,
 })
+
+const isPdf = (title: string) => title.endsWith('.pdf')
+
+const documentKinds = (seed: ApplicantRecord['seed']) => [
+  ...(seed.documents.some((item) => !isPdf(item.title)) ? (['PROFILE'] as const) : []),
+  ...(seed.documents.some((item) => isPdf(item.title)) ? (['PDF'] as const) : []),
+]
+
+const applicantSummary = ({ application, seed }: ApplicantRecord) => ({
+  applicationId: application.id,
+  applicant: { displayName: seed.displayName, headline: seed.headline, jobCategory: seed.jobCategory, tenureYears: seed.tenureYears, avatarUrl: null },
+  stage: application.stage,
+  appliedAt: application.appliedAt ?? application.createdAt,
+  documentKinds: documentKinds(seed),
+  documents: seed.documents.map((item) => ({ title: item.title, pages: item.pages ?? null })),
+})
+
+// push-be keeps text documents in documents and attached PDFs in files.
+const applicantDetail = ({ application, seed }: ApplicantRecord) => ({
+  application,
+  documents: seed.documents.filter((item) => !isPdf(item.title)).map((item) => ({ id: item.id, title: item.title.replace(' (프로필)', ''), content: item.content })),
+  files: seed.documents
+    .filter((item) => isPdf(item.title))
+    .map((item) => ({ id: item.id, fileName: item.title, mimeType: 'application/pdf', size: 482_000, pageCount: item.pages ?? null })),
+  applicant: {
+    displayName: seed.displayName,
+    email: seed.profile?.email ?? '',
+    headline: seed.profile?.headline ?? '',
+    careers: seed.profile?.careers ?? [],
+    skills: seed.profile?.skills ?? [],
+    hubProfileId: seed.profile?.hubProfileId ?? null,
+  },
+})
+
+const COUNT_KEY = {
+  APPLIED: 'applied',
+  SCREENING: 'screening',
+  INTERVIEW: 'interview',
+  OFFER: 'offer',
+  ACCEPTED: 'offer',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'rejected',
+} as const
+
+// job-1 stands for a posting with 38 applicants; the five records are the visible page, so moves shift the totals.
+const BOARD_COUNTS = { total: 38, applied: 24, screening: 8, interview: 4, offer: 1, rejected: 1 }
+
+const applicantCounts = (postingId: string) => {
+  const records = applicantsByPosting.get(postingId) ?? []
+  const counts = postingId === 'job-1' ? { ...BOARD_COUNTS } : { total: records.length, applied: 0, screening: 0, interview: 0, offer: 0, rejected: 0 }
+  for (const { application, seed } of records) {
+    const from = COUNT_KEY[seed.stage as keyof typeof COUNT_KEY]
+    const to = COUNT_KEY[application.stage as keyof typeof COUNT_KEY]
+    if (postingId !== 'job-1' && to) counts[to] += 1
+    if (postingId === 'job-1' && from && to && from !== to) {
+      counts[from] -= 1
+      counts[to] += 1
+    }
+  }
+  return counts
+}
 
 const applicantsByPosting = new Map<string, ApplicantRecord[]>([['job-1', APPLICANT_SEEDS.map(applicantRecord)]])
 
@@ -1418,9 +1495,12 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
       revision: 1,
       closedAt: null,
       company: '모아페이',
+      status: payload.status === 'DRAFT' ? 'DRAFT' : 'OPEN',
+      draftSource: payload.draftSource === 'AGENT' || payload.draftSource === 'MANUAL' ? payload.draftSource : null,
+      createdBy: { displayName: '이민아' },
     })
     companyPostings.unshift(created)
-    listings.unshift(toCard(created))
+    if (created.status === 'OPEN') listings.unshift(toCard(created))
     return json(201, { data: created })
   }
   const applicantMatch = tail.match(/^\/postings\/([^/]+)\/applicants\/([^/]+)$/)
@@ -1438,20 +1518,16 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
       if (stage) record.application.stage = stage
       return json(200, { data: record.application })
     }
-    return json(200, { data: { application: record.application, documents: record.documents } })
+    return json(200, { data: applicantDetail(record) })
   }
+  const countsMatch = tail.match(/^\/postings\/([^/]+)\/applicant-counts$/)
+  if (countsMatch && method === 'GET') return json(200, { data: applicantCounts(decodeURIComponent(countsMatch[1] ?? '')) })
   const applicantsMatch = tail.match(/^\/postings\/([^/]+)\/applicants$/)
   if (applicantsMatch && method === 'GET') {
     const postingId = decodeURIComponent(applicantsMatch[1] ?? '')
     const stage = url.searchParams.get('stage')
     const records = (applicantsByPosting.get(postingId) ?? []).filter((item) => !stage || item.application.stage === stage)
-    const summaries = records.map((item) => ({
-      applicationId: item.application.id,
-      applicant: { displayName: item.displayName, headline: item.headline },
-      stage: item.application.stage,
-      appliedAt: item.application.appliedAt ?? item.application.createdAt,
-    }))
-    return json(200, slicePage(url, summaries, (item) => item.applicationId))
+    return json(200, slicePage(url, records.map(applicantSummary), (item) => item.applicationId))
   }
   const closeMatch = tail.match(/^\/postings\/([^/]+)\/close$/)
   if (closeMatch && method === 'POST') {
@@ -1461,6 +1537,7 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
     const payload = await readJson(input, init)
     if (payload.expectedRevision !== found.revision) return revisionConflict(found.revision)
     found.closedAt = new Date().toISOString()
+    found.status = 'CLOSED'
     found.revision += 1
     syncListing(found)
     return json(200, { data: found })
@@ -1473,6 +1550,10 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
     const payload = await readJson(input, init)
     if (payload.expectedRevision !== found.revision) return revisionConflict(found.revision)
     applyPostingPatch(found, payload)
+    if (!found.closedAt && (payload.status === 'DRAFT' || payload.status === 'OPEN')) {
+      if (found.status === 'DRAFT' && payload.status === 'OPEN') listings.unshift(toCard(found))
+      found.status = payload.status
+    }
     syncListing(found)
     return json(200, { data: found })
   }

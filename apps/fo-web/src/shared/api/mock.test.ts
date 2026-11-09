@@ -37,6 +37,20 @@ describe('employer applicant stage mock', () => {
     expect(blocked.status).toBe(409)
     expect(((await blocked.json()) as { error: { code: string } }).error.code).toBe('INVALID_TRANSITION')
   })
+
+  it('serves the stage counts and moves one between stages when an applicant moves', async () => {
+    setMockPersona('employer')
+    const counts = async () => ((await (await mockFetch('http://localhost/api/v1/postings/job-1/applicant-counts')).json()) as { data: Record<string, number> }).data
+    const before = await counts()
+    expect(before.total).toBe(38)
+    await mockFetch('http://localhost/api/v1/postings/job-1/applicants/app-3', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: 'INTERVIEW' }),
+    })
+    const after = await counts()
+    expect([after.applied! - before.applied!, after.interview! - before.interview!, after.total]).toEqual([-1, 1, 38])
+  })
 })
 
 describe('employer comment author', () => {

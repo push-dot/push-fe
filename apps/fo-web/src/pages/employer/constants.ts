@@ -60,39 +60,67 @@ export const POSTINGS_TITLE = '공고 관리'
 export const NEW_POSTING = '새 공고'
 export const AI_POSTING = 'AI로 만들기'
 export const STATUS_OPEN = '게시 중'
+export const STATUS_DRAFT = '초안'
 export const STATUS_CLOSED = '마감'
 export const FILTER_ALL = '전체'
 export const DEADLINE_OPEN = '상시'
+export const DEADLINE_NONE = '–'
 export const POSTINGS_HEAD = ['공고', '상태', '지원자', '마감'] as const
 export const POSTINGS_EMPTY = '등록한 공고가 없어요'
 export const POSTINGS_LOADING = '공고를 불러오고 있어요'
 export const POSTINGS_FAILED = '공고를 불러오지 못했어요'
+export const POSTING_MORE = '더 보기'
+export const POSTING_EDIT = '공고 수정'
+export const POSTING_APPLICANTS = '지원자 보기'
+export const POSTING_CLOSE = '마감하기'
+export const POSTING_CLOSE_TITLE = '공고를 마감할까요?'
+export const POSTING_CLOSE_BODY = '마감하면 새 지원을 받을 수 없고, 다시 열 수 없어요.'
+export const POSTING_CLOSED = '공고를 마감했어요'
+export const POSTING_CLOSE_FAILED = '공고를 마감하지 못했어요'
+export const AGENT_DRAFT = '에이전트가 쓴 초안'
+export const APPLICANT_UNIT = '명'
+export const newApplicants = (count: number) => `새 ${count}`
+export const josaGa = (name: string) => {
+  const last = name.trim().charCodeAt(name.trim().length - 1)
+  return last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0 ? '이' : '가'
+}
+export const postedBy = (name: string) => `${name}${josaGa(name)} 올림`
+export const draftBy = (name: string) => `${name}${josaGa(name)} 쓴 초안`
 export const APPLICANTS_LINK = '지원자'
 export const APPLICANTS_TITLE = '지원자'
-export const APPLICANTS_HEAD = ['지원자', '지원일', '단계'] as const
+export const APPLICANTS_HEAD = ['지원자', '제출 서류', '지원일', '단계'] as const
 export const APPLICANTS_EMPTY = '아직 지원자가 없어요'
 export const APPLICANTS_EMPTY_BODY = '지원이 들어오면 여기에 모이고, 알림으로 알려 드려요.'
 export const VIEW_POSTING = '공고 보기'
+export const stageEmpty = (label: string) => `${label} 단계인 지원자가 없어요`
+export const DOCS_NONE = '제출한 서류가 없어요'
 export const APPLICANTS_LOADING = '지원자를 불러오고 있어요'
 export const APPLICANTS_FAILED = '지원자를 불러오지 못했어요'
 export const APPLICANTS_NOTE = '단계를 바꾸면 지원자의 지원활동이 같이 바뀌고 알림이 가요.'
-export const APPLIED_ON = '지원일'
+export const DOC_PROFILE = '프로필'
+export const DOC_PDF = 'PDF'
+export const DOC_FILE = '파일'
 export const STAGE_APPLIED = '지원함'
 export const STAGE_TITLE = '단계'
 export const STAGE_RETRY = '다시 시도'
 export const STAGE_RETRY_NOTE = '잠시 후 다시 시도해 주세요.'
+export const stagePickLabel = (name: string, label: string) => `${name} 단계 ${label}, 바꾸기`
+export const stageMoved = (name: string, label: string) => `${name} 님을 ${label} 단계로 옮겼어요`
+export const stageNotMoved = (name: string, label: string) => `${name} 님을 ${label} 단계로 옮기지 못했어요`
 export const stageNotice = (name: string) => (name ? `바꾸면 ${name} 님에게 “지원 상태 변경” 알림이 가요.` : '바꾸면 지원자에게 “지원 상태 변경” 알림이 가요.')
 export const stageFailed = (stage: EmployerStage) =>
   `${{ SCREENING: '서류 통과로', INTERVIEW: '면접으로', OFFER: '합격으로', REJECTED: '불합격으로' }[stage]} 바꾸지 못했어요.`
 export const submittedAsIs = (date: string) => `${date} 제출한 그대로예요`
 export const DOCUMENT_EMPTY = '내용을 미리 볼 수 없는 파일이에요'
+export const SHEET_INTRO = '소개'
+export const SHEET_CAREERS = '경력'
+export const SHEET_SKILLS = '기술'
+export const HUB_PROFILE = '허브 프로필 보기'
 export const AI_REVIEW = '서류 검토하기'
 export const AI_INTERVIEW = '면접 질문 만들기'
 export const APPLICANT_LOADING = '지원 내용을 불러오고 있어요'
 export const APPLICANT_FAILED = '지원 내용을 불러오지 못했어요'
-export const STAGE_CHANGED = '단계를 바꿨어요. 지원자에게 알려 드려요'
 export const STAGE_ENDED = '이미 끝난 지원이에요'
-export const STAGE_FAILED = '단계를 바꾸지 못했어요'
 export const EDITOR_TITLE = '공고 편집'
 export const EDITOR_LOADING = '공고를 불러오고 있어요'
 export const PREVIEW_POSTING = '미리보기'
@@ -109,10 +137,14 @@ export const LABEL_SKILLS = '기술 스택'
 export const LABEL_IMAGE = '대표 이미지'
 export const LABEL_COMPANY = '회사명'
 export const SKILL_ADD = '추가'
+export const SKILL_ADD_PLACEHOLDER = '기술 이름'
 export const SKILL_REMOVE = '삭제'
 export const AI_POLISH = 'AI로 다듬기'
 export const COMPANY_NAME_NOTE = '회사명은 사업자 확인에서 가져와요.'
 export const SAVE_POSTING = '공고 올리기'
+export const SAVE_DRAFT = '초안으로 저장'
+export const IMAGE_CHANGE = '이미지 바꾸기'
+export const IMAGE_FAILED = '이미지를 올리지 못했어요'
 export const CLOSE_POSTING = '마감하기'
 export const CLOSED_STATE = '마감된 공고예요'
 export const CAREER_RANGES = [
