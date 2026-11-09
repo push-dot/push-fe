@@ -100,7 +100,7 @@ const VerifyPage = () => {
           <span className="auth-alert-copy">
             <strong>{VERIFY_MISMATCH}</strong>
             <p>
-              {VERIFY_MISMATCH_DETAIL} {VERIFY_RETRY}
+              {`${VERIFY_MISMATCH_DETAIL} ${VERIFY_RETRY}`}
             </p>
           </span>
         </div>

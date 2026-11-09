@@ -198,6 +198,13 @@ describe('employer api', () => {
     expect(bodyOf(hits[1]!)).toEqual({ token: 'tok', password: 'new-secret' })
   })
 
+  it('looks up the account email of a reset link without using it', async () => {
+    const { api, hits } = harness(() => json(200, { data: { email: 'a@push.app' } }))
+    await expect(api.auth.passwordResetEmail('tok_1')).resolves.toEqual({ email: 'a@push.app' })
+    expect(hits[0]!.method).toBe('GET')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/password-reset/tok_1')
+  })
+
   it('tops up, opens the portal, lists the ledger, and verifies iap', async () => {
     const ledger = {
       data: [{ type: 'PURCHASE' as const, amountMicroCredits: 30, balanceAfter: 30, createdAt: '2026-10-21T00:00:00.000Z' }],

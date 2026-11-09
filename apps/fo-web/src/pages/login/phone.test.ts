@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockOf, formatPhone, linkedProvider, toE164, validPhone } from './phone'
+import { clockOf, formatPhone, linkedProvider, phoneFailure, toE164, validPhone } from './phone'
 
 describe('phone number entry', () => {
   it('groups a Korean mobile number as it is typed', () => {
@@ -34,5 +34,26 @@ describe('linkedProvider', () => {
     expect(linkedProvider('apple')).toBe('apple')
     expect(linkedProvider('email')).toBeNull()
     expect(linkedProvider(undefined)).toBeNull()
+  })
+})
+
+describe('phoneFailure', () => {
+  const error = (code: string, details?: Record<string, unknown>) => ({ code, details })
+
+  it('reads the push-be verify codes', () => {
+    expect(phoneFailure(error('PHONE_CODE_INVALID', { attemptsLeft: 4 }))).toEqual({ kind: 'wrong' })
+    expect(phoneFailure(error('PHONE_CODE_EXPIRED'))).toEqual({ kind: 'expired' })
+    expect(phoneFailure(error('RATE_LIMITED', { reason: 'TOO_MANY_ATTEMPTS', maxAttempts: 5 }))).toEqual({ kind: 'limit', maxAttempts: 5 })
+  })
+
+  it('names the linked social provider only for PHONE_ALREADY_REGISTERED', () => {
+    expect(phoneFailure(error('PHONE_ALREADY_REGISTERED', { existingProviders: ['phone', 'google'] }))).toEqual({ kind: 'taken', provider: 'google' })
+    expect(phoneFailure(error('PHONE_TAKEN', { conflict: 'PHONE', provider: 'phone' }))).toEqual({ kind: 'taken', provider: null })
+  })
+
+  it('treats a send cooldown 429 and anything else as a plain failure', () => {
+    expect(phoneFailure(error('RATE_LIMITED', { retryAfterSec: 60 }))).toEqual({ kind: 'failed' })
+    expect(phoneFailure(new Error('network'))).toEqual({ kind: 'failed' })
+    expect(phoneFailure(undefined)).toEqual({ kind: 'failed' })
   })
 })

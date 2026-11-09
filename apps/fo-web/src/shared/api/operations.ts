@@ -21,6 +21,8 @@ export const authPhoneVerify = (...args: Parameters<Api['auth']['phoneVerify']>)
 
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
 
+export const authPasswordResetEmail = (...args: Parameters<Api['auth']['passwordResetEmail']>) => api.auth.passwordResetEmail(...args)
+
 export const authRequestPasswordReset = (...args: Parameters<Api['auth']['requestPasswordReset']>) => api.auth.requestPasswordReset(...args)
 
 export const authStart = (...args: Parameters<Api['auth']['start']>) => api.auth.start(...args)

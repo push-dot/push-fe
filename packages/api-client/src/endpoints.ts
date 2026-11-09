@@ -41,6 +41,8 @@ export const createApi = (c: Client) => ({
     },
     confirmPasswordReset: (token: string, password: string) =>
       c.post<void>('auth/email/password-reset/confirm', { body: { token, password } }),
+    passwordResetEmail: (token: string) =>
+      unwrap(c.get<DataEnvelope<{ email: string }>>(`auth/email/password-reset/${encodeURIComponent(token)}`)),
   },
 
   postings: {

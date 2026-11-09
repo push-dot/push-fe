@@ -40,10 +40,10 @@ describe('emailSignupInput', () => {
   const form = { email: 'hr@acme.kr', password: 'password1', accountType: 'EMPLOYER' as const, displayName: '김서준' }
 
   it('sends agreeTerms true once the terms checkbox is ticked', () => {
-    expect(emailSignupInput({ ...form, terms: true, consent: false })).toEqual({ ...form, agreeTerms: true, consentReference: false })
+    expect(emailSignupInput({ ...form, terms: true })).toEqual({ ...form, agreeTerms: true })
   })
 
   it('sends nothing while the terms checkbox is off', () => {
-    expect(emailSignupInput({ ...form, terms: false, consent: true })).toBeNull()
+    expect(emailSignupInput({ ...form, terms: false })).toBeNull()
   })
 })

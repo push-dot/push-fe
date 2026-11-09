@@ -2097,6 +2097,9 @@ export const mockFetch: typeof fetch = async (input, init) => {
     const kind = token === 'employer' || signupEmail.startsWith('employer') ? 'employer-new' : 'personal'
     return json(200, { data: mockSession(kind) })
   }
+  if (method === 'GET' && /\/auth\/email\/password-reset\/[^/]+$/.test(pathname)) {
+    return mockSwitch('pw-reset-expired') ? tokenExpired(MEMBER_EMAIL) : json(200, { data: { email: MEMBER_EMAIL } })
+  }
   if (method === 'POST' && matches(pathname, '/auth/email/password-reset/confirm')) {
     return new Response(null, { status: 204 })
   }

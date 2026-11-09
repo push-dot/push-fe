@@ -57,6 +57,7 @@ const AppRouter = () => {
           <Route path="/auth/callback" element={<CallbackPage />} />
           <Route path="/auth/verify" element={<EmailVerifyPage />} />
           <Route path="/auth/reset" element={<ResetPage />} />
+          <Route path="/invites/:token" element={<InvitePage />} />
           <Route path="/postings/:id" element={<PostingPage />} />
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />
@@ -81,7 +82,6 @@ const AppRouter = () => {
             <Route path="/employer/chat/:id" element={<ChatThreadPage />} />
             <Route path="/employer/members" element={<MembersPage />} />
             <Route path="/employer/plans" element={<PlansPage />} />
-            <Route path="/invites/:token" element={<InvitePage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

@@ -11,7 +11,7 @@ const AuthAlert = ({
   detail: ReactNode
   action?: ReactNode
 }) => (
-  <div className={tone === 'orange' ? 'auth-alert orange' : 'auth-alert'} role="alert">
+  <div className={tone === 'orange' ? 'auth-alert bang orange' : 'auth-alert bang'} role="alert">
     <span className="auth-alert-mark" aria-hidden="true">
       !
     </span>

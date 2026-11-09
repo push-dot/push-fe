@@ -1,61 +1,77 @@
 import { ApiError } from '@push/api-client'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { takePkceVerifier } from '../../shared/auth/pkce'
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
 import { emailTakenCopy } from '../../shared/model/login-providers'
-import { LOGIN_FAILED_COPY, VERIFY_MAIL_COPY } from './constants'
 import { authExchange } from '../../features/sign-in'
+import { ProviderMark } from './auth-provider-button'
+import { EXCHANGE_CANCEL, EXCHANGE_EMPLOYER, EXCHANGE_PERSONAL, EXCHANGE_TAIL, PROVIDER_NAME } from './constants'
+import type { LoginState } from './login-page'
+import { clearPendingLogin, readPendingLogin } from './pending-login'
 
+const failureDetail = (caught: unknown) => {
+  if (caught instanceof ApiError && caught.code === 'EMAIL_TAKEN') return emailTakenCopy(caught.details?.accountType)
+  return undefined
+}
 
 const CallbackPage = () => {
   const [params] = useSearchParams()
   const code = params.get('code')
   const navigate = useNavigate()
-  const [message, setMessage] = useState<string | null>(code ? null : LOGIN_FAILED_COPY)
   const started = useRef(false)
+  const [{ provider, accountType }] = useState(() => readPendingLogin(params))
+  const loginPath = accountType === 'EMPLOYER' ? '/login?accountType=EMPLOYER' : '/login'
 
   useEffect(() => {
-    if (!code || started.current) return
+    if (started.current) return
     started.current = true
+    const fail = (detail?: string) => {
+      clearPendingLogin()
+      const state: LoginState = { failed: provider, detail }
+      navigate(loginPath, { replace: true, state })
+    }
     const verifier = takePkceVerifier()
-    if (!verifier) {
-      setMessage(LOGIN_FAILED_COPY)
+    if (!code || !verifier) {
+      fail()
       return
     }
     const run = async () => {
       try {
-        const session = await authExchange({ code, codeVerifier: verifier })
-        if (!('accessToken' in session)) {
-          setMessage(LOGIN_FAILED_COPY)
+        const result = await authExchange({ code, codeVerifier: verifier })
+        clearPendingLogin()
+        if ('accessToken' in result) {
+          sessionStore.save(result)
+          navigate(pathAfterAuth(takeReturnTo(), result), { replace: true })
           return
         }
-        sessionStore.save(session)
-        navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
+        // First personal social login: push-be holds the identity until a phone number is verified.
+        navigate('/signup', { replace: true, state: { pendingToken: result.pendingToken } })
       } catch (caught) {
-        if (caught instanceof ApiError && caught.code === 'EMAIL_TAKEN') {
-          setMessage(emailTakenCopy(caught.details?.accountType))
-          return
-        }
-        if (caught instanceof ApiError && caught.code === 'EMAIL_NOT_VERIFIED') {
-          setMessage(VERIFY_MAIL_COPY)
-          return
-        }
-        setMessage(LOGIN_FAILED_COPY)
+        fail(failureDetail(caught))
       }
     }
     void run()
-  }, [code, navigate])
+  }, [code, loginPath, navigate, provider])
 
   return (
-    <main className="auth-card">
-      {message ? (
-        <p className="auth-error" role="alert">
-          {message}
-        </p>
-      ) : null}
+    <main className="auth-card" aria-busy="true">
+      <div className="auth-center auth-wait">
+        <span className="auth-ring" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3a9 9 0 0 1 9 9" />
+          </svg>
+          <ProviderMark provider={provider} />
+        </span>
+        <h2 className="h2">{`${PROVIDER_NAME[provider]}${EXCHANGE_TAIL}`}</h2>
+        <p>{accountType === 'EMPLOYER' ? EXCHANGE_EMPLOYER : EXCHANGE_PERSONAL}</p>
+      </div>
+      <Link className="auth-text" to={loginPath} onClick={clearPendingLogin}>
+        {EXCHANGE_CANCEL}
+      </Link>
     </main>
   )
 }

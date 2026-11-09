@@ -12,6 +12,7 @@ import TabBar from './tab-bar'
 import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
+import { useAuthMe } from '../entities/session'
 
 
 const MAIN_NAV = [
@@ -40,6 +41,8 @@ const Shell = () => {
     setSearchDraft(queryText)
   }, [queryText])
   const employer = session?.user.accountType === 'EMPLOYER'
+  const verifyBar = location.pathname === '/employer/verify' && employer && Boolean(session)
+  const me = useAuthMe(auth && verifyBar)
   const chatScreen = !auth && location.pathname.startsWith('/employer/chat')
   const navRef = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -64,12 +67,11 @@ const Shell = () => {
             {BRAND.slice(0, -1)}
             <i>{BRAND.slice(-1)}</i>
           </NavLink>
-          {location.pathname === '/employer/verify' && employer && session ? (
+          {verifyBar && session ? (
             <>
               <span className="auth-biz">{AUTH_BIZ}</span>
               <span className="auth-session">
-                <span>{session.user.displayName}</span>
-                <span aria-hidden="true">·</span>
+                {`${me.data?.email ?? session.user.displayName} · `}
                 <button
                   type="button"
                   onClick={() => {

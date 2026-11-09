@@ -25,3 +25,28 @@ const OAUTH: readonly OAuthProvider[] = ['google', 'apple', 'github']
 
 export const linkedProvider = (value: unknown): OAuthProvider | null =>
   OAUTH.find((provider) => provider === value) ?? null
+
+export type PhoneFailure =
+  | { kind: 'wrong' }
+  | { kind: 'expired' }
+  | { kind: 'limit'; maxAttempts: number }
+  | { kind: 'taken'; provider: OAuthProvider | null }
+  | { kind: 'failed' }
+
+type ErrorLike = { code?: string; details?: Record<string, unknown> | null }
+
+// push-be codes for POST auth/phone/verify. PHONE_TAKEN never names the owner's provider, so only PHONE_ALREADY_REGISTERED offers a login button.
+export const phoneFailure = (caught: unknown): PhoneFailure => {
+  const { code, details } = (caught ?? {}) as ErrorLike
+  if (code === 'PHONE_CODE_INVALID') return { kind: 'wrong' }
+  if (code === 'PHONE_CODE_EXPIRED') return { kind: 'expired' }
+  if (code === 'RATE_LIMITED' && details?.reason === 'TOO_MANY_ATTEMPTS') {
+    return { kind: 'limit', maxAttempts: typeof details.maxAttempts === 'number' ? details.maxAttempts : 5 }
+  }
+  if (code === 'PHONE_ALREADY_REGISTERED') {
+    const providers = Array.isArray(details?.existingProviders) ? details.existingProviders : []
+    return { kind: 'taken', provider: providers.map(linkedProvider).find(Boolean) ?? null }
+  }
+  if (code === 'PHONE_TAKEN') return { kind: 'taken', provider: null }
+  return { kind: 'failed' }
+}

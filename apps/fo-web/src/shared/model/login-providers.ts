@@ -26,8 +26,8 @@ export const passwordError = (password: string) => {
   return null
 }
 
-type SignupForm = Omit<EmailSignupInput, 'agreeTerms' | 'consentReference'> & { terms: boolean; consent: boolean }
+type SignupForm = Omit<EmailSignupInput, 'agreeTerms' | 'consentReference'> & { terms: boolean }
 
 // push-be records the 약관·처리방침 agreement from agreeTerms, so it is sent only after the checkbox is ticked.
-export const emailSignupInput = ({ terms, consent, ...form }: SignupForm): EmailSignupInput | null =>
-  terms ? { ...form, agreeTerms: true, consentReference: consent } : null
+export const emailSignupInput = ({ terms, ...form }: SignupForm): EmailSignupInput | null =>
+  terms ? { ...form, agreeTerms: true } : null
