@@ -441,7 +441,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .doc-file+.doc-file,.browser .link-file+.link-file{box-shadow:inset 0 1px 0 var(--line)}
 .browser .doc-copy,.browser .link-copy{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .browser .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:28px;border-radius:20px;border:2px dashed var(--fill2);text-align:center;cursor:pointer}
-.browser .doc-panel,.browser .links-panel{display:flex;flex-direction:column;gap:24px}
+.browser .doc-panel,.browser .links-panel{display:flex;flex-direction:column;gap:24px;margin-top:-4px}
 .browser :is(.doc-panel,.links-panel,.mp){word-break:keep-all;overflow-wrap:break-word}
 .browser .link-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:-4px}
 .browser .link-item{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
