@@ -1,6 +1,7 @@
 import { ApiError, QueueBusyError, type AccessMode, type ToolRunState } from '@push/api-client'
 import type { ApprovalFailure } from '../../features/employer-chat'
 import { creditCount, creditText } from '../../entities/billing'
+import { PLAN_NAME, seatLimit, type EmployerPlanId } from '../../shared/model/employer-plan'
 
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
@@ -206,11 +207,36 @@ export const PLAN_FEATURES = {
 } as const
 
 export const MEMBER_SELF = '나'
-export const MEMBERS_ADMIN_CAN = '관리자 · 결제, 요금제 변경, 담당자 초대·내보내기'
-export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_PERM_TITLE = '권한'
+export const MEMBERS_ADMIN_CAN = '결제, 요금제 변경, 담당자 초대·내보내기'
+export const MEMBERS_MEMBER_CAN = '공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_ACTION_FAILED = '처리하지 못했어요. 잠시 후 다시 시도해 주세요.'
+export const MEMBERS_CLOSE = '닫기'
+export const SEAT_FULL_TITLE = '담당자 자리가 꽉 찼어요'
+export const SEAT_FULL_PLANS = '요금제 보기'
 export const INVITE_DIALOG_TITLE = '담당자 초대'
 export const INVITE_CANCEL = '취소'
+export const TRANSFER_CONFIRM = '넘기기'
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`
+
+type SeatPlan = 'PRO' | 'ULTRA'
+
+export const seatPlan = (plan: EmployerPlanId): SeatPlan | null => (plan === 'PRO' || plan === 'ULTRA' ? plan : null)
+
+export const seatFullBody = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 관리자 말고 담당자를 ${seatLimit(plan)}명까지 둘 수 있어요. 초대 대기 중인 사람도 1명으로 세요.${plan === 'PRO' ? ` Ultra는 ${seatLimit('ULTRA')}명까지예요.` : ''}`
+
+export const inviteFullNote = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 담당자 ${seatLimit(plan)}명까지 초대할 수 있어요. 더 초대하려면 ${plan === 'PRO' ? 'Ultra로 올리거나 ' : ''}기존 담당자를 내보내 주세요.`
+
+export const adminOnlyNote = (admin: string) => `담당자 초대와 내보내기는 관리자 ${admin} 님만 할 수 있어요.`
+
+export const removeTitle = (name: string) => `${name} 님을 내보낼까요?`
+export const removeBody = (company: string, name: string) =>
+  `내보내면 ${company}의 공고, 지원자, 에이전트 대화를 더 볼 수 없어요. ${name} 님이 만든 공고와 대화는 회사에 남아요.`
+export const transferTitle = (name: string) => `${name} 님에게 관리자를 넘길까요?`
+export const transferBody = (name: string, self: string) =>
+  `넘기면 결제, 요금제 변경, 담당자 초대·내보내기는 ${name} 님만 할 수 있어요. ${self} 님은 담당자가 돼요.`
 
 export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${creditText(creditCount(balanceMicroCredits))}`
 

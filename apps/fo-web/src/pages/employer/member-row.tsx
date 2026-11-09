@@ -21,24 +21,26 @@ const MemberRow = ({
   onTransfer: () => void
 }) => (
   <li className="member-row">
-    <span className="av biz-mark" style={{ background: brandColor(email) }}>
+    <span className="av" style={{ background: brandColor(email) }}>
       {[...email][0]?.toUpperCase()}
     </span>
     <span className="member-copy">
       <span className="b2 w7">{email}</span>
     </span>
     <span className={admin ? 'badge ac' : 'badge grey'}>{roleLabel}</span>
-    {self ? <span className="badge grey">{MEMBER_SELF}</span> : null}
-    {showActions ? (
-      <span className="member-actions">
-        <button type="button" className="text-link" disabled={pending} onClick={onRemove}>
-          {REMOVE_MEMBER}
-        </button>
-        <button type="button" className="text-link" disabled={pending} onClick={onTransfer}>
-          {TRANSFER_ADMIN}
-        </button>
-      </span>
-    ) : null}
+    <span className="member-end">
+      {self ? <span className="c1 t3">{MEMBER_SELF}</span> : null}
+      {showActions ? (
+        <>
+          <button type="button" className="btn sec sm" disabled={pending} onClick={onTransfer}>
+            {TRANSFER_ADMIN}
+          </button>
+          <button type="button" className="btn sec sm member-remove" disabled={pending} onClick={onRemove}>
+            {REMOVE_MEMBER}
+          </button>
+        </>
+      ) : null}
+    </span>
   </li>
 )
 

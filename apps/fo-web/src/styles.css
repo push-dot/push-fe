@@ -202,10 +202,6 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .fit-score{color:var(--t2);font-size:13px}
 .file-button{display:inline-flex;align-items:center;justify-content:center;width:fit-content;padding:0 16px;text-decoration:none}
 .file-input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.facts{display:flex;flex-direction:column;gap:10px;margin:0}
-.facts div{display:flex;justify-content:space-between;gap:12px}
-.facts dt{color:var(--t3)}
-.facts dd{margin:0;font-weight:700}
 .month-bar{justify-content:space-between}
 .form{padding-bottom:12px}
 .career-fields{display:flex;flex-direction:column;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
@@ -601,20 +597,37 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .plan-features{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .browser .plan-features li{font-size:14px;line-height:20px;color:var(--t1)}
 .browser .plan-features .off{color:var(--t4)}
-.browser .company-hero{display:flex;align-items:center;gap:14px;padding:20px}
-.browser .company-hero .biz-mark{width:56px;height:56px;border-radius:18px;font-size:22px}
-.browser .company-hero>span:last-child{display:flex;flex-direction:column;gap:2px}
-.browser .facts{margin:0}
-.browser .facts div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
-.browser .facts dt{color:var(--t3)}
-.browser .facts dd{margin:0;display:flex;align-items:center;gap:8px;font-weight:700}
-.browser .member-list{list-style:none;margin:0;padding:0}
-.browser .member-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
-.browser .member-row .biz-mark{width:40px;height:40px;font-size:15px}
+.browser .company-panel{gap:24px}
+.browser .company-hero{display:flex;align-items:center;gap:18px;padding:22px}
+.browser .company-hero .av{width:72px;height:72px;border-radius:22px;font-size:28px}
+.browser .company-hero .h2{flex:1;min-width:0}
+.browser .facts{margin:0;overflow:hidden}
+.browser .facts div{display:flex;align-items:center;min-height:58px;padding:0 20px;border-bottom:1px solid var(--line);font-size:16px;line-height:24px}
+.browser .facts dt{flex:none;width:180px;color:var(--t3)}
+.browser .facts dd{flex:1;margin:0;display:flex;align-items:center;gap:8px}
+.browser .member-main{gap:24px}
+.browser .member-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:-8px}
+.browser .seat-banner{display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-radius:16px;background:var(--redSoft)}
+.browser .seat-banner>.red{margin-top:1px}
+.browser .seat-copy{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.browser .seat-banner .btn{background:var(--bg)}
+.browser .member-info{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:14px;background:var(--bg2)}
+.browser .member-list{list-style:none;margin:0;padding:0;overflow:hidden}
+.browser .member-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.browser .member-row .av{width:44px;height:44px;font-size:16px}
 .browser .member-copy{display:flex;flex-direction:column;min-width:0;flex:1}
 .browser .member-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.browser .member-actions{display:flex;gap:12px;margin-left:auto}
-.browser .perm{display:flex;flex-direction:column;gap:4px;padding:16px 18px;border-radius:16px;background:var(--bg2)}
+.browser .member-end{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:150px}
+.browser .member-remove{color:var(--red)}
+.browser .perm{display:flex;flex-direction:column;gap:6px;padding:18px 20px}
+.browser .seat-note{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-radius:14px;background:var(--orangeSoft)}
+.browser .seat-note .ic{color:var(--orange)}
+.browser .invite-head{display:flex;align-items:flex-start;gap:12px}
+.browser .invite-title{flex:1;display:flex;flex-direction:column;gap:4px}
+.browser .invite-x{display:flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;border-radius:18px;background:var(--fill);color:var(--t1)}
+.browser .invite-form{display:flex;flex-direction:column;gap:16px}
+.browser .invite-form .sheet-actions{gap:10px}
+.browser .invite-form .sheet-actions>.btn.pri{flex:1}
 .browser .who .biz-mark{border-radius:14px;font-size:19px}
 .browser .who>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
 @media (max-width:1024px){
@@ -623,7 +636,11 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 }
 @media (max-width:600px){
 .browser .chat-thread{padding:20px 16px}
-.browser .member-row{flex-wrap:wrap}
+.browser .member-row{flex-wrap:wrap;gap:8px 10px;padding:14px 16px}
+.browser .member-copy{flex:1 1 calc(100% - 64px)}
+.browser .member-row .badge{margin-left:58px}
+.browser .member-end{min-width:0;margin-left:auto}
+.browser .member-end:empty{display:none}
 }
 
 .browser .chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:18px;font-weight:600}

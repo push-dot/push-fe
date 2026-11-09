@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useMyCompany } from '../../entities/company'
 import { useSession } from '../../shared/auth/use-session'
 import { formatBno } from '../../features/verify-business'
-import { COMPANY_LOCKED, COMPANY_NO_HUB, COMPANY_UNVERIFIED, COMPANY_VERIFIED, PLAN_NONE } from './constants'
+import { COMPANY_LOCKED, COMPANY_NO_HUB, COMPANY_UNVERIFIED, COMPANY_VERIFIED } from './constants'
 
 
 const CompanyPanel = () => {
@@ -25,31 +25,25 @@ const CompanyPanel = () => {
   if (!query.data) return <p className="b2 t3" aria-busy="true">회사 정보를 불러오고 있어요.</p>
   const company = query.data
   return (
-    <section className="stack">
+    <section className="stack company-panel">
       <div className="box company-hero">
-        <span className="av biz-mark" style={{ background: brandColor(company.name) }}>
+        <span className="av" style={{ background: brandColor(company.name) }}>
           {[...company.name][0]}
         </span>
-        <span>
-          <span className="h3">{company.name}</span>
-          <span className="c1 t3">{company.plan ?? PLAN_NONE}</span>
-        </span>
+        <span className="h2">{company.name}</span>
       </div>
-      <dl className="facts">
+      <dl className="box facts">
         <div>
           <dt>사업자등록번호</dt>
           <dd>
-            {formatBno(company.bNo)}
+            <span className="num">{formatBno(company.bNo)}</span>
             {company.verifiedAt ? <span className="badge green">{COMPANY_VERIFIED}</span> : null}
           </dd>
         </div>
-        <div>
-          <dt>요금제</dt>
-          <dd>{company.plan ?? PLAN_NONE}</dd>
-        </div>
       </dl>
-      <p className="c1 t3">{COMPANY_LOCKED}</p>
-      <p className="c1 t3">{COMPANY_NO_HUB}</p>
+      <p className="c1 t3">
+        {COMPANY_LOCKED} {COMPANY_NO_HUB}
+      </p>
     </section>
   )
 }
