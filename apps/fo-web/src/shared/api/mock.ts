@@ -1566,14 +1566,22 @@ const eventStream = (events: StreamEvent[], stall: boolean, onDone: () => void) 
   const body = new ReadableStream<Uint8Array>({
     start(controller) {
       let at = 0
+      let stored = false
+      const store = () => {
+        if (stored) return
+        stored = true
+        onDone()
+      }
       const push = () => {
         const event = events[at]
         if (!event) {
           if (stall) return
-          onDone()
+          store()
           controller.close()
           return
         }
+        // push-be stores the messages and the job before it sends done, so a refetch right after done sees them.
+        if (event.type === 'done') store()
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ ...event, seq: at + 1 })}\n\n`))
         at += 1
         timer = setTimeout(push, SSE_GAP_MS)

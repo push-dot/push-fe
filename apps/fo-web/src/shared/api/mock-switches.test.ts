@@ -228,7 +228,11 @@ describe('ms= switches', () => {
     const created = await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })
     const id = created.body.data.id
     const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '서류 통과한 사람 면접 단계로 옮겨 줘', accessMode: 'AUTO' })
-    for await (const event of readEvents<{ type: string }>(response.body!)) void event
+    // The job is stored by the time the done frame arrives, not a moment after it.
+    for await (const event of readEvents<{ type: string }>(response.body!)) {
+      if (event.type !== 'done') continue
+      expect((await read<{ data: unknown[] }>(`/conversations/${id}/turns`)).body.data).toHaveLength(1)
+    }
     const turns = await read<{ data: { userMessageId: string | null; assistantMessageId: string | null; events: { type: string }[] }[] }>(`/conversations/${id}/turns`)
     expect(turns.body.data).toHaveLength(1)
     expect(turns.body.data[0]!.userMessageId).not.toBeNull()
