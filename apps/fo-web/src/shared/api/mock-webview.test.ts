@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dDay } from '../lib/format'
-import { mockFetch, mockFit } from './mock'
+import { MOCK_SWITCHES, mockFetch, mockFit, setMockSwitches } from './mock'
 
 const API = 'http://localhost/api/v1'
 const SIGNED = { headers: { Authorization: 'Bearer mock-access' } }
@@ -24,6 +24,13 @@ const read = async (path: string, init?: RequestInit) => {
   return { status: response.status, data: body.data ? rendered(body.data) : body }
 }
 
+const pinned = async () => {
+  const paths = [...APP_POSTING_IDS.map((id) => `/postings/${id}`), ...APP_PROFILE_IDS.map((id) => `/profiles/${id}`), '/auth/me']
+  const signed = await Promise.all(paths.map(async (path) => [path, await read(path, SIGNED)] as const))
+  const guest = await Promise.all(paths.map(async (path) => [path, await read(path)] as const))
+  return JSON.stringify({ signed: Object.fromEntries(signed), guest: Object.fromEntries(guest), fit: mockFit }, null, 2)
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.useRealTimers()
@@ -34,11 +41,17 @@ describe('app WebView data', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date('2026-10-21T10:00:00+09:00'))
     vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
-    const paths = [...APP_POSTING_IDS.map((id) => `/postings/${id}`), ...APP_PROFILE_IDS.map((id) => `/profiles/${id}`), '/auth/me']
-    const signed = await Promise.all(paths.map(async (path) => [path, await read(path, SIGNED)] as const))
-    const guest = await Promise.all(paths.map(async (path) => [path, await read(path)] as const))
-    await expect(
-      JSON.stringify({ signed: Object.fromEntries(signed), guest: Object.fromEntries(guest), fit: mockFit }, null, 2),
-    ).toMatchFileSnapshot('./__snapshots__/webview-pin.json')
+    await expect(await pinned()).toMatchFileSnapshot('./__snapshots__/webview-pin.json')
+  })
+
+  it('ignores every ms= switch', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-21T10:00:00+09:00'))
+    vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
+    const plain = await pinned()
+    setMockSwitches(MOCK_SWITCHES.join(','))
+    const switched = await pinned()
+    setMockSwitches(null)
+    expect(switched).toEqual(plain)
   })
 })

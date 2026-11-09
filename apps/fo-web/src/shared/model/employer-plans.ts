@@ -10,7 +10,8 @@ export const showEmployerCheckout = (audience: 'PERSONAL' | 'EMPLOYER' | undefin
 export const canChangeEmployerPlan = (role: 'ADMIN' | 'MEMBER' | undefined, companyMissing: boolean): boolean =>
   role === 'ADMIN' || (companyMissing && role === undefined)
 
-export const topupReady = (amount: number): boolean => Number.isFinite(amount) && amount > 0
+// push-be takes 1 to 20 packs of 1,500 credits per top-up.
+export const topupReady = (packs: number): boolean => Number.isInteger(packs) && packs >= 1 && packs <= 20
 
 export const checkoutTarget = (url: string, currentHref: string) => {
   const next = new URL(url, currentHref)
