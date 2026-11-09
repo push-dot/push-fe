@@ -17,7 +17,7 @@ export type LegalDocument = {
 }
 
 export type LegalOperator =
-  | { kind: 'individual'; displayName: string; contactEmail: string }
+  | { kind: 'individual'; displayName: string; contactEmail: string; /** Optional: shown only when filled. */ phone?: string }
   | {
       kind: 'business'
       tradeName: string

@@ -27,9 +27,16 @@ describe('legal documents', () => {
   it('shows unfilled individual fields as bracketed labels', () => {
     const terms = text(LEGAL_DOCUMENTS.termsOfService)
     expect(terms).toContain('| 운영자 구분 | 개인 |')
-    expect(terms).toContain('| 성명 | [성명] |')
+    expect(terms).toContain('| 성명 | 채영준 |')
     expect(terms).toContain('support@push.devcyjoon.tech')
     expect(terms).not.toContain('사업자등록번호 |')
+  })
+
+  it('shows the privacy officer phone only when the operator fills it', () => {
+    const officer = (phone?: string) => text(legalDocuments({ kind: 'individual', displayName: '채영준', contactEmail: 'support@push.devcyjoon.tech', phone }).privacyPolicy)
+    expect(officer()).toContain('| 개인정보 보호책임자 | 채영준 (운영자) |')
+    expect(officer()).not.toContain('| 전화번호 |')
+    expect(officer('010-0000-0000')).toContain('| 전화번호 | 010-0000-0000 |')
   })
 
   it('renders a registered business without placeholders or the individual notice', () => {
@@ -39,6 +46,7 @@ describe('legal documents', () => {
     expect(terms).not.toContain('사업자 등록을 하지 않은 개인')
     expect(terms).not.toMatch(/\[(성명|상호|대표자|사업자등록번호|통신판매업 신고번호|주소|전화번호|이메일)\]/)
     expect(text(business.privacyPolicy)).toContain('| 개인정보 보호책임자 | 홍길동 (대표) |')
+    expect(terms).toContain('| 호스팅서비스 제공자 | Cloudflare, Inc., HOSTINGER PTE LTD |')
   })
 
   it('keeps the designed article headings in order', () => {

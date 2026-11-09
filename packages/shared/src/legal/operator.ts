@@ -5,7 +5,7 @@ export const LEGAL_EFFECTIVE_DATE = '2026-11-09'
 
 export const LEGAL_OPERATOR: LegalOperator = {
   kind: 'individual',
-  displayName: '',
+  displayName: '채영준',
   contactEmail: 'support@push.devcyjoon.tech',
 }
 
@@ -17,6 +17,9 @@ export const koreanDate = (iso: string) => {
 const orBlank = (value: string, label: string) => value.trim() || `[${label}]`
 
 const COLUMNS = ['항목', '내용'] as const
+
+// The API servers run on Cloudflare Workers and the AI server on a Hostinger VPS.
+const HOSTING_PROVIDERS = 'Cloudflare, Inc., HOSTINGER PTE LTD'
 
 export const operatorBlocks = (operator: LegalOperator): LegalBlock[] =>
   operator.kind === 'individual'
@@ -49,6 +52,7 @@ export const operatorBlocks = (operator: LegalOperator): LegalBlock[] =>
             ['주소', orBlank(operator.address, '주소')],
             ['전화번호', orBlank(operator.phone, '전화번호')],
             ['이메일', orBlank(operator.contactEmail, '이메일')],
+            ['호스팅서비스 제공자', HOSTING_PROVIDERS],
           ],
         },
       ]
@@ -65,6 +69,7 @@ export const privacyOfficerBlocks = (operator: LegalOperator): LegalBlock[] =>
           columns: COLUMNS,
           rows: [
             ['개인정보 보호책임자', `${orBlank(operator.displayName, '성명')} (운영자)`],
+            ...(operator.phone?.trim() ? [['전화번호', operator.phone.trim()]] : []),
             ['이메일', orBlank(operator.contactEmail, '이메일')],
           ],
         },
