@@ -2,6 +2,7 @@ html,body{margin:0;background:var(--bg);color:var(--t1)}
 body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;letter-spacing:-.02em;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 h1,h2,p{margin:0}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;text-align:inherit;letter-spacing:inherit}
+a{color:inherit;text-decoration:none}
 .ic{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block;width:14px;height:14px;stroke-width:2}
 .num{font-variant-numeric:tabular-nums}
 
@@ -488,7 +489,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .bubble.mine p{padding:12px 16px;border-radius:20px 20px 6px 20px;background:var(--ac);color:#fff}
 .browser .profile-block{display:flex;flex-direction:column;gap:8px}
 .browser .tl-row{padding:0}
-.browser a:focus-visible,.browser button:focus-visible,.browser .sbox:focus-visible,.browser .wordmark:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.browser a:focus-visible,.browser button:focus-visible,.browser .biz-table-wrap:focus-visible,.browser .sbox:focus-visible,.browser .wordmark:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .browser .sbox input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--t1);font:inherit;padding:0}
 .browser .sbox input::placeholder{color:var(--t1)}
 .browser .sbox input:focus-visible{outline:none}

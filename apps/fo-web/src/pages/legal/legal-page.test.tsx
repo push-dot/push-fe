@@ -17,7 +17,12 @@ const CASES = [
 ] as const
 
 const esc = (text: string) =>
-  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+  text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#x27;')
 
 describe.each(CASES)('LegalPage $kind', ({ kind, doc }) => {
   const markup = html(kind)
@@ -34,12 +39,31 @@ describe.each(CASES)('LegalPage $kind', ({ kind, doc }) => {
     expect(headings).toEqual(doc.articles.map((article) => esc(article.heading)))
   })
 
-  it('renders every table as a real table', () => {
-    const tables = doc.articles
-      .flatMap((article) => article.blocks)
-      .concat(doc.intro)
-      .filter((block) => block.kind === 'table').length
-    expect(markup.match(/<table/g)?.length ?? 0).toBe(tables)
+  const blocks = doc.articles.flatMap((article) => article.blocks).concat(doc.intro)
+
+  it('renders every paragraph and every list item of the shared document', () => {
+    for (const block of blocks) {
+      if (block.kind === 'paragraph') expect(markup).toContain(`>${esc(block.text)}</p>`)
+      if (block.kind === 'list') {
+        const tag = block.ordered ? 'ol' : 'ul'
+        const items = block.items.map((item) => `<li>${esc(item)}</li>`).join('')
+        expect(markup).toContain(`>${items}</${tag}>`)
+      }
+    }
+  })
+
+  it('renders every table as a real table with column headers and a focusable named scroll region', () => {
+    const tables = blocks.filter((block) => block.kind === 'table')
+    expect(markup.match(/<table/g)?.length ?? 0).toBe(tables.length)
+    const headers = tables.reduce((sum, table) => sum + table.columns.length, 0)
+    expect(markup.match(/<th scope="col">/g)?.length ?? 0).toBe(headers)
+    const names = [
+      ...markup.matchAll(
+        /<div class="biz-table-wrap" role="region" aria-label="([^"]+ 표( \d+)?)" tabindex="0">/g,
+      ),
+    ].map((match) => match[1])
+    expect(names).toHaveLength(tables.length)
+    expect(new Set(names).size).toBe(names.length)
   })
 })
 
