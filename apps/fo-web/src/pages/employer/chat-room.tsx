@@ -17,6 +17,7 @@ import {
   answerApproval,
   applyTurnEvent,
   approvalFailureFrom,
+  cancelTurn,
   chatGateFrom,
   chatRouteState,
   chatTurnDeps,
@@ -50,6 +51,7 @@ import {
   CHAT_BUSY,
   CHAT_FAILED,
   CHAT_LOADING,
+  CHAT_STOP_FAILED,
   PDF_LOCK,
   streamErrorText,
   VERIFY_LINK,
@@ -96,6 +98,7 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
   const [picked, setPicked] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
   const abort = useRef<AbortController | null>(null)
+  const leaving = useRef<number | undefined>(undefined)
   const conversations = useEmployerConversations()
   const messages = useEmployerMessages(id)
   const turns = useEmployerTurns(id)
@@ -129,19 +132,23 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
       queryClient.invalidateQueries({ queryKey: ['employer-conversations'] }),
     ])
 
+  const knownIds = () => (messages.data?.data ?? []).map((message) => message.id)
+
+  /** Returns true when the question stays on screen above the card the failure opens. */
   const fail = (error: unknown, value: string) => {
     const next = chatGateFrom(error)
     setGate(next)
     // The board keeps the question on screen above the lock and limit cards; anything else goes back to the composer.
-    if (next === 'credits' || next === 'interview') return
+    if (next === 'credits' || next === 'interview') return true
     setLive(null)
     setText(value)
-    if (next === 'pdf' || next === 'verify') return
+    if (next === 'pdf' || next === 'verify') return false
     setAlert(
       next === 'busy' && !(error instanceof ApiError && error.code === 'QUEUE_BUSY')
         ? CHAT_BUSY
         : streamErrorText(error, payable),
     )
+    return false
   }
 
   const run = async (conversationId: string, out: Outgoing) => {
@@ -157,9 +164,11 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         ? [{ type: 'APPLICATION', id: out.applicationId, title: person?.name }]
         : [],
       turn: null,
+      known: knownIds(),
     })
     const controller = new AbortController()
     abort.current = controller
+    let keep = false
     try {
       if (out.file) {
         const form = new FormData()
@@ -190,11 +199,13 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         controller.signal,
       )
     } catch (error) {
-      if (!controller.signal.aborted) fail(error, out.text)
+      if (!controller.signal.aborted) keep = fail(error, out.text)
     } finally {
+      // The stored messages and jobs replace the live turn once they are loaded, so the run never shows twice.
+      await refresh()
+      if (!keep) setLive(null)
       abort.current = null
       setSending(false)
-      void refresh()
     }
   }
 
@@ -232,23 +243,52 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     setSending(true)
     setAnswerFailure(null)
     setPicked((current) => ({ ...current, [cardId]: optionId }))
-    setLive((current) => current ?? { text: '', attachments: [], turn: EMPTY_TURN })
+    setLive(
+      (current) =>
+        current ?? { text: '', attachments: [], turn: EMPTY_TURN, known: knownIds() },
+    )
+    const controller = new AbortController()
+    abort.current = controller
     try {
-      await answerApproval(chatTurnDeps, id, cardId, optionId, (event) =>
-        setLive(
-          (current) =>
-            current && { ...current, turn: applyTurnEvent(current.turn ?? EMPTY_TURN, event) },
-        ),
+      await answerApproval(
+        chatTurnDeps,
+        id,
+        cardId,
+        optionId,
+        (event) =>
+          setLive(
+            (current) =>
+              current && { ...current, turn: applyTurnEvent(current.turn ?? EMPTY_TURN, event) },
+          ),
+        controller.signal,
       )
     } catch (error) {
-      const failure = approvalFailureFrom(error)
-      setAnswerFailure(failure)
-      if (failure === 'failed') setPicked(({ [cardId]: _, ...rest }) => rest)
+      if (!controller.signal.aborted) {
+        const failure = approvalFailureFrom(error)
+        setAnswerFailure(failure)
+        if (failure === 'failed') setPicked(({ [cardId]: _, ...rest }) => rest)
+      }
     } finally {
+      await refresh()
+      setLive(null)
+      abort.current = null
       setSending(false)
-      void refresh()
     }
   }
+
+  const stop = () => {
+    abort.current?.abort()
+    // Closing the stream leaves the job running and spending credits, so the server is told to stop it too.
+    if (id) cancelTurn(chatTurnDeps, id).catch(() => setAlert(CHAT_STOP_FAILED))
+  }
+
+  useEffect(() => {
+    window.clearTimeout(leaving.current)
+    // Deferred so React's dev double mount does not cancel the run the first mount started.
+    return () => {
+      leaving.current = window.setTimeout(() => abort.current?.abort(), 0)
+    }
+  }, [])
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -297,7 +337,7 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
       onText={setText}
       onApplication={setApplicationId}
       onFile={setFile}
-      onStop={() => abort.current?.abort()}
+      onStop={stop}
       onSubmit={submit}
     />
   )

@@ -1,5 +1,6 @@
 import {
   conversationsAttach as call1,
+  conversationsCancel as call6,
   conversationsCreateEmployer as call0,
   conversationsFollow as call4,
   conversationsResolveApproval as call5,
@@ -17,4 +18,5 @@ export const chatTurnDeps: TurnDeps = {
   stream: (id, body, signal) => call3(id, body, signal),
   follow: (id, after, signal) => call4(id, after, signal),
   resolve: (id, approvalId, optionId) => call5(id, approvalId, optionId),
+  cancel: (id) => call6(id),
 }

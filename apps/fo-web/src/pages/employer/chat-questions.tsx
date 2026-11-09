@@ -4,7 +4,7 @@ import { CHECK_POINT } from './chat-copy'
 const ChatQuestions = ({ items, caret }: { items: Question[]; caret: boolean }) => (
   <div className={caret ? 'box chat-questions live' : 'box chat-questions'}>
     {items.map((item, index) => (
-      <div key={item.n} className="chat-question">
+      <div key={`${item.n}-${index}`} className="chat-question">
         <span className="b1 w8 ac num chat-question-n">{item.n}</span>
         <span className="chat-question-copy">
           <span className="b1 w7">
@@ -13,6 +13,7 @@ const ChatQuestions = ({ items, caret }: { items: Question[]; caret: boolean }) 
               <span className="chat-caret" aria-hidden="true" />
             ) : null}
           </span>
+          {item.note ? <span className="c1 t2 chat-question-note">{item.note}</span> : null}
           {item.check ? (
             <span className="c1 t2 chat-check">
               <b className="w7 t3">{CHECK_POINT}</b>

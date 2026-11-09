@@ -614,6 +614,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .chat-question-copy{flex:1;display:flex;flex-direction:column;gap:8px}
 .browser .chat-check{display:flex;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg2)}
 .browser .chat-check b{flex:none}
+.browser .chat-question-note{display:block;white-space:pre-wrap;overflow-wrap:break-word}
 .browser .chat-caret{display:inline-block;width:2px;height:18px;margin-left:2px;vertical-align:-3px;background:var(--ac)}
 .browser .draft-card{overflow:hidden;box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
 .browser .draft-head{display:flex;align-items:center;gap:10px;padding:16px 20px;background:var(--bg2)}

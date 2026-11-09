@@ -26,6 +26,7 @@ export type TurnDeps = {
     approvalId: string,
     optionId: string,
   ) => Promise<Pick<ApprovalResolution, 'jobId'>>
+  cancel: (id: string) => Promise<unknown>
 }
 
 export type TurnText = { kind: 'text'; key: string; text: string }
@@ -237,8 +238,9 @@ const streamError = (error: { code: string; message: string; details?: unknown }
 const consume = async (
   source: AsyncIterable<StreamEvent>,
   onEvent: (event: StreamEvent) => void,
+  after?: number,
 ) => {
-  let seq: number | undefined
+  let seq = after
   for await (const event of source) {
     if (event.type === 'error') throw streamError(event.error)
     if (event.seq !== undefined) seq = event.seq
@@ -248,16 +250,30 @@ const consume = async (
   return { ended: false, seq }
 }
 
+/** Reads the job to its end: a stream the server closes before done or cancelled is followed from the last seq. */
+const finish = async (
+  deps: TurnDeps,
+  id: string,
+  first: { ended: boolean; seq?: number },
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
+) => {
+  let { ended, seq } = first
+  while (!ended && !signal?.aborted) {
+    const next = await consume(deps.follow(id, seq, signal), onEvent, seq)
+    // No new frame is the 204 of a job that is no longer running.
+    if (!next.ended && next.seq === seq) return
+    ;({ ended, seq } = next)
+  }
+}
+
 export const runTurn = async (
   deps: TurnDeps,
   id: string,
   body: TurnBody,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
-) => {
-  const first = await consume(deps.stream(id, body, signal), onEvent)
-  if (!first.ended && !signal?.aborted) await consume(deps.follow(id, first.seq, signal), onEvent)
-}
+) => finish(deps, id, await consume(deps.stream(id, body, signal), onEvent), onEvent, signal)
 
 export const answerApproval = async (
   deps: TurnDeps,
@@ -265,7 +281,17 @@ export const answerApproval = async (
   approvalId: string,
   optionId: string,
   onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
 ) => {
   const { jobId } = await deps.resolve(id, approvalId, optionId)
-  if (jobId) await consume(deps.follow(id), onEvent)
+  if (jobId) await finish(deps, id, { ended: false }, onEvent, signal)
+}
+
+/** Stops the job on the server. 409 means it already ended, which is what the stop was after. */
+export const cancelTurn = async (deps: TurnDeps, id: string) => {
+  try {
+    await deps.cancel(id)
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 409)) throw error
+  }
 }

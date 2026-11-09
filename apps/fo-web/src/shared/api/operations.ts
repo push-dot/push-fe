@@ -59,6 +59,8 @@ export const conversationsStream = (...args: Parameters<Api['conversations']['st
 
 export const conversationsFollow = (...args: Parameters<Api['conversations']['follow']>) => api.conversations.follow(...args)
 
+export const conversationsCancel = (...args: Parameters<Api['conversations']['cancel']>) => api.conversations.cancel(...args)
+
 export const conversationsResolveApproval = (...args: Parameters<Api['conversations']['resolveApproval']>) =>
   api.conversations.resolveApproval(...args)
 

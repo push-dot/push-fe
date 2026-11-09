@@ -256,6 +256,8 @@ export const createApi = (c: Client) => ({
         }
       }
     },
+    cancel: (id: string) =>
+      unwrap(c.post<DataEnvelope<{ jobId: string; status: 'CANCELLED' }>>(`conversations/${id}/stream/cancel`)),
     active: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
         query: { after },

@@ -4,7 +4,13 @@ import { storedTurn, type ChatTurn } from './chat-turn'
 export type Attachment = Message['attachments'][number]
 
 /** `text` is empty when the live turn only follows an answer to a card already on screen. */
-export type LiveTurn = { text: string; attachments: Attachment[]; turn: ChatTurn | null }
+export type LiveTurn = {
+  text: string
+  attachments: Attachment[]
+  turn: ChatTurn | null
+  /** Ids of the stored messages already there when the run started: the ones it adds are shown by the live turn. */
+  known: string[]
+}
 
 export type ThreadItem =
   | { kind: 'user'; key: string; text: string; attachments: Attachment[] }
@@ -13,20 +19,16 @@ export type ThreadItem =
 
 /**
  * One ordered list for the thread: stored messages, the stored jobs from GET .../turns in place of the assistant
- * messages they produced, and the turn streaming now. The live turn replaces its own user message and the reply that
- * a refetch stores after it, so nothing shows twice.
+ * messages they produced, and the turn streaming now. push-be pages messages newest first, so they are reversed here.
+ * The live turn replaces the messages stored since it began (its own question and the reply), so nothing shows twice.
  */
 export const threadItems = (
   messages: Message[],
   turns: ConversationTurn[],
   live: LiveTurn | null,
 ): ThreadItem[] => {
-  const cut = live?.text
-    ? messages
-        .map((message) => message.role === 'USER' && message.text === live.text)
-        .lastIndexOf(true)
-    : -1
-  const rows = cut >= 0 ? messages.slice(0, cut) : messages
+  const known = live && new Set(live.known)
+  const rows = [...messages].reverse().filter((message) => !known || known.has(message.id))
   const shown = new Set<string>()
   const replay = (turn: ConversationTurn): ThreadItem => {
     shown.add(turn.jobId)

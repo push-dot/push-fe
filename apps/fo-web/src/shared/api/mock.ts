@@ -1607,7 +1607,8 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     const conversation = bucket.conversations.find((item) => item.id === id)
     if (!conversation) return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
     const items = bucket.messages.get(id) ?? []
-    if (method === 'GET') return json(200, { data: items, page: { nextCursor: null, hasMore: false, total: items.length } })
+    // push-be pages messages newest first; the bucket keeps them oldest first.
+    if (method === 'GET') return json(200, { data: [...items].reverse(), page: { nextCursor: null, hasMore: false, total: items.length } })
     const payload = await readJson(input, init)
     if (mockSwitch('chat-limit')) return creditsSpent()
     if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
@@ -1653,6 +1654,13 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
       { type: 'done', operation: null },
     ]
     return eventStream(events, script?.stall ?? false, remember(events))
+  }
+  const cancelPath = tail.match(/^\/conversations\/([^/]+)\/stream\/cancel$/)
+  if (cancelPath && method === 'POST') {
+    if (!chatBucket().conversations.some((item) => item.id === decodeURIComponent(cancelPath[1] ?? ''))) {
+      return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
+    }
+    return json(200, { data: { jobId: 'mock-job', status: 'CANCELLED' } })
   }
   const approvalPath = tail.match(/^\/conversations\/([^/]+)\/approvals\/([^/]+)$/)
   if (approvalPath && method === 'POST') {

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { chatGateFrom } from './chat-gate'
 import {
   answerApproval,
+  cancelTurn,
   applyTurnEvent,
   EMPTY_TURN,
   runTurn,
@@ -24,6 +25,7 @@ const depsOf = (overrides: Partial<TurnDeps> = {}): TurnDeps => ({
   stream: vi.fn(() => frames()),
   follow: vi.fn(() => frames()),
   resolve: vi.fn(async () => ({})),
+  cancel: vi.fn(async () => ({})),
   ...overrides,
 })
 
@@ -64,6 +66,27 @@ describe('runTurn', () => {
     expect(events.map((event) => event.seq)).toEqual([3, 4, 5])
   })
 
+  it('keeps following a stream the server closed without a final frame', async () => {
+    const deps = depsOf({
+      stream: vi.fn(() => frames({ type: 'token', text: '가', seq: 1 })),
+      follow: vi
+        .fn()
+        .mockImplementationOnce(() => frames({ type: 'token', text: '나', seq: 2 }))
+        .mockImplementationOnce(() => frames({ type: 'done', operation: null, seq: 3 })),
+    })
+    const { events, onEvent } = collect()
+    await runTurn(deps, 'c1', { text: 'x', accessMode: 'AUTO' }, onEvent)
+    expect(deps.follow).toHaveBeenNthCalledWith(1, 'c1', 1, undefined)
+    expect(deps.follow).toHaveBeenNthCalledWith(2, 'c1', 2, undefined)
+    expect(events.map((event) => event.seq)).toEqual([1, 2, 3])
+  })
+
+  it('stops following when the job is no longer running', async () => {
+    const deps = depsOf({ stream: vi.fn(() => frames({ type: 'token', text: '가', seq: 1 })) })
+    await runTurn(deps, 'c1', { text: 'x', accessMode: 'AUTO' }, () => undefined)
+    expect(deps.follow).toHaveBeenCalledTimes(1)
+  })
+
   it('does not follow a stream that already ended', async () => {
     const deps = depsOf({ stream: vi.fn(() => frames({ type: 'done', operation: null, seq: 2 })) })
     await runTurn(deps, 'c1', { text: 'x', accessMode: 'AUTO' }, () => undefined)
@@ -80,7 +103,7 @@ describe('runTurn', () => {
       () => undefined,
     ).catch((e: unknown) => e)
     expect(chatGateFrom(caught)).toBe('verify')
-    expect(Object.keys(deps)).toEqual(['stream', 'follow', 'resolve'])
+    expect(Object.keys(deps)).toEqual(['stream', 'follow', 'resolve', 'cancel'])
     expect(deps.follow).not.toHaveBeenCalled()
   })
 
@@ -108,21 +131,31 @@ describe('answerApproval', () => {
   it('resolves with the option id and keeps reading the resumed job', async () => {
     const deps = depsOf({
       resolve: vi.fn(async () => ({ jobId: 'j2' })),
-      follow: vi.fn(() =>
-        frames({
-          type: 'tool',
-          name: 'publish_posting',
-          state: 'ok',
-          summary: '공고를 게시해요',
-          seq: 1,
-        }),
-      ),
+      follow: vi
+        .fn()
+        .mockImplementationOnce(() =>
+          frames({
+            type: 'tool',
+            name: 'publish_posting',
+            state: 'ok',
+            summary: '공고를 게시해요',
+            seq: 1,
+          }),
+        )
+        .mockImplementation(() => frames()),
     })
     const { events, onEvent } = collect()
     await answerApproval(deps, 'c1', 'a1', 'approve', onEvent)
     expect(deps.resolve).toHaveBeenCalledWith('c1', 'a1', 'approve')
-    expect(deps.follow).toHaveBeenCalledWith('c1')
+    expect(deps.follow).toHaveBeenCalledWith('c1', undefined, undefined)
     expect(events).toHaveLength(1)
+  })
+
+  it('passes the abort signal to the resumed job', async () => {
+    const controller = new AbortController()
+    const deps = depsOf({ resolve: vi.fn(async () => ({ jobId: 'j2' })) })
+    await answerApproval(deps, 'c1', 'a1', 'approve', () => undefined, controller.signal)
+    expect(deps.follow).toHaveBeenCalledWith('c1', undefined, controller.signal)
   })
 
   it('stops after resolving when no job was queued', async () => {
@@ -289,5 +322,28 @@ describe('storedTurn', () => {
     })
     expect(turn.blocks.map((block) => block.kind)).toEqual(['text', 'tool', 'choice'])
     expect(picked).toEqual({ need: '2' })
+  })
+})
+
+describe('cancelTurn', () => {
+  it('cancels the job on the server', async () => {
+    const deps = depsOf()
+    await cancelTurn(deps, 'c1')
+    expect(deps.cancel).toHaveBeenCalledWith('c1')
+  })
+
+  it('treats 409 as a job that already ended and raises any other failure', async () => {
+    const ended = depsOf({
+      cancel: vi.fn(async () => {
+        throw new ApiError('no active stream', 'CONFLICT', 409)
+      }),
+    })
+    await expect(cancelTurn(ended, 'c1')).resolves.toBeUndefined()
+    const down = depsOf({
+      cancel: vi.fn(async () => {
+        throw new ApiError('internal', 'INTERNAL', 500)
+      }),
+    })
+    await expect(cancelTurn(down, 'c1')).rejects.toMatchObject({ status: 500 })
   })
 })
