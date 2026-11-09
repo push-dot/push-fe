@@ -24,6 +24,7 @@ export const COPIED = '복사했어요'
 export const SAVE_PDF = 'PDF로 저장'
 export const OPEN_APPLICANT = '지원자 서류 열기'
 export const INTERVIEW_ASK = '면접 질문 만들어 줘'
+export const INTERVIEW_MAKE = '면접 질문 만들기'
 export const REVIEW_ASK = '서류 검토해 줘'
 export const DRAFT_HEAD = '공고 초안 v1'
 export const DRAFT_EDIT = '직접 고치기'
@@ -40,7 +41,8 @@ export const LIMIT_REFILL = '매월 1일에 사용량이 다시 채워져요.'
 export const LIMIT_ADMIN_ONLY = '요금제 변경과 구매는 관리자만 할 수 있어요'
 
 export const LOCK_TITLE = '면접 준비는 Pro부터 쓸 수 있어요'
-export const LOCK_BODY = '서류 검토에서 짚은 부분을 이어받아, 검증 질문과 확인할 점을 만들어 드려요. 지금은 Basic이에요.'
+const LOCK_BODY = '서류 검토에서 짚은 부분을 이어받아, 검증 질문과 확인할 점을 만들어 드려요.'
+export const lockBody = (plan: string | null) => (plan ? `${LOCK_BODY} 지금은 ${plan}이에요.` : LOCK_BODY)
 export const LOCK_REVIEW_ONLY = '서류 검토만 하기'
 export const LOCK_ADMIN_ONLY = '요금제는 관리자만 바꿀 수 있어요'
 
@@ -54,12 +56,15 @@ export type StarterCard = { intent: ChatIntent; title: string; example: string; 
 export const STARTER_CARDS: StarterCard[] = [
   { intent: 'posting', title: '공고 만들기', example: '데이터 엔지니어 공고 초안 써 줘', icon: 'doc' },
   { intent: 'general', title: '지원자 정리', example: '이번 주 새 지원자 정리해 줘', icon: 'people' },
-  { intent: 'review', title: '서류 검토', example: '김태윤 님 서류 검토해 줘', icon: 'search' },
+  { intent: 'review', title: '서류 검토', example: '지원자 서류 검토해 줘', icon: 'search' },
   { intent: 'interview', title: '면접 질문', example: '결제 승인 백엔드 면접 질문 만들어 줘', icon: 'chat' },
 ]
+
+// The board's example names a real applicant, so the card uses the first applicant of the open posting when there is one.
+export const reviewExample = (name: string | undefined) => (name ? `${name} 님 서류 검토해 줘` : '지원자 서류 검토해 줘')
 
 export const POSTING_OPEN_KICKER = '공고 · 게시 중'
 export const POSTING_CLOSED_KICKER = '공고 · 마감'
 export const referenceKicker = (company: string) => `참고 공고 · ${company}`
-export const applicantKicker = (posting: string) => `지원자 · ${posting}`
+export const applicantKicker = (posting: string) => (posting ? `지원자 · ${posting}` : '지원자')
 export const quoted = (text: string) => `“${text}”`

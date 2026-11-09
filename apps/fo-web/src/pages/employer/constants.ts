@@ -153,6 +153,8 @@ export const STREAM_ERROR_TEXT: Record<string, string> = {
 export const DEFAULT_STREAM_ERROR_TEXT = '작업을 이어가지 못했어요. 다시 보내 주세요.'
 
 const queueBusyText = (sec: number) => `지금 요청이 많아요. ${sec}초 뒤에 다시 보내 주세요.`
+// push-be writes nothing while a Stripe webhook holds the billing row, so the same request can go again.
+const billingLockedText = (sec: number) => `결제 정보를 정리하고 있어요. ${sec}초 뒤에 다시 보내 주세요.`
 
 const retryAfterSec = (error: ApiError) => {
   if (error instanceof QueueBusyError) return error.retryAfterSec
@@ -170,7 +172,7 @@ const CLOSED_STREAM_ERROR_TEXT: Record<string, string> = {
 export const streamErrorText = (error: unknown, paymentsOpen = true) => {
   if (!(error instanceof ApiError)) return DEFAULT_STREAM_ERROR_TEXT
   const sec = error.code === 'QUEUE_BUSY' ? retryAfterSec(error) : undefined
-  if (sec) return queueBusyText(sec)
+  if (sec) return error.details?.reason === 'BILLING_LOCKED' ? billingLockedText(sec) : queueBusyText(sec)
   return (paymentsOpen ? undefined : CLOSED_STREAM_ERROR_TEXT[error.code]) ?? STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
 }
 

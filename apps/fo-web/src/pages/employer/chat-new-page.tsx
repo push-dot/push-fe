@@ -4,16 +4,24 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import ChatApp from './chat-app'
-import ChatLock from './chat-lock'
-import { chatGateFrom, conversationsCreateEmployer, type ChatBlock } from '../../features/employer-chat'
-import { CHAT_CREATING, CHAT_FAILED, INTERVIEW_LOCK, PDF_LOCK, REFERENCE_POSTING, STARTER_POSTING, VERIFY_LINK } from './constants'
-
+import ChatRoom from './chat-room'
+import {
+  chatGateFrom,
+  conversationsCreateEmployer,
+  type ChatBlock,
+} from '../../features/employer-chat'
+import { CHAT_CREATING, CHAT_FAILED, PDF_LOCK, REFERENCE_POSTING, VERIFY_LINK } from './constants'
 
 const flights = new Map<string, Promise<Conversation>>()
 
 const ChatNewPage = () => {
   const [params] = useSearchParams()
   const postingId = params.get('postingId') || undefined
+  return postingId ? <ReferenceStart postingId={postingId} /> : <ChatRoom screen="new" />
+}
+
+/** 이 공고 참고하기: the conversation is created with the reference posting before the first message. */
+const ReferenceStart = ({ postingId }: { postingId: string }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [gate, setGate] = useState<ChatBlock | null>(null)
@@ -21,12 +29,12 @@ const ChatNewPage = () => {
   useEffect(() => {
     if (started.current) return
     started.current = true
-    const key = postingId ?? 'new'
+    const key = postingId
     const existing = flights.get(key)
     const flight =
       existing ??
       conversationsCreateEmployer({
-        title: postingId ? REFERENCE_POSTING : STARTER_POSTING,
+        title: REFERENCE_POSTING,
         postingId,
       })
     if (!existing) flights.set(key, flight)
@@ -34,7 +42,10 @@ const ChatNewPage = () => {
       async (created) => {
         flights.delete(key)
         await queryClient.invalidateQueries({ queryKey: ['employer-conversations'] })
-        navigate(`/employer/chat/${created.id}`, { replace: true, state: { postingId, intent: 'posting' } })
+        navigate(`/employer/chat/${created.id}`, {
+          replace: true,
+          state: { postingId, intent: 'posting' },
+        })
       },
       (error: unknown) => {
         flights.delete(key)
@@ -43,13 +54,11 @@ const ChatNewPage = () => {
     )
   }, [navigate, postingId, queryClient])
   return (
-    <ChatApp>
+    <ChatApp screen="new">
       {gate === 'verify' ? (
         <Link className="text-link stack" to="/employer/verify">
           {VERIFY_LINK}
         </Link>
-      ) : gate === 'interview' ? (
-        <ChatLock message={INTERVIEW_LOCK} />
       ) : gate === 'pdf' ? (
         <p className="b2 t3 stack">{PDF_LOCK}</p>
       ) : gate === 'failed' ? (

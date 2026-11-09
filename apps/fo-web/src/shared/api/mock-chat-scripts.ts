@@ -144,7 +144,7 @@ export const CHAT_SCRIPTS: Record<ChatScriptName, ChatScript> = {
         type: 'token',
         text: '결제 승인 API를 키울 4–6년차 기준으로 썼어요. 참고 공고의 표현은 옮기지 않고, 모아페이 거래 규모를 넣었어요.',
       },
-      { type: 'token', text: '등록하기 전에 공고 편집에서 고칠 수 있어요. 연봉 범위를 넣을까요?' },
+      { type: 'token', text: '\n\n등록하기 전에 공고 편집에서 고칠 수 있어요. 연봉 범위를 넣을까요?' },
       { type: 'done', operation: null },
     ],
   },

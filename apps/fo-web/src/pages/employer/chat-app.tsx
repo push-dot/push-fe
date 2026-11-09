@@ -8,7 +8,13 @@ import ChatSide, { UsageMeter } from './chat-side'
 import { useChatUsage } from './chat-usage'
 import { CHAT_NEW } from './constants'
 
-type ChatAppProps = { screen: 'list' | 'new' | 'thread'; activeId?: string; title?: string; dock?: ReactNode; children: ReactNode }
+type ChatAppProps = {
+  screen: 'list' | 'new' | 'thread'
+  activeId?: string
+  title?: string
+  dock?: ReactNode
+  children: ReactNode
+}
 
 const ChatApp = ({ screen, activeId, title, dock, children }: ChatAppProps) => {
   const conversations = useEmployerConversations()

@@ -6,7 +6,11 @@ import { DRAFT_EDIT, DRAFT_HEAD, DRAFT_REDO } from './chat-copy'
 import { useChatActions } from './chat-actions'
 import { DRAFT_BADGE, DRAFT_POSTING } from './constants'
 
-const lines = (value: string) => value.split('\n').map((line) => line.trim()).filter(Boolean)
+const lines = (value: string) =>
+  value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
 
 const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: string }) => {
   const actions = useChatActions()
@@ -43,12 +47,21 @@ const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: 
           <Icon name="pencil" size={15} width={2.2} />
           {DRAFT_EDIT}
         </button>
-        <button type="button" className="btn sec sm" disabled={actions.busy} onClick={actions.redraft}>
+        <button
+          type="button"
+          className="btn sec sm"
+          disabled={actions.busy}
+          onClick={actions.redraft}
+        >
           <Icon name="retry" size={15} width={2.2} />
           {DRAFT_REDO}
         </button>
         <span className="chat-compose-gap" />
-        <Link className="btn pri sm" to={postingId ? `/employer/postings/${postingId}/edit` : '/employer/postings/new'} state={postingId ? undefined : draft}>
+        <Link
+          className="btn pri sm"
+          to={postingId ? `/employer/postings/${postingId}/edit` : '/employer/postings/new'}
+          state={postingId ? undefined : draft}
+        >
           {DRAFT_POSTING}
         </Link>
       </div>

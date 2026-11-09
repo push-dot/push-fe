@@ -1,8 +1,8 @@
+import { Icon } from '../../shared/ui/icon'
 import { brandColor } from '@push/shared'
 import type { TurnApproval } from '../../features/employer-chat'
 import { useChatActions } from './chat-actions'
 import { APPROVAL_NEEDED, APPROVAL_WAITING } from './chat-copy'
-import ChatIcon from './chat-icon'
 
 const ChatApprovalCard = ({ approval }: { approval: TurnApproval }) => {
   const { busy, picked, answer } = useChatActions()
@@ -10,7 +10,7 @@ const ChatApprovalCard = ({ approval }: { approval: TurnApproval }) => {
   return (
     <div className="chat-approval">
       <span className="chat-approval-head">
-        <ChatIcon name="shield" size={20} width={2} className="ac" />
+        <Icon name="guard" size={20} width={2} className="ac" />
         <span className="b2 w7 ac">{APPROVAL_NEEDED}</span>
         {chosen ? null : <span className="badge orange">{APPROVAL_WAITING}</span>}
       </span>
@@ -19,13 +19,16 @@ const ChatApprovalCard = ({ approval }: { approval: TurnApproval }) => {
         <div className="chat-approval-rows">
           {approval.rows.map((row) => (
             <div key={row.name} className="chat-approval-row">
-              <span className="av chat-av" style={{ background: row.color ?? brandColor(row.name) }}>
+              <span
+                className="av chat-av"
+                style={{ background: row.color ?? brandColor(row.name) }}
+              >
                 {row.initial}
               </span>
               <span className="b2 w7">{row.name}</span>
               <span className="chat-stage">
                 <span className="badge ac">{row.from}</span>
-                <ChatIcon name="arrow" size={14} className="t3" />
+                <Icon name="arrow" size={14} className="t3" />
                 <span className="badge orange">{row.to}</span>
               </span>
             </div>

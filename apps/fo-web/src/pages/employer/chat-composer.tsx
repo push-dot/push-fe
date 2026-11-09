@@ -3,9 +3,24 @@ import { fileSize } from '@push/shared'
 import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Icon } from '../../shared/ui/icon'
 import { Popover } from '../../shared/ui/popover'
-import ChatIcon, { StopIcon } from './chat-icon'
-import { ATTACH_MENU, AWAITING_PLACEHOLDER, PDF_BADGE, PDF_REMOVE, PDF_UPLOAD, PICK_NONE, STOP_MESSAGE } from './chat-copy'
-import { ACCESS_MODE_GROUP, ACCESS_MODES, ATTACH_LABEL, COMPOSER_LABEL, COMPOSER_PLACEHOLDER, PDF_LOCK, SEND_MESSAGE } from './constants'
+import {
+  ATTACH_MENU,
+  AWAITING_PLACEHOLDER,
+  PDF_BADGE,
+  PDF_REMOVE,
+  PDF_UPLOAD,
+  PICK_NONE,
+  STOP_MESSAGE,
+} from './chat-copy'
+import {
+  ACCESS_MODE_GROUP,
+  ACCESS_MODES,
+  ATTACH_LABEL,
+  COMPOSER_LABEL,
+  COMPOSER_PLACEHOLDER,
+  PDF_LOCK,
+  SEND_MESSAGE,
+} from './constants'
 
 export type ComposerPerson = { applicationId: string; name: string }
 export type ComposerFile = { name: string; size: number }
@@ -63,13 +78,19 @@ const ChatComposer = ({
               <span className="b2 w7">{file.name}</span>
               <span className="c2 t3">{fileSize(file.size)}</span>
             </span>
-            <button type="button" className="chat-file-x t3" aria-label={PDF_REMOVE} onClick={() => onFile(null)}>
+            <button
+              type="button"
+              className="chat-file-x t3"
+              aria-label={PDF_REMOVE}
+              onClick={() => onFile(null)}
+            >
               <Icon name="close" size={16} width={2.4} />
             </button>
           </span>
         </div>
       ) : null}
       <textarea
+        id="chat-input"
         rows={1}
         className="b1"
         aria-label={COMPOSER_LABEL}
@@ -80,7 +101,13 @@ const ChatComposer = ({
       />
       <div className="chat-compose-row">
         <span className="chat-pop-host">
-          <button type="button" className="hbtn chat-attach" aria-label={ATTACH_MENU} aria-expanded={menu === 'attach'} onClick={() => setMenu(menu === 'attach' ? null : 'attach')}>
+          <button
+            type="button"
+            className="hbtn chat-attach"
+            aria-label={ATTACH_MENU}
+            aria-expanded={menu === 'attach'}
+            onClick={() => setMenu(menu === 'attach' ? null : 'attach')}
+          >
             <Icon name="plus" size={20} width={2.2} />
           </button>
           {menu === 'attach' ? (
@@ -118,7 +145,9 @@ const ChatComposer = ({
                       <span className="w6">{mode.label}</span>
                       <span className="c1 t3">{mode.description}</span>
                     </span>
-                    {mode.value === accessMode ? <Icon name="check" size={18} width={2.4} className="ac" /> : null}
+                    {mode.value === accessMode ? (
+                      <Icon name="check" size={18} width={2.4} className="ac" />
+                    ) : null}
                   </button>
                 ))}
               </div>
@@ -139,8 +168,13 @@ const ChatComposer = ({
           }}
         />
         <span className="chat-pop-host">
-          <button type="button" className={picked ? 'chip on' : 'chip'} aria-expanded={menu === 'pick'} onClick={() => setMenu(menu === 'pick' ? null : 'pick')}>
-            <ChatIcon name="at" size={16} />
+          <button
+            type="button"
+            className={picked ? 'chip on' : 'chip'}
+            aria-expanded={menu === 'pick'}
+            onClick={() => setMenu(menu === 'pick' ? null : 'pick')}
+          >
+            <Icon name="at" size={16} />
             {picked ? picked.name : ATTACH_LABEL}
           </button>
           {menu === 'pick' ? (
@@ -180,12 +214,22 @@ const ChatComposer = ({
         </span>
         <span className="chat-compose-gap" />
         {sending ? (
-          <button type="button" className="hbtn chat-send stop" aria-label={STOP_MESSAGE} onClick={onStop}>
-            <StopIcon />
+          <button
+            type="button"
+            className="hbtn chat-send stop"
+            aria-label={STOP_MESSAGE}
+            onClick={onStop}
+          >
+            <Icon name="stop" size={20} width={0} filled />
           </button>
         ) : (
-          <button type="submit" className={ready ? 'hbtn chat-send on' : 'hbtn chat-send'} aria-label={SEND_MESSAGE} disabled={!ready}>
-            <ChatIcon name="send" size={20} width={2.4} />
+          <button
+            type="submit"
+            className={ready ? 'hbtn chat-send on' : 'hbtn chat-send'}
+            aria-label={SEND_MESSAGE}
+            disabled={!ready}
+          >
+            <Icon name="up" size={20} width={2.4} />
           </button>
         )}
       </div>

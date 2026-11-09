@@ -37,7 +37,9 @@ const ChatSide = ({
       </p>
     ) : null}
     {loading ? <p className="c1 t3 chat-side-note">{CHAT_LOADING}</p> : null}
-    {!loading && !failed && conversations.length === 0 ? <p className="c1 t3 chat-side-note">{CHAT_EMPTY}</p> : null}
+    {!loading && !failed && conversations.length === 0 ? (
+      <p className="c1 t3 chat-side-note">{CHAT_EMPTY}</p>
+    ) : null}
     <nav className="chat-rooms">
       {conversations.map((conversation) => (
         <Link

@@ -9,7 +9,9 @@ const ChatQuestions = ({ items, caret }: { items: Question[]; caret: boolean }) 
         <span className="chat-question-copy">
           <span className="b1 w7">
             {item.text}
-            {caret && index === items.length - 1 ? <span className="chat-caret" aria-hidden="true" /> : null}
+            {caret && index === items.length - 1 ? (
+              <span className="chat-caret" aria-hidden="true" />
+            ) : null}
           </span>
           {item.check ? (
             <span className="c1 t2 chat-check">
