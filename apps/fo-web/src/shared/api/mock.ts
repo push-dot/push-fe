@@ -2282,6 +2282,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
       },
     })
   }
+  if (method === 'POST' && matches(pathname, '/auth/logout')) return new Response(null, { status: 204 })
   if (method === 'POST' && matches(pathname, '/auth/refresh')) {
     return json(200, { data: sessionStore.load() ?? mockSession(persona ?? 'personal') })
   }

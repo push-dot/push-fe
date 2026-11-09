@@ -3,22 +3,20 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useSignOut } from '../../features/sign-out'
 import { meDeleteAccount } from '../../features/update-settings'
-import { sessionStore } from '../../shared/auth/session'
 import { ConfirmDialog } from '../../shared/ui/dialog'
 import { Icon } from '../../shared/ui/icon'
 import { ADMIN_TRANSFER, DELETE_FAILED, DELETE_RETENTION, DELETE_SUBSCRIPTION, WITHDRAW_CONFIRM, WITHDRAW_TITLE } from './constants'
 
 const WithdrawDialog = ({ subscriptionNote, onClose }: { subscriptionNote: boolean; onClose: () => void }) => {
   const navigate = useNavigate()
+  const signOut = useSignOut()
   const [failed, setFailed] = useState(false)
   const [adminBlocked, setAdminBlocked] = useState(false)
   const withdraw = useMutation({
     mutationFn: () => meDeleteAccount(),
-    onSuccess: () => {
-      sessionStore.clear()
-      navigate('/')
-    },
+    onSuccess: () => signOut({ revoke: false }),
     onError: (error) => {
       if (error instanceof ApiError && error.code === 'ADMIN_TRANSFER_REQUIRED') setAdminBlocked(true)
       else setFailed(true)

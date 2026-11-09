@@ -1,10 +1,9 @@
 import { brandColor } from '@push/shared'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { useMyCompany } from '../entities/company'
 import { useAuthMe } from '../entities/session'
-import { sessionStore } from '../shared/auth/session'
+import { useSignOut } from '../features/sign-out'
 import { useSession } from '../shared/auth/use-session'
 import { initials } from '../shared/lib/format'
 import { PLAN_NAME, ROLE_NAME } from '../shared/model/employer-plan'
@@ -14,7 +13,7 @@ import { ACCOUNT_MENU, NAV } from './constants'
 
 const AccountMenu = () => {
   const session = useSession()
-  const navigate = useNavigate()
+  const signOut = useSignOut()
   const [open, setOpen] = useState(false)
   const employer = session?.user.accountType === 'EMPLOYER'
   const company = useMyCompany({ enabled: employer && Boolean(session?.user.companyId) })
@@ -47,10 +46,7 @@ const AccountMenu = () => {
     {
       label: ACCOUNT_MENU.logout,
       icon: 'logout',
-      onSelect: () => {
-        sessionStore.clear()
-        navigate('/')
-      },
+      onSelect: () => void signOut(),
     },
   ] as MenuItem[]
   return (

@@ -2,14 +2,14 @@ import type { Settings } from '@push/api-client'
 import { brandColor } from '@push/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import MySide from '../my/my-side'
-import { sessionStore } from '../../shared/auth/session'
 import { useSession } from '../../shared/auth/use-session'
 import { useAuthMe, useBlocks, useSettings } from '../../entities/session'
 import { initials } from '../../shared/lib/format'
 import { THEME_CHOICES, setTheme, useTheme } from '../../shared/lib/theme'
+import { useSignOut } from '../../features/sign-out'
 import { meUpdateSettings } from '../../features/update-settings'
 import { ConfirmDialog } from '../../shared/ui/dialog'
 import { Icon } from '../../shared/ui/icon'
@@ -39,7 +39,7 @@ import WithdrawDialog from './withdraw-dialog'
 
 const SettingsPage = () => {
   const session = useSession()
-  const navigate = useNavigate()
+  const signOut = useSignOut()
   const queryClient = useQueryClient()
   const account = useAuthMe()
   const settingsQuery = useSettings()
@@ -158,10 +158,7 @@ const SettingsPage = () => {
         <ConfirmDialog
           title={LOGOUT_TITLE}
           confirmLabel={SETTINGS_LABELS.logout}
-          onConfirm={() => {
-            sessionStore.clear()
-            navigate('/')
-          }}
+          onConfirm={() => void signOut()}
           onClose={() => setDialog(null)}
         />
       ) : null}

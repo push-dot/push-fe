@@ -15,6 +15,8 @@ export const authEmailVerify = (...args: Parameters<Api['auth']['emailVerify']>)
 
 export const authExchange = (...args: Parameters<Api['auth']['exchange']>) => api.auth.exchange(...args)
 
+export const authLogout = (...args: Parameters<Api['auth']['logout']>) => api.auth.logout(...args)
+
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
 
 export const authRequestPasswordReset = (...args: Parameters<Api['auth']['requestPasswordReset']>) => api.auth.requestPasswordReset(...args)

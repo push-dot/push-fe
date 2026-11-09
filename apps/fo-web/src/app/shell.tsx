@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { AgentMark, Icon } from '../shared/ui/icon'
-import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
@@ -12,6 +11,7 @@ import TabBar from './tab-bar'
 import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
+import { useSignOut } from '../features/sign-out'
 
 
 const MAIN_NAV = [
@@ -33,6 +33,7 @@ const Shell = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const session = useSession()
+  const signOut = useSignOut()
   const auth = isAuthChrome(location.pathname)
   const queryText = new URLSearchParams(location.search).get('q') ?? ''
   const [searchDraft, setSearchDraft] = useState(queryText)
@@ -74,10 +75,7 @@ const Shell = () => {
                 <span aria-hidden="true">·</span>
                 <button
                   type="button"
-                  onClick={() => {
-                    sessionStore.clear()
-                    navigate('/')
-                  }}
+                  onClick={() => void signOut()}
                 >
                   {AUTH_LOGOUT}
                 </button>
