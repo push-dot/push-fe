@@ -26,7 +26,7 @@
 
 개인 웹과 모바일은 공고를 보고, 검색하고, 허브 프로필과 소셜, 제안, 알림, 내 정보를 다뤄요. 웹에서 로그인 없이 열리는 경로는 `/`, `/jobs`, `/search`, `/postings/:id`예요.
 
-에이전트(AI 채팅) 화면은 모바일에 있어요. 메시지는 SSE(스트림 v3)로 받고, 진행 중인 응답은 다시 이어 받아요. 대화 목록 사이드바는 `expo-router/drawer`로 열려서 탭 바까지 덮어요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
+에이전트(AI 채팅) 화면은 모바일에 있어요. 메시지는 SSE(스트림 v3)로 받고, 진행 중인 응답은 다시 이어 받아요. 대화 목록 사이드바는 탭 위에 쌓이는 스택 화면(`/sidebar`)으로 열려서 탭 바까지 덮어요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
 
 기업 웹은 사업자 확인, 공고 작성, 지원자, 담당자 초대, 요금제 화면을 가져요. 계정 종류는 `PERSONAL`과 `EMPLOYER`이고, 로그인 화면에서 고른 뒤 바뀌지 않아요.
 
@@ -55,7 +55,7 @@ expo-secure-store                 브라우저 세션 (push-web-session)
 | --- | --- |
 | 워크스페이스 | pnpm 11.0.4 (`packageManager`), Turborepo 2.11, TypeScript 5.8 (모바일만 6.0) |
 | Node | CI는 Node 22 |
-| 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58(Native Tabs, Drawer), Zustand 5, React Native WebView 14, `@expo/ui`(SwiftUI·Jetpack Compose 시트, 메뉴, 피커), Noto Sans KR |
+| 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58(Native Tabs, Stack), Zustand 5, React Native WebView 14, `@expo/ui`(SwiftUI·Jetpack Compose 시트, 메뉴, 피커), Noto Sans KR |
 | 웹 | Vite 6, React 19.1, React Router 7, TanStack Query 5, Noto Sans KR |
 | HTTP | `@push/api-client` (ky 1) |
 | 한글 검색 | `@push/shared`가 `es-hangul` 2.4를 감싸요 |
@@ -161,7 +161,7 @@ WebView에서는 `/postings/:id`와 `/profiles/:id`만 있어요.
 
 ### fo-mobile
 
-Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sign-in`, `phone`, `verify-phone`, `signup-terms`, `phone-registered`)은 루트에 있어요. 로그인 뒤 화면은 `(app)/(stack)` 아래에 있고, `(app)`은 에이전트 사이드바를 여는 Drawer예요. 그룹은 URL에 들어가지 않지만, typed routes 때문에 그룹을 쓰는 href는 `/(app)/(stack)/(tabs)/…` 전체를 적어요.
+Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sign-in`, `phone`, `verify-phone`, `signup-terms`, `phone-registered`)은 루트에 있어요. 로그인 뒤 화면은 `(app)/(stack)` 아래에 있고, `(app)`은 그 스택을 그대로 그리는 레이아웃이에요. 에이전트 사이드바도 이 스택의 `sidebar/` 화면이에요. 그룹은 URL에 들어가지 않지만, typed routes 때문에 그룹을 쓰는 href는 `/(app)/(stack)/(tabs)/…` 전체를 적어요.
 
 탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 실행 방식, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `access-mode`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
 

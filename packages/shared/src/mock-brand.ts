@@ -1,4 +1,5 @@
-import { registerBrandColors } from '@push/shared'
+// Board colours for the mock fixtures. Mock builds only (web ?mock, app EXPO_PUBLIC_API_MOCK), so it is a separate entry.
+import { registerBrandColors } from './brand-of'
 
 export const MOCK_BRAND_COLORS: Record<string, string> = {
   모아페이: '#1F3A8A',
