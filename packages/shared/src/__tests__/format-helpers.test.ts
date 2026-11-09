@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { brandColor, brandOf, fileSize, monthDay, registerBrandColors } from '../index'
-
-describe('brandOf', () => {
-  it('picks a stable colour from the name', () => {
-    expect(brandOf('모아페이')).toBe('#0E7A5F')
-    expect(brandOf('Push')).toBe('#B4501E')
-    expect(brandOf('김서준')).toBe('#5B4CF0')
-    expect(brandOf('하루랩스')).toBe('#1B6E8F')
-  })
-})
+import { brandColor, fileSize, monthDay, registerBrandColors } from '../index'
+import { registerMockBrandColors } from '../mock-brand'
 
 describe('brandColor', () => {
   it('picks the same board palette colour for the same key', () => {
@@ -26,6 +18,13 @@ describe('brandColor', () => {
 
   it('names no company or person in the shared code', () => {
     expect(readFileSync(new URL('../brand-of.ts', import.meta.url), 'utf8')).not.toMatch(/[가-힣]/)
+    expect(readFileSync(new URL('../index.ts', import.meta.url), 'utf8')).not.toMatch(/mock/)
+  })
+
+  it('gives the mock companies the colours both the app and web boards draw', () => {
+    registerMockBrandColors()
+    expect(brandColor('모아페이')).toBe('#1F3A8A')
+    expect(brandColor('파도AI')).toBe('#862E9C')
   })
 })
 
