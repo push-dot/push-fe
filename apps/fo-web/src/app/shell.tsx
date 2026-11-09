@@ -12,6 +12,7 @@ import TabBar from './tab-bar'
 import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
+import NotificationBell from '../pages/notifications/notification-bell'
 
 
 const MAIN_NAV = [
@@ -132,14 +133,7 @@ const Shell = () => {
               </form>
             ) : null}
             <div className="hd-end">
-              {end
-                .filter((link) => link.to === '/notifications')
-                .map((link) => (
-                  <NavLink key={link.to} to={link.to} className="hbtn" aria-label={unread > 0 ? `${link.label} ${unread}개` : link.label}>
-                    <Icon name="bell" size={22} />
-                    {unread > 0 ? <span className="nb">{unread}</span> : null}
-                  </NavLink>
-                ))}
+              {end.some((link) => link.to === '/notifications') ? <NotificationBell unread={unread} /> : null}
               {session ? (
                 <NavLink to="/offers" className="hbtn" aria-label={offerCount > 0 ? `${NAV.offers} ${offerCount}개` : NAV.offers}>
                   <Icon name="inbox" size={22} />

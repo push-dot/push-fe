@@ -1,41 +1,44 @@
 import type { Post, Posting, Profile } from '@push/api-client'
-import { brandColor, careerLabel, matchHangul } from '@push/shared'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
-import Skeleton from '../../shared/ui/skeleton'
-import { isMock } from '../../shared/lib/bridge'
-import { initials } from '../../shared/lib/format'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
-import { SEARCH_EMPTY, SEARCH_LOGIN_COPY, SEARCH_TABS, TRENDING_SEARCHES, TRENDING_TITLE, type SearchType } from './constants'
-import { clearRecentSearches, readRecentSearches, saveRecentSearch } from '../../features/recent-searches'
+import { Icon } from '../../shared/ui/icon'
+import Skeleton from '../../shared/ui/skeleton'
+import StateBlock from '../../shared/ui/state-block'
+import {
+  SEARCH_CLEAR,
+  SEARCH_EMPTY_HINT,
+  SEARCH_LOGIN_COPY,
+  SEARCH_PEOPLE_TITLE,
+  SEARCH_PREVIEW_PEOPLE,
+  SEARCH_PREVIEW_POSTINGS,
+  SEARCH_TABS,
+  searchAllPostings,
+  searchEmptyTitle,
+  type SearchType,
+} from './constants'
+import { PersonRow, PostRow, PostingRow } from './search-results'
+import SearchSide from './search-side'
+import { clearRecentSearches, readRecentSearches, removeRecentSearch, saveRecentSearch } from '../../features/recent-searches'
 import { useSearchPeople, useSearchPostings, useSearchPosts } from '../../features/search-catalog'
 
 
 const isSearchType = (value: string | null): value is SearchType => SEARCH_TABS.some((tab) => tab.type === value)
-
-const Highlight = ({ text, query }: { text: string; query: string }) => {
-  const match = matchHangul(text, query)
-  if (!match) return text
-  return (
-    <>
-      {text.slice(0, match.start)}
-      <mark>{text.slice(match.start, match.end)}</mark>
-      {text.slice(match.end)}
-    </>
-  )
-}
 
 const SearchPage = () => {
   const session = useSession()
   const [params, setParams] = useSearchParams()
   const q = params.get('q') ?? ''
   const typeParam = params.get('type')
+  const overview = !isSearchType(typeParam)
   const type: SearchType = isSearchType(typeParam) ? typeParam : 'postings'
   const [recent, setRecent] = useState(() => readRecentSearches())
+  const [draft, setDraft] = useState(q)
   const ready = q.trim().length > 0
   useEffect(() => {
+    setDraft(q)
     const next = q.trim()
     if (!next) return
     setRecent(saveRecentSearch(next))
@@ -51,7 +54,11 @@ const SearchPage = () => {
     setRecent(saveRecentSearch(next))
     const query = new URLSearchParams(params)
     query.set('q', next)
-    query.set('type', type)
+    setParams(query)
+  }
+  const clearQuery = () => {
+    const query = new URLSearchParams(params)
+    query.delete('q')
     setParams(query)
   }
   const selectType = (next: SearchType) => {
@@ -68,95 +75,131 @@ const SearchPage = () => {
       </Link>
     </p>
   )
-  const countOf = (next: SearchType) => {
+  const totalOf = (next: SearchType) => {
     const data = byType[next].data
     if (!data) return null
     return data.page.total ?? data.data.length
   }
+  const empty = (
+    <StateBlock
+      icon="search"
+      title={searchEmptyTitle(q)}
+      description={SEARCH_EMPTY_HINT}
+      action={
+        <button type="button" className="btn sec sm" onClick={clearQuery}>
+          {SEARCH_CLEAR}
+        </button>
+      }
+    />
+  )
+  const postingRows = (postings.data?.data ?? []) as Posting[]
+  const peopleRows = (people.data?.data ?? []) as Profile[]
+  const postRows = (posts.data?.data ?? []) as Post[]
   let body: ReactNode = null
   if (gated) {
     body = loginNote
-  } else if (ready && byType[type].isLoading) {
+  } else if (ready && (overview ? postings.isLoading : byType[type].isLoading)) {
     body = <Skeleton rows={5} />
-  } else if (ready && type === 'postings') {
-    const rows = (postings.data?.data ?? []) as Posting[]
+  } else if (ready && overview) {
+    const postingTotal = totalOf('postings') ?? postingRows.length
+    const shown = postingRows.slice(0, SEARCH_PREVIEW_POSTINGS)
+    const persons = peopleRows.slice(0, SEARCH_PREVIEW_PEOPLE)
     body =
-      postings.data && rows.length === 0 ? (
-        <p className="b2 t3">{SEARCH_EMPTY}</p>
+      shown.length === 0 && persons.length === 0 ? (
+        empty
+      ) : (
+        <>
+          {shown.length > 0 ? (
+            <div className="search-list">
+              {shown.map((posting) => (
+                <PostingRow key={posting.id} posting={posting} q={q} />
+              ))}
+            </div>
+          ) : null}
+          {postingTotal > shown.length ? (
+            <Link to={`/search?${new URLSearchParams({ q, type: 'postings' }).toString()}`} className="search-more b2 w6 t2">
+              {searchAllPostings(postingTotal)}
+              <Icon name="next" size={16} width={2.2} />
+            </Link>
+          ) : null}
+          {persons.length > 0 ? (
+            <>
+              <hr className="search-hr" />
+              <h2 className="h3 search-people">{SEARCH_PEOPLE_TITLE}</h2>
+              <div className="search-list">
+                {persons.map((person) => (
+                  <PersonRow key={person.userId} person={person} q={q} />
+                ))}
+              </div>
+            </>
+          ) : null}
+          {!session ? loginNote : null}
+        </>
+      )
+  } else if (ready && type === 'postings') {
+    body =
+      postingRows.length === 0 ? (
+        empty
       ) : (
         <div className="search-list">
-          {rows.map((posting) => (
-            <Link key={posting.id} to={`/postings/${posting.id}`} className="search-row">
-              <span className="ph" style={{ background: brandColor(posting.company) }}>
-                {[...posting.company][0]}
-              </span>
-              <span className="search-copy">
-                <span className="c1 t3">
-                  <Highlight text={posting.company} query={q} />
-                </span>
-                <strong>
-                  <Highlight text={posting.title} query={q} />
-                </strong>
-                <span className="c1 t3">
-                  {posting.location} · {careerLabel(posting)}
-                </span>
-              </span>
-            </Link>
+          {postingRows.map((posting) => (
+            <PostingRow key={posting.id} posting={posting} q={q} />
           ))}
         </div>
       )
   } else if (ready && type === 'people') {
-    const rows = (people.data?.data ?? []) as Profile[]
     body =
-      people.data && rows.length === 0 ? (
-        <p className="b2 t3">{SEARCH_EMPTY}</p>
+      peopleRows.length === 0 ? (
+        empty
       ) : (
         <div className="search-list">
-          {rows.map((person) => (
-            <Link key={person.userId} to={`/profiles/${person.userId}`} className="search-row">
-              <span className="ph" style={{ background: brandColor(person.displayName) }}>
-                {initials(person.displayName)}
-              </span>
-              <span className="search-copy">
-                <strong>
-                  <Highlight text={person.displayName} query={q} />
-                </strong>
-                <span className="c1 t3">
-                  <Highlight text={person.headline} query={q} />
-                </span>
-              </span>
-            </Link>
+          {peopleRows.map((person) => (
+            <PersonRow key={person.userId} person={person} q={q} />
           ))}
         </div>
       )
   } else if (ready) {
-    const rows = (posts.data?.data ?? []) as Post[]
     body =
-      posts.data && rows.length === 0 ? (
-        <p className="b2 t3">{SEARCH_EMPTY}</p>
+      postRows.length === 0 ? (
+        empty
       ) : (
         <div className="search-list">
-          {rows.map((post) => (
-            <Link key={post.id} to={`/posts/${post.id}`} className="search-row">
-              <span className="search-copy">
-                <strong>
-                  <Highlight text={post.title} query={q} />
-                </strong>
-                <span className="c1 t3">
-                  <Highlight text={post.body} query={q} />
-                </span>
-              </span>
-            </Link>
+          {postRows.map((post) => (
+            <PostRow key={post.id} post={post} q={q} />
           ))}
         </div>
       )
   }
   return (
     <main className="page search-layout">
-      <div className="feed">
+      <div className="search-main">
+        <form
+          className="search-field"
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault()
+            submit(draft)
+          }}
+        >
+          <Icon name="search" size={20} width={2.2} />
+          <input aria-label="검색" value={draft} onChange={(event) => setDraft(event.target.value)} />
+          {draft ? (
+            <button
+              type="button"
+              className="search-clear"
+              aria-label={SEARCH_CLEAR}
+              onClick={() => {
+                setDraft('')
+                clearQuery()
+              }}
+            >
+              <Icon name="close" size={18} width={2.4} />
+            </button>
+          ) : null}
+        </form>
         <div className="search-tabs" role="tablist">
           {SEARCH_TABS.map((tab) => {
-            const count = countOf(tab.type)
+            const count = totalOf(tab.type)
             return (
               <button key={tab.type} type="button" className="chip" role="tab" aria-selected={type === tab.type} onClick={() => selectType(tab.type)}>
                 {count == null ? tab.label : `${tab.label} ${count}`}
@@ -166,47 +209,15 @@ const SearchPage = () => {
         </div>
         {body}
       </div>
-      <aside className="search-side">
-        {recent.length > 0 ? (
-          <section className="box" style={{ padding: 18 }}>
-            <div className="recent-head">
-              <h2 className="h3">최근 검색어</h2>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => {
-                  clearRecentSearches()
-                  setRecent([])
-                }}
-              >
-                모두 지우기
-              </button>
-            </div>
-            <div className="skill-row">
-              {recent.map((term) => (
-                <button key={term} type="button" className="chip" onClick={() => submit(term)}>
-                  {term}
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : null}
-        {isMock() ? (
-          <section className="box" style={{ padding: 18 }}>
-            <h2 className="h3">{TRENDING_TITLE}</h2>
-            <ol className="trend">
-              {TRENDING_SEARCHES.map((term, index) => (
-                <li key={term}>
-                  <button type="button" onClick={() => submit(term)}>
-                    <span className="t3">{index + 1}</span>
-                    <span>{term}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </section>
-        ) : null}
-      </aside>
+      <SearchSide
+        recent={recent}
+        onPick={submit}
+        onRemove={(term) => setRecent(removeRecentSearch(term))}
+        onClear={() => {
+          clearRecentSearches()
+          setRecent([])
+        }}
+      />
     </main>
   )
 }
