@@ -6,7 +6,6 @@ import { Icon } from '../../shared/ui/icon'
 import Skeleton from '../../shared/ui/skeleton'
 import StateBlock from '../../shared/ui/state-block'
 import { HUB_PAGE_SIZE } from './constants'
-import { FilterIcon } from './filter-icon'
 import HubFilterSheet, { countApplied, type HubDraft } from './hub-filter-sheet'
 import ProfileCard from './profile-card'
 import { useProfilePages } from '../../entities/profile'
@@ -65,7 +64,7 @@ const HubPage = () => {
               setOpen((value) => !value)
             }}
           >
-            <FilterIcon />
+            <Icon name="filter" size={16} width={2.2} />
             필터
             {filterCount > 0 ? <span className="side-count">{filterCount}</span> : null}
           </button>

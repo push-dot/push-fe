@@ -7,7 +7,6 @@ import { Icon } from '../../shared/ui/icon'
 import Toast, { useToast } from '../../shared/ui/toast'
 import { LINK_COPIED, OFFER_ONCE } from './constants'
 import OfferSheet from './offer-sheet'
-import { SendIcon } from './send-icon'
 import { profilesFollow, profilesUnfollow } from '../../features/follow-profile'
 
 
@@ -43,7 +42,7 @@ const ProfileTools = ({ profile }: { profile: Profile }) => {
           <div className="profile-cta">
             {self ? null : (
               <button type="button" className="btn pri lg block offer-btn" disabled={profile.offered === true} onClick={() => setOfferOpen(true)}>
-                <SendIcon />
+                <Icon name="send" size={18} />
                 제안하기
               </button>
             )}

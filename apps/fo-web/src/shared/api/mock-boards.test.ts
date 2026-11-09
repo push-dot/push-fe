@@ -161,6 +161,40 @@ describe('notifications', () => {
   })
 })
 
+describe('김서준 boards', () => {
+  it('serves the WebMy* lists: 4년차, 6 documents, 6 bookmarks, 5 follows, own posts outside the feed', async () => {
+    setMockPersona('personal')
+    const me = await get<{ data: { tenureYears: number; intro: string } }>('/me/profile', SIGNED)
+    expect(me.data.tenureYears).toBe(4)
+    expect(me.data.intro).toMatch(/^결제 승인과 정산을 4년 동안/)
+    const sources = await get<Page<{ fileName: string; origin: string }>>('/sources')
+    expect(sources.data.filter((item) => item.origin === 'AI').map((item) => item.fileName)).toEqual([
+      '모아페이_맞춤_이력서_v2',
+      '서버 개발자 이력서',
+      '결제 플랫폼 경력기술서',
+    ])
+    expect(sources.data).toHaveLength(6)
+    const bookmarks = await get<Page<Card>>('/me/bookmarks', SIGNED)
+    expect(bookmarks.data.map((item) => item.company)).toEqual(['모아페이', '도토리증권', '누리클라우드', '별빛게임즈', '하루랩스', '바름로지스'])
+    const follows = await get<Page<{ displayName: string }>>('/me/follows', SIGNED)
+    expect(follows.data.map((item) => item.displayName)).toEqual(['김태윤', '이하은', '최지우', '정민재', '서준호'])
+    const mine = await get<Page<{ id: string; title: string }>>('/me/posts', SIGNED)
+    expect(mine.data.map((item) => item.title)).toEqual(['정산 배치를 Kafka 스트림으로 바꾼 이야기', '4년차 백엔드, 이직 준비 어디서부터 할까요', '판교 점심 커피챗 하실 분'])
+    const feed = await get<Page<{ id: string }>>('/posts')
+    expect(feed.data.map((item) => item.id)).not.toContain(mine.data[0]!.id)
+    expect((await mockFetch(`${API}/posts/${mine.data[0]!.id}`)).status).toBe(200)
+  })
+})
+
+describe('employer chat lock', () => {
+  it('locks the board text 면접 질문 만들어 줘 on Basic', async () => {
+    setMockPersona('employer')
+    const created = await (await post('/conversations', { title: '면접', audience: 'EMPLOYER' })).json()
+    const sent = await post(`/conversations/${created.data.id}/messages`, { text: '면접 질문 만들어 줘' })
+    expect(sent.status).toBe(403)
+  })
+})
+
 describe('links', () => {
   it('lists the seven board links, filters by kind and adds one', async () => {
     setMockPersona('personal')
@@ -177,19 +211,32 @@ describe('employer credits and seats', () => {
       setMockPersona(persona)
       return (await get<{ data: { monthlyMicroCredits: number; spentMicroCredits: number; balanceMicroCredits: number } }>('/billing')).data
     }
-    expect(await spent('employer-pro')).toMatchObject({ monthlyMicroCredits: 15_000_000, balanceMicroCredits: 5_160_000, spentMicroCredits: 9_840_000 })
-    expect(await spent('employer-ultra')).toMatchObject({ monthlyMicroCredits: 30_000_000, spentMicroCredits: 4_210_000 })
+    expect(await spent('employer-pro')).toMatchObject({ monthlyMicroCredits: 90_000_000, balanceMicroCredits: 30_960_000, spentMicroCredits: 59_040_000 })
+    expect(await spent('employer-ultra')).toMatchObject({ monthlyMicroCredits: 180_000_000, spentMicroCredits: 25_260_000 })
     expect(await spent('personal')).toMatchObject({ monthlyMicroCredits: 0, spentMicroCredits: 0 })
   })
 
-  it('seeds Pro at 1 of 2 seats with contract-shaped members and the brand name', async () => {
+  it('seeds Pro at 1 of 2 seats; an invite stays a pending invite, counted as a seat, never a member', async () => {
     setMockPersona('employer-pro')
-    const company = await get<{ data: { name: string; seats: { used: number; limit: number } } }>('/companies/me')
-    expect(company.data).toMatchObject({ name: '모아페이', seats: { used: 1, limit: 2 } })
+    const company = async () => (await get<{ data: { name: string; seats: { used: number; limit: number } } }>('/companies/me')).data
+    expect(await company()).toMatchObject({ name: '모아페이', seats: { used: 1, limit: 2 } })
+    expect((await post('/companies/me/invites', { email: 'sora.park@moapay.kr' })).status).toBe(201)
+    expect((await company()).seats).toEqual({ used: 2, limit: 2 })
     const members = await get<{ data: Record<string, unknown>[] }>('/companies/me/members')
-    expect(members.data).toHaveLength(2)
+    expect(members.data.map((item) => item.email)).toEqual(['mina.lee@moapay.kr', 'jiho.han@moapay.kr'])
     expect(members.data.every((item) => Object.keys(item).sort().join() === 'email,joinedAt,role,userId')).toBe(true)
-    expect((await post('/companies/me/invites', { email: 'yuna.choi@moapay.kr' })).status).toBe(201)
-    expect((await post('/companies/me/invites', { email: 'sora.park@moapay.kr' })).status).toBe(403)
+    const invites = await get<{ data: { email: string; expiresAt: string }[] }>('/companies/me/invites')
+    expect(invites.data.map((item) => item.email)).toEqual(['sora.park@moapay.kr'])
+    expect((await post('/companies/me/invites', { email: 'sora.park@moapay.kr' })).status).toBe(201)
+    expect((await post('/companies/me/invites', { email: 'yuna.choi@moapay.kr' })).status).toBe(403)
+    expect((await post('/companies/me/invites', { email: 'jiho.han@moapay.kr' })).status).toBe(409)
+    expect((await company()).seats.used).toBe(2)
+  })
+
+  it('keeps what the month spent when Pro moves to Ultra', async () => {
+    setMockPersona('employer-pro')
+    expect((await post('/billing/checkout', { planId: 'ULTRA' })).status).toBe(200)
+    const billing = await get<{ data: { monthlyMicroCredits: number; spentMicroCredits: number; balanceMicroCredits: number } }>('/billing')
+    expect(billing.data).toMatchObject({ monthlyMicroCredits: 180_000_000, spentMicroCredits: 59_040_000, balanceMicroCredits: 120_960_000 })
   })
 })

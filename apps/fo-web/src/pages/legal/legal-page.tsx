@@ -24,12 +24,12 @@ const LegalPage = ({ kind }: { kind: LegalKind }) => (
         {LEGAL_SECTIONS[kind].map((title) => (
           <section key={title} className="legal-section">
             <h2 className="h3">{title}</h2>
+            <p className="b2 t4">{LEGAL_BODY_PENDING}</p>
             <span className="legal-bars" aria-hidden="true">
               {BARS.map((width) => (
                 <i key={width} style={{ width: `${width}%` }} />
               ))}
             </span>
-            <p className="b2 t4">{LEGAL_BODY_PENDING}</p>
           </section>
         ))}
       </div>

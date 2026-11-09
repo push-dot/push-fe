@@ -17,7 +17,7 @@ describe('v2 selected styles', () => {
   })
 
   it('side menu and chips: lavender ring', () => {
-    for (const selector of ['.browser .side-link.on', '.browser .seg button[aria-selected="true"]']) {
+    for (const selector of ['.browser .side-link.on', '.browser .seg button[aria-selected="true"],.browser .seg button[aria-pressed="true"]']) {
       expect(rule(selector)).toContain('box-shadow:inset 0 0 0 1.5px var(--ac)')
     }
   })

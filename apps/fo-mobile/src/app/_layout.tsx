@@ -7,7 +7,6 @@ import { queryClient } from '@/providers'
 import { ToastHost } from '@/shared/components'
 import { useSession } from '@/shared/infrastructure'
 import { useThemeMode, useThemePreference } from '@/theme'
-import { useDesignFonts } from '@/theme/fonts-loader'
 import { DesignThemeProvider } from '@/theme/provider'
 
 const RootLayout = () => {
@@ -15,7 +14,6 @@ const RootLayout = () => {
   const { ready, session, load } = useSession()
   const themeReady = useThemePreference((s) => s.ready)
   const loadTheme = useThemePreference((s) => s.load)
-  const fontsReady = useDesignFonts()
   const mode = useThemeMode()
 
   useEffect(() => {
@@ -29,7 +27,7 @@ const RootLayout = () => {
     [themeChoice],
   )
 
-  if (!ready || !themeReady || !fontsReady) return null
+  if (!ready || !themeReady) return null
 
   return (
     <DesignThemeProvider>
@@ -43,6 +41,7 @@ const RootLayout = () => {
             <Stack.Screen name="phone" />
             <Stack.Screen name="verify-phone" />
             <Stack.Screen name="signup-terms" />
+            <Stack.Screen name="terms-view" />
             <Stack.Screen name="phone-registered" />
           </Stack.Protected>
         </Stack>
