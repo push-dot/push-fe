@@ -1,6 +1,7 @@
 import type { Conversation } from '@push/api-client'
 import { Link } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
+import { Icon } from '../../shared/ui/icon'
 import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED, CHAT_TOPUP } from './constants'
 
 export type ChatUsage = { plan: string; remain: string; allowance: string; ratio: number }
@@ -20,6 +21,7 @@ const ChatSide = ({
 }) => (
   <aside className="chat-side">
     <Link className="btn pri" to="/employer/chat/new">
+      <Icon name="plus" size={18} width={2.4} />
       {CHAT_NEW}
     </Link>
     <p className="c1 w7 t3 chat-shared">{CHAT_SHARED}</p>

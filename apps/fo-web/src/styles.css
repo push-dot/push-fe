@@ -455,6 +455,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .post-card{border-bottom:0;border-radius:0;box-shadow:none;padding:20px 0}
 .browser .composer{display:flex;align-items:center;gap:12px;padding:16px 18px}
 .browser .composer .av{width:40px;height:40px;font-size:13px}
+.browser .composer .biz-mark{font-size:16px}
 .browser .search-tabs{gap:24px;border-bottom:1px solid var(--line);margin:0}
 .browser .search-tabs .chip,.browser .tabs button,.browser .tabs a{flex:none;height:auto;padding:12px 0;border-radius:0;background:none;color:var(--t3);font-size:16px;line-height:22px;font-weight:600;text-decoration:none;box-shadow:inset 0 -2px 0 transparent}
 .browser .search-tabs .chip[aria-selected="true"],.browser .tabs button[aria-selected="true"],.browser .tabs a.on{background:none;color:var(--acText);box-shadow:inset 0 -2px 0 var(--ac)}
@@ -487,19 +488,6 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .profile-block{display:flex;flex-direction:column;gap:8px}
 .browser .tl-row{padding:0}
 .browser a:focus-visible,.browser button:focus-visible,.browser .sbox:focus-visible,.browser .wordmark:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-@media (max-width:1024px){
-.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:24px;padding-right:24px}
-.browser .h-scroll{grid-template-columns:repeat(3,minmax(0,1fr))}
-.browser .job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .social-layout,.browser .biz-split{grid-template-columns:minmax(0,1fr);gap:24px}
-.browser .inbox{grid-template-columns:1fr}
-.browser .inbox-list{border-right:0;border-bottom:1px solid var(--line);min-height:0}
-}
-@media (max-width:600px){
-.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:16px;padding-right:16px}
-.browser .h-scroll,.browser .job-grid,.browser .shortcuts,.browser .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.browser .hub-grid{grid-template-columns:minmax(0,1fr)}
-}
 .browser .sbox input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--t1);font:inherit;padding:0}
 .browser .sbox input::placeholder{color:var(--t1)}
 .browser .sbox input:focus-visible{outline:none}
@@ -618,10 +606,19 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .who .biz-mark{border-radius:14px;font-size:19px}
 .browser .who>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
 @media (max-width:1024px){
+.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:24px;padding-right:24px}
+.browser .h-scroll{grid-template-columns:repeat(3,minmax(0,1fr))}
+.browser .job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .social-layout,.browser .biz-split{grid-template-columns:minmax(0,1fr);gap:24px}
+.browser .inbox{grid-template-columns:1fr}
+.browser .inbox-list{border-right:0;border-bottom:1px solid var(--line);min-height:0}
 .browser .chat-app-main{grid-template-columns:1fr;min-height:0}
 .browser .chat-side{border-right:0;border-bottom:1px solid var(--line)}
 }
 @media (max-width:600px){
+.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:16px;padding-right:16px}
+.browser .h-scroll,.browser .job-grid,.browser .shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.browser .hub-grid,.browser .plan-grid{grid-template-columns:minmax(0,1fr)}
 .browser .chat-thread{padding:20px 16px}
 .browser .member-row{flex-wrap:wrap}
 }
