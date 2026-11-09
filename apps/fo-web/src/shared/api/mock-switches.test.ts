@@ -69,7 +69,7 @@ describe('ms= switches', () => {
     using(null, 'phone-sent')
     expect((await read<{ data: { cooldownSeconds: number } }>('/auth/phone/send', 'POST', { phone: '01012345678' })).body.data.cooldownSeconds).toBe(168)
     using(null, 'login-code-wrong')
-    expect((await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482931' })).code).toBe('CODE_WRONG')
+    expect((await errorCode('/auth/phone/verify', 'POST', { phone: '01012345678', code: '482931' })).code).toBe('PHONE_CODE_INVALID')
     using(null, 'login-code-limit')
     expect((await call('/auth/phone/verify', 'POST', { phone: '01012345678', code: '000000' })).status).toBe(429)
     using(null, 'login-phone-taken')

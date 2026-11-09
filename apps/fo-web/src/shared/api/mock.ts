@@ -954,7 +954,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     }
     if (method === 'PATCH') {
       const payload = await readJson(input, init)
-      if (typeof payload.title === 'string' && payload.title.trim()) found.fileName = payload.title.trim()
+      if (typeof payload.fileName === 'string' && payload.fileName.trim()) found.fileName = payload.fileName.trim()
       return json(200, { data: found })
     }
   }
@@ -1798,9 +1798,11 @@ const handlePhone = (method: string, tail: string) => {
     return phoneSent(PHONE_CODE_TTL_S)
   }
   if (tail === '/auth/phone/verify') {
-    if (mockSwitch('login-code-wrong')) return failure(400, 'CODE_WRONG', '인증번호가 맞지 않아요')
-    if (mockSwitch('login-code-expired')) return failure(400, 'CODE_EXPIRED', '인증번호가 만료됐어요')
-    if (mockSwitch('login-code-limit')) return failure(429, 'CODE_ATTEMPTS_EXCEEDED', '인증번호를 5번 잘못 입력했어요')
+    if (mockSwitch('login-code-wrong')) return failure(400, 'PHONE_CODE_INVALID', '인증번호가 맞지 않아요', { attemptsLeft: 4 })
+    if (mockSwitch('login-code-expired')) return failure(400, 'PHONE_CODE_EXPIRED', '인증번호가 만료됐어요')
+    if (mockSwitch('login-code-limit')) {
+      return failure(429, 'RATE_LIMITED', '인증번호를 5번 잘못 입력했어요', { reason: 'TOO_MANY_ATTEMPTS', maxAttempts: 5 })
+    }
     return json(200, { data: { ...mockSession('personal'), created: mockSwitch('signup-consent') } })
   }
   return null
