@@ -63,6 +63,8 @@ export const TERMS_SERVICE = '서비스 이용약관'
 export const TERMS_PRIVACY = '개인정보 수집·이용'
 export const TERMS_MARKETING = '혜택·이벤트 알림 받기'
 export const TERMS_VIEW = '보기'
+// privacyConsent (packages/shared legal) names this link on the sign-up consent screen.
+export const TERMS_PRIVACY_POLICY = '개인정보 처리방침 보기'
 export const LEGAL_PLACEHOLDER = '[자리 표시]'
 export const CONSENT_SUBMIT = '동의하고 시작하기'
 

@@ -325,6 +325,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-term-title{font-size:15px;line-height:22px;white-space:nowrap}
 .browser .auth-term-req{font-weight:700;color:var(--acText)}
 .browser .auth-term-opt{font-weight:600;color:var(--t3)}
+.browser .auth-policy{align-self:flex-start;color:var(--t2);font-size:13px;line-height:18px;text-decoration:underline}
 .browser .auth-term-view{display:flex;align-items:center;gap:2px;flex:none;color:var(--t1);font-size:13px;line-height:18px;font-weight:600;text-decoration:none}
 .browser .auth-center{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:8px 0}
 .browser .auth-icon{width:80px;height:80px;border-radius:26px;background:var(--acSoft);color:var(--ac);display:flex;align-items:center;justify-content:center;margin-bottom:8px}

@@ -1,4 +1,5 @@
 import type { Session } from '@push/api-client'
+import { LEGAL_VERSION } from '@push/shared'
 import { useState, type FormEvent } from 'react'
 
 import { meUpdateTerms } from '../../features/sign-up'
@@ -15,6 +16,7 @@ import {
   REQUIRED_TAG,
   TERMS_AGE,
   TERMS_MARKETING,
+  TERMS_PRIVACY_POLICY,
   TERMS_PRIVACY,
   TERMS_SERVICE,
   TERMS_VIEW,
@@ -45,7 +47,10 @@ const PhoneConsent = ({ session, onDone }: { session: Session; onDone: (session:
     setFailed(false)
     setPending(true)
     try {
-      await meUpdateTerms({ age14: true, serviceTerms: true, privacy: true, marketing: terms.marketing }, session.accessToken)
+      await meUpdateTerms(
+        { age14: true, serviceTerms: true, privacy: true, marketing: terms.marketing, termsVersion: LEGAL_VERSION },
+        session.accessToken,
+      )
       onDone(session)
     } catch {
       setFailed(true)
@@ -88,6 +93,9 @@ const PhoneConsent = ({ session, onDone }: { session: Session; onDone: (session:
             </div>
           ))}
         </div>
+        <a className="auth-policy" href="/privacy" target="_blank" rel="noreferrer">
+          {TERMS_PRIVACY_POLICY}
+        </a>
         {failed ? (
           <p className="auth-error" role="alert">
             {LOGIN_FAILED_COPY}
