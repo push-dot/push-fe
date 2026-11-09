@@ -1,35 +1,46 @@
-import type { ApplicantSummary } from '@push/api-client'
+import { brandColor } from '@push/shared'
+import type { ApplicantSummary, EmployerStage } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { employerStageLabel } from '../../entities/application'
 
-const appliedLabel = (iso: string) => {
-  const [, month, day] = iso.slice(0, 10).split('-')
-  if (!month || !day) return iso
-  return `${Number(month)}월 ${Number(day)}일`
-}
+import { APPLICANTS_HEAD, memberInitials } from './constants'
+import { DOC_BADGE, applicantSub } from './applicant-view'
+import { dateLabel } from './posting-view'
+import StagePick from './stage-pick'
 
-const stageClass = (label: string) => {
-  if (label === '서류 통과' || label === '합격') return 'badge green'
-  if (label === '면접') return 'badge ac'
-  if (label === '불합격') return 'badge grey'
-  return 'badge grey'
-}
-
-const ApplicantRow = ({ postingId, applicant }: { postingId: string; applicant: ApplicantSummary }) => {
-  const label = employerStageLabel(applicant.stage)
+const ApplicantRow = ({
+  postingId,
+  applicant,
+  busy,
+  onMove,
+}: {
+  postingId: string
+  applicant: ApplicantSummary
+  busy: boolean
+  onMove: (applicant: ApplicantSummary, stage: EmployerStage) => void
+}) => {
+  const name = applicant.applicant.displayName
   return (
-    <tr>
-      <td>
-        <Link to={`/employer/postings/${postingId}/applicants/${applicant.applicationId}`}>
-          <strong className="b1">{applicant.applicant.displayName}</strong>
-          {applicant.applicant.headline ? <span className="c1 t3">{applicant.applicant.headline}</span> : null}
-        </Link>
-      </td>
-      <td className="num">{appliedLabel(applicant.appliedAt)}</td>
-      <td>
-        <span className={stageClass(label)}>{label}</span>
-      </td>
-    </tr>
+    <li className="biz-row applicant-row">
+      <span className="av" style={{ background: brandColor(name) }}>
+        {memberInitials(name)}
+      </span>
+      <Link className="biz-main" to={`/employer/postings/${postingId}/applicants/${applicant.applicationId}`}>
+        <strong className="b2 w7">{name}</strong>
+        <span className="c1 t3">{applicantSub(applicant.applicant)}</span>
+      </Link>
+      <span className="biz-docs">
+        {(applicant.documentKinds ?? []).map((kind) => (
+          <span key={kind} className={`badge ${DOC_BADGE[kind].tone}`}>
+            {DOC_BADGE[kind].label}
+          </span>
+        ))}
+      </span>
+      <span className="b2 t2 num biz-date">
+        <span className="biz-label">{APPLICANTS_HEAD[2]}</span>
+        {dateLabel(applicant.appliedAt)}
+      </span>
+      <StagePick name={name} stage={applicant.stage} busy={busy} onPick={(stage) => onMove(applicant, stage)} />
+    </li>
   )
 }
 
