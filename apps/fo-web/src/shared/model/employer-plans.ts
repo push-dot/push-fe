@@ -25,7 +25,7 @@ export const checkoutReturn = (params: URLSearchParams) => {
   return value === 'success' || value === 'credits' || value === 'canceled' ? value : null
 }
 
-// The success return names no plan and the webhook may land after it, so the page remembers which plan was bought.
+// The success return names no plan and the webhook may land after it, so the tab remembers which plan it sent to Stripe.
 const CHECKOUT_PLAN = 'push.checkoutPlan'
 export const rememberCheckoutPlan = (planId: string | null) => {
   const store = browserSessionStorage()

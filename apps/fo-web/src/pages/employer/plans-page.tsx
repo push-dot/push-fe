@@ -64,12 +64,14 @@ const PlansPage = () => {
   const [dialog, setDialog] = useState<'buy' | 'history' | null>(null)
   const toast = useToast()
   const returned = checkoutReturn(params)
-  const [paidPlan] = useState(checkoutPlanName)
   useEffect(() => {
     if (!returned) return
-    rememberCheckoutPlan(null)
-    if (returned === 'canceled') return
-    toast.show(returned === 'credits' ? TOPUP_DONE : planPaid(paidPlan))
+    if (returned === 'canceled') {
+      rememberCheckoutPlan(null)
+      return
+    }
+    // The stored plan stays until the next checkout overwrites it, so a re-run of this effect names it again.
+    toast.show(returned === 'credits' ? TOPUP_DONE : planPaid(checkoutPlanName()))
     // A reload must not show the toast again.
     setParams(
       (current) => {
@@ -80,7 +82,7 @@ const PlansPage = () => {
       },
       { replace: true },
     )
-  }, [returned, paidPlan, setParams, toast.show])
+  }, [returned, setParams, toast.show])
   const billing = useCompanyBilling()
   const company = useMyCompany({
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
