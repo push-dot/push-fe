@@ -10,6 +10,10 @@ export const showEmployerCheckout = (audience: 'PERSONAL' | 'EMPLOYER' | undefin
 export const canChangeEmployerPlan = (role: 'ADMIN' | 'MEMBER' | undefined, companyMissing: boolean): boolean =>
   role === 'ADMIN' || (companyMissing && role === undefined)
 
+// Servers before push-be #246 send no paymentsEnabled and keep payments open. No billing data at all (loading, error) stays closed.
+export const paymentsOpen = (billing: { paymentsEnabled?: boolean } | undefined): boolean =>
+  billing !== undefined && billing.paymentsEnabled !== false
+
 // push-be takes 1 to 20 packs of 1,500 credits per top-up.
 export const topupReady = (packs: number): boolean => Number.isInteger(packs) && packs >= 1 && packs <= 20
 

@@ -173,7 +173,9 @@ describe('ms= switches', () => {
       expect(failed.status).toBe(503)
       expect((await failed.json()).error.code).toBe('PAYMENTS_DISABLED')
     }
-    expect((await call('/billing')).status).toBe(200)
+    const billing = await read<{ data: { paymentsEnabled?: boolean } }>('/billing')
+    expect(billing.status).toBe(200)
+    expect(billing.body.data.paymentsEnabled).toBe(false)
     setMockPersona(null)
   })
 

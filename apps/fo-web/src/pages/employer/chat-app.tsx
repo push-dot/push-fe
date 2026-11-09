@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { creditCount, creditText, useCompanyBilling } from '../../entities/billing'
+import { creditCount, creditText, useCompanyBilling, usePaymentsOpen } from '../../entities/billing'
 import { useEmployerPlan } from '../../entities/company'
 import { useEmployerConversations } from '../../entities/conversation'
 import { PLAN_NAME } from '../../shared/model/employer-plan'
@@ -12,6 +12,7 @@ const ChatApp = ({ activeId, children }: { activeId?: string; children: ReactNod
   const { plan } = useEmployerPlan()
   const conversations = useEmployerConversations()
   const billing = useCompanyBilling()
+  const payable = usePaymentsOpen()
   const card = EMPLOYER_PLAN_CARDS.find((item) => item.id === plan)
   const allowance = card ? Number(card.credits.replaceAll(',', '')) : 0
   const remain = creditCount(billing.data?.balanceMicroCredits ?? 0)
@@ -22,6 +23,7 @@ const ChatApp = ({ activeId, children }: { activeId?: string; children: ReactNod
         remain: creditText(remain),
         allowance: allowance ? creditText(allowance) : '',
         ratio,
+        topup: payable,
       }
     : null
   return (

@@ -140,6 +140,8 @@ export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
   failed: '답을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
 }
 export const CHAT_CREDITS = '크레딧이 모자라요. 충전하고 다시 보내 주세요.'
+export const CHAT_CREDITS_CLOSED = '크레딧이 다 떨어졌어요. 결제는 아직 준비 중이에요.'
+export const PLAN_REQUIRED_CLOSED = '이 기능은 상위 요금제에서 쓸 수 있어요. 결제는 아직 준비 중이에요.'
 export const CHAT_BUSY = '지금 요청이 많아요. 잠시 후 다시 보내 주세요.'
 export const STREAM_ERROR_TEXT: Record<string, string> = {
   NOT_CONFIGURED: '지금은 에이전트를 쓸 수 없어요. 잠시 뒤에 다시 해 주세요.',
@@ -158,11 +160,18 @@ const retryAfterSec = (error: ApiError) => {
   return typeof value === 'number' ? value : undefined
 }
 
-export const streamErrorText = (error: unknown) => {
+const CLOSED_STREAM_ERROR_TEXT: Record<string, string> = {
+  PLAN_REQUIRED: PLAN_REQUIRED_CLOSED,
+  FEATURE_DISABLED: CHAT_CREDITS_CLOSED,
+  INSUFFICIENT_CREDITS: CHAT_CREDITS_CLOSED,
+}
+
+// While payments are closed the credit and plan lines state the fact instead of sending people to pay.
+export const streamErrorText = (error: unknown, paymentsOpen = true) => {
   if (!(error instanceof ApiError)) return DEFAULT_STREAM_ERROR_TEXT
   const sec = error.code === 'QUEUE_BUSY' ? retryAfterSec(error) : undefined
   if (sec) return queueBusyText(sec)
-  return STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
+  return (paymentsOpen ? undefined : CLOSED_STREAM_ERROR_TEXT[error.code]) ?? STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
 }
 
 export const PLANS_TITLE = '기업 요금제'
@@ -179,6 +188,9 @@ export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어�
 export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
 export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
 export const TOPUP_DONE = '크레딧을 충전했어요'
+export const PAYMENTS_CLOSED = '결제는 아직 준비 중이에요'
+export const planActionError = (error: unknown) =>
+  error instanceof ApiError && error.code === 'PAYMENTS_DISABLED' ? PAYMENTS_CLOSED : PLAN_ACTION_FAILED
 export const planStarted = (name: string) => `${name} 구독을 시작했어요`
 
 export const PLAN_FEATURES = {

@@ -1743,6 +1743,7 @@ const companyBillingStatus = (): CompanyBillingStatus => {
     reservedMicroCredits: 0,
     monthlyMicroCredits: monthly,
     spentMicroCredits: Math.max(0, monthly - balance),
+    ...(mockSwitch('payments-disabled') ? { paymentsEnabled: false } : {}),
   }
 }
 

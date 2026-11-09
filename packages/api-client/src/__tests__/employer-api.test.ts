@@ -45,13 +45,14 @@ const session = {
 }
 
 describe('employer api', () => {
-  it('posts email signup with account type and optional consent', async () => {
+  it('posts email signup with account type, the terms agreement, and optional consent', async () => {
     const { api, hits } = harness(() => noContent(202))
     await api.auth.emailSignup({
       email: 'a@push.app',
       password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     await api.auth.emailSignup({
@@ -67,6 +68,7 @@ describe('employer api', () => {
       password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     expect(bodyOf(hits[1]!)).toEqual({
