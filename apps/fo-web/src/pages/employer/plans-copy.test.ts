@@ -17,6 +17,7 @@ describe('plan switch label', () => {
   it('names the new plan in the paid toast', () => {
     expect(planPaid('Ultra')).toBe('결제를 마쳤어요. 이제 Ultra를 써요')
     expect(planPaid('Basic')).toBe('결제를 마쳤어요. 이제 Basic을 써요')
+    expect(planPaid()).toBe('결제를 마쳤어요')
   })
 })
 
@@ -60,6 +61,11 @@ describe('ledger rows', () => {
     expect(ledgerUsd(-10)).toBe('-$10')
     expect(ledgerUsd(100)).toBe('$100')
     expect(ledgerUsd(12.5)).toBe('$12.50')
+  })
+
+  it('skips a row whose amountUsd is missing instead of drawing $NaN', () => {
+    const { amountUsd: _, ...noUsd } = row({ id: 'old' })
+    expect(ledgerPayments([noUsd as LedgerEntry])).toEqual([])
   })
 
   it('writes the day in Korean', () => {

@@ -115,6 +115,10 @@ export const DOCUMENT_EMPTY = '내용을 미리 볼 수 없는 파일이에요'
 export const SHEET_INTRO = '소개'
 export const SHEET_CAREERS = '경력'
 export const SHEET_SKILLS = '기술'
+// push-be reads careers and skills from the applicant's profile today, not from the submitted snapshot.
+export const SHEET_LIVE = '경력과 기술은 지금 프로필 기준이에요'
+export const FILE_DOWNLOAD = '파일 받기'
+export const FILE_FAILED = '파일을 받지 못했어요'
 export const HUB_PROFILE = '허브 프로필 보기'
 export const AI_REVIEW = '서류 검토하기'
 export const AI_INTERVIEW = '면접 질문 만들기'
@@ -143,6 +147,8 @@ export const AI_POLISH = 'AI로 다듬기'
 export const COMPANY_NAME_NOTE = '회사명은 사업자 확인에서 가져와요.'
 export const SAVE_POSTING = '공고 올리기'
 export const SAVE_DRAFT = '초안으로 저장'
+export const DRAFT_CONFIRM_TITLE = '초안으로 저장할까요?'
+export const DRAFT_CONFIRM_BODY = '저장하면 공고가 내려가고, 다시 올릴 때까지 지원을 받지 않아요.'
 export const IMAGE_CHANGE = '이미지 바꾸기'
 export const IMAGE_FAILED = '이미지를 올리지 못했어요'
 export const CLOSE_POSTING = '마감하기'
@@ -264,6 +270,7 @@ export const LEDGER_FAILED = '결제 내역을 불러오지 못했어요'
 export const LEDGER_EMPTY = '아직 결제 내역이 없어요'
 export const LEDGER_REFUND = '환불'
 export const LEDGER_RECEIPT = '영수증'
+export const LEDGER_MORE = '더 보기'
 
 export const PLAN_BLURB = {
   BASIC: '기본 사용량',
@@ -273,7 +280,7 @@ export const PLAN_BLURB = {
 
 const endsWithVowel = (name: string) => /[aeiouy]$/i.test(name)
 
-export const planPaid = (name: string) => `결제를 마쳤어요. 이제 ${name}${endsWithVowel(name) ? '를' : '을'} 써요`
+export const planPaid = (name?: string) => (name ? `결제를 마쳤어요. 이제 ${name}${endsWithVowel(name) ? '를' : '을'} 써요` : '결제를 마쳤어요')
 
 export const planUsedPercent = (spentMicroCredits: number, monthlyMicroCredits: number) =>
   monthlyMicroCredits > 0 ? Math.min(100, Math.max(0, Math.round((spentMicroCredits / monthlyMicroCredits) * 100))) : 0
@@ -292,7 +299,7 @@ const usd = (amount: number) =>
 // 결제 내역 = Stripe payments only (rows with amountUsd), in the server's order. A refund row whose label is missing reads 환불.
 export const ledgerPayments = (rows: readonly LedgerEntry[]) =>
   rows.flatMap(({ id, type, description, amountUsd, receiptUrl, createdAt }) =>
-    amountUsd === null ? [] : [{ id, createdAt, amountUsd, receiptUrl, title: description ?? (type === 'REFUND' ? LEDGER_REFUND : PLAN_HISTORY) }],
+    amountUsd == null ? [] : [{ id, createdAt, amountUsd, receiptUrl, title: description ?? (type === 'REFUND' ? LEDGER_REFUND : PLAN_HISTORY) }],
   )
 
 export const ledgerUsd = (amountUsd: number) => (amountUsd < 0 ? `-${usd(-amountUsd)}` : usd(amountUsd))
@@ -342,6 +349,7 @@ export const INVITE_REVOKED = '초대를 취소했어요'
 export const INVITE_REVOKE_BODY = '보낸 초대 링크로는 더 들어올 수 없어요. 자리는 바로 비어요.'
 export const MEMBERS_ADMIN_ONLY = '관리자만 할 수 있어요. 권한이 바뀌었는지 확인해 주세요.'
 export const INVITE_GONE = '이미 수락했거나 취소된 초대예요'
+export const MEMBER_GONE = '이미 회사를 나간 담당자예요'
 export const revokeTitle = (email: string) => `${email} 초대를 취소할까요?`
 export const resendWait = (sec: number) => `${sec}초 뒤에 다시 보낼 수 있어요`
 
@@ -359,7 +367,7 @@ export const memberInitials = (name: string) => {
 }
 
 // Every member and invite write is ADMIN only on push-be; resend has its own cooldown and seat answers.
-export const memberActionError = (error: unknown) => {
+export const memberActionError = (error: unknown, member = false) => {
   if (!(error instanceof ApiError)) return MEMBERS_ACTION_FAILED
   if (error.status === 429) {
     const sec = retryAfterSec(error)
@@ -367,7 +375,7 @@ export const memberActionError = (error: unknown) => {
   }
   if (error.code === 'SEAT_LIMIT') return SEAT_FULL_TITLE
   if (error.status === 403) return MEMBERS_ADMIN_ONLY
-  if (error.status === 404 && error.code === 'NOT_FOUND') return INVITE_GONE
+  if (error.status === 404 && error.code === 'NOT_FOUND') return member ? MEMBER_GONE : INVITE_GONE
   return MEMBERS_ACTION_FAILED
 }
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`

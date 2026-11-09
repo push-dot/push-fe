@@ -1,10 +1,12 @@
 import { ApiError, type EmployerStage } from '@push/api-client'
 import { brandColor } from '@push/shared'
+import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { NAV } from '../../app/constants'
-import { employerStageLabel, useEmployerApplicant, useEmployerApplicants } from '../../entities/application'
+import { employerStageLabel, postingsApplicantFile, useEmployerApplicant, useEmployerApplicants } from '../../entities/application'
+import { saveFile } from '../../shared/lib/save-file'
 import { EMPLOYER_STAGE_ACTIONS, stageChangeBlocked } from '../../shared/model/applicant-stage'
 import { AgentMark, Icon } from '../../shared/ui/icon'
 import { ErrorState } from '../../shared/ui/state-block'
@@ -25,6 +27,7 @@ import {
   STAGE_RETRY_NOTE,
   STAGE_TITLE,
   APPLICANTS_TITLE,
+  FILE_FAILED,
   memberInitials,
   stageFailed,
   stageMoved,
@@ -46,6 +49,11 @@ const ApplicantPage = () => {
   const detail = useEmployerApplicant(id, applicationId)
   const listed = useEmployerApplicants(id, null)
   const move = useStageMove(id)
+  const download = useMutation({
+    mutationFn: async (file: { id: string; name: string }) =>
+      saveFile(await (await postingsApplicantFile(id ?? '', applicationId ?? '', file.id)).blob(), file.name),
+    onError: () => toast.show(FILE_FAILED, { tone: 'err' }),
+  })
   if (!id || !applicationId || detail.isError) {
     return (
       <main className="page biz-page">
@@ -116,6 +124,8 @@ const ApplicantPage = () => {
                   sub={[profile?.headline, summary?.applicant.tenureYears ? `${summary.applicant.tenureYears}년` : '', profile?.email].filter(Boolean).join(' · ')}
                   profile={profile}
                   now={Date.now()}
+                  downloading={download.isPending}
+                  onDownload={() => chip.file && download.mutate(chip.file)}
                 />
               </div>
             </>

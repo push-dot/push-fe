@@ -6,8 +6,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
+  checkoutPlanName,
+  checkoutReturn,
   checkoutTarget,
   paymentsOpen,
+  rememberCheckoutPlan,
   showEmployerCheckout,
 } from '../../shared/model/employer-plans'
 import {
@@ -55,19 +58,29 @@ const PlanBanner = ({ title, body }: { title: string; body: string }) => (
 
 const PlansPage = () => {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
   const [actionError, setActionError] = useState<string | null>(null)
   const [dialog, setDialog] = useState<'buy' | 'history' | null>(null)
   const toast = useToast()
-  const checkoutParam = params.get('checkout')
-  const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === checkoutParam)
-  // push-be returns a top-up to ?checkout=credits; the mock still uses ?topup=<packs>.
-  const toppedUp = checkoutParam === 'credits' || params.has('topup')
+  const returned = checkoutReturn(params)
+  const [paidPlan] = useState(checkoutPlanName)
   useEffect(() => {
-    if (started) toast.show(planPaid(started.name))
-    else if (toppedUp) toast.show(TOPUP_DONE)
-  }, [started, toppedUp, toast.show])
+    if (!returned) return
+    rememberCheckoutPlan(null)
+    if (returned === 'canceled') return
+    toast.show(returned === 'credits' ? TOPUP_DONE : planPaid(paidPlan))
+    // A reload must not show the toast again.
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        next.delete('checkout')
+        next.delete('session_id')
+        return next
+      },
+      { replace: true },
+    )
+  }, [returned, paidPlan, setParams, toast.show])
   const billing = useCompanyBilling()
   const company = useMyCompany({
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
@@ -132,6 +145,7 @@ const PlansPage = () => {
   const subscribe = (planId: EmployerPlan) => {
     if (!canPay || checkout.isPending) return
     setActionError(null)
+    rememberCheckoutPlan(planId)
     checkout.mutate(planId)
   }
   const currentPlan = billing.data?.plan ?? null
@@ -143,7 +157,7 @@ const PlansPage = () => {
       <MySide />
       <div className="my-main plan-main">
         <h1 className="h1">{PLANS_TITLE}</h1>
-        {checkoutParam === 'canceled' ? <PlanBanner title={PLAN_CANCELED_TITLE} body={PLAN_CANCELED_BODY} /> : null}
+        {returned === 'canceled' ? <PlanBanner title={PLAN_CANCELED_TITLE} body={PLAN_CANCELED_BODY} /> : null}
         {viewer ? <PlanBanner title={PLAN_VIEWER_TITLE} body={planViewerBody(admin?.displayName)} /> : null}
         {billing.data && !open ? (
           <p className="b1" role="status">

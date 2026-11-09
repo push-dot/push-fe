@@ -4,18 +4,24 @@ import { Fragment } from 'react'
 
 import { Icon } from '../../shared/ui/icon'
 import { careerRows, type DocChip } from './applicant-view'
-import { DOCUMENT_EMPTY, SHEET_CAREERS, SHEET_INTRO, SHEET_SKILLS, memberInitials } from './constants'
+import { DOCUMENT_EMPTY, FILE_DOWNLOAD, SHEET_CAREERS, SHEET_INTRO, SHEET_LIVE, SHEET_SKILLS, memberInitials } from './constants'
 
 type Profile = NonNullable<ApplicantDetail['applicant']>
 
-// The white sheet of the resume viewer: the profile snapshot, or a note for a file that cannot be previewed.
-const ApplicantDocument = ({ chip, name, sub, profile, now }: { chip: DocChip; name: string; sub: string; profile?: Profile; now: number }) => {
+type SheetProps = { chip: DocChip; name: string; sub: string; profile?: Profile; now: number; downloading?: boolean; onDownload?: () => void }
+
+// The white sheet of the resume viewer: the submitted text with today's profile careers and skills, or an attached file to download.
+const ApplicantDocument = ({ chip, name, sub, profile, now, downloading = false, onDownload }: SheetProps) => {
   if (chip.file) {
     return (
       <div className="box resume-sheet resume-file">
         <Icon name="doc" size={28} />
         <p className="b1 w7">{chip.label}</p>
         <p className="b2 t3">{DOCUMENT_EMPTY}</p>
+        <button type="button" className="btn sec sm" disabled={downloading} onClick={onDownload}>
+          <Icon name="download" size={16} width={2.2} />
+          {FILE_DOWNLOAD}
+        </button>
       </div>
     )
   }
@@ -26,6 +32,7 @@ const ApplicantDocument = ({ chip, name, sub, profile, now }: { chip: DocChip; n
       : null,
     careers.length
       ? {
+          live: true,
           title: SHEET_CAREERS,
           body: (
             <ul className="resume-timeline">
@@ -45,6 +52,7 @@ const ApplicantDocument = ({ chip, name, sub, profile, now }: { chip: DocChip; n
       : null,
     profile?.skills.length
       ? {
+          live: true,
           title: SHEET_SKILLS,
           body: (
             <div className="resume-skills">
@@ -58,6 +66,7 @@ const ApplicantDocument = ({ chip, name, sub, profile, now }: { chip: DocChip; n
         }
       : null,
   ].filter((section) => section !== null)
+  const firstLive = sections.find((section) => 'live' in section)
   return (
     <div className="box resume-sheet">
       <div className="resume-who">
@@ -72,6 +81,7 @@ const ApplicantDocument = ({ chip, name, sub, profile, now }: { chip: DocChip; n
       {sections.map((section, index) => (
         <Fragment key={section.title}>
           {index ? <div className="biz-hr" /> : null}
+          {section === firstLive ? <p className="c1 t3">{SHEET_LIVE}</p> : null}
           <section className="resume-section">
             <h2 className="b2 w8">{section.title}</h2>
             {section.body}

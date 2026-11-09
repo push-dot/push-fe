@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { billingCompanyStatus as fetchCompanyBilling, billingLedger } from '../../shared/api/operations'
 import { paymentsOpen } from '../../shared/model/employer-plans'
 
@@ -10,4 +10,11 @@ export const useCompanyBilling = () =>
 /** False until billing loads, so nothing offers a payment on a guess. */
 export const usePaymentsOpen = () => paymentsOpen(useCompanyBilling().data)
 
-export const useBillingLedger = () => useQuery({ queryKey: ['billing', 'ledger'], queryFn: () => billingLedger() })
+// push-be pages the ledger 50 rows at a time.
+export const useBillingLedger = () =>
+  useInfiniteQuery({
+    queryKey: ['billing', 'ledger'],
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) => billingLedger({ cursor: pageParam }),
+    getNextPageParam: (last) => (last.page.hasMore ? (last.page.nextCursor ?? undefined) : undefined),
+  })

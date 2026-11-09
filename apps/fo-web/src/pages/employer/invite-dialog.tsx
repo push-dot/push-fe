@@ -31,9 +31,10 @@ const InviteDialog = ({ company, refresh, onClose, onSent }: { company: Company;
       onSent()
     },
     onError: async (error) => {
-      const seatLimit = error instanceof ApiError && error.status === 403 && error.code === 'SEAT_LIMIT'
-      setFailed(!seatLimit)
-      if (seatLimit) await refresh()
+      const forbidden = error instanceof ApiError && error.status === 403
+      setFailed(!(forbidden && error.code === 'SEAT_LIMIT'))
+      // SEAT_LIMIT, or the role moved to someone else: reload what the page may show.
+      if (forbidden) await refresh()
     },
   })
   const submit = (event: FormEvent<HTMLFormElement>) => {

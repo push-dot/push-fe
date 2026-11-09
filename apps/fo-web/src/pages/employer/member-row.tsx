@@ -64,12 +64,16 @@ export const MemberRow = ({
     badge={<span className={admin ? 'badge ac' : 'badge grey'}>{roleLabel}</span>}
   >
     {self ? <span className="c1 t3">{MEMBER_SELF}</span> : null}
+    {onTransfer ? (
+      <button type="button" className="btn sec sm" disabled={busy} onClick={onTransfer}>
+        {TRANSFER_ADMIN}
+      </button>
+    ) : null}
     {onRemove ? (
       <button type="button" className="btn sec sm member-remove" disabled={busy} onClick={onRemove}>
         {REMOVE_MEMBER}
       </button>
     ) : null}
-    {onTransfer ? <More items={[{ label: TRANSFER_ADMIN, icon: 'shield', onSelect: onTransfer }]} /> : null}
   </Row>
 )
 

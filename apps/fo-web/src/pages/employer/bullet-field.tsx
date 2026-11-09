@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react'
 import { nextBullet, withBullets } from './editor-form'
 
 // A textarea that keeps one "· " in front of every line, as the board draws it.
-const BulletField = ({ value, onChange }: { value: string; onChange: (next: string) => void }) => {
+const BulletField = ({ label, value, onChange }: { label: string; value: string; onChange: (next: string) => void }) => {
   const enter = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
     event.preventDefault()
@@ -14,6 +14,7 @@ const BulletField = ({ value, onChange }: { value: string; onChange: (next: stri
   }
   return (
     <textarea
+      aria-label={label}
       rows={Math.max(2, value.split('\n').length)}
       value={value}
       onFocus={() => value || onChange('· ')}

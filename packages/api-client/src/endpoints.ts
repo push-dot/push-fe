@@ -61,6 +61,9 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
     applicant: (postingId: string, applicationId: string) =>
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    /** The attached file's bytes (Content-Disposition carries the name). */
+    applicantFile: (postingId: string, applicationId: string, fileId: string) =>
+      c.raw('GET', `postings/${postingId}/applicants/${applicationId}/files/${fileId}`),
     applicantCounts: (id: string) => unwrap(c.get<DataEnvelope<ApplicantCounts>>(`postings/${id}/applicant-counts`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),

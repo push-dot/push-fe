@@ -112,6 +112,8 @@ export const meWebNotifications = (...args: Parameters<Api['me']['webNotificatio
 
 export const postingsApplicant = (...args: Parameters<Api['postings']['applicant']>) => api.postings.applicant(...args)
 
+export const postingsApplicantFile = (...args: Parameters<Api['postings']['applicantFile']>) => api.postings.applicantFile(...args)
+
 export const postingsApplicantCounts = (...args: Parameters<Api['postings']['applicantCounts']>) => api.postings.applicantCounts(...args)
 
 export const postingsApplicants = (...args: Parameters<Api['postings']['applicants']>) => api.postings.applicants(...args)

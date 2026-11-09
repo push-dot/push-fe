@@ -76,8 +76,8 @@ const MembersPage = () => {
     ])
   }
   // A 403 means the role changed under us (another admin took over), so the page reloads what it may show.
-  const fail = (error: unknown) => {
-    toast.show(memberActionError(error), { tone: 'err' })
+  const fail = (error: unknown, member = false) => {
+    toast.show(memberActionError(error, member), { tone: 'err' })
     if (error instanceof ApiError && (error.status === 403 || error.status === 404)) void refresh()
   }
   const change = useMutation({
@@ -89,7 +89,7 @@ const MembersPage = () => {
       if (next.kind === 'revoke') toast.show(INVITE_REVOKED)
       await refresh()
     },
-    onError: fail,
+    onError: (error, next) => fail(error, next.kind !== 'revoke'),
     onSettled: () => setPending(null),
   })
   const resend = useMutation({
@@ -98,7 +98,7 @@ const MembersPage = () => {
       toast.show(INVITE_RESENT)
       await queryClient.invalidateQueries({ queryKey: ['company', 'invites'] })
     },
-    onError: fail,
+    onError: (error) => fail(error),
   })
   const frame = (body: ReactNode) => (
     <main className="page my-layout">

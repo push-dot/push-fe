@@ -9,6 +9,7 @@ import {
   LEDGER_EMPTY,
   LEDGER_FAILED,
   LEDGER_LOADING,
+  LEDGER_MORE,
   LEDGER_RECEIPT,
   PLAN_BUY,
   PLAN_BUY_PACK_HINT,
@@ -38,7 +39,7 @@ const DialogHead = ({ title, subtitle, onClose }: { title: string; subtitle?: Re
 
 export const LedgerDialog = ({ company, onClose }: { company: string; onClose: () => void }) => {
   const ledger = useBillingLedger()
-  const rows = ledgerPayments(ledger.data?.data ?? [])
+  const rows = ledgerPayments(ledger.data?.pages.flatMap((page) => page.data) ?? [])
   return (
     <Dialog label={PLAN_HISTORY} onClose={onClose} wide className="plan-dialog">
       <DialogHead title={PLAN_HISTORY} subtitle={ledger.isSuccess && rows.length > 0 ? ledgerSubtitle(company, rows.length) : undefined} onClose={onClose} />
@@ -57,7 +58,7 @@ export const LedgerDialog = ({ company, onClose }: { company: string; onClose: (
                 <p className="c1 t3">{ledgerDate(row.createdAt)}</p>
               </div>
               <span className="b2 w7 num">{ledgerUsd(row.amountUsd)}</span>
-              {row.receiptUrl ? (
+              {row.receiptUrl?.startsWith('https://') ? (
                 <a className="c1 w6 plan-receipt" href={row.receiptUrl} target="_blank" rel="noreferrer">
                   {LEDGER_RECEIPT}
                   <Icon name="ext" size={14} />
@@ -67,6 +68,11 @@ export const LedgerDialog = ({ company, onClose }: { company: string; onClose: (
           ))}
         </ul>
       )}
+      {ledger.hasNextPage ? (
+        <button type="button" className="btn sec sm" disabled={ledger.isFetchingNextPage} onClick={() => void ledger.fetchNextPage()}>
+          {LEDGER_MORE}
+        </button>
+      ) : null}
       <div className="sheet-actions">
         <button type="button" className="btn sec" onClick={onClose}>
           {PLAN_CLOSE}

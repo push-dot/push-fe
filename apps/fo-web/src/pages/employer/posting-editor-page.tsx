@@ -13,9 +13,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { useSession } from '../../shared/auth/use-session'
 import { Icon } from '../../shared/ui/icon'
+import { ConfirmDialog } from '../../shared/ui/dialog'
 import { ErrorState } from '../../shared/ui/state-block'
 import BulletField from './bullet-field'
-import { CAREER_RANGES, CLOSE_POSTING, CLOSED_STATE, COMPANY_NAME_NOTE, EDITOR_LOADING, EDITOR_TITLE, LABEL_CAREER, LABEL_COMPANY, LABEL_DEADLINE, LABEL_DESCRIPTION, LABEL_EMPLOYMENT_TYPE, LABEL_IMAGE, LABEL_JOB_CATEGORY, LABEL_LOCATION, LABEL_PREFERRED, LABEL_REQUIREMENTS, LABEL_SKILLS, LABEL_TITLE, AI_POLISH, IMAGE_CHANGE, IMAGE_FAILED, NEW_POSTING, POSTINGS_FAILED, PREVIEW_POSTING, SAVE_DRAFT, SAVE_POSTING } from './constants'
+import { CAREER_RANGES, CLOSE_POSTING, CLOSED_STATE, COMPANY_NAME_NOTE, DRAFT_CONFIRM_BODY, DRAFT_CONFIRM_TITLE, EDITOR_LOADING, EDITOR_TITLE, LABEL_CAREER, LABEL_COMPANY, LABEL_DEADLINE, LABEL_DESCRIPTION, LABEL_EMPLOYMENT_TYPE, LABEL_IMAGE, LABEL_JOB_CATEGORY, LABEL_LOCATION, LABEL_PREFERRED, LABEL_REQUIREMENTS, LABEL_SKILLS, LABEL_TITLE, AI_POLISH, IMAGE_CHANGE, IMAGE_FAILED, NEW_POSTING, POSTING_CLOSE, POSTING_CLOSE_BODY, POSTING_CLOSE_TITLE, POSTINGS_FAILED, PREVIEW_POSTING, SAVE_DRAFT, SAVE_POSTING } from './constants'
 import { careerRangeOf, stripBullets, withBullets } from './editor-form'
 import SkillEditor from './skill-editor'
 import { editorFailure, postingsClose, postingsCreate, postingsUpdate, uploadsImage } from '../../features/edit-posting'
@@ -114,6 +115,7 @@ const PostingEditorPage = () => {
   const [readyFor, setReadyFor] = useState<string | null>(id ? null : 'new')
   const [closedAt, setClosedAt] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [confirm, setConfirm] = useState<'draft' | 'close' | null>(null)
   const revisionRef = useRef(0)
   const formRef = useRef(form)
   formRef.current = form
@@ -144,6 +146,7 @@ const PostingEditorPage = () => {
       setError(null)
     },
     onError: (error) => setError(editorFailure(error)),
+    onSettled: () => setConfirm(null),
   })
   const upload = useMutation({
     mutationFn: (file: File) => {
@@ -190,15 +193,17 @@ const PostingEditorPage = () => {
           </Link>
         ) : null}
       </span>
-      <BulletField value={form[key]} onChange={(next) => patch({ [key]: next })} />
+      <BulletField label={label} value={form[key]} onChange={(next) => patch({ [key]: next })} />
     </div>
   )
+  // Saving a live posting as a draft takes it off the list, so that asks first.
+  const saveDraft = () => (detail.data?.status === 'OPEN' && !closedAt ? setConfirm('draft') : submit('DRAFT'))
   const actions = (
     <>
       <button type="submit" form="posting-form" className="btn pri lg" disabled={disabled}>
         {SAVE_POSTING}
       </button>
-      <button type="button" className="btn sec" disabled={disabled || Boolean(closedAt)} onClick={() => submit('DRAFT')}>
+      <button type="button" className="btn sec" disabled={disabled || Boolean(closedAt)} onClick={saveDraft}>
         {SAVE_DRAFT}
       </button>
     </>
@@ -322,7 +327,7 @@ const PostingEditorPage = () => {
           </div>
           <p className="c1 t3 editor-note">{COMPANY_NAME_NOTE}</p>
           {id ? (
-            <button type="button" className="text-link danger editor-close" disabled={Boolean(closedAt) || close.isPending} onClick={() => close.mutate()}>
+            <button type="button" className="text-link danger editor-close" disabled={Boolean(closedAt) || close.isPending} onClick={() => setConfirm('close')}>
               {CLOSE_POSTING}
             </button>
           ) : null}
@@ -334,13 +339,37 @@ const PostingEditorPage = () => {
           <span className="msq-text">{IMAGE_CHANGE}</span>
           <input type="file" accept="image/*" className="sr-only" disabled={upload.isPending} onChange={(event) => event.target.files?.[0] && upload.mutate(event.target.files[0])} />
         </label>
-        <button type="button" className="btn sec lg" disabled={disabled || Boolean(closedAt)} onClick={() => submit('DRAFT')}>
+        <button type="button" className="btn sec lg" disabled={disabled || Boolean(closedAt)} onClick={saveDraft}>
           {SAVE_DRAFT}
         </button>
         <button type="submit" form="posting-form" className="btn pri lg" disabled={disabled}>
           {SAVE_POSTING}
         </button>
       </div>
+      {confirm === 'draft' ? (
+        <ConfirmDialog
+          title={DRAFT_CONFIRM_TITLE}
+          body={DRAFT_CONFIRM_BODY}
+          confirmLabel={SAVE_DRAFT}
+          busy={save.isPending}
+          onConfirm={() => {
+            setConfirm(null)
+            submit('DRAFT')
+          }}
+          onClose={() => setConfirm(null)}
+        />
+      ) : null}
+      {confirm === 'close' ? (
+        <ConfirmDialog
+          title={POSTING_CLOSE_TITLE}
+          body={POSTING_CLOSE_BODY}
+          confirmLabel={POSTING_CLOSE}
+          danger
+          busy={close.isPending}
+          onConfirm={() => close.mutate()}
+          onClose={() => setConfirm(null)}
+        />
+      ) : null}
     </main>
   )
 }

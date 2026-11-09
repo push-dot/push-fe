@@ -352,14 +352,16 @@ describe('employer billing mock', () => {
     const checkoutUrl = new URL(checkout.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(checkoutUrl.origin).toBe('http://localhost:5175')
     expect(checkoutUrl.pathname).toBe('/employer/plans')
-    expect(checkoutUrl.searchParams.get('checkout')).toBe('PRO')
+    expect(checkoutUrl.searchParams.get('checkout')).toBe('success')
+    expect(checkoutUrl.searchParams.get('session_id')).toMatch(/^cs_mock_/)
     const afterCheckout = await read<{ data: { plan: string } }>(await billing())
     expect(afterCheckout.data.plan).toBe('PRO')
     const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { packs: 2 }))
     const topupUrl = new URL(topup.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(topupUrl.origin).toBe('http://localhost:5175')
     expect(topupUrl.pathname).toBe('/employer/plans')
-    expect(topupUrl.searchParams.get('topup')).toBe('2')
+    expect(topupUrl.searchParams.get('checkout')).toBe('credits')
+    expect(topupUrl.searchParams.get('session_id')).toMatch(/^cs_mock_/)
     expect((await postJson('http://localhost/api/v1/billing/topup', { packs: 21 })).status).toBe(400)
     expect((await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 })).status).toBe(400)
     const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
@@ -405,7 +407,7 @@ describe('employer billing mock', () => {
     const firstUrl = new URL(firstPlan.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(firstUrl.origin).toBe('http://localhost:5175')
     expect(firstUrl.pathname).toBe('/employer/plans')
-    expect(firstUrl.searchParams.get('checkout')).toBe('BASIC')
+    expect(firstUrl.searchParams.get('checkout')).toBe('success')
   })
 
   it('returns an empty ledger', async () => {
@@ -850,6 +852,19 @@ describe('mock route coverage', () => {
         const body = await read<{ data: { application: { id: string; stage: string } } }>(response)
         expect(body.data.application.id).toBe('app-2')
         expect(body.data.application.stage).toBe('SCREENING')
+      },
+    },
+    {
+      name: 'serves an attached file the way push-be streams it',
+      persona: 'employer',
+      act: async () => {
+        const detail = await read<{ data: { files: { id: string; fileName: string }[] } }>(await get('/postings/job-1/applicants/app-1'))
+        const file = detail.data.files[0]
+        expect(file).toBeDefined()
+        const response = await get(`/postings/job-1/applicants/app-1/files/${file?.id}`)
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-disposition')).toContain(encodeURIComponent(file?.fileName ?? ''))
+        expect((await get('/postings/job-1/applicants/app-1/files/nope')).status).toBe(404)
       },
     },
     {

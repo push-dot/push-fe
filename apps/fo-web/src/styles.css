@@ -570,8 +570,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .biz-crumb:has(a+svg+a){flex-wrap:nowrap}
 .browser .biz-crumb a+svg+a{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .browser .biz-crumb:has(a+svg+a)>.biz-crumb-now{flex:none}
-.browser .biz-card{overflow:hidden}
-.browser .biz-head{display:flex;gap:16px;padding:12px 20px;background:var(--bg2)}
+.browser :is(.biz-row,.member-row):last-child{border-bottom:0}
+.browser .biz-head{display:flex;gap:16px;padding:12px 20px;border-radius:20px 20px 0 0;background:var(--bg2)}
 .browser .biz-list{list-style:none;margin:0;padding:0}
 .browser .biz-row{display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--line)}
 .browser .applicant-row{padding:16px 20px}
@@ -686,7 +686,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 }
 @media (max-width:600px){
 .browser .biz-head{display:none}
-.browser .biz-card{overflow:visible;border-radius:0;background:none;box-shadow:none}
+.browser .biz-card{border-radius:0;background:none;box-shadow:none}
 .browser .biz-list{display:flex;flex-direction:column;gap:10px}
 .browser .biz-row{position:relative;flex-wrap:wrap;gap:8px 10px;padding:16px;border-radius:18px;border-bottom:0;box-shadow:inset 0 0 0 1px var(--line)}
 .browser .applicant-row{padding:16px}
@@ -763,7 +763,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .seat-copy{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
 .browser .seat-banner .btn{background:var(--bg)}
 .browser .member-info{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:14px;background:var(--bg2)}
-.browser .member-list{list-style:none;margin:0;padding:0;overflow:hidden}
+.browser .member-list{list-style:none;margin:0;padding:0}
 .browser .member-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line)}
 .browser .member-row .av{width:44px;height:44px;font-size:13px}
 .browser .member-row .member-pending{background:var(--fill);color:var(--t3)}
@@ -804,6 +804,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .member-copy{flex:1 1 calc(100% - 64px)}
 .browser .member-row .badge{margin-left:58px}
 .browser .member-end{min-width:0;margin-left:auto}
+/* Buttons take the line under the badge, lined up with the name, like WebBizMembersTransfer at 390. */
+.browser .member-end:has(.btn){flex-basis:calc(100% - 58px);margin-left:58px;justify-content:flex-start}
 .browser .member-end:empty{display:none}
 }
 
@@ -844,6 +846,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .confirm-copy{display:flex;flex-direction:column;gap:8px}
 .browser .pop{position:absolute;z-index:30;display:flex;flex-direction:column;min-width:200px;padding:8px;border-radius:18px;background:var(--bg);box-shadow:var(--popWeb);text-align:left}
 .browser .menu{display:flex;flex-direction:column}
+.browser .pop.pop-up{top:auto;bottom:calc(100% + 6px)}
 .browser .mi{display:flex;align-items:center;gap:10px;width:100%;height:42px;padding:0 12px;border-radius:10px;font-size:15px;line-height:22px;color:var(--t1);text-align:left;text-decoration:none;white-space:nowrap}
 .browser .mi:hover{background:var(--fill)}
 .browser .mi.red{color:var(--red)}

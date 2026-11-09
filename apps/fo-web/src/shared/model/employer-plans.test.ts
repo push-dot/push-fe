@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutTarget, paymentsOpen, showEmployerCheckout, topupReady } from './employer-plans'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutPlanName, checkoutReturn, checkoutTarget, rememberCheckoutPlan, paymentsOpen, showEmployerCheckout, topupReady } from './employer-plans'
 
 const FORBIDDEN_MODEL_NAMES = ['Sonnet', 'Opus', 'Fable']
 
@@ -93,5 +93,31 @@ describe('paymentsOpen', () => {
 
   it('keeps them closed until billing loads', () => {
     expect(paymentsOpen(undefined)).toBe(false)
+  })
+})
+
+describe('Stripe return (push-be billing.ts returnUrls)', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  const of = (search: string) => checkoutReturn(new URL(`https://push.devcyjoon.tech/employer/plans${search}`).searchParams)
+
+  it('reads success, credits and canceled the way push-be writes them', () => {
+    expect(of('?checkout=success&session_id=cs_test_a1')).toBe('success')
+    expect(of('?checkout=credits&session_id=cs_test_a1')).toBe('credits')
+    expect(of('?checkout=canceled')).toBe('canceled')
+    expect(of('?checkout=ULTRA')).toBeNull()
+    expect(of('')).toBeNull()
+  })
+
+  it('names the plan that was bought from the tab, and nothing once it is cleared', () => {
+    const store = new Map<string, string>()
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => store.set(key, value),
+      removeItem: (key: string) => store.delete(key),
+    })
+    rememberCheckoutPlan('ULTRA')
+    expect(checkoutPlanName()).toBe('Ultra')
+    rememberCheckoutPlan(null)
+    expect(checkoutPlanName()).toBeUndefined()
   })
 })

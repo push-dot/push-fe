@@ -73,16 +73,16 @@ export const careerRows = (careers: NonNullable<ApplicantDetail['applicant']>['c
     }
   })
 
-export type DocChip = { key: string; label: string; badge: { label: string; tone: Tone }; content: string; file: boolean }
+export type DocChip = { key: string; label: string; badge: { label: string; tone: Tone }; content: string; file: { id: string; name: string } | null }
 
 // Text documents are the profile snapshot; attached files carry their page count.
 export const docChips = (detail: Pick<ApplicantDetail, 'documents' | 'files'>): DocChip[] => [
-  ...detail.documents.map((doc) => ({ key: doc.id, label: doc.title, badge: DOC_BADGE.PROFILE, content: doc.content, file: false })),
+  ...detail.documents.map((doc) => ({ key: doc.id, label: doc.title, badge: DOC_BADGE.PROFILE, content: doc.content, file: null })),
   ...(detail.files ?? []).map((file) => ({
     key: file.id,
     label: file.pageCount ? `${file.fileName} · ${file.pageCount}쪽` : file.fileName,
     badge: file.mimeType === 'application/pdf' ? DOC_BADGE.PDF : DOC_BADGE.FILE,
     content: '',
-    file: true,
+    file: { id: file.id, name: file.fileName },
   })),
 ]

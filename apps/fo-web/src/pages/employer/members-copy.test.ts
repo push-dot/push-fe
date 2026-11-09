@@ -1,6 +1,6 @@
 import { ApiError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
-import { INVITE_GONE, MEMBERS_ACTION_FAILED, MEMBERS_ADMIN_ONLY, SEAT_FULL_TITLE, inviteExpiry, memberActionError, memberInitials } from './constants'
+import { INVITE_GONE, MEMBER_GONE, MEMBERS_ACTION_FAILED, MEMBERS_ADMIN_ONLY, SEAT_FULL_TITLE, inviteExpiry, memberActionError, memberInitials } from './constants'
 
 describe('member action errors', () => {
   it('reads the resend cooldown from push-be 429 details', () => {
@@ -16,6 +16,10 @@ describe('member action errors', () => {
   it('says an invite is gone when it was accepted or cancelled meanwhile', () => {
     expect(memberActionError(new ApiError('gone', 'NOT_FOUND', 404))).toBe(INVITE_GONE)
     expect(memberActionError(new Error('offline'))).toBe(MEMBERS_ACTION_FAILED)
+  })
+
+  it('says a member already left when removing or transferring meets a 404', () => {
+    expect(memberActionError(new ApiError('gone', 'NOT_FOUND', 404), true)).toBe(MEMBER_GONE)
   })
 })
 

@@ -1522,6 +1522,17 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
     }
     return json(200, { data: applicantDetail(record) })
   }
+  const fileMatch = tail.match(/^\/postings\/([^/]+)\/applicants\/([^/]+)\/files\/([^/]+)$/)
+  if (fileMatch && method === 'GET') {
+    const [, postingId = '', applicationId = '', fileId = ''] = fileMatch.map(decodeURIComponent)
+    const record = (applicantsByPosting.get(postingId) ?? []).find((item) => item.application.id === applicationId)
+    const file = record ? applicantDetail(record).files.find((item) => item.id === fileId) : undefined
+    if (!file) return json(404, { error: { code: 'NOT_FOUND', message: '파일을 찾지 못했어요' } })
+    return new Response(new Blob([`%PDF-1.4 mock ${file.fileName}`], { type: file.mimeType }), {
+      status: 200,
+      headers: { 'content-type': file.mimeType, 'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(file.fileName)}` },
+    })
+  }
   const countsMatch = tail.match(/^\/postings\/([^/]+)\/applicant-counts$/)
   if (countsMatch && method === 'GET') return json(200, { data: applicantCounts(decodeURIComponent(countsMatch[1] ?? '')) })
   const applicantsMatch = tail.match(/^\/postings\/([^/]+)\/applicants$/)
@@ -1821,8 +1832,8 @@ const PAYMENT_TAILS = new Set(['/billing/checkout', '/billing/topup', '/billing/
 
 const MAX_PACKS = 20
 
-const localPlansUrl = (key: 'checkout' | 'topup', value: string) =>
-  `/employer/plans?${key}=${encodeURIComponent(value)}`
+// The return push-be gives Stripe (billing.ts returnUrls), with a made-up session id.
+const localPlansUrl = (checkout: 'success' | 'credits') => `/employer/plans?checkout=${checkout}&session_id=cs_mock_${Date.now()}`
 
 const companyBillingStatus = (): CompanyBillingStatus => {
   const kind = mockPersona()
@@ -1869,14 +1880,14 @@ const handleBilling = async (method: string, pathname: string, input: RequestInf
         record.company.plan = plan
         record.company.seats = { ...record.company.seats, limit: seatLimitFor(plan) }
       }
-      return json(200, { data: { url: localPlansUrl('checkout', planId) } })
+      return json(200, { data: { url: localPlansUrl('success') } })
     }
     const packs = payload.packs
     if (typeof packs !== 'number' || !Number.isInteger(packs) || packs < 1 || packs > MAX_PACKS) {
       return failure(400, 'VALIDATION_ERROR', '구매 수량을 확인해 주세요', { field: 'packs' })
     }
     creditBalances.set(personaKey(), (creditBalances.get(personaKey()) ?? seededBalance()) + packs * PACK_MICRO)
-    return json(200, { data: { url: localPlansUrl('topup', String(packs)) } })
+    return json(200, { data: { url: localPlansUrl('credits') } })
   }
   if (method === 'GET' && tail === '/billing') return json(200, { data: companyBillingStatus() })
   return null
