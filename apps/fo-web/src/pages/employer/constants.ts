@@ -1,6 +1,7 @@
 import { ApiError, QueueBusyError, type AccessMode, type LedgerEntry, type ToolRunState } from '@push/api-client'
 import type { ApprovalFailure } from '../../features/employer-chat'
 import { creditText } from '../../entities/billing'
+import { PLAN_NAME, seatLimit, type EmployerPlanId } from '../../shared/model/employer-plan'
 
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
@@ -267,11 +268,75 @@ export const PLAN_FEATURES = {
 } as const
 
 export const MEMBER_SELF = '나'
-export const MEMBERS_ADMIN_CAN = '관리자 · 결제, 요금제 변경, 담당자 초대·내보내기'
-export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_PERM_TITLE = '권한'
+export const MEMBERS_ADMIN_CAN = '결제, 요금제 변경, 담당자 초대·내보내기'
+export const MEMBERS_MEMBER_CAN = '공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_ACTION_FAILED = '처리하지 못했어요. 잠시 후 다시 시도해 주세요.'
+export const MEMBERS_CLOSE = '닫기'
+export const SEAT_FULL_TITLE = '담당자 자리가 꽉 찼어요'
+export const SEAT_FULL_PLANS = '요금제 보기'
 export const INVITE_DIALOG_TITLE = '담당자 초대'
 export const INVITE_CANCEL = '취소'
+export const TRANSFER_CONFIRM = '넘기기'
+export const MEMBER_MORE = '더 보기'
+export const INVITE_PENDING_TITLE = '초대 보냄'
+export const INVITE_PENDING = '대기 중'
+export const INVITE_RESEND = '초대 다시 보내기'
+export const INVITE_RESENT = '초대 메일을 다시 보냈어요'
+export const INVITE_REVOKE = '초대 취소'
+export const INVITE_REVOKED = '초대를 취소했어요'
+export const INVITE_REVOKE_BODY = '보낸 초대 링크로는 더 들어올 수 없어요. 자리는 바로 비어요.'
+export const MEMBERS_ADMIN_ONLY = '관리자만 할 수 있어요. 권한이 바뀌었는지 확인해 주세요.'
+export const INVITE_GONE = '이미 수락했거나 취소된 초대예요'
+export const revokeTitle = (email: string) => `${email} 초대를 취소할까요?`
+export const resendWait = (sec: number) => `${sec}초 뒤에 다시 보낼 수 있어요`
+
+const DAY_MS = 86_400_000
+
+export const inviteExpiry = (email: string, expiresAt: string, now = Date.now()) => {
+  const days = Math.ceil((Date.parse(expiresAt) - now) / DAY_MS)
+  return `${email} · ${days > 0 ? `${days}일 뒤 만료` : '만료됨'}`
+}
+
+// Korean names show the given name (last two syllables) like the boards; anything else its first letter.
+export const memberInitials = (name: string) => {
+  const chars = [...name.trim()]
+  return /^[가-힣]{3,}$/.test(name.trim()) ? chars.slice(-2).join('') : (chars[0] ?? '').toUpperCase()
+}
+
+// Every member and invite write is ADMIN only on push-be; resend has its own cooldown and seat answers.
+export const memberActionError = (error: unknown) => {
+  if (!(error instanceof ApiError)) return MEMBERS_ACTION_FAILED
+  if (error.status === 429) {
+    const sec = retryAfterSec(error)
+    return sec ? resendWait(sec) : MEMBERS_ACTION_FAILED
+  }
+  if (error.code === 'SEAT_LIMIT') return SEAT_FULL_TITLE
+  if (error.status === 403) return MEMBERS_ADMIN_ONLY
+  if (error.status === 404 && error.code === 'NOT_FOUND') return INVITE_GONE
+  return MEMBERS_ACTION_FAILED
+}
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`
+
+type SeatPlan = 'PRO' | 'ULTRA'
+
+export const seatPlan = (plan: EmployerPlanId): SeatPlan | null => (plan === 'PRO' || plan === 'ULTRA' ? plan : null)
+
+export const seatFullBody = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 관리자 말고 담당자를 ${seatLimit(plan)}명까지 둘 수 있어요. 초대 대기 중인 사람도 1명으로 세요.${plan === 'PRO' ? ` Ultra는 ${seatLimit('ULTRA')}명까지예요.` : ''}`
+
+export const inviteFullNote = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 담당자 ${seatLimit(plan)}명까지 초대할 수 있어요. 더 초대하려면 ${plan === 'PRO' ? 'Ultra로 올리거나 ' : ''}기존 담당자를 내보내 주세요.`
+
+export const adminOnlyNote = (admin?: string) =>
+  admin ? `담당자 초대와 내보내기는 관리자 ${admin} 님만 할 수 있어요.` : '담당자 초대와 내보내기는 관리자만 할 수 있어요.'
+
+export const removeTitle = (name: string) => `${name} 님을 내보낼까요?`
+export const removeBody = (company: string, name: string) =>
+  `내보내면 ${company}의 공고, 지원자, 에이전트 대화를 더 볼 수 없어요. ${name} 님이 만든 공고와 대화는 회사에 남아요.`
+export const transferTitle = (name: string) => `${name} 님에게 관리자를 넘길까요?`
+export const transferBody = (name: string, self: string) =>
+  `넘기면 결제, 요금제 변경, 담당자 초대·내보내기는 ${name} 님만 할 수 있어요. ${self} 님은 담당자가 돼요.`
 
 export const planSwitchLabel = (name: string, current: boolean, higher: boolean, hasPlan: boolean) => {
   if (current) return PLAN_CURRENT

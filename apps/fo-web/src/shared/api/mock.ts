@@ -1367,6 +1367,19 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const company = companyMe()
     return company ? json(200, { data: company }) : json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
   }
+  if (method === 'PATCH' && tail === '/companies/me') {
+    const record = companyRecord()
+    if (!record) return json(404, { error: { code: 'COMPANY_NOT_FOUND', message: '회사를 찾지 못했어요' } })
+    if (record.company.role !== 'ADMIN') return adminOnly()
+    const payload = await readJson(input, init)
+    const keys = ['legalName', 'representativeName', 'industry', 'website', 'intro', 'logoKey'] as const
+    for (const key of keys) {
+      const value = payload[key]
+      if (key in payload) record.company[key] = typeof value === 'string' && value.trim() ? value.trim() : null
+    }
+    if ('logoKey' in payload) record.company.logoUrl = record.company.logoKey ? `/api/v1/uploads/images/${record.company.logoKey}` : null
+    return json(200, { data: record.company })
+  }
   if (method === 'DELETE' && tail === '/me') {
     const kind = mockPersona()
     if (kind === 'employer' || kind === 'employer-pro' || kind === 'employer-ultra') {
