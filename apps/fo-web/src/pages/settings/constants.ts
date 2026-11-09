@@ -1,4 +1,5 @@
 import type { Settings } from '@push/api-client'
+import { LEGAL_OPERATOR } from '@push/shared'
 
 import type { ThemeChoice } from '../../shared/lib/theme'
 
@@ -68,7 +69,7 @@ export const SETTINGS_LABELS = {
   withdraw: '회원 탈퇴',
 } as const
 
-export const SUPPORT_MAIL = 'mailto:support@push.devcyjoon.tech'
+export const SUPPORT_MAIL = `mailto:${LEGAL_OPERATOR.contactEmail}`
 
 export const LOGOUT_TITLE = '로그아웃할까요?'
 export const WITHDRAW_TITLE = '회원 탈퇴할까요?'

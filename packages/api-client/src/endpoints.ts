@@ -293,7 +293,8 @@ export const createApi = (c: Client) => ({
   },
 
   calendar: {
-    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
+    // shortcut: one page of 100 (same as the app); page once a month view can hold more events.
+    events: (from: string, to: string, limit = 100) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to, limit } }),
     create: (body: CreateCalendarEventInput) => unwrap(c.post<DataEnvelope<CalendarEvent>>('calendar/events', { body })),
   },
 
