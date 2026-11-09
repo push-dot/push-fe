@@ -1,55 +1,94 @@
 import { ApiError, type EmployerPlan } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
+  checkoutPlanName,
+  checkoutReturn,
   checkoutTarget,
   paymentsOpen,
+  rememberCheckoutPlan,
   showEmployerCheckout,
-  topupReady,
 } from '../../shared/model/employer-plans'
 import {
   PAYMENTS_CLOSED,
-  PLAN_ADMIN_ONLY,
-  PLAN_AMOUNT,
-  PLAN_DEPTH,
+  PLAN_BLURB,
+  PLAN_CANCELED_BODY,
+  PLAN_CANCELED_TITLE,
   PLAN_FEATURES,
-  PLAN_RENEWAL,
-  PLAN_TOPUP,
+  PLAN_LEAD,
+  PLAN_NOTE,
+  PLAN_SECURE,
+  PLAN_VIEWER_TITLE,
   PLANS_LOADING,
   PLANS_PERSONAL,
   PLANS_TITLE,
   TOPUP_DONE,
   planActionError,
-  planStarted,
+  planPaid,
   planSwitchLabel,
-  remainingCredits,
+  planUsedPercent,
+  planViewerBody,
 } from './constants'
-import { PLAN_NAME } from '../../shared/model/employer-plan'
 import MySide from '../my/my-side'
 import PlanCard from './plan-card'
+import PlanUsage from './plan-usage'
+import { BuyDialog, LedgerDialog } from './plan-dialogs'
 import { useCompanyBilling } from '../../entities/billing'
 import { useMyCompany } from '../../entities/company'
+import { useCompanyMembers } from '../../entities/member'
 import { billingCheckout, billingTopup } from '../../features/checkout-plan'
-
+import Toast, { useToast } from '../../shared/ui/toast'
+import { Icon } from '../../shared/ui/icon'
 
 const companyMissing = (error: unknown) => error instanceof ApiError && error.status === 404
 
+const PlanBanner = ({ title, body }: { title: string; body: string }) => (
+  <div className="plan-banner" role="status">
+    <Icon name="info" size={20} />
+    <div>
+      <p className="b2 w7">{title}</p>
+      <p className="c1 t2">{body}</p>
+    </div>
+  </div>
+)
+
 const PlansPage = () => {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const queryClient = useQueryClient()
-  const [packsText, setPacksText] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
-  const started = EMPLOYER_PLAN_CARDS.find((card) => card.id === params.get('checkout'))
-  const notice = started ? planStarted(started.name) : params.get('topup') ? TOPUP_DONE : null
+  const [dialog, setDialog] = useState<'buy' | 'history' | null>(null)
+  const toast = useToast()
+  const returned = checkoutReturn(params)
+  useEffect(() => {
+    if (!returned) return
+    if (returned === 'canceled') {
+      rememberCheckoutPlan(null)
+      return
+    }
+    // The stored plan stays until the next checkout overwrites it, so a re-run of this effect names it again.
+    toast.show(returned === 'credits' ? TOPUP_DONE : planPaid(checkoutPlanName()))
+    // A reload must not show the toast again.
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        next.delete('checkout')
+        next.delete('session_id')
+        return next
+      },
+      { replace: true },
+    )
+  }, [returned, setParams, toast.show])
   const billing = useCompanyBilling()
   const company = useMyCompany({
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
   })
+  const viewer = company.data?.role === 'MEMBER'
+  const members = useCompanyMembers({ enabled: viewer })
   const openLocal = async (url: string) => {
     await queryClient.invalidateQueries({ queryKey: ['billing', 'company'] })
     await queryClient.invalidateQueries({ queryKey: ['company', 'me'] })
@@ -72,6 +111,7 @@ const PlansPage = () => {
   const topup = useMutation({
     mutationFn: (packs: number) => billingTopup(packs),
     onSuccess: (result) => {
+      setDialog(null)
       void openLocal(result.url)
     },
     onError: (error) => {
@@ -102,82 +142,80 @@ const PlansPage = () => {
   }
   const missing = companyMissing(company.error)
   const canManage = canChangeEmployerPlan(company.data?.role, missing)
-  const canPay = canManage && paymentsOpen(billing.data)
-  const packs = Number(packsText)
-  const submitTopup = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!canPay || !topupReady(packs) || topup.isPending) return
-    setActionError(null)
-    topup.mutate(packs)
-  }
+  const open = paymentsOpen(billing.data)
+  const canPay = canManage && open
   const subscribe = (planId: EmployerPlan) => {
     if (!canPay || checkout.isPending) return
     setActionError(null)
+    rememberCheckoutPlan(planId)
     checkout.mutate(planId)
   }
   const currentPlan = billing.data?.plan ?? null
   const rank = { BASIC: 0, PRO: 1, ULTRA: 2 } as const
+  const percent = planUsedPercent(billing.data?.spentMicroCredits ?? 0, billing.data?.monthlyMicroCredits ?? 0)
+  const admin = members.data?.find((member) => member.role === 'ADMIN')
   return (
     <main className="page my-layout">
       <MySide />
-      <div className="my-main">
-      <header className="head">
+      <div className="my-main plan-main">
         <h1 className="h1">{PLANS_TITLE}</h1>
-        {billing.data ? (
-          <p className="b1">
-            {remainingCredits(billing.data.balanceMicroCredits)}
-            {currentPlan ? ` / ${EMPLOYER_PLAN_CARDS.find((card) => card.id === currentPlan)?.credits ?? ''}` : ''}
-            {` · ${PLAN_DEPTH}`}
-          </p>
-        ) : null}
-        <p className="b2 t2">{PLAN_RENEWAL}</p>
-        {billing.data && !paymentsOpen(billing.data) ? (
+        {returned === 'canceled' ? <PlanBanner title={PLAN_CANCELED_TITLE} body={PLAN_CANCELED_BODY} /> : null}
+        {viewer ? <PlanBanner title={PLAN_VIEWER_TITLE} body={planViewerBody(admin?.displayName)} /> : null}
+        {billing.data && !open ? (
           <p className="b1" role="status">
             {PAYMENTS_CLOSED}
           </p>
         ) : null}
-        {notice ? (
-          <p className="b1" role="status">
-            {notice}
+        <PlanUsage
+          percent={percent}
+          buy={open ? (canPay ? 'on' : 'off') : 'hidden'}
+          onHistory={() => setDialog('history')}
+          onBuy={() => {
+            setActionError(null)
+            setDialog('buy')
+          }}
+        />
+        <h2 className="h2 plan-lead">{PLAN_LEAD}</h2>
+        <ul className="plan-grid">
+          {EMPLOYER_PLAN_CARDS.map((card) => (
+            <PlanCard
+              key={card.id}
+              name={card.name}
+              price={card.price}
+              blurb={PLAN_BLURB[card.id]}
+              features={PLAN_FEATURES[card.id]}
+              featured={card.id === 'ULTRA'}
+              current={card.id === currentPlan}
+              action={planSwitchLabel(card.name, card.id === currentPlan, currentPlan ? rank[card.id] > rank[currentPlan] : false, currentPlan !== null)}
+              disabled={!canPay || checkout.isPending}
+              onSubscribe={() => subscribe(card.id)}
+            />
+          ))}
+        </ul>
+        {actionError && dialog !== 'buy' ? (
+          <p className="auth-error" role="alert">
+            {actionError}
           </p>
         ) : null}
-      </header>
-      <ul className="plan-grid">
-        {EMPLOYER_PLAN_CARDS.map((card) => (
-          <PlanCard
-            key={card.id}
-            name={card.name}
-            price={card.price}
-            credits={card.credits}
-            blurb={card.blurb}
-            features={PLAN_FEATURES[card.id]}
-            current={card.id === currentPlan}
-            action={planSwitchLabel(card.name, card.id === currentPlan, currentPlan ? rank[card.id] > rank[currentPlan] : false, currentPlan !== null)}
-            pending={checkout.isPending}
-            onSubscribe={canPay && card.id !== currentPlan ? () => subscribe(card.id) : undefined}
-          />
-        ))}
-      </ul>
-      {actionError ? (
-        <p className="auth-error stack" role="alert">
-          {actionError}
+        <p className="c1 t3">{PLAN_NOTE}</p>
+        <p className="c1 t3 plan-secure">
+          <Icon name="lock" size={14} />
+          {PLAN_SECURE}
         </p>
-      ) : null}
-      {canPay ? (
-        <form className="stack form" onSubmit={submitTopup}>
-          <label className="field">
-            <span>{PLAN_AMOUNT}</span>
-            <input type="number" inputMode="numeric" min={1} max={20} step={1} value={packsText} onChange={(event) => setPacksText(event.target.value)} />
-          </label>
-          <button type="submit" className="primary" disabled={!topupReady(packs) || topup.isPending}>
-            {PLAN_TOPUP}
-          </button>
-        </form>
-      ) : canManage ? null : company.data?.role === 'MEMBER' ? (
-        <p className="b2 stack">{PLAN_ADMIN_ONLY}</p>
-      ) : null}
-      {currentPlan ? <p className="c1 t3">{`${PLAN_NAME[currentPlan]} · 요금제는 에이전트에만 적용돼요.`}</p> : null}
       </div>
+      {dialog === 'history' ? <LedgerDialog company={company.data?.name ?? ''} onClose={() => setDialog(null)} /> : null}
+      {dialog === 'buy' && canPay ? (
+        <BuyDialog
+          pending={topup.isPending}
+          error={actionError}
+          onSubmit={(packs) => {
+            setActionError(null)
+            topup.mutate(packs)
+          }}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
+      <Toast message={toast.message} tone={toast.tone} action={toast.action} />
     </main>
   )
 }

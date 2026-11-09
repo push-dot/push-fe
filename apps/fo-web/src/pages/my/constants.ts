@@ -124,6 +124,12 @@ export const EMPLOYER_MENU = [
 export const COMPANY_LOCKED = '사업자 정보는 바꿀 수 없어요. 상호가 바뀌었다면 고객센터로 알려 주세요.'
 export const COMPANY_NO_HUB = '기업 계정에는 허브 프로필이 없어요.'
 export const COMPANY_VERIFIED = '확인됨'
+export const COMPANY_REPRESENTATIVE = '대표자명'
+export const COMPANY_INDUSTRY = '업종 태그'
+export const COMPANY_WEBSITE = '홈페이지'
+export const COMPANY_INTRO = '소개'
+export const COMPANY_LOGO = '로고 바꾸기'
+export const COMPANY_LOGO_FAILED = '로고를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.'
 
 export const EMPLOYER_ACTIVITY_MENU = [
   { label: '북마크', to: '/me?tab=activity&chip=bookmarks', icon: 'bookmark' },
