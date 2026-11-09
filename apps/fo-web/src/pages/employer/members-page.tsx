@@ -1,87 +1,109 @@
-import { ApiError, type CompanyMember } from '@push/api-client'
+import { ApiError, type CompanyInvite, type CompanyMember } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+import { useMyCompany } from '../../entities/company'
+import { useCompanyInvites, useCompanyMembers } from '../../entities/member'
+import {
+  companiesCancelInvite,
+  companiesRemoveMember,
+  companiesResendInvite,
+  companiesTransferAdmin,
+  inviteHint,
+} from '../../features/invite-member'
 import { useSession } from '../../shared/auth/use-session'
 import { PLAN_NAME, canInvite } from '../../shared/model/employer-plan'
+import { ConfirmDialog } from '../../shared/ui/dialog'
+import { Icon } from '../../shared/ui/icon'
 import Toast, { useToast } from '../../shared/ui/toast'
 import MySide from '../my/my-side'
 import {
   COMPANY_MISSING,
-  INVITE_CANCEL,
   INVITE_DIALOG_TITLE,
-  INVITE_EMAIL,
-  INVITE_FAILED_SEND,
+  INVITE_RESENT,
+  INVITE_REVOKE,
+  INVITE_REVOKE_BODY,
+  INVITE_REVOKED,
   INVITE_SENT,
-  INVITE_SUBMIT,
   MEMBERS_ADMIN_CAN,
   MEMBERS_FAILED,
   MEMBERS_LOADING,
   MEMBERS_MEMBER_CAN,
+  MEMBERS_PERM_TITLE,
   MEMBERS_TITLE,
+  REMOVE_MEMBER,
   ROLE_ADMIN,
   ROLE_MEMBER,
+  SEAT_FULL_PLANS,
+  SEAT_FULL_TITLE,
+  TRANSFER_CONFIRM,
   VERIFY_LINK,
-  inviteLead,
+  adminOnlyNote,
+  inviteExpiry,
+  memberActionError,
+  removeBody,
+  removeTitle,
+  revokeTitle,
   seatCount,
+  seatFullBody,
+  seatPlan,
+  transferBody,
+  transferTitle,
 } from './constants'
-import { companiesInvite, companiesRemoveMember, companiesTransferAdmin, inviteHint, inviteLimitCopy } from '../../features/invite-member'
-import MemberRow from './member-row'
-import { useMyCompany } from '../../entities/company'
-import { useCompanyMembers } from '../../entities/member'
+import InviteDialog from './invite-dialog'
+import { InviteRow, MemberRow } from './member-row'
 
+type Pending = { kind: 'remove' | 'transfer'; member: CompanyMember } | { kind: 'revoke'; invite: CompanyInvite }
+
+const nameOf = (member: CompanyMember) => member.displayName || member.email.split('@')[0] || member.email
 
 const MembersPage = () => {
   const session = useSession()
   const toast = useToast()
   const queryClient = useQueryClient()
-  const [email, setEmail] = useState('')
   const [inviting, setInviting] = useState(false)
-  const [seatError, setSeatError] = useState<string | null>(null)
+  const [pending, setPending] = useState<Pending | null>(null)
   const companyQuery = useMyCompany()
   const membersQuery = useCompanyMembers()
+  const isAdmin = companyQuery.data?.role === 'ADMIN'
+  const invitesQuery = useCompanyInvites(isAdmin)
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['company', 'me'] })
-    await queryClient.invalidateQueries({ queryKey: ['company', 'members'] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['company', 'me'] }),
+      queryClient.invalidateQueries({ queryKey: ['company', 'members'] }),
+      queryClient.invalidateQueries({ queryKey: ['company', 'invites'] }),
+    ])
   }
-  const invite = useMutation({
-    mutationFn: (next: string) => companiesInvite(next),
-    onSuccess: async () => {
-      setEmail('')
-      setSeatError(null)
-      setInviting(false)
-      toast.show(INVITE_SENT)
+  // A 403 means the role changed under us (another admin took over), so the page reloads what it may show.
+  const fail = (error: unknown, member = false) => {
+    toast.show(memberActionError(error, member), { tone: 'err' })
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) void refresh()
+  }
+  const change = useMutation({
+    mutationFn: async (next: Pending) => {
+      if (next.kind === 'revoke') return companiesCancelInvite(next.invite.id)
+      return next.kind === 'remove' ? companiesRemoveMember(next.member.userId) : companiesTransferAdmin(next.member.userId)
+    },
+    onSuccess: async (_, next) => {
+      if (next.kind === 'revoke') toast.show(INVITE_REVOKED)
       await refresh()
     },
-    onError: async (error) => {
-      const company = companyQuery.data
-      if (error instanceof ApiError && error.status === 403 && error.code === 'SEAT_LIMIT' && company) {
-        setSeatError(inviteHint(company.plan, company.seats.used, true))
-        await refresh()
-        return
-      }
-      setSeatError(INVITE_FAILED_SEND)
+    onError: (error, next) => fail(error, next.kind !== 'revoke'),
+    onSettled: () => setPending(null),
+  })
+  const resend = useMutation({
+    mutationFn: (invite: CompanyInvite) => companiesResendInvite(invite.id),
+    onSuccess: async () => {
+      toast.show(INVITE_RESENT)
+      await queryClient.invalidateQueries({ queryKey: ['company', 'invites'] })
     },
+    onError: (error) => fail(error),
   })
-  const remove = useMutation({
-    mutationFn: (userId: string) => companiesRemoveMember(userId),
-    onSuccess: () => refresh(),
-  })
-  const transfer = useMutation({
-    mutationFn: (userId: string) => companiesTransferAdmin(userId),
-    onSuccess: () => refresh(),
-  })
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const next = email.trim()
-    if (!next || invite.isPending) return
-    invite.mutate(next)
-  }
   const frame = (body: ReactNode) => (
     <main className="page my-layout">
       <MySide />
-      <div className="my-main">{body}</div>
+      <div className="my-main member-main">{body}</div>
     </main>
   )
   if (companyQuery.isError || membersQuery.isError) {
@@ -106,74 +128,127 @@ const MembersPage = () => {
     )
   }
   const company = companyQuery.data
-  const isAdmin = company.role === 'ADMIN'
-  const allowInvite = isAdmin && canInvite(company.plan, company.seats.used)
-  const hint = inviteHint(company.plan, company.seats.used, isAdmin)
-  const pending = remove.isPending || transfer.isPending
+  const members = membersQuery.data
+  const invites = isAdmin ? (invitesQuery.data ?? []) : []
+  const full = !canInvite(company.plan, company.seats.used)
+  const plan = seatPlan(company.plan)
+  const hint = isAdmin && !plan ? inviteHint(company.plan, company.seats.used, true) : null
+  const admin = members.find((member) => member.role === 'ADMIN')
+  const busy = change.isPending || resend.isPending
+  const target = pending && pending.kind !== 'revoke' ? nameOf(pending.member) : ''
   return frame(
     <>
-      <header className="head biz-bar">
-        <span>
-          <h1 className="h1">{MEMBERS_TITLE}</h1>
-          <p className="b1">{seatCount(company.seats.used, company.seats.limit, company.plan ? PLAN_NAME[company.plan] : null)}</p>
-        </span>
-        {allowInvite ? (
-          <button type="button" className="btn pri" onClick={() => setInviting(true)}>
+      <h1 className="h1">{MEMBERS_TITLE}</h1>
+      <div className="member-bar">
+        <p className="b2 t3">{seatCount(company.seats.used, company.seats.limit, company.plan ? PLAN_NAME[company.plan] : null)}</p>
+        {isAdmin ? (
+          <button type="button" className="btn pri sm" disabled={full} onClick={() => setInviting(true)}>
+            <Icon name="plus" size={16} width={2.4} />
             {INVITE_DIALOG_TITLE}
           </button>
         ) : null}
-      </header>
-      <ul className="member-list">
-        {membersQuery.data.map((member: CompanyMember) => (
-          <MemberRow
-            key={member.userId}
-            email={member.email}
-            roleLabel={member.role === 'ADMIN' ? ROLE_ADMIN : ROLE_MEMBER}
-            admin={member.role === 'ADMIN'}
-            self={member.userId === session?.user.id}
-            showActions={isAdmin && member.userId !== session?.user.id}
-            pending={pending}
-            onRemove={() => remove.mutate(member.userId)}
-            onTransfer={() => transfer.mutate(member.userId)}
+      </div>
+      {isAdmin && full && plan ? (
+        <div className="seat-banner">
+          <span className="red">
+            <Icon name="warn" size={20} />
+          </span>
+          <span className="seat-copy">
+            <span className="b2 w7">{SEAT_FULL_TITLE}</span>
+            <span className="c1 t2">{seatFullBody(plan)}</span>
+          </span>
+          <Link className="btn sec sm" to="/employer/plans">
+            {SEAT_FULL_PLANS}
+          </Link>
+        </div>
+      ) : null}
+      {hint ? <p className="b2 t3">{hint}</p> : null}
+      {isAdmin ? null : (
+        <p className="member-info c1 t2">
+          <Icon name="info" size={18} className="t3" />
+          <span>{adminOnlyNote(admin ? nameOf(admin) : undefined)}</span>
+        </p>
+      )}
+      <ul className="member-list box">
+        {members.map((member) => {
+          const own = member.userId === session?.user.id
+          const manage = isAdmin && !own
+          return (
+            <MemberRow
+              key={member.userId}
+              name={nameOf(member)}
+              email={member.email}
+              roleLabel={member.role === 'ADMIN' ? ROLE_ADMIN : ROLE_MEMBER}
+              admin={member.role === 'ADMIN'}
+              self={own}
+              busy={busy}
+              onRemove={manage ? () => setPending({ kind: 'remove', member }) : undefined}
+              onTransfer={manage ? () => setPending({ kind: 'transfer', member }) : undefined}
+            />
+          )
+        })}
+        {invites.map((invite) => (
+          <InviteRow
+            key={invite.id}
+            expiry={inviteExpiry(invite.email, invite.expiresAt)}
+            busy={busy}
+            onResend={() => resend.mutate(invite)}
+            onRevoke={() => setPending({ kind: 'revoke', invite })}
           />
         ))}
       </ul>
-      {hint ? <p className="b2">{hint}</p> : null}
-      <section className="perm">
-        <p className="c1 t2">{MEMBERS_ADMIN_CAN}</p>
-        <p className="c1 t2">{MEMBERS_MEMBER_CAN}</p>
+      <section className="card perm">
+        <p className="b2 w7">{MEMBERS_PERM_TITLE}</p>
+        <p className="c1 t2">
+          <b>{ROLE_ADMIN}</b> · {MEMBERS_ADMIN_CAN}
+          <br />
+          <b>{ROLE_MEMBER}</b> · {MEMBERS_MEMBER_CAN}
+        </p>
       </section>
-      {inviting && allowInvite ? (
-        <div className="sheet-scrim" role="presentation" onClick={() => setInviting(false)}>
-          <div className="sheet" role="dialog" aria-modal="true" aria-label={INVITE_DIALOG_TITLE} onClick={(event) => event.stopPropagation()}>
-            <div className="sheet-head">
-              <h2 className="h3">{INVITE_DIALOG_TITLE}</h2>
-            </div>
-            <p className="b2 t2">{inviteLead(company.name)}</p>
-            <form className="biz-form" onSubmit={submit}>
-              <label className="biz-field">
-                <span>{INVITE_EMAIL}</span>
-                <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-              </label>
-              <p className="c1 t3">{inviteLimitCopy(company.seats.used, company.seats.limit)}</p>
-              {seatError ? (
-                <p className="auth-error" role="alert">
-                  {seatError}
-                </p>
-              ) : null}
-              <div className="sheet-actions">
-                <button type="button" className="btn sec" onClick={() => setInviting(false)}>
-                  {INVITE_CANCEL}
-                </button>
-                <button type="submit" className="btn pri" disabled={email.trim().length === 0 || invite.isPending}>
-                  {INVITE_SUBMIT}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {inviting && isAdmin ? (
+        <InviteDialog
+          company={company}
+          refresh={refresh}
+          onClose={() => setInviting(false)}
+          onSent={() => {
+            setInviting(false)
+            toast.show(INVITE_SENT)
+          }}
+        />
       ) : null}
-      <Toast message={toast.message} />
+      {pending?.kind === 'remove' ? (
+        <ConfirmDialog
+          title={removeTitle(target)}
+          body={removeBody(company.name, target)}
+          confirmLabel={REMOVE_MEMBER}
+          danger
+          busy={change.isPending}
+          onConfirm={() => change.mutate(pending)}
+          onClose={() => setPending(null)}
+        />
+      ) : null}
+      {pending?.kind === 'transfer' ? (
+        <ConfirmDialog
+          title={transferTitle(target)}
+          body={transferBody(target, session?.user.displayName ?? '')}
+          confirmLabel={TRANSFER_CONFIRM}
+          busy={change.isPending}
+          onConfirm={() => change.mutate(pending)}
+          onClose={() => setPending(null)}
+        />
+      ) : null}
+      {pending?.kind === 'revoke' ? (
+        <ConfirmDialog
+          title={revokeTitle(pending.invite.email)}
+          body={INVITE_REVOKE_BODY}
+          confirmLabel={INVITE_REVOKE}
+          danger
+          busy={change.isPending}
+          onConfirm={() => change.mutate(pending)}
+          onClose={() => setPending(null)}
+        />
+      ) : null}
+      <Toast message={toast.message} tone={toast.tone} />
     </>,
   )
 }
