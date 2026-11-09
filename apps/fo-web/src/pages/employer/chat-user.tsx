@@ -3,7 +3,6 @@ import type { Attachment } from '../../features/employer-chat'
 import { useEmployerPosting, useMyPostings } from '../../entities/posting'
 import { useChatActions } from './chat-actions'
 import {
-  applicantChipTitle,
   applicantKicker,
   POSTING_CLOSED_KICKER,
   POSTING_OPEN_KICKER,
@@ -58,13 +57,15 @@ const PostingChip = ({ id, title }: { id: string; title?: string }) => {
 
 const ApplicantChip = ({ id, title }: { id: string; title?: string }) => {
   const person = useChatActions().people.find((item) => item.applicationId === id)
-  const name = person?.name ?? title?.split(' · ')[0] ?? ''
+  // push-be sends no title for an APPLICATION attachment, so the chip names the person only.
+  const name = person?.name ?? title ?? ''
+  if (!name) return null
   return (
     <Chip
       mark={name.slice(-2)}
       color={brandColor(name)}
       kicker={applicantKicker(person?.postingTitle ?? '')}
-      title={applicantChipTitle(name, title)}
+      title={name}
     />
   )
 }

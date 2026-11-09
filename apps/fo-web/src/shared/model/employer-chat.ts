@@ -8,6 +8,11 @@ export type PostingDraft = {
   requirements: string[]
   preferred: string[]
   workConditions: Record<string, unknown>
+  /** The facts under the title: the tool result has them on the posting, the fence under workConditions. */
+  location?: string
+  careerMin?: number
+  careerMax?: number | null
+  employmentType?: string
 }
 
 export const REVIEW_REPLY = '5년 차라고 적었지만 같은 연차 80점대 서류보다 기술 설명이 얕아요'
@@ -43,12 +48,23 @@ export const toPostingDraft = (value: unknown): PostingDraft | null => {
   if (typeof value.title !== 'string' || typeof value.description !== 'string') return null
   if (!isStringArray(value.requirements) || !isStringArray(preferred)) return null
   if (!isRecord(value.workConditions)) return null
+  const fact = (key: string) => value[key] ?? (value.workConditions as Record<string, unknown>)[key]
+  const [location, careerMin, careerMax, employmentType] = [
+    fact('location'),
+    fact('careerMin'),
+    fact('careerMax'),
+    fact('employmentType'),
+  ]
   return {
     title: value.title,
     description: value.description,
     requirements: value.requirements,
     preferred,
     workConditions: value.workConditions,
+    ...(typeof location === 'string' && location ? { location } : {}),
+    ...(typeof careerMin === 'number' ? { careerMin } : {}),
+    ...(typeof careerMax === 'number' || careerMax === null ? { careerMax } : {}),
+    ...(typeof employmentType === 'string' && employmentType ? { employmentType } : {}),
   }
 }
 

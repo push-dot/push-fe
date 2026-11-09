@@ -17,6 +17,18 @@ export const chatGateFrom = (error: unknown): ChatBlock => {
   return 'failed'
 }
 
+// push-be removes the question only when a DomainError rejects the job (_drop_enqueued_user_message).
+const KEPT_CODES = ['INTERNAL', 'NOT_CONFIGURED']
+
+/**
+ * A failure after the job was accepted: `dropped` is the connection (the job keeps running and is followed again),
+ * `kept` a job that failed with the question stored, null a rejection that removed the question.
+ */
+export const acceptedFailure = (error: unknown): 'dropped' | 'kept' | null => {
+  if (!(error instanceof ApiError) || error.code === 'NETWORK_ERROR' || error.code === 'STREAM_PARSE') return 'dropped'
+  return error.status === 0 && KEPT_CODES.includes(error.code) ? 'kept' : null
+}
+
 export type ApprovalFailure = 'resolved' | 'expired' | 'failed'
 
 export const approvalFailureFrom = (error: unknown): ApprovalFailure => {

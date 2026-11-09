@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useMyCompany } from '../../entities/company'
 import { textFromConditions } from '../../entities/posting'
 import type { PostingDraft } from '../../shared/model/employer-chat'
 import { Icon } from '../../shared/ui/icon'
-import { DRAFT_EDIT, DRAFT_HEAD, DRAFT_REDO } from './chat-copy'
+import { DRAFT_EDIT, DRAFT_HEAD, DRAFT_REDO, draftMeta } from './chat-copy'
 import { useChatActions } from './chat-actions'
 import { DRAFT_BADGE, DRAFT_POSTING } from './constants'
 
@@ -14,11 +15,14 @@ const lines = (value: string) =>
 
 const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: string }) => {
   const actions = useChatActions()
+  const meta = draftMeta(draft, useMyCompany().data?.name)
+  // The employment type reads in the line under the title, not as a raw FULL_TIME among the conditions.
+  const { employmentType: _, ...conditions } = draft.workConditions
   const groups = [
     ['하는 일', lines(draft.description)],
     ['자격 요건', draft.requirements],
     ['우대 사항', draft.preferred],
-    ['근무 조건', lines(textFromConditions(draft.workConditions))],
+    ['근무 조건', lines(textFromConditions(conditions))],
   ] as const
   return (
     <div className="box draft-card">
@@ -28,7 +32,10 @@ const ChatDraftCard = ({ draft, postingId }: { draft: PostingDraft; postingId?: 
         <span className="badge orange">{DRAFT_BADGE}</span>
       </div>
       <div className="draft-body">
-        <span className="h2">{draft.title}</span>
+        <div className="draft-title">
+          <span className="h2">{draft.title}</span>
+          {meta ? <span className="b2 t3">{meta}</span> : null}
+        </div>
         {groups.map(([label, items]) =>
           items.length === 0 ? null : (
             <div key={label} className="draft-group">

@@ -240,6 +240,37 @@ describe('ms= switches', () => {
     setMockPersona(null)
   })
 
+  it('cancels a running job like push-be: a cancelled frame, a CANCELLED turn, then 409', async () => {
+    using('employer-pro', 'chat-tool')
+    const id = (await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })).body.data.id
+    expect((await errorCode(`/conversations/${id}/stream/cancel`, 'POST')).code).toBe('CONFLICT')
+    const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '이번 주 새 지원자 정리해 줘', accessMode: 'AUTO' })
+    const frames = readEvents<{ type: string; name?: string; seq?: number }>(response.body!)[Symbol.asyncIterator]()
+    // The tool script stalls on its last tool line, still running.
+    let first = (await frames.next()).value as { type: string; name?: string; seq: number }
+    while (first.name !== 'read_documents') first = (await frames.next()).value as typeof first
+    // The job runs apart from the stream: it is listed as running, a second send is busy, and a follow picks it up.
+    const running = await read<{ data: { status: string; events: unknown[] }[] }>(`/conversations/${id}/turns`)
+    expect(running.body.data[0]!.status).toBe('RUNNING')
+    expect(running.body.data[0]!.events.at(-1)).toMatchObject({ type: 'tool', state: 'run' })
+    expect((await errorCode(`/conversations/${id}/messages/stream`, 'POST', { text: '또', accessMode: 'AUTO' })).code).toBe('QUEUE_BUSY')
+    const follow = await call(`/conversations/${id}/messages/stream/active?after=${first.seq}`)
+    expect(follow.status).toBe(200)
+    expect((await read<{ data: { status: string } }>(`/conversations/${id}/stream/cancel`, 'POST')).body.data.status).toBe('CANCELLED')
+    const rest: string[] = []
+    for await (const event of { [Symbol.asyncIterator]: () => frames }) rest.push(event.type)
+    expect(rest.at(-1)).toBe('cancelled')
+    const followed: string[] = []
+    for await (const event of readEvents<{ type: string }>(follow.body!)) followed.push(event.type)
+    expect(followed).toEqual(['cancelled'])
+    const turns = await read<{ data: { status: string; assistantMessageId: string | null; events: { type: string }[] }[] }>(`/conversations/${id}/turns`)
+    expect(turns.body.data[0]).toMatchObject({ status: 'CANCELLED', assistantMessageId: null })
+    expect(turns.body.data[0]!.events.map((event) => event.type).slice(-2)).toEqual(['tool', 'cancelled'])
+    expect((await errorCode(`/conversations/${id}/stream/cancel`, 'POST')).code).toBe('CONFLICT')
+    expect((await call(`/conversations/${id}/messages/stream/active`)).status).toBe(204)
+    setMockPersona(null)
+  })
+
   it('spends the month for chat-limit', async () => {
     using('employer-ultra', 'chat-limit')
     expect((await read<{ data: { balanceMicroCredits: number } }>('/billing')).body.data.balanceMicroCredits).toBe(0)

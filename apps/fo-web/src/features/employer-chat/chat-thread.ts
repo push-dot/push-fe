@@ -10,6 +10,8 @@ export type LiveTurn = {
   turn: ChatTurn | null
   /** Ids of the stored messages already there when the run started: the ones it adds are shown by the live turn. */
   known: string[]
+  /** The stored job this turn follows again (after leaving the screen): its stored copy is not shown twice. */
+  jobId?: string
 }
 
 export type ThreadItem =
@@ -28,6 +30,7 @@ export const threadItems = (
   live: LiveTurn | null,
 ): ThreadItem[] => {
   const known = live && new Set(live.known)
+  const jobs = live?.jobId ? turns.filter((turn) => turn.jobId !== live.jobId) : turns
   const rows = [...messages].reverse().filter((message) => !known || known.has(message.id))
   const shown = new Set<string>()
   const replay = (turn: ConversationTurn): ThreadItem => {
@@ -36,7 +39,7 @@ export const threadItems = (
   }
   const items = rows.flatMap((message): ThreadItem[] => {
     if (message.role === 'USER') {
-      const own = turns.find((turn) => turn.userMessageId === message.id && !shown.has(turn.jobId))
+      const own = jobs.find((turn) => turn.userMessageId === message.id && !shown.has(turn.jobId))
       const user: ThreadItem = {
         kind: 'user',
         key: message.id,
@@ -48,7 +51,7 @@ export const threadItems = (
         ? [user, replay(own)]
         : [user]
     }
-    const stored = turns.find(
+    const stored = jobs.find(
       (turn) => turn.assistantMessageId === message.id && !shown.has(turn.jobId),
     )
     return [stored ? replay(stored) : { kind: 'reply', key: message.id, text: message.text }]

@@ -1,7 +1,9 @@
 import type { TurnTool } from '../../features/employer-chat'
+import { TOOL_STOPPED } from './chat-copy'
 
 const ChatToolRow = ({ tool }: { tool: TurnTool }) => {
   const running = tool.state === 'run'
+  const result = tool.state === 'stop' ? TOOL_STOPPED : (tool.resultLine ?? tool.error)
   return (
     <div className="chat-tool">
       <div className="b2 chat-tool-head">
@@ -15,12 +17,12 @@ const ChatToolRow = ({ tool }: { tool: TurnTool }) => {
           {tool.target ? <span className="t3">{tool.target}</span> : null}
         </span>
       </div>
-      {tool.resultLine || tool.error || running ? (
+      {result || running ? (
         <div className="b2 t2 chat-tool-result">
           <span className="chat-elbow" aria-hidden="true" />
-          {tool.resultLine || tool.error ? (
+          {result ? (
             <span>
-              {tool.resultLine ?? tool.error}
+              {result}
               {tool.extra?.map((line) => (
                 <span key={line} className="c1 t3 chat-tool-extra">
                   {line}

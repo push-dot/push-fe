@@ -13,13 +13,18 @@ const ChatQuestions = ({ items, caret }: { items: Question[]; caret: boolean }) 
               <span className="chat-caret" aria-hidden="true" />
             ) : null}
           </span>
-          {item.note ? <span className="c1 t2 chat-question-note">{item.note}</span> : null}
-          {item.check ? (
-            <span className="c1 t2 chat-check">
-              <b className="w7 t3">{CHECK_POINT}</b>
-              {item.check}
-            </span>
-          ) : null}
+          {item.lines.map((line, at) =>
+            line.check ? (
+              <span key={at} className="c1 t2 chat-check">
+                <b className="w7 t3">{CHECK_POINT}</b>
+                <span>{line.text}</span>
+              </span>
+            ) : (
+              <span key={at} className="c1 t2 chat-question-note">
+                {line.text}
+              </span>
+            ),
+          )}
         </span>
       </div>
     ))}

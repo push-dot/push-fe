@@ -563,6 +563,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .ai-dot.ok{background:var(--green);margin-top:7px}
 .browser .ai-dot.err{background:var(--red);margin-top:7px}
 .browser .ai-dot.wait{background:var(--orange);margin-top:7px}
+.browser .ai-dot.stop{background:var(--ctl);margin-top:7px}
 .browser .chat-note{padding-left:20px}
 .browser .chat-tool{display:flex;flex-direction:column;gap:4px}
 .browser .chat-tool-head{display:flex;gap:10px}
@@ -606,12 +607,14 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .chat-question-copy{flex:1;display:flex;flex-direction:column;gap:8px}
 .browser .chat-check{display:flex;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg2)}
 .browser .chat-check b{flex:none}
+.browser .chat-check>span{white-space:pre-wrap;overflow-wrap:break-word;min-width:0}
 .browser .chat-question-note{display:block;white-space:pre-wrap;overflow-wrap:break-word}
 .browser .chat-caret{display:inline-block;width:2px;height:18px;margin-left:2px;vertical-align:-3px;background:var(--ac)}
 .browser .draft-card{overflow:hidden;box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
 .browser .draft-head{display:flex;align-items:center;gap:10px;padding:16px 20px;background:var(--bg2)}
 .browser .draft-head>.b2{flex:1}
 .browser .draft-body{padding:22px 24px;display:flex;flex-direction:column;gap:18px}
+.browser .draft-title{display:flex;flex-direction:column;gap:4px}
 .browser .draft-group{display:flex;flex-direction:column;gap:6px}
 .browser .draft-group ul{margin:0;padding-left:20px}
 .browser .draft-foot{display:flex;gap:8px;padding:16px 20px;border-top:1px solid var(--line)}

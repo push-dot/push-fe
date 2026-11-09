@@ -6,7 +6,7 @@ import { Icon } from '../../shared/ui/icon'
 import { CHAT_LIST_LABEL, usedText } from './chat-copy'
 import ChatSide, { UsageMeter } from './chat-side'
 import { useChatUsage } from './chat-usage'
-import { useStickToBottom } from './chat-scroll'
+import { useStickToBottom, type OlderPages } from './chat-scroll'
 import { CHAT_NEW } from './constants'
 
 type ChatAppProps = {
@@ -14,13 +14,17 @@ type ChatAppProps = {
   activeId?: string
   title?: string
   dock?: ReactNode
-  busy?: boolean
+  /** Bumped on every send: the thread goes back to the newest message even when the reader had scrolled up. */
+  pin?: number
+  older?: OlderPages
+  /** The finished reply, read out once: the thread itself is not a live region, so loading it reads nothing. */
+  announce?: string
   children: ReactNode
 }
 
-const ChatApp = ({ screen, activeId, title, dock, busy, children }: ChatAppProps) => {
+const ChatApp = ({ screen, activeId, title, dock, pin, older, announce, children }: ChatAppProps) => {
   const scroll = useRef<HTMLDivElement>(null)
-  useStickToBottom(scroll, activeId)
+  useStickToBottom(scroll, `${activeId ?? ''}:${pin ?? 0}`, older)
   const conversations = useEmployerConversations()
   const usage = useChatUsage()
   return (
@@ -52,11 +56,11 @@ const ChatApp = ({ screen, activeId, title, dock, busy, children }: ChatAppProps
           </Link>
         </div>
         <div className="chat-scroll" ref={scroll}>
-          {/* A log reads additions politely; aria-busy holds the announcements back while a turn streams. */}
-          <div className="chat-col" role="log" aria-live="polite" aria-busy={busy}>
-            {children}
-          </div>
+          <div className="chat-col">{children}</div>
         </div>
+        <p className="sr-only" role="status">
+          {announce}
+        </p>
         {dock ? <div className="chat-dock">{dock}</div> : null}
       </section>
     </main>

@@ -1,4 +1,4 @@
-import { ApiError, type AccessMode } from '@push/api-client'
+import { ApiError, type AccessMode, type ConversationTurn, type StreamEvent } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -14,6 +14,7 @@ import {
 import { useMyPostings } from '../../entities/posting'
 import { useSettings } from '../../entities/session'
 import {
+  acceptedFailure,
   answerApproval,
   applyTurnEvent,
   approvalFailureFrom,
@@ -25,11 +26,20 @@ import {
   conversationsCreateEmployer,
   DEFAULT_ACCESS_MODE,
   EMPTY_TURN,
+  followTurn,
+  lastSeq,
+  markStarted,
+  markStopped,
   runTurn,
+  storedTurn,
   threadItems,
+  turnRunning,
+  turnText,
   type ApprovalFailure,
   type ChatBlock,
+  type ChatTurn,
   type LiveTurn,
+  type RunState,
   type ThreadItem,
 } from '../../features/employer-chat'
 import { meUpdateSettings } from '../../features/update-settings'
@@ -40,7 +50,7 @@ import { ChatActionsContext, type ChatActions, type ChatPerson } from './chat-ac
 import ChatAnswer, { ChatSay } from './chat-answer'
 import ChatApp from './chat-app'
 import ChatComposer from './chat-composer'
-import { COPIED, DRAFT_REDO_ASK, PDF_NOTE } from './chat-copy'
+import { APPROVAL_NEEDED, COPIED, DRAFT_REDO_ASK, PDF_NOTE } from './chat-copy'
 import ChatLimitCard from './chat-limit-card'
 import ChatLock from './chat-lock'
 import ChatStarter from './chat-starter'
@@ -59,8 +69,16 @@ import {
 
 type Outgoing = { text: string; intent: ChatIntent; applicationId: string; file: File | null }
 
+/** `held`: stopped while the conversation was being made, so the thread opens with the question unsent. */
+type Handoff = Outgoing & { held?: boolean }
+
 // The starter creates the conversation on the first send and hands that send to the thread it opens.
-const handoffs = new Map<string, Outgoing>()
+const handoffs = new Map<string, Handoff>()
+
+type Job = RunState & { controller: AbortController | null }
+
+const announced = (turn: ChatTurn) =>
+  turnText(turn) || (turn.awaiting === 'approval' ? APPROVAL_NEEDED : '')
 
 const titleOf = (text: string) => text.split('\n')[0]?.slice(0, 40) ?? text
 
@@ -97,11 +115,18 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
   const [live, setLive] = useState<LiveTurn | null>(null)
   const [picked, setPicked] = useState<Record<string, string>>({})
   const [sending, setSending] = useState(false)
-  const abort = useRef<AbortController | null>(null)
+  const [halting, setHalting] = useState(false)
+  const [sent, setSent] = useState(0)
+  const [announce, setAnnounce] = useState('')
+  const job = useRef<Job | null>(null)
+  const attached = useRef<string | null>(null)
   const leaving = useRef<number | undefined>(undefined)
   const conversations = useEmployerConversations()
   const messages = useEmployerMessages(id)
   const turns = useEmployerTurns(id)
+  const storedMessages = messages.data?.pages.flatMap((page) => page.data) ?? []
+  const storedTurns = turns.data?.pages.flatMap((page) => page.data) ?? []
+  const running = storedTurns.find(turnRunning)
   const postings = useMyPostings()
   const openPosting = postings.data?.data.find((item) => !item.closedAt)
   const applicants = useEmployerApplicants(openPosting?.id, undefined, {
@@ -115,7 +140,7 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     postingTitle: openPosting?.title ?? '',
   }))
   const title = conversations.data?.data.find((item) => item.id === id)?.title
-  const items = threadItems(messages.data?.data ?? [], turns.data?.data ?? [], live)
+  const items = threadItems(storedMessages, storedTurns, live)
   const lastTurn = items.at(-1)
   const lastCard = lastTurn?.kind === 'turn' ? lastTurn.turn.blocks.at(-1) : undefined
   const awaiting =
@@ -132,7 +157,46 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
       queryClient.invalidateQueries({ queryKey: ['employer-conversations'] }),
     ])
 
-  const knownIds = () => (messages.data?.data ?? []).map((message) => message.id)
+  const knownIds = () => storedMessages.map((message) => message.id)
+
+  const begin = (controller: AbortController | null): Job => {
+    const current = { started: false, stopped: false, controller }
+    job.current = current
+    return current
+  }
+
+  const release = (current: Job) => {
+    if (job.current === current) job.current = null
+  }
+
+  const halt = (current: Job) => {
+    current.controller?.abort()
+    if (!id) return
+    setHalting(true)
+    // The stream's own refresh ran before the cancel committed; this one shows the job as stopped.
+    cancelTurn(chatTurnDeps, id)
+      .then(refresh, () => {
+        setAlert(CHAT_STOP_FAILED)
+        // The job is still running: following it again brings the stop button back.
+        attached.current = null
+      })
+      .finally(() => setHalting(false))
+  }
+
+  /** Applies a frame to the live turn and remembers the whole turn for the read-out at the end. */
+  const tracker = (current: Job, from: ChatTurn = EMPTY_TURN) => {
+    let turn = from
+    return {
+      onEvent: (event: StreamEvent) => {
+        if (markStarted(current)) halt(current)
+        turn = applyTurnEvent(turn, event)
+        setLive((live) => live && { ...live, turn: applyTurnEvent(live.turn ?? EMPTY_TURN, event) })
+      },
+      finished: () => {
+        if (!current.controller?.signal.aborted) setAnnounce(announced(turn))
+      },
+    }
+  }
 
   /** Returns true when the question stays on screen above the card the failure opens. */
   const fail = (error: unknown, value: string) => {
@@ -166,8 +230,10 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
       turn: null,
       known: knownIds(),
     })
+    setSent((count) => count + 1)
     const controller = new AbortController()
-    abort.current = controller
+    const current = begin(controller)
+    const track = tracker(current)
     let keep = false
     try {
       if (out.file) {
@@ -175,6 +241,11 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         form.append('file', out.file)
         await conversationsAttach(conversationId, form)
         setFile(null)
+      }
+      // Stopped during the upload: the question never left, so it goes back to the composer.
+      if (current.stopped) {
+        setText(out.text)
+        return
       }
       const body = {
         text: out.text,
@@ -191,20 +262,50 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
           // The job names the conversation when it starts; the list should not wait for the end of a long run.
           if (first) void queryClient.invalidateQueries({ queryKey: ['employer-conversations'] })
           first = false
-          setLive(
-            (current) =>
-              current && { ...current, turn: applyTurnEvent(current.turn ?? EMPTY_TURN, event) },
-          )
+          track.onEvent(event)
         },
         controller.signal,
       )
+      track.finished()
     } catch (error) {
-      if (!controller.signal.aborted) keep = fail(error, out.text)
+      if (!controller.signal.aborted) keep = current.started ? failAccepted(error, out.text) : fail(error, out.text)
     } finally {
       // The stored messages and jobs replace the live turn once they are loaded, so the run never shows twice.
       await refresh()
       if (!keep) setLive(null)
-      abort.current = null
+      release(current)
+      setSending(false)
+    }
+  }
+
+  /** A failure after push-be took the job: only a rejection that removed the question puts it back in the composer. */
+  const failAccepted = (error: unknown, value: string) => {
+    const accepted = acceptedFailure(error)
+    if (!accepted) return fail(error, value)
+    // A dropped connection leaves the job running; the refresh finds it and the thread follows it again.
+    if (accepted === 'kept') setAlert(streamErrorText(error, payable))
+    return false
+  }
+
+  /** Follows a job that kept running while this screen was closed, so a new send does not hit QUEUE_BUSY. */
+  const follow = async (turn: ConversationTurn) => {
+    if (!id) return
+    const controller = new AbortController()
+    const current = begin(controller)
+    current.started = true
+    const from = storedTurn(turn).turn
+    const track = tracker(current, from)
+    setSending(true)
+    setLive({ text: '', attachments: [], turn: from, known: knownIds(), jobId: turn.jobId })
+    try {
+      await followTurn(chatTurnDeps, id, lastSeq(turn), track.onEvent, controller.signal)
+      track.finished()
+    } catch (error) {
+      if (!controller.signal.aborted) setAlert(streamErrorText(error, payable))
+    } finally {
+      await refresh()
+      setLive(null)
+      release(current)
       setSending(false)
     }
   }
@@ -213,14 +314,17 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     setSending(true)
     setGate(null)
     setAlert(null)
+    const current = begin(null)
     try {
       const created = await conversationsCreateEmployer({ title: titleOf(out.text) })
-      handoffs.set(created.id, out)
+      handoffs.set(created.id, current.stopped ? { ...out, held: true } : out)
       await queryClient.invalidateQueries({ queryKey: ['employer-conversations'] })
       navigate(`/employer/chat/${created.id}`, { state: { intent: out.intent } })
     } catch (error) {
       setSending(false)
       fail(error, out.text)
+    } finally {
+      release(current)
     }
   }
 
@@ -234,9 +338,22 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     const out = id ? handoffs.get(id) : undefined
     if (!id || !out) return
     handoffs.delete(id)
+    if (out.held) {
+      setText(out.text)
+      setApplicationId(out.applicationId)
+      setFile(out.file)
+      return
+    }
     void run(id, out)
     // Runs once per conversation: the handoff is consumed on the first pass.
   }, [id])
+
+  useEffect(() => {
+    if (!running || sending || halting || attached.current === running.jobId) return
+    attached.current = running.jobId
+    void follow(running)
+    // Keyed on the job: a job is followed once, again only after a stop that did not reach push-be.
+  }, [running?.jobId, sending, halting])
 
   const answer = async (cardId: string, optionId: string) => {
     if (sending || !id) return
@@ -248,20 +365,11 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         current ?? { text: '', attachments: [], turn: EMPTY_TURN, known: knownIds() },
     )
     const controller = new AbortController()
-    abort.current = controller
+    const current = begin(controller)
+    const track = tracker(current)
     try {
-      await answerApproval(
-        chatTurnDeps,
-        id,
-        cardId,
-        optionId,
-        (event) =>
-          setLive(
-            (current) =>
-              current && { ...current, turn: applyTurnEvent(current.turn ?? EMPTY_TURN, event) },
-          ),
-        controller.signal,
-      )
+      await answerApproval(chatTurnDeps, id, cardId, optionId, track.onEvent, controller.signal)
+      track.finished()
     } catch (error) {
       if (!controller.signal.aborted) {
         const failure = approvalFailureFrom(error)
@@ -271,22 +379,22 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     } finally {
       await refresh()
       setLive(null)
-      abort.current = null
+      release(current)
       setSending(false)
     }
   }
 
+  // Closing the stream leaves the job running and spending credits, so the server is told to stop it too.
   const stop = () => {
-    abort.current?.abort()
-    // Closing the stream leaves the job running and spending credits, so the server is told to stop it too.
-    if (id) cancelTurn(chatTurnDeps, id).catch(() => setAlert(CHAT_STOP_FAILED))
+    const current = job.current
+    if (current && markStopped(current)) halt(current)
   }
 
   useEffect(() => {
     window.clearTimeout(leaving.current)
     // Deferred so React's dev double mount does not cancel the run the first mount started.
     return () => {
-      leaving.current = window.setTimeout(() => abort.current?.abort(), 0)
+      leaving.current = window.setTimeout(() => job.current?.controller?.abort(), 0)
     }
   }, [])
 
@@ -355,7 +463,16 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         activeId={id}
         title={id ? title : undefined}
         dock={dock}
-        busy={sending}
+        pin={sent}
+        announce={announce}
+        older={{
+          more: Boolean(messages.hasNextPage || turns.hasNextPage),
+          loading: messages.isFetchingNextPage || turns.isFetchingNextPage,
+          load: () => {
+            if (messages.hasNextPage) void messages.fetchNextPage()
+            if (turns.hasNextPage) void turns.fetchNextPage()
+          },
+        }}
       >
         {!id && items.length === 0 ? (
           file ? (

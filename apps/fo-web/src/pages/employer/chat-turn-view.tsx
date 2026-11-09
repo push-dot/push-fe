@@ -14,7 +14,15 @@ import ChatDraftCard from './chat-draft-card'
 import ChatPlanCard from './chat-plan-card'
 import ChatQueueCard from './chat-queue-card'
 import ChatToolRow from './chat-tool-row'
-import { COPY, INTERVIEW_ASK, INTERVIEW_MAKE, OPEN_APPLICANT, SAVE_PDF, WRITING } from './chat-copy'
+import {
+  COPY,
+  INTERVIEW_ASK,
+  INTERVIEW_MAKE,
+  OPEN_APPLICANT,
+  SAVE_PDF,
+  TURN_ENDED,
+  WRITING,
+} from './chat-copy'
 
 type TurnItem = Extract<ThreadItem, { kind: 'turn' }>
 
@@ -60,7 +68,7 @@ const Block = ({ block, previous, next, live }: BlockProps) => {
 
 const ChatTurnView = ({ item, applicationId }: { item: TurnItem; applicationId?: string }) => {
   const actions = useChatActions()
-  const { blocks, queued } = item.turn
+  const { blocks, queued, ended } = item.turn
   const running = item.live && actions.busy
   const last = blocks.at(-1)
   const questions = blocks
@@ -90,6 +98,10 @@ const ChatTurnView = ({ item, applicationId }: { item: TurnItem; applicationId?:
         />
       ))}
       {queued !== null && running ? <ChatQueueCard ahead={queued} /> : null}
+      {/* A stopped tool row already says so; otherwise a cut-off answer must not read as finished. */}
+      {ended && !blocks.some((block) => block.kind === 'tool' && block.state === 'stop') ? (
+        <p className="c1 t3 chat-note">{TURN_ENDED[ended]}</p>
+      ) : null}
       {running && last?.kind === 'text' ? (
         <span className="c1 t3 chat-writing">
           <span className="chat-spin sm" aria-hidden="true" />

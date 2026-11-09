@@ -1,7 +1,9 @@
 import { parsePostingDraft, type PostingDraft } from '../../shared/model/employer-chat'
 
-/** `note` holds the lines under the numbered line that are neither a 확인할 점 nor another number. */
-export type Question = { n: string; text: string; note?: string; check?: string }
+/** A run of lines under the numbered line: 확인할 점 lines (`check`) or any other lines, in the order written. */
+export type QuestionLine = { check: boolean; text: string }
+
+export type Question = { n: string; text: string; lines: QuestionLine[] }
 
 export type AnswerPart =
   | { kind: 'para'; text: string }
@@ -16,16 +18,18 @@ const CHECK = /^확인할 점\s*·\s*/
 const question = (lines: string[]): Question => {
   const [first = '', ...rest] = lines
   const match = first.match(NUMBERED)
-  const checks = rest.filter((line) => CHECK.test(line)).map((line) => line.replace(CHECK, '').trim())
-  const note = rest
-    .filter((line) => !CHECK.test(line))
-    .join('\n')
-    .trim()
   return {
     n: match?.[1] ?? '',
     text: (match?.[2] ?? first).trim(),
-    ...(note ? { note } : {}),
-    ...(checks.length ? { check: checks.join('\n') } : {}),
+    lines: rest.reduce<QuestionLine[]>((runs, line) => {
+      const check = CHECK.test(line)
+      const text = check ? line.replace(CHECK, '').trim() : line
+      if (!text.trim()) return runs
+      const last = runs.at(-1)
+      return last?.check === check
+        ? [...runs.slice(0, -1), { check, text: `${last.text}\n${text}` }]
+        : [...runs, { check, text }]
+    }, []),
   }
 }
 
@@ -62,7 +66,7 @@ const textParts = (text: string): AnswerPart[] => {
     }, [])
   // A numbered list with no 확인할 점 is an ordinary list (a choice the agent wrote out), not a question card.
   return parts.map((part) =>
-    part.kind === 'questions' && !part.items.some((item) => item.check)
+    part.kind === 'questions' && !part.items.some((item) => item.lines.some((line) => line.check))
       ? { kind: 'para', text: part.raw.join('\n\n') }
       : part,
   )
@@ -71,7 +75,8 @@ const textParts = (text: string): AnswerPart[] => {
 export const answerParts = (text: string): AnswerPart[] => {
   const fence = text.match(FENCE)
   const draft = fence ? parsePostingDraft(fence[0]) : null
-  if (!fence || !draft) return textParts(text.replace(FENCE, ''))
+  // A fence that does not parse stays as written: the member still reads what the agent wrote.
+  if (!fence || !draft) return textParts(text)
   const at = fence.index ?? 0
   return [
     ...textParts(text.slice(0, at)),
@@ -83,8 +88,11 @@ export const answerParts = (text: string): AnswerPart[] => {
 export const questionsText = (items: Question[]) =>
   items
     .map((item) =>
-      [`${item.n}. ${item.text}`, item.note ?? '', item.check ? `확인할 점 · ${item.check}` : '']
-        .filter(Boolean)
-        .join('\n'),
+      [
+        `${item.n}. ${item.text}`,
+        ...item.lines.flatMap((line) =>
+          line.check ? line.text.split('\n').map((check) => `확인할 점 · ${check}`) : [line.text],
+        ),
+      ].join('\n'),
     )
     .join('\n\n')

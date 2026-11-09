@@ -35,7 +35,8 @@ export type TurnTool = {
   kind: 'tool'
   key: string
   name: string
-  state: ToolRunState
+  /** `stop`: the job was cancelled or failed while this tool still ran. */
+  state: ToolRunState | 'stop'
   summary: string
   target?: string
   resultLine?: string
@@ -76,9 +77,14 @@ export type ChatTurn = {
   blocks: TurnBlock[]
   awaiting: 'approval' | 'choice' | null
   queued: number | null
+  /** How a job that did not finish ended: stopped by a member, or failed on the server. */
+  ended: 'stopped' | 'failed' | null
 }
 
-export const EMPTY_TURN: ChatTurn = { blocks: [], awaiting: null, queued: null }
+export const EMPTY_TURN: ChatTurn = { blocks: [], awaiting: null, queued: null, ended: null }
+
+const pending = (block: TurnBlock) =>
+  block.kind === 'tool' && (PENDING_TOOL_STATES as readonly string[]).includes(block.state)
 
 const recordOf = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
@@ -139,12 +145,7 @@ const toolBlock = (event: Extract<StreamEvent, { type: 'tool' }>, key: string): 
 
 const upsertTool = (blocks: TurnBlock[], event: Extract<StreamEvent, { type: 'tool' }>) => {
   const index = blocks
-    .map(
-      (block) =>
-        block.kind === 'tool' &&
-        block.name === event.name &&
-        PENDING_TOOL_STATES.includes(block.state),
-    )
+    .map((block) => block.kind === 'tool' && block.name === event.name && pending(block))
     .lastIndexOf(true)
   if (index < 0) return [...blocks, toolBlock(event, `${event.name}-${blocks.length}`)]
   return blocks.map((block, i) =>
@@ -166,6 +167,17 @@ const queuedAhead = (event: Extract<StreamEvent, { type: 'status' }>, current: n
   const ahead = recordOf(event).ahead
   return typeof ahead === 'number' ? ahead : (current ?? 0)
 }
+
+// A job that ends without done leaves no tool running: the rows still waiting on a result end as stopped.
+const end = (turn: ChatTurn, ended: 'stopped' | 'failed'): ChatTurn => ({
+  ...turn,
+  queued: null,
+  awaiting: null,
+  ended: turn.ended ?? ended,
+  blocks: turn.blocks.map((block) =>
+    block.kind === 'tool' && pending(block) ? { ...block, state: 'stop' } : block,
+  ),
+})
 
 export const applyTurnEvent = (turn: ChatTurn, event: StreamEvent): ChatTurn => {
   switch (event.type) {
@@ -210,6 +222,9 @@ export const applyTurnEvent = (turn: ChatTurn, event: StreamEvent): ChatTurn => 
       return { ...turn, blocks: [...turn.blocks, { kind: 'plan', id: event.id, rows: event.rows }] }
     case 'done':
       return { ...turn, queued: null, awaiting: event.awaiting ?? null }
+    case 'cancelled':
+    case 'error':
+      return end(turn, event.type === 'cancelled' ? 'stopped' : 'failed')
     default:
       return turn
   }
@@ -225,14 +240,30 @@ const storedAnswers = (turn: ConversationTurn): Record<string, string> => {
   return picked
 }
 
-/** A job from GET .../turns replayed into the same blocks a live stream builds, with the cards it already answered. */
-export const storedTurn = (turn: ConversationTurn) => ({
-  turn: turn.events.reduce<ChatTurn>(
+const STATUS_END: Partial<Record<ConversationTurn['status'], 'stopped' | 'failed'>> = {
+  CANCELLED: 'stopped',
+  FAILED: 'failed',
+}
+
+/**
+ * A job from GET .../turns replayed into the same blocks a live stream builds, with the cards it already answered.
+ * The job status also ends it: a job can close without a cancelled or error row (cancelled while still queued).
+ */
+export const storedTurn = (turn: ConversationTurn) => {
+  const replayed = turn.events.reduce<ChatTurn>(
     (current, event) => applyTurnEvent(current, event),
     EMPTY_TURN,
-  ),
-  picked: storedAnswers(turn),
-})
+  )
+  const ended = STATUS_END[turn.status]
+  return { turn: ended ? end(replayed, ended) : replayed, picked: storedAnswers(turn) }
+}
+
+export const turnRunning = (turn: ConversationTurn) =>
+  turn.status === 'PENDING' || turn.status === 'RUNNING'
+
+/** The seq of the last stored frame, where following a running job picks up. */
+export const lastSeq = (turn: ConversationTurn) =>
+  turn.events.reduce<number | undefined>((seq, event) => event.seq ?? seq, undefined)
 
 export const turnText = (turn: ChatTurn) =>
   turn.blocks.flatMap((block) => (block.kind === 'text' ? [block.text] : [])).join('')
@@ -282,6 +313,15 @@ export const runTurn = async (
   signal?: AbortSignal,
 ) => finish(deps, id, await consume(deps.stream(id, body, signal), onEvent), onEvent, signal)
 
+/** Follows a job that is already running, from the last frame stored for it. */
+export const followTurn = (
+  deps: TurnDeps,
+  id: string,
+  after: number | undefined,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
+) => finish(deps, id, { ended: false, seq: after }, onEvent, signal)
+
 export const answerApproval = async (
   deps: TurnDeps,
   id: string,
@@ -292,6 +332,25 @@ export const answerApproval = async (
 ) => {
   const { jobId } = await deps.resolve(id, approvalId, optionId)
   if (jobId) await finish(deps, id, { ended: false }, onEvent, signal)
+}
+
+/** One run on screen: `started` once the job exists (its first frame), `stopped` once the member asked to stop it. */
+export type RunState = { started: boolean; stopped: boolean }
+
+/**
+ * Both return whether the cancel goes out now. A cancel sent before the job's first frame can reach push-be ahead
+ * of the POST that queues the job and come back 409, so a stop before the start waits for the start.
+ */
+export const markStarted = (run: RunState) => {
+  if (run.started) return false
+  run.started = true
+  return run.stopped
+}
+
+export const markStopped = (run: RunState) => {
+  if (run.stopped) return false
+  run.stopped = true
+  return run.started
 }
 
 /** Stops the job on the server. 409 means it already ended, which is what the stop was after. */

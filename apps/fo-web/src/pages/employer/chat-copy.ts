@@ -1,4 +1,6 @@
-import type { ChatIntent } from '../../shared/model/employer-chat'
+import { EMPLOYMENT_TYPES } from '@push/api-client'
+import { careerLabel } from '@push/shared'
+import type { ChatIntent, PostingDraft } from '../../shared/model/employer-chat'
 
 export const CHAT_LIST_LABEL = '대화 목록'
 export const CHAT_BUY = '크레딧 구매'
@@ -19,6 +21,8 @@ export const APPROVAL_WAITING = '기다리는 중'
 export const CHOICE_FOOT = '번호를 누르거나 바로 말해도 돼요 · ↑↓ Enter'
 export const CHECK_POINT = '확인할 점'
 export const WRITING = '답변 쓰는 중'
+export const TOOL_STOPPED = '멈췄어요'
+export const TURN_ENDED = { stopped: '여기서 멈췄어요', failed: '답변을 끝까지 쓰지 못했어요' } as const
 export const COPY = '복사'
 export const COPIED = '복사했어요'
 export const SAVE_PDF = 'PDF로 저장'
@@ -30,6 +34,23 @@ export const DRAFT_HEAD = '공고 초안 v1'
 export const DRAFT_EDIT = '직접 고치기'
 export const DRAFT_REDO = '다시 쓰기'
 export const DRAFT_REDO_ASK = '초안을 다시 써 줘'
+/** WebBizAiDraft's line under the title: 회사 · 지역 · 경력 · 고용형태, each part only when it is known. */
+export const draftMeta = (draft: PostingDraft, company: string | undefined) => {
+  const career =
+    draft.careerMin === undefined
+      ? null
+      : careerLabel({ careerMin: draft.careerMin, careerMax: draft.careerMax ?? null })
+  // The fence writes FULL_TIME, the posting full_time.
+  const kind = draft.employmentType?.toLowerCase()
+  return [
+    company,
+    draft.location,
+    career && career !== '신입' ? `경력 ${career}` : career,
+    EMPLOYMENT_TYPES.find((item) => item.key === kind)?.label,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
 
 export const QUEUE_TITLE = '지금 요청이 많아 순서를 기다리고 있어요'
 export const QUEUE_BODY = '차례가 되면 바로 시작해요. 이 화면을 나가도 이어서 진행돼요.'
@@ -71,9 +92,6 @@ export const applicantKicker = (posting: string) => {
   const name = posting.replace(/\s*\([^)]*\)\s*$/, '')
   return name ? `지원자 · ${name}` : '지원자'
 }
-/** The chip names the person and what was attached; a stored title that already says so is kept. */
-export const applicantChipTitle = (name: string, title?: string) =>
-  title?.includes(' · ') ? title : `${name} · 이력서 · 포트폴리오`
 /** Only a member who cannot pay is told who can, and only while payments are open. */
 export const lockAdminNote = (admin: boolean, payable: boolean) =>
   payable && !admin ? LOCK_ADMIN_ONLY : null

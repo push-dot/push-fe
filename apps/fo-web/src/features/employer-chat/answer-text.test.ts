@@ -10,8 +10,12 @@ describe('answerParts', () => {
       {
         kind: 'questions',
         items: [
-          { n: '1', text: '직접 바꾼 코드를 설명해 주세요.', check: '본인 기여를 구분하는지' },
-          { n: '2', text: '중복 메시지를 어떻게 막았나요?' },
+          {
+            n: '1',
+            text: '직접 바꾼 코드를 설명해 주세요.',
+            lines: [{ check: true, text: '본인 기여를 구분하는지' }],
+          },
+          { n: '2', text: '중복 메시지를 어떻게 막았나요?', lines: [] },
         ],
         raw: [
           '1. 직접 바꾼 코드를 설명해 주세요.\n확인할 점 · 본인 기여를 구분하는지',
@@ -29,7 +33,7 @@ describe('answerParts', () => {
     expect(answerParts('1. 첫 질문\n확인할 점 · 하나\n2. 둘째 질문').at(0)).toMatchObject({
       kind: 'questions',
       items: [
-        { n: '1', text: '첫 질문', check: '하나' },
+        { n: '1', text: '첫 질문', lines: [{ check: true, text: '하나' }] },
         { n: '2', text: '둘째 질문' },
       ],
     })
@@ -40,7 +44,17 @@ describe('answerParts', () => {
     const [part] = answerParts(text)
     expect(part).toMatchObject({
       kind: 'questions',
-      items: [{ n: '1', text: '첫 질문', note: '이어서 설명해요\n- 하위 항목', check: '하나' }, { n: '2', text: '둘째 질문' }],
+      items: [
+        {
+          n: '1',
+          text: '첫 질문',
+          lines: [
+            { check: false, text: '이어서 설명해요\n- 하위 항목' },
+            { check: true, text: '하나' },
+          ],
+        },
+        { n: '2', text: '둘째 질문' },
+      ],
     })
     expect(questionsText((part as Extract<typeof part, { kind: 'questions' }>).items)).toContain('- 하위 항목')
   })
@@ -79,7 +93,7 @@ describe('answerParts', () => {
       answerParts(text)
         .flatMap((part) =>
           part.kind === 'questions'
-            ? part.items.flatMap((item) => [item.text, item.note ?? '', item.check ?? ''])
+            ? part.items.flatMap((item) => [item.text, ...item.lines.map((line) => line.text)])
             : part.kind === 'para'
               ? [part.text]
               : [],
@@ -113,9 +127,28 @@ describe('answerParts', () => {
   it('copies questions back as plain text', () => {
     expect(
       questionsText([
-        { n: '1', text: '질문', check: '점' },
-        { n: '2', text: '다음' },
+        { n: '1', text: '질문', lines: [{ check: true, text: '점' }] },
+        { n: '2', text: '다음', lines: [] },
       ]),
     ).toBe('1. 질문\n확인할 점 · 점\n\n2. 다음')
+  })
+
+  it('keeps a memo written after 확인할 점 after it, and several check lines as separate lines', () => {
+    const text = '1. 첫 질문\n확인할 점 · 하나\n확인할 점 · 둘\n면접관 메모예요'
+    const [part] = answerParts(text)
+    const items = (part as Extract<typeof part, { kind: 'questions' }>).items
+    expect(items[0]?.lines).toEqual([
+      { check: true, text: '하나\n둘' },
+      { check: false, text: '면접관 메모예요' },
+    ])
+    expect(questionsText(items)).toBe(text)
+  })
+
+  it('shows a posting-draft fence that does not parse as written', () => {
+    const text = '썼어요.\n\n```posting-draft\n{"title": 1}\n```'
+    expect(answerParts(text)).toEqual([
+      { kind: 'para', text: '썼어요.' },
+      { kind: 'para', text: '```posting-draft\n{"title": 1}\n```' },
+    ])
   })
 })
