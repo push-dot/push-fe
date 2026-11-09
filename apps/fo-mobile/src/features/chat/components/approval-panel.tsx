@@ -149,7 +149,7 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
                   <Text v="b2" weight="700" numberOfLines={1}>
                     {r.title}
                   </Text>
-                  <Text v="c2" weight="700" color={r.ac ? 'acText' : 't3'}>
+                  <Text v="c2" weight={r.ac ? '700' : '400'} color={r.ac ? 'acText' : 't3'}>
                     {r.sub}
                   </Text>
                 </View>
@@ -189,7 +189,7 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
               {approval.foot}
             </Text>
           ) : null}
-          <View style={{ flexDirection: 'row', gap: spacing[2], marginTop: multi.at >= 0 ? spacing[1] : 2 }}>
+          <View style={{ flexDirection: 'row', gap: spacing[2], marginTop: multi.at >= 0 ? spacing[1] : 2, paddingHorizontal: multi.at >= 0 ? 0 : spacing[1] }}>
             {multi.stopLabel ? (
               <View style={multi.at >= 0 ? STOP_PAD : { flex: 1 }}>
                 <Button
@@ -239,7 +239,7 @@ export const ApprovalPanel = ({ approval, onAnswer, onSay, onMaterials }: Props)
       accessibilityLabel="확인 요청"
       style={[
         ios
-          ? { marginHorizontal: spacing[2], marginBottom: Math.max(insets.bottom - 18, spacing[2]), backgroundColor: c.bg, borderRadius: 40, borderWidth: 1, borderColor: c.line, ...shadow.pop, shadowOffset: { width: 0, height: -4 } }
+          ? { marginHorizontal: spacing[2], marginBottom: spacing[2], backgroundColor: c.bg, borderRadius: 40, borderWidth: 1, borderColor: c.line, ...shadow.pop, shadowOffset: { width: 0, height: -4 } }
           : { backgroundColor: c.bg, borderTopLeftRadius: radius.confirmPanelTop, borderTopRightRadius: radius.confirmPanelTop, ...shadow.pop, shadowOffset: { width: 0, height: -10 }, elevation: 12 },
         motion,
       ]}

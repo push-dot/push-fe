@@ -1,6 +1,7 @@
-import { mockSession, setMockPersona, type MockPersona } from '../shared/api/mock'
+import type { MockPersona } from '../shared/api/mock'
+import { loadMock } from '../shared/api/mock-loader'
+import { mockBuild } from '../shared/lib/bridge'
 import type { createSessionStore } from '../shared/auth/session'
-import { registerMockBrandColors } from '../shared/api/mock-brand'
 
 type SessionStore = ReturnType<typeof createSessionStore>
 
@@ -8,9 +9,10 @@ const PERSONAS: readonly MockPersona[] = ['personal', 'employer', 'employer-pro'
 
 const personaFrom = (value: string | null): MockPersona | null => PERSONAS.find((item) => item === value) ?? null
 
-export const applyMockSearch = (search: string, store: SessionStore) => {
+export const applyMockSearch = async (search: string, store: SessionStore) => {
   const params = new URLSearchParams(search)
-  if (!params.has('mock')) return
+  if (!mockBuild || !params.has('mock')) return
+  const [{ mockSession, setMockPersona }, { registerMockBrandColors }] = await Promise.all([loadMock(), import('../shared/api/mock-brand')])
   registerMockBrandColors()
   const persona = personaFrom(params.get('as'))
   setMockPersona(persona)

@@ -2,11 +2,13 @@ import { absoluteUrl, createApi, createClient, type Session } from '@push/api-cl
 import { readAccessToken, sessionStore } from '../auth/session'
 import { accessToken } from '../auth/token-source'
 import { isMock, isWebView, pushEnv } from '../lib/bridge'
-import { mockFetch } from './mock'
+import { loadMock } from './mock-loader'
 
 export const apiBaseUrl =
   pushEnv().apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL ?? 'https://push-be.youngjoon568.workers.dev/api/v1'
 const mockTransport = isMock()
+
+const mockFetch: typeof fetch = (input, init) => loadMock().then((mock) => mock.mockFetch(input, init))
 
 export const assetUrl = (url: string | null | undefined) => absoluteUrl(url, apiBaseUrl) ?? undefined
 
