@@ -12,6 +12,8 @@ export type Tenure = '0-2' | '3-5' | '6-9' | '10+'
 export type PostCategory = 'work' | 'dev' | 'daily' | 'career' | 'talk' | 'coffeechat' | 'marketing'
 export type Tone = 'as_is' | 'professional' | 'confident' | 'concise' | 'technical' | 'friendly'
 
+export type PostingStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
+
 export type Posting = {
   id: string
   company: string
@@ -30,9 +32,22 @@ export type Posting = {
   createdAt: string
   revision?: number
   closedAt?: string | null
+  /** Present for company members; older servers omit it. */
+  status?: PostingStatus
 }
 
-export type PostingDetail = Posting & {
+/** Member-only fields push-be adds to the company list and to create; get, update and close answer newApplicantCount 0 and createdBy null. */
+export type CompanyPostingFields = {
+  applicantCount?: number
+  /** Applicants the company has not opened yet. */
+  newApplicantCount?: number
+  createdBy?: { displayName: string } | null
+  draftSource?: 'AGENT' | 'MANUAL' | null
+}
+
+export type CompanyPosting = Posting & CompanyPostingFields
+
+export type PostingDetail = Posting & CompanyPostingFields & {
   description: string
   requirements: string[]
   workConditions: Record<string, unknown>
@@ -504,17 +519,36 @@ export type CompanyInvite = { id: string; email: string; expiresAt: string; invi
 
 export type EmployerStage = 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
 
+export type ApplicantDocumentKind = 'PROFILE' | 'PDF' | 'FILE'
+
 export type ApplicantSummary = {
   applicationId: string
-  applicant: { displayName: string; headline: string | null }
+  applicant: { displayName: string; headline: string | null; jobCategory?: string | null; tenureYears?: number | null; avatarUrl?: string | null }
   stage: ApplicationStage
   appliedAt: string
+  /** Distinct kinds in fixed order PROFILE, PDF, FILE. */
+  documentKinds?: ApplicantDocumentKind[]
+  documents?: { title: string; pages: number | null }[]
 }
+
+export type ApplicantFile = { id: string; fileName: string; mimeType: string; size: number; pageCount: number | null }
 
 export type ApplicantDetail = {
   application: Application
   documents: { id: string; title: string; content: string }[]
+  files?: ApplicantFile[]
+  applicant?: {
+    displayName: string
+    email: string
+    headline: string
+    careers: Partial<Career>[]
+    skills: string[]
+    /** The applicant's user id when the hub profile is public, else null. */
+    hubProfileId: string | null
+  }
 }
+
+export type ApplicantCounts = { total: number; applied: number; screening: number; interview: number; offer: number; rejected: number }
 
 export type ConsentTerms = {
   version: string | null
@@ -534,6 +568,8 @@ export type SignupTermsInput = {
 }
 
 export type CreatePostingInput = {
+  /** DRAFT keeps the posting off the public list; omitted means OPEN. */
+  status?: 'DRAFT' | 'OPEN'
   title: string
   jobCategory: JobCategory
   careerMin: number

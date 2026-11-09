@@ -3,8 +3,8 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
@@ -45,7 +45,7 @@ export const createApi = (c: Client) => ({
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
-    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
+    mine: (p: PageParams = {}) => c.get<ListEnvelope<CompanyPosting>>('companies/me/postings', { query: p }),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
@@ -61,6 +61,7 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
     applicant: (postingId: string, applicationId: string) =>
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    applicantCounts: (id: string) => unwrap(c.get<DataEnvelope<ApplicantCounts>>(`postings/${id}/applicant-counts`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
     fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),

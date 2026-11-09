@@ -4,12 +4,14 @@ import {
   applicationsList as fetchApplications,
   calendarEvents as fetchCalendar,
   postingsApplicant as fetchApplicant,
+  postingsApplicantCounts as fetchApplicantCounts,
   postingsApplicants as fetchApplicants,
 } from '../../shared/api/operations'
 
 export const applicationsList = (...args: Parameters<typeof fetchApplications>) => fetchApplications(...args)
 export const calendarEvents = (...args: Parameters<typeof fetchCalendar>) => fetchCalendar(...args)
 export const postingsApplicant = (...args: Parameters<typeof fetchApplicant>) => fetchApplicant(...args)
+export const postingsApplicantCounts = (...args: Parameters<typeof fetchApplicantCounts>) => fetchApplicantCounts(...args)
 export const postingsApplicants = (...args: Parameters<typeof fetchApplicants>) => fetchApplicants(...args)
 
 export const useApplications = (enabled = true) =>
@@ -38,4 +40,11 @@ export const useEmployerApplicants = (
     queryKey: options?.queryKey ?? ['employer-applicants', postingId, stage],
     queryFn: () => (stage ? postingsApplicants(postingId ?? '', { stage }) : postingsApplicants(postingId ?? '', {})),
     enabled: options?.enabled ?? Boolean(postingId),
+  })
+
+export const useApplicantCounts = (postingId: string | undefined) =>
+  useQuery({
+    queryKey: ['employer-applicant-counts', postingId],
+    queryFn: () => postingsApplicantCounts(postingId ?? ''),
+    enabled: Boolean(postingId),
   })
