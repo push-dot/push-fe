@@ -52,11 +52,11 @@ const refreshSession = () => {
   return refreshInFlight
 }
 
-export const api = createApi(
-  createClient({
-    baseUrl: apiBaseUrl,
-    getToken: () => accessToken({ webView: isWebView(), injected: pushEnv().token, session: readAccessToken() }),
-    refresh: refreshSession,
-    fetch: mockTransport ? mockFetch : undefined,
-  }),
-)
+export const http = createClient({
+  baseUrl: apiBaseUrl,
+  getToken: () => accessToken({ webView: isWebView(), injected: pushEnv().token, session: readAccessToken() }),
+  refresh: refreshSession,
+  fetch: mockTransport ? mockFetch : undefined,
+})
+
+export const api = createApi(http)
