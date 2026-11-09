@@ -49,19 +49,17 @@ const BrowserProfile = ({ profile }: { profile: Profile }) => {
             </section>
           ) : null}
           {profile.careers.length ? (
-            <section className="pf-block">
+            <section className="pf-block career">
               <h2 className="h2">경력</h2>
               <div>
-                {profile.careers.map((career, index) => (
+                {profile.careers.map((career) => (
                   <div className="tl-row" key={`${career.company}-${career.startedOn}`}>
                     <span className="tl-rail">
                       <span className="tl-dot now" />
-                      {index < profile.careers.length - 1 ? <span className="tl-line" /> : null}
+                      <span className="tl-line" />
                     </span>
                     <span className="tl-body">
-                      <span className="b1 w7">
-                        {career.company} · {career.role}
-                      </span>
+                      <span className="b1 w7">{`${career.company} · ${career.role}`}</span>
                       <span className="c1 t3">{careerPeriod(career)}</span>
                       {career.description ? <span className="b2 t2 tl-desc">{career.description}</span> : null}
                     </span>

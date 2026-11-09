@@ -1,4 +1,4 @@
-import { ApiError, CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
+import { CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
 import { brandColor } from '@push/shared'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -8,6 +8,7 @@ import { initials } from '../../shared/lib/format'
 import { Dialog } from '../../shared/ui/dialog'
 import { Icon } from '../../shared/ui/icon'
 import { OFFER_BLOCKED, OFFER_MAX, OFFER_SENT } from './constants'
+import { offerFailure } from './offer-error'
 import { profilesOffer } from '../../features/send-offer'
 
 type OfferTarget = Profile & { blockedMe?: boolean }
@@ -24,8 +25,9 @@ const OfferSheet = ({ profile, onClose, onSent }: { profile: OfferTarget; onClos
     mutationFn: () => profilesOffer(profile.userId, { message: message.trim() }),
     onSuccess: () => onSent(OFFER_SENT),
     onError: (reason) => {
-      if (reason instanceof ApiError && reason.code === 'BLOCKED') setBlocked(true)
-      else setError(reason instanceof ApiError && reason.code === 'CONFLICT' ? '이미 제안을 보냈어요.' : '제안을 보내지 못했어요. 잠시 후 다시 시도해 주세요.')
+      const failure = offerFailure(reason)
+      if (failure.blocked) setBlocked(true)
+      else setError(failure.message)
     },
   })
   return (
@@ -59,7 +61,7 @@ const OfferSheet = ({ profile, onClose, onSent }: { profile: OfferTarget; onClos
         <p className="c1 t3">{`제안은 ${profile.displayName} 님의 알림과 제안함으로 전달돼요.`}</p>
       )}
       {error ? <p className="auth-error">{error}</p> : null}
-      <button type="button" className="btn pri block" disabled={!ready || blocked || send.isPending} onClick={() => send.mutate()}>
+      <button type="button" className="btn pri lg block" disabled={!ready || blocked || send.isPending} onClick={() => send.mutate()}>
         제안 보내기
       </button>
     </Dialog>
