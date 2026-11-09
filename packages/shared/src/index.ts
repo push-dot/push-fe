@@ -1,4 +1,4 @@
-export { brandColor, brandOf, registerBrandColors } from './brand-of'
+export { brandColor, registerBrandColors } from './brand-of'
 export { cardCareerLabel, careerLabel } from './career-label'
 export { fileSize } from './file-size'
 export { matchHangul, searchHangul } from './hangul-search'
