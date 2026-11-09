@@ -1,5 +1,5 @@
 import type { Api } from '@push/api-client'
-import { api } from './client'
+import { api, http } from './client'
 
 export const searchCatalog = (...args: Parameters<Api['search']>) => api.search(...args)
 
@@ -169,5 +169,23 @@ export const sourcesGet = (...args: Parameters<Api['sources']['get']>) => api.so
 export const sourcesList = (...args: Parameters<Api['sources']['list']>) => api.sources.list(...args)
 
 export const sourcesUpload = (...args: Parameters<Api['sources']['upload']>) => api.sources.upload(...args)
+
+export const sourcesRemove = (...args: Parameters<Api['sources']['remove']>) => api.sources.remove(...args)
+
+export const sourcesContent = (...args: Parameters<Api['sources']['content']>) => api.sources.content(...args)
+
+export const documentsGet = (...args: Parameters<Api['documents']['get']>) => api.documents.get(...args)
+
+export const documentsExportFile = (...args: Parameters<Api['documents']['exportFile']>) => api.documents.exportFile(...args)
+
+export const documentsRename = async (id: string, title: string) => {
+  const path = `documents/${encodeURIComponent(id)}`
+  const current = await http.get<{ data: { revision: number } }>(path)
+  return http.patch<void>(path, { body: { expectedRevision: current.data.revision, title } })
+}
+
+export const meDeleteLink = (...args: Parameters<Api['me']['deleteLink']>) => api.me.deleteLink(...args)
+
+export const meRestoreLink = (...args: Parameters<Api['me']['restoreLink']>) => api.me.restoreLink(...args)
 
 export const uploadsImage = (...args: Parameters<Api['uploads']['image']>) => api.uploads.image(...args)
