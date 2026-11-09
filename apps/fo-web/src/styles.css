@@ -235,7 +235,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .auth-logo i{font-style:normal;color:var(--ac)}
 .browser .auth-biz{margin-left:10px;display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:6px;background:var(--t1);color:var(--bg);font-size:12px;font-weight:700}
 .browser .auth-session{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--t3);font-size:15px;line-height:22px}
-.browser .auth-session button{color:var(--t2);font-weight:600}
+.browser .auth-session button{color:var(--t3);font-weight:600}
 .browser .auth-card{width:100%;max-width:460px;margin:48px auto;padding:40px;border-radius:28px;background:var(--bg);box-shadow:0 1px 2px rgba(16,24,40,.04);display:flex;flex-direction:column;gap:20px}
 .browser.auth-shell .auth-card{margin:0 auto}
 .browser .auth-card.wide{max-width:520px}
@@ -355,7 +355,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .hbtn{position:relative;width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;color:var(--t1);text-decoration:none;flex:none}
 .browser .hbtn:hover{background:var(--fill)}
 .browser .hbtn .ic{width:22px;height:22px}
-.browser .nb{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:#C9302C;color:#fff;font-size:10.5px;line-height:17px;font-weight:800;text-align:center}
+.browser .nb{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--redFill);color:#fff;font-size:10.5px;line-height:17px;font-weight:800;text-align:center}
 .browser .me-chip{display:flex;align-items:center;gap:8px;height:44px;padding:0 10px 0 4px;border-radius:22px;text-decoration:none;color:inherit}
 .browser .hd-av{width:36px;height:36px;font-size:12px}
 .browser .me-chip{flex:none}
@@ -366,7 +366,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .btn.pri{background:var(--ac);color:#fff}
 .browser .btn.sec{background:var(--fill);color:var(--t1)}
 .browser .btn.line{background:var(--bg);color:var(--t1);box-shadow:inset 0 0 0 1px var(--fill2)}
-.browser .btn.danger{background:#C9302C;color:#fff}
+.browser .btn.danger{background:var(--redFill);color:#fff}
 .browser .btn.block{width:100%}
 .browser .btn:disabled,.browser .btn.dis{opacity:.45;cursor:default}
 .browser .ft{border-top:1px solid var(--line);margin-top:72px;padding:36px 0 48px;color:var(--t3);font-size:13px}
@@ -433,7 +433,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .side-link{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:12px;font-size:15px;font-weight:600;color:var(--t2);width:100%;text-align:left;text-decoration:none}
 .browser .side-link.on{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
 .browser .side-label{padding:18px 14px 6px;color:var(--t4);font-size:13px;font-weight:700}
-.browser .side-count{margin-left:auto;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:#C9302C;color:#fff;font-size:10.5px;line-height:17px;font-weight:800;text-align:center}
+.browser .side-count{margin-left:auto;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--redFill);color:#fff;font-size:10.5px;line-height:17px;font-weight:800;text-align:center}
 .browser .side-hr{height:1px;background:var(--line);margin:8px 0}
 .browser .who{display:flex;align-items:center;gap:12px;padding:0 8px 18px}
 .browser .who .av{width:48px;height:48px;font-size:14px}
@@ -455,6 +455,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .post-card{border-bottom:0;border-radius:0;box-shadow:none;padding:20px 0}
 .browser .composer{display:flex;align-items:center;gap:12px;padding:16px 18px}
 .browser .composer .av{width:40px;height:40px;font-size:13px}
+.browser .composer .biz-mark{font-size:16px}
 .browser .search-tabs{gap:24px;border-bottom:1px solid var(--line);margin:0}
 .browser .search-tabs .chip,.browser .tabs button,.browser .tabs a{flex:none;height:auto;padding:12px 0;border-radius:0;background:none;color:var(--t3);font-size:16px;line-height:22px;font-weight:600;text-decoration:none;box-shadow:inset 0 -2px 0 transparent}
 .browser .search-tabs .chip[aria-selected="true"],.browser .tabs button[aria-selected="true"],.browser .tabs a.on{background:none;color:var(--acText);box-shadow:inset 0 -2px 0 var(--ac)}
@@ -469,6 +470,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .notice{border-radius:0}
 .browser .settings .box{display:flex;flex-direction:column}
 .browser .settings .switch-row,.browser .settings .settings-row,.browser .settings .field{min-height:64px;padding:14px 18px;box-shadow:inset 0 -1px 0 var(--line)}
+.browser .settings .seg{height:40px}
 .browser .settings .field{align-items:stretch}
 .browser .switch-row input[type="checkbox"]{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--fill2);position:relative;flex:none}
 .browser .switch-row input[type="checkbox"]::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18)}
@@ -477,29 +479,16 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .inbox-list,.browser .inbox-thread{display:flex;flex-direction:column;min-width:0;min-height:640px}
 .browser .inbox-list{border-right:1px solid var(--line)}
 .browser .inbox-thread{padding:24px}
-.browser .seg{display:grid;grid-template-columns:1fr 1fr;height:44px;padding:4px;border-radius:22px;background:var(--fill)}
+.browser .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;height:44px;padding:4px;border-radius:22px;background:var(--fill)}
 .browser .seg button{padding:0 18px;border-radius:18px;font-size:15px;line-height:22px;font-weight:600;color:var(--t3)}
-.browser .seg button[aria-selected="true"]{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .seg button[aria-selected="true"],.browser .seg button[aria-pressed="true"]{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
 .browser .bubble{display:flex;flex-direction:column;gap:4px;max-width:80%}
 .browser .bubble.mine{margin-left:auto;align-items:flex-end}
 .browser .bubble p{margin:0;padding:12px 14px;border-radius:16px;background:var(--fill)}
-.browser .bubble.mine p{background:var(--acSoft)}
+.browser .bubble.mine p{padding:12px 16px;border-radius:20px 20px 6px 20px;background:var(--ac);color:#fff}
 .browser .profile-block{display:flex;flex-direction:column;gap:8px}
 .browser .tl-row{padding:0}
 .browser a:focus-visible,.browser button:focus-visible,.browser .sbox:focus-visible,.browser .wordmark:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-@media (max-width:1024px){
-.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:24px;padding-right:24px}
-.browser .h-scroll{grid-template-columns:repeat(3,minmax(0,1fr))}
-.browser .job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .social-layout,.browser .biz-split{grid-template-columns:minmax(0,1fr);gap:24px}
-.browser .inbox{grid-template-columns:1fr}
-.browser .inbox-list{border-right:0;border-bottom:1px solid var(--line);min-height:0}
-}
-@media (max-width:600px){
-.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:16px;padding-right:16px}
-.browser .h-scroll,.browser .job-grid,.browser .shortcuts,.browser .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.browser .hub-grid{grid-template-columns:minmax(0,1fr)}
-}
 .browser .sbox input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--t1);font:inherit;padding:0}
 .browser .sbox input::placeholder{color:var(--t1)}
 .browser .sbox input:focus-visible{outline:none}
@@ -529,6 +518,8 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .source-list .check>span{min-width:0}
 .browser .source-list .check .b2{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .browser .badge.biz{background:var(--t1);color:var(--bg);gap:3px}
+:root[data-theme=dark] .browser .badge.biz{color:#16191D}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .browser .badge.biz{color:#16191D}}
 .browser .biz-mark{border-radius:12px}
 .browser .agent-card{padding:20px;display:flex;flex-direction:column;gap:10px}
 .browser .agent-card-title{display:flex;align-items:center;gap:6px}
@@ -618,10 +609,19 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .who .biz-mark{border-radius:14px;font-size:19px}
 .browser .who>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
 @media (max-width:1024px){
+.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:24px;padding-right:24px}
+.browser .h-scroll{grid-template-columns:repeat(3,minmax(0,1fr))}
+.browser .job-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .social-layout,.browser .biz-split{grid-template-columns:minmax(0,1fr);gap:24px}
+.browser .inbox{grid-template-columns:1fr}
+.browser .inbox-list{border-right:0;border-bottom:1px solid var(--line);min-height:0}
 .browser .chat-app-main{grid-template-columns:1fr;min-height:0}
 .browser .chat-side{border-right:0;border-bottom:1px solid var(--line)}
 }
 @media (max-width:600px){
+.browser:not(.auth-shell) .shell-main,.browser .hd .wrap,.browser .ft .wrap{padding-left:16px;padding-right:16px}
+.browser .h-scroll,.browser .job-grid,.browser .shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.browser .hub-grid,.browser .plan-grid{grid-template-columns:minmax(0,1fr)}
 .browser .chat-thread{padding:20px 16px}
 .browser .member-row{flex-wrap:wrap}
 }
@@ -645,7 +645,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .me-chip.biz{gap:10px;padding:0 12px 0 4px;box-shadow:inset 0 0 0 1px var(--line)}
 .browser .me-chip.biz .biz-mark{border-radius:11px;font-size:15px}
 .browser .biz-id{line-height:16px;text-align:left}
-.browser .acct-pop{top:calc(100% + 6px);right:0;width:280px}
+.browser .pop.acct-pop{top:calc(100% + 6px);right:0;width:280px}
 .browser .acct-head{display:flex;align-items:center;gap:12px;padding:10px 12px 12px}
 .browser .acct-head .av{width:40px;height:40px;font-size:12px}
 .browser .acct-head .biz-mark{border-radius:12px;font-size:16px}

@@ -57,7 +57,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           </header>
           {duties.length ? (
             <section className="section">
-              <h2 className="h2">하는 일</h2>
+              <h2 className="sect">하는 일</h2>
               <ul className="b1 t2">
                 {duties.map((item) => (
                   <li key={item}>{item}</li>
@@ -67,7 +67,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.requirements.length ? (
             <section className="section">
-              <h2 className="h2">자격 요건</h2>
+              <h2 className="sect">자격 요건</h2>
               <ul className="b1 t2">
                 {posting.requirements.map((item) => (
                   <li key={item}>{item}</li>
@@ -77,7 +77,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.preferred?.length ? (
             <section className="section">
-              <h2 className="h2">우대 사항</h2>
+              <h2 className="sect">우대 사항</h2>
               <ul className="b1 t2">
                 {posting.preferred.map((item) => (
                   <li key={item}>{item}</li>
@@ -87,7 +87,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {conditions.length || deadline ? (
             <section className="section">
-              <h2 className="h2">근무 조건</h2>
+              <h2 className="sect">근무 조건</h2>
               <div className="card cond b1">
                 {conditions.map((line) => {
                   const split = line.indexOf(' · ')

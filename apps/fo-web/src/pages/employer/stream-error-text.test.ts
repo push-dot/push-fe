@@ -1,6 +1,6 @@
 import { ApiError, QueueBusyError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
-import { CHAT_CREDITS, CHAT_FAILED, streamErrorText } from './constants'
+import { CHAT_CREDITS, CHAT_CREDITS_CLOSED, CHAT_FAILED, PLAN_REQUIRED_CLOSED, streamErrorText } from './constants'
 
 describe('streamErrorText', () => {
   it('maps NOT_CONFIGURED', () => {
@@ -23,6 +23,13 @@ describe('streamErrorText', () => {
 
   it('maps INSUFFICIENT_CREDITS to the credit top-up line', () => {
     expect(streamErrorText(new ApiError('empty', 'INSUFFICIENT_CREDITS', 402))).toBe(CHAT_CREDITS)
+  })
+
+  it('states the fact instead of asking for payment while payments are closed', () => {
+    expect(streamErrorText(new ApiError('empty', 'INSUFFICIENT_CREDITS', 402), false)).toBe(CHAT_CREDITS_CLOSED)
+    expect(streamErrorText(new ApiError('off', 'FEATURE_DISABLED', 403), false)).toBe(CHAT_CREDITS_CLOSED)
+    expect(streamErrorText(new ApiError('plan', 'PLAN_REQUIRED', 403), false)).toBe(PLAN_REQUIRED_CLOSED)
+    expect(streamErrorText(new ApiError('nope', 'HTTP_ERROR', 500), false)).toBe('작업을 이어가지 못했어요. 다시 보내 주세요.')
   })
 
   it('uses the resend fallback for an unknown run error', () => {
