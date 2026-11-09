@@ -439,6 +439,8 @@ export const MY_POSTS: Post[] = [
   myPost('post-me-3', 'coffeechat', '판교 점심 커피챗 하실 분', '결제·정산 도메인 이야기 나누실 분 편하게 댓글 주세요.', 5, 90, '2026-10-07T00:00:00.000Z'),
 ]
 
+export const MY_FOLLOWS = ['u-taeyoon', 'u-haeun', 'u-jiwoo', 'u-minjae', 'u-junho']
+
 export const COMMENT_THREADS: [string, Comment[]][] = [
   [
     'post-1',
@@ -498,8 +500,8 @@ export const RECEIVED_OFFERS: Offer[] = [
     message: '안녕하세요, 서준 님! 결제 승인 API 개선 경험을 인상 깊게 봤어요. 결제 플랫폼팀 시니어 포지션으로 30분 커피챗 어떠세요?',
     posting: { id: 'p16', company: '모아페이', title: '결제 플랫폼 시니어 엔지니어', imageUrl: null },
     status: 'ACCEPTED',
-    readAt: '2026-10-20T23:10:00.000Z',
-    createdAt: '2026-10-20T23:00:00.000Z',
+    readAt: '2026-10-21T04:20:00.000Z',
+    createdAt: '2026-10-21T04:12:00.000Z',
   },
   {
     id: 'offer-3',
@@ -510,7 +512,7 @@ export const RECEIVED_OFFERS: Offer[] = [
     posting: null,
     status: 'SENT',
     readAt: null,
-    createdAt: '2026-10-20T00:00:00.000Z',
+    createdAt: '2026-10-20T11:14:00.000Z',
   },
   {
     id: 'offer-4',
@@ -523,16 +525,24 @@ export const RECEIVED_OFFERS: Offer[] = [
     createdAt: '2026-10-14T02:03:00.000Z',
   },
   {
-    id: 'offer-5',
-    sender: party('u-junho', '서준호', '바름로지스', 'PM'),
+    id: 'offer-8',
+    sender: party('u-harin', '정하린', '누리클라우드', '플랫폼팀 리드'),
     recipient: ME_PARTY,
-    message: '물류 정산 서비스를 함께 기획할 분을 찾고 있어요.',
+    message: '안녕하세요, 서준 님! 멀티 테넌트 과금 시스템을 새로 만들고 있어요. 결제 쪽 경험을 살려 같이 만들어 보실래요?',
     posting: null,
     status: 'SENT',
-    readAt: null,
-    createdAt: '2026-10-19T01:00:00.000Z',
+    readAt: '2026-10-09T02:00:00.000Z',
+    archivedAt: '2026-10-10T00:00:00.000Z',
+    createdAt: '2026-10-09T01:20:00.000Z',
   },
 ]
+
+export const BLOCK_SEEDS = [
+  { user: party('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'), blockedAt: '2026-11-07T01:00:00.000Z' },
+  { user: party('u-minjae-h', '한민재', null, ''), blockedAt: '2026-10-03T01:00:00.000Z' },
+]
+
+export const CANT_SEND_REPLY = { id: 'om-3', body: '좋아요, 수요일 4시에 뵐게요', createdAt: '2026-10-21T05:53:00.000Z' }
 
 const sentOffer = (id: string, recipient: Offer['recipient'], message: string, status: Offer['status'], createdAt: string): Offer => ({
   id,
@@ -701,10 +711,18 @@ const file = (id: string, fileName: string, mimeType: string, size: number, crea
 
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
-export const SEED_SOURCES: Source[] = [
-  file('src-ai', '모아페이_맞춤_이력서_v2', 'application/pdf', 1_900_000, '2026-10-20T01:00:00.000Z', { kind: 'AI_MADE' }),
-  file('src-ai-toss', '서버 개발자 이력서', 'application/pdf', 1_600_000, '2026-10-14T01:00:00.000Z', { kind: 'AI_MADE' }),
-  file('src-ai-kakao', '결제 플랫폼 경력기술서', 'application/pdf', 1_200_000, '2026-09-30T01:00:00.000Z', { kind: 'AI_MADE' }),
+export type SeedSource = Source & { company?: string; postingTitle?: string }
+
+const pushDoc = (id: string, title: string, size: number, company: string, postingTitle: string, createdAt: string): SeedSource => ({
+  ...file(id, title, 'application/pdf', size, createdAt, { kind: 'AI_MADE' }),
+  company,
+  postingTitle,
+})
+
+export const SEED_SOURCES: SeedSource[] = [
+  pushDoc('src-ai', '모아페이_맞춤_이력서_v2', 1_900_000, '모아페이', '백엔드 엔지니어 (Kotlin·Spring)', '2026-10-20T01:00:00.000Z'),
+  pushDoc('src-ai-toss', '서버 개발자 이력서', 1_600_000, '토스페이먼츠', 'Server Developer', '2026-10-14T01:00:00.000Z'),
+  pushDoc('src-ai-kakao', '결제 플랫폼 경력기술서', 1_200_000, '카카오페이', '결제 서버 개발자', '2026-09-30T01:00:00.000Z'),
   file('src-resume', '김서준_백엔드_이력서_2026.pdf', 'application/pdf', 2_400_000, '2026-10-12T01:00:00.000Z'),
   file('src-career', '경력기술서_모아페이.docx', DOCX, 640_000, '2026-09-28T01:00:00.000Z'),
   file('src-extra', '포트폴리오_결제시스템.pdf', 'application/pdf', 8_100_000, '2026-08-03T01:00:00.000Z'),
