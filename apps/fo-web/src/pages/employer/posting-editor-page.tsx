@@ -299,7 +299,7 @@ const PostingEditorPage = () => {
               {form.imageUrl ? <img src={form.imageUrl} alt="" /> : <b>{[...companyName][0] ?? ''}</b>}
             </div>
             <label className="btn sec sm editor-image">
-              <Icon name="upload" size={16} width={2.2} />
+              <Icon name="image" size={16} />
               {IMAGE_CHANGE}
               <input
                 type="file"
@@ -330,7 +330,7 @@ const PostingEditorPage = () => {
       </div>
       <div className="bottom-bar biz-sticky editor-bar">
         <label className="btn sec lg msq editor-image" aria-label={IMAGE_CHANGE}>
-          <Icon name="upload" size={20} width={2.2} />
+          <Icon name="image" size={20} />
           <span className="msq-text">{IMAGE_CHANGE}</span>
           <input type="file" accept="image/*" className="sr-only" disabled={upload.isPending} onChange={(event) => event.target.files?.[0] && upload.mutate(event.target.files[0])} />
         </label>
