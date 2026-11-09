@@ -29,7 +29,7 @@ const MyPage = () => {
   const editing = tab === '프로필' && params.get(EDIT_PARAM) === '1'
   const title = links ? '내 링크' : tab === '내 활동' ? chip : editing ? PROFILE_EDIT_TITLE : tab
   return (
-    <main className="page my-layout">
+    <main className="page my-layout me-page">
       <MySide />
       <div className="my-main">
         <h1 className="h1">{title}</h1>

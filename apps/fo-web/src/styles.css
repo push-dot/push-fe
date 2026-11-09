@@ -529,20 +529,20 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .doc-line.push>.row-more{position:absolute;top:10px;right:8px}
 .browser .mp-grid{grid-template-columns:minmax(0,1fr)}
 }
-.browser .my-layout>.my-main{gap:24px}
+.browser :is(.me-page,.settings)>.my-main{gap:24px}
 .browser .my-count{margin-top:-16px}
-.browser .apply-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:-8px}
-.browser .apply-table{overflow:hidden}
-.browser .apply-head,.browser .apply-row{display:flex;align-items:center;gap:16px;padding:16px 20px}
-.browser .apply-head{padding:12px 20px;background:var(--bg2)}
-.browser .apply-row{border-bottom:1px solid var(--line)}
-.browser .apply-tile{width:48px;flex:none}
-.browser .apply-row .apply-tile{height:48px;border-radius:14px;font-size:18px}
-.browser .apply-title{flex:1;min-width:0;display:flex;flex-direction:column}
-.browser .apply-fit{width:108px;display:flex;align-items:center;gap:6px}
-.browser .apply-fit b{color:var(--t1)}
-.browser .apply-fit-lb{display:none}
-.browser .apply-stage{width:64px;justify-content:center;text-align:center}
+.browser .my-apply-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:-8px}
+.browser .my-apply-table{overflow:hidden}
+.browser .my-apply-head,.browser .my-apply-row{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.browser .my-apply-head{padding:12px 20px;background:var(--bg2)}
+.browser .my-apply-row{border-bottom:1px solid var(--line)}
+.browser .my-apply-tile{width:48px;flex:none}
+.browser .my-apply-row .my-apply-tile{height:48px;border-radius:14px;font-size:18px}
+.browser .my-apply-title{flex:1;min-width:0;display:flex;flex-direction:column}
+.browser .my-apply-fit{width:108px;display:flex;align-items:center;gap:6px}
+.browser .my-apply-fit b{color:var(--t1)}
+.browser .my-apply-fit-lb{display:none}
+.browser .my-apply-stage{width:64px;justify-content:center;text-align:center}
 .browser .my-bookmarks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px 20px}
 .browser .my-rows{list-style:none;margin:0;padding:0;overflow:hidden}
 .browser .my-row{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line)}
@@ -647,13 +647,13 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 }
 @media (max-width:600px){
 .browser .my-bookmarks{grid-template-columns:repeat(2,minmax(0,1fr))}
-.browser .apply-table{display:flex;flex-direction:column;gap:10px;overflow:visible;background:none;box-shadow:none}
-.browser .apply-head{display:none}
-.browser .apply-row{flex-wrap:wrap;row-gap:8px;column-gap:10px;padding:16px;border-bottom:0;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line)}
-.browser .apply-title{flex:1 1 calc(100% - 64px)}
-.browser .apply-fit,.browser .apply-stage{width:auto}
-.browser .apply-title+.apply-fit{margin-left:58px}
-.browser .apply-fit-lb{display:inline;margin-right:4px}
+.browser .my-apply-table{display:flex;flex-direction:column;gap:10px;overflow:visible;background:none;box-shadow:none}
+.browser .my-apply-head{display:none}
+.browser .my-apply-row{flex-wrap:wrap;row-gap:8px;column-gap:10px;padding:16px;border-bottom:0;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line)}
+.browser .my-apply-title{flex:1 1 calc(100% - 64px)}
+.browser .my-apply-fit,.browser .my-apply-stage{width:auto}
+.browser .my-apply-title+.my-apply-fit{margin-left:58px}
+.browser .my-apply-fit-lb{display:inline;margin-right:4px}
 .browser .cal-add-head .cal-close{width:44px;height:44px}
 }
 .browser .switch-row input[type="checkbox"]{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--fill2);position:relative;flex:none}
