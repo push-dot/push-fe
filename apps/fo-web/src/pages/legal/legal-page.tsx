@@ -52,13 +52,15 @@ const LegalPage = ({ kind }: { kind: LegalKind }) => {
   return (
     <main className="page legal">
       <article>
-        <nav className="tabs" aria-label="약관">
-          {LEGAL_TABS.map((tab) => (
-            <NavLink key={tab.kind} to={tab.to} className={tab.kind === kind ? 'on' : undefined}>
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
+        {LEGAL_TABS.some((tab) => tab.kind === kind) ? (
+          <nav className="tabs" aria-label="약관">
+            {LEGAL_TABS.map((tab) => (
+              <NavLink key={tab.kind} to={tab.to} className={tab.kind === kind ? 'on' : undefined}>
+                {tab.label}
+              </NavLink>
+            ))}
+          </nav>
+        ) : null}
         <h1 className="h1">{doc.title}</h1>
         <p className="b2 t3 num legal-date">{legalEffectiveLabel(doc)}</p>
         <div className="legal-body">

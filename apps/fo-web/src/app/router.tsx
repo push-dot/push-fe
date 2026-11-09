@@ -74,6 +74,8 @@ export const appRoutes = (webView: boolean) =>
           <Route path="/postings/:id" element={<PostingPage />} />
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+          <Route path="/privacy-consent" element={<LegalPage kind="privacyConsent" />} />
+          <Route path="/marketing-consent" element={<LegalPage kind="marketingConsent" />} />
           <Route element={<RequireAuth />}>
             <Route path="/profiles/:id" element={<ProfilePage />} />
             <Route path="/hub" element={<HubPage />} />

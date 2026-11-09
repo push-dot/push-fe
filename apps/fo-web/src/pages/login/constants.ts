@@ -66,8 +66,15 @@ export const TERMS_VIEW = '보기'
 // privacyConsent (packages/shared legal) names this link on the sign-up consent screen.
 export const TERMS_PRIVACY_POLICY = '개인정보 처리방침 보기'
 export const TERMS_SERVICE_LINK = '이용약관 보기'
-export const LEGAL_PLACEHOLDER = '[자리 표시]'
+export const TERMS_PRIVACY_LINK = '개인정보 수집·이용 보기'
 export const CONSENT_SUBMIT = '동의하고 시작하기'
+
+// Same document per row as the app's TERM_DOCUMENTS (fo-mobile features/auth/constants.ts); routes in app/router.tsx.
+export const TERM_VIEW = {
+  serviceTerms: '/terms',
+  privacy: '/privacy-consent',
+  marketing: '/marketing-consent',
+} as const
 
 export const NAME_LABEL = '이름'
 export const SIGNUP_EMPLOYER_TITLE = '기업 계정 만들기'
@@ -75,7 +82,7 @@ export const SIGNUP_LEAD = '인증 메일의 링크를 누르면 계정이 만�
 export const SIGNUP_SUBMIT_COPY = '인증 메일 보내기'
 export const SIGNUP_HAS_ACCOUNT = '이미 계정이 있나요?'
 export const PASSWORD_HINT = '8자 이상, 영문과 숫자를 섞어 주세요'
-export const TERMS_LABEL = '만 14세 이상이며 이용약관과 개인정보 처리방침에 동의해요'
+export const TERMS_LABEL = '만 14세 이상이며 이용약관과 개인정보 수집·이용에 동의해요'
 export const TERMS_REQUIRED = '필수'
 
 export const VERIFY_MAIL_TITLE = '메일을 확인해 주세요'

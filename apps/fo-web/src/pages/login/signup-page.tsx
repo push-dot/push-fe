@@ -22,9 +22,11 @@ import {
   SIGNUP_LEAD,
   SIGNUP_SUBMIT_COPY,
   TERMS_LABEL,
+  TERMS_PRIVACY_LINK,
   TERMS_PRIVACY_POLICY,
   TERMS_REQUIRED,
   TERMS_SERVICE_LINK,
+  TERM_VIEW,
 } from './constants'
 import { useOAuthStart } from './oauth-start'
 import PhoneFlow from './phone-flow'
@@ -172,8 +174,11 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
             </span>
           </AuthCheck>
           <span className="auth-legal-links">
-            <a href="/terms" target="_blank" rel="noreferrer">
+            <a href={TERM_VIEW.serviceTerms} target="_blank" rel="noreferrer">
               {TERMS_SERVICE_LINK}
+            </a>
+            <a href={TERM_VIEW.privacy} target="_blank" rel="noreferrer">
+              {TERMS_PRIVACY_LINK}
             </a>
             <a href="/privacy" target="_blank" rel="noreferrer">
               {TERMS_PRIVACY_POLICY}

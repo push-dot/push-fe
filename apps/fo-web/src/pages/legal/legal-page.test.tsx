@@ -2,9 +2,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { LEGAL_DOCUMENTS, LEGAL_VERSION, legalEffectiveLabel } from '@push/shared'
 import { describe, expect, it } from 'vitest'
+import type { LegalKind } from './constants'
 import LegalPage from './legal-page'
 
-const html = (kind: 'terms' | 'privacy') =>
+const html = (kind: LegalKind) =>
   renderToStaticMarkup(
     <MemoryRouter>
       <LegalPage kind={kind} />
@@ -14,6 +15,8 @@ const html = (kind: 'terms' | 'privacy') =>
 const CASES = [
   { kind: 'terms', doc: LEGAL_DOCUMENTS.termsOfService },
   { kind: 'privacy', doc: LEGAL_DOCUMENTS.privacyPolicy },
+  { kind: 'privacyConsent', doc: LEGAL_DOCUMENTS.privacyConsent },
+  { kind: 'marketingConsent', doc: LEGAL_DOCUMENTS.marketingConsent },
 ] as const
 
 const esc = (text: string) =>

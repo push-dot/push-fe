@@ -10,7 +10,6 @@ import {
   CONSENT_LEAD,
   CONSENT_SUBMIT,
   CONSENT_TITLE,
-  LEGAL_PLACEHOLDER,
   LOGIN_FAILED_COPY,
   OPTIONAL_TAG,
   REQUIRED_TAG,
@@ -20,16 +19,17 @@ import {
   TERMS_PRIVACY,
   TERMS_SERVICE,
   TERMS_VIEW,
+  TERM_VIEW,
 } from './constants'
 
 type TermKey = 'age14' | 'serviceTerms' | 'privacy' | 'marketing'
 type Terms = Record<TermKey, boolean>
 
-const ROWS: { key: TermKey; label: string; required: boolean; view?: string; detail?: string }[] = [
+const ROWS: { key: TermKey; label: string; required: boolean; view?: string }[] = [
   { key: 'age14', label: TERMS_AGE, required: true },
-  { key: 'serviceTerms', label: TERMS_SERVICE, required: true, view: '/terms' },
-  { key: 'privacy', label: TERMS_PRIVACY, required: true, view: '/privacy', detail: LEGAL_PLACEHOLDER },
-  { key: 'marketing', label: TERMS_MARKETING, required: false },
+  { key: 'serviceTerms', label: TERMS_SERVICE, required: true, view: TERM_VIEW.serviceTerms },
+  { key: 'privacy', label: TERMS_PRIVACY, required: true, view: TERM_VIEW.privacy },
+  { key: 'marketing', label: TERMS_MARKETING, required: false, view: TERM_VIEW.marketing },
 ]
 
 const NONE: Terms = { age14: false, serviceTerms: false, privacy: false, marketing: false }
@@ -85,7 +85,6 @@ const PhoneConsent = ({ session, onDone }: { session: Session; onDone: (session:
                     <span className={row.required ? 'auth-term-req' : 'auth-term-opt'}>{row.required ? REQUIRED_TAG : OPTIONAL_TAG}</span>{' '}
                     {row.label}
                   </span>
-                  {row.detail ? <span className="auth-check-detail">{row.detail}</span> : null}
                 </span>
               </AuthCheck>
               {row.view ? (
