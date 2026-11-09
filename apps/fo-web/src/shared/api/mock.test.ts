@@ -341,11 +341,12 @@ describe('employer billing mock', () => {
     expect(checkoutUrl.searchParams.get('checkout')).toBe('PRO')
     const afterCheckout = await read<{ data: { plan: string } }>(await billing())
     expect(afterCheckout.data.plan).toBe('PRO')
-    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 }))
+    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { packs: 2 }))
     const topupUrl = new URL(topup.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(topupUrl.origin).toBe('http://localhost:5175')
     expect(topupUrl.pathname).toBe('/employer/plans')
-    expect(topupUrl.searchParams.get('topup')).toBe('3000')
+    expect(topupUrl.searchParams.get('topup')).toBe('2')
+    expect((await postJson('http://localhost/api/v1/billing/topup', { packs: 21 })).status).toBe(400)
     const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
     expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(3000000)
     expect(afterTopup.data.plan).toBe('PRO')
@@ -365,7 +366,7 @@ describe('employer billing mock', () => {
     const forbiddenTopup = await mockFetch('http://localhost/api/v1/billing/topup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 10 }),
+      body: JSON.stringify({ packs: 1 }),
     })
     expect(forbiddenTopup.status).toBe(403)
     await mockFetch('http://localhost/api/v1/companies/me/members/u1', {
@@ -958,7 +959,7 @@ describe('mock route coverage', () => {
       ['POST', '/postings/job-1/close', 200, { expectedRevision: 2 }],
       ['POST', '/companies/me/invites', 403, { email: 'seat@push.app' }],
       ['POST', '/companies/invites/invite-token/accept', 204, undefined],
-      ['POST', '/billing/topup', 200, { amount: 3000 }],
+      ['POST', '/billing/topup', 200, { packs: 1 }],
       ['GET', '/billing/ledger', 200, undefined],
       ['POST', '/conversations', 201, { title: '서류 검토', audience: 'EMPLOYER' }],
     ]

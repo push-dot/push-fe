@@ -99,23 +99,35 @@ describe('ms= switches', () => {
     expect((await call('/companies/invites/bad-token/accept', 'POST')).status).toBe(404)
     using('employer-new', 'invite-expired')
     expect(await errorCode('/companies/invites/expired-token/accept', 'POST')).toMatchObject({
-      code: 'INVITE_EXPIRED',
-      details: { companyName: '모아페이', inviterName: '이민아' },
+      code: 'NOT_FOUND',
+      details: { reason: 'EXPIRED', companyName: '모아페이' },
     })
     using('personal', 'invite-other-account')
-    expect((await errorCode('/companies/invites/demo-token/accept', 'POST')).code).toBe('INVITE_EMAIL_MISMATCH')
+    expect(await errorCode('/companies/invites/demo-token/accept', 'POST')).toMatchObject({ code: 'FORBIDDEN', details: { reason: 'EMAIL_MISMATCH' } })
+  })
+
+  it('resends an invite after the cooldown and cancels it', async () => {
+    using('employer-ultra', '')
+    await call('/companies/me/invites', 'POST', { email: 'sora.park@moapay.kr' })
+    const [invite] = (await read<{ data: { id: string; invitedAt: string; expiresAt: string }[] }>('/companies/me/invites')).body.data
+    expect(invite).toMatchObject({ id: expect.any(String), invitedAt: expect.any(String), expiresAt: expect.any(String) })
+    expect(await errorCode(`/companies/me/invites/${invite!.id}/resend`, 'POST')).toMatchObject({ code: 'RATE_LIMITED', details: { retryAfterSec: 60 } })
+    expect((await call(`/companies/me/invites/${invite!.id}`, 'DELETE')).status).toBe(204)
+    expect((await read<{ data: unknown[] }>('/companies/me/invites')).body.data).toEqual([])
+    expect((await read<{ data: { seats: { used: number } } }>('/companies/me')).body.data.seats.used).toBe(0)
+    setMockPersona(null)
   })
 
   it('archives, blocks and reports offers', async () => {
     using('personal', 'blocks-list')
-    const names = async (box: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?box=${box}`)).body.data.map((item) => item.sender.displayName)
-    expect(await names('archived')).toEqual(['정하린'])
-    expect(await names('received')).not.toContain('오지현')
+    const names = async (query: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?${query}`)).body.data.map((item) => item.sender.displayName)
+    expect(await names('box=received&archived=1')).toEqual(['정하린'])
+    expect(await names('box=received')).not.toContain('오지현')
     expect((await read<{ data: { user: { displayName: string } }[] }>('/me/blocks')).body.data.map((item) => item.user.displayName)).toEqual(['오지현', '한민재'])
     await call('/me/blocks/u-jihyun', 'DELETE')
-    expect(await names('received')).toEqual(['오지현', '박도윤', '최지우'])
+    expect(await names('box=received')).toEqual(['오지현', '박도윤', '최지우'])
     await call('/me/offers/offer-1/archive', 'POST')
-    expect(await names('archived')).toEqual(['오지현', '정하린'])
+    expect(await names('box=received&archived=1')).toEqual(['오지현', '정하린'])
     await call('/me/offers/offer-1/unarchive', 'POST')
     expect((await call('/me/offers/offer-1/report', 'POST', {})).status).toBe(204)
   })
@@ -125,6 +137,16 @@ describe('ms= switches', () => {
     const thread = await read<{ data: { body: string; status?: string }[] }>('/me/offers/offer-1/messages')
     expect(thread.body.data.at(-1)).toMatchObject({ body: '좋아요, 수요일 4시에 뵐게요', status: 'FAILED' })
     expect((await read<{ data: { canSend?: boolean } }>('/me/offers/offer-1')).body.data.canSend).toBe(false)
+  })
+
+  it('answers when each offer was responded to and whether a message can go', async () => {
+    using('personal', '')
+    const offers = await read<{ data: { id: string; respondedAt: string | null; canSend: boolean }[] }>('/me/offers?box=received')
+    expect(offers.body.data.map(({ id, respondedAt, canSend }) => [id, respondedAt, canSend])).toEqual([
+      ['offer-1', '2026-10-21T04:20:00.000Z', true],
+      ['offer-3', null, false],
+      ['offer-4', '2026-10-15T01:00:00.000Z', false],
+    ])
   })
 
   it('shows the member view of a Pro company', async () => {
@@ -138,13 +160,16 @@ describe('ms= switches', () => {
 
   it('lists four ledger rows for billing-ledger', async () => {
     using('employer-pro', 'billing-ledger')
-    const ledger = await read<{ data: { description: string; amountUsdCents: number }[] }>('/billing/ledger')
-    expect(ledger.body.data.map((item) => `${item.description} ${item.amountUsdCents}`)).toEqual([
-      'Pro 월 구독 10000',
-      'Pro 월 구독 10000',
-      'Pro 월 구독 10000',
-      'Basic 월 구독 2000',
+    const ledger = await read<{ data: { description: string | null; amountUsd: number | null; receiptUrl: string | null }[] }>('/billing/ledger')
+    const payments = ledger.body.data.filter((item) => item.amountUsd != null)
+    expect(payments.map((item) => `${item.description} ${item.amountUsd}`)).toEqual([
+      'Pro 월 구독 100',
+      'Pro 월 구독 100',
+      'Pro 월 구독 100',
+      'Basic 월 구독 20',
     ])
+    expect(payments.every((item) => item.receiptUrl?.startsWith('https://'))).toBe(true)
+    expect(ledger.body.data.filter((item) => item.amountUsd == null).every((item) => item.description === null)).toBe(true)
     setMockPersona(null)
   })
 
