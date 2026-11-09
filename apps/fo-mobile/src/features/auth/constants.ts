@@ -68,7 +68,10 @@ export const TERM_DOCUMENTS = {
   serviceTerms: LEGAL_DOCUMENTS.termsOfService,
   privacy: LEGAL_DOCUMENTS.privacyConsent,
   marketing: LEGAL_DOCUMENTS.marketingConsent,
+  privacyPolicy: LEGAL_DOCUMENTS.privacyPolicy,
 }
+
+export const TERMS_PRIVACY_POLICY = '개인정보 처리방침 보기'
 
 export type TermKey = keyof typeof TERM_DOCUMENTS
 

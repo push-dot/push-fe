@@ -13,6 +13,7 @@ import {
   LANGS,
   NOTIFY_SUB,
   LOGIN_LABEL,
+  MARKETING_COPY,
   NOTIFICATION_ROWS,
   REFERENCE_LABEL,
   REFERENCE_SUB,
@@ -20,6 +21,7 @@ import {
   TONES,
   useAuthMe,
   useBlocked,
+  useMarketingConsent,
   useMyProfile,
   useReferenceConsent,
   useSettings,
@@ -86,6 +88,7 @@ const SettingsScreen = () => {
   const theme = useThemePreference((state) => state.choice)
   const setTheme = useThemePreference((state) => state.setChoice)
   const consent = useReferenceConsent()
+  const marketing = useMarketingConsent()
   const { data: me } = useMyProfile()
   const { data: account } = useAuthMe()
   const blocked = useBlocked()
@@ -162,6 +165,11 @@ const SettingsScreen = () => {
             right={sw(row.key, row.label)}
           />
         ))}
+        <SettingsRow
+          label={MARKETING_COPY.label}
+          sub={MARKETING_COPY.sub}
+          right={<Switch label={MARKETING_COPY.label} value={marketing.on} onValueChange={(v) => marketing.save(v)} />}
+        />
       </SettingsGroup>
 
       <SettingsGroup title="허브 공개">
