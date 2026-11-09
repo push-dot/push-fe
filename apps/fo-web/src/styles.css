@@ -532,7 +532,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .me-chip.biz .biz-mark{width:36px;height:36px;font-size:16px}
 .browser .biz-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:148px}
 .browser .biz-id span{display:block;max-width:148px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.browser.chat-screen .shell-main{display:flex;flex-direction:column;max-width:none;padding:0}
+.browser.chat-screen:not(.auth-shell) .shell-main{display:flex;flex-direction:column;max-width:none;padding:0}
 .browser .chat-app-main{flex:1;display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 69px)}
 .browser .chat-side{display:flex;flex-direction:column;gap:4px;padding:20px 14px;border-right:1px solid var(--line);min-width:0;background:var(--bg)}
 .browser .chat-side .chat-new{width:100%;margin-bottom:14px}

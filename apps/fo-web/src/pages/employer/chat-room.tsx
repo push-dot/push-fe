@@ -220,7 +220,6 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     handoffs.delete(id)
     void run(id, out)
     // Runs once per conversation: the handoff is consumed on the first pass.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const answer = async (cardId: string, optionId: string) => {

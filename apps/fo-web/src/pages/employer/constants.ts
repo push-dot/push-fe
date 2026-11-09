@@ -105,26 +105,17 @@ export const CHAT_LOADING = '대화를 불러오고 있어요'
 export const CHAT_CREATING = '대화를 만들고 있어요'
 export const CHAT_FAILED = '대화를 불러오지 못했어요'
 export const CHAT_EMPTY = '아직 대화가 없어요'
-export const STARTER_POSTING = '새 공고'
-export const STARTER_REVIEW = '서류 검토'
-export const STARTER_INTERVIEW = '면접 준비'
-export const INTERVIEW_LOCK = 'Pro부터 면접 질문을 만들 수 있어요'
 export const PLANS_LINK = '요금제 보기'
 export const REFERENCE_POSTING = '참고 공고'
-export const PDF_ATTACH = '외부 PDF'
 export const PDF_LOCK = 'Ultra에서 외부 PDF를 올릴 수 있어요'
-export const APPLICANT_ATTACH = '지원자 첨부'
-export const APPLICANT_NONE = '선택 안 함'
 export const COMPOSER_LABEL = '메시지'
 export const SEND_MESSAGE = '보내기'
 export const DRAFT_POSTING = '공고 편집에서 열기'
 export const DRAFT_BADGE = '초안'
 export const CHAT_NEW = '새 대화'
 export const CHAT_SHARED = '회사 대화 · 담당자 모두 볼 수 있어요'
-export const CHAT_TOPUP = '충전하기'
 export const COMPOSER_PLACEHOLDER = '메시지를 입력하세요'
 export const ATTACH_LABEL = '공고·지원자'
-export const CHAT_USER = '나'
 export const CHAT_ASSISTANT = '에이전트'
 export const ACCESS_MODE_GROUP = 'AI 실행 방식'
 export const ACCESS_MODES = [
@@ -132,8 +123,6 @@ export const ACCESS_MODES = [
   { value: 'AUTO', label: '자동', description: '나만 바뀌는 일은 바로 하고, 다른 사람에게 닿는 일은 물어봐요' },
   { value: 'BYPASS', label: '바로 실행', description: '묻지 않고 실행해요' },
 ] as const satisfies readonly { value: AccessMode; label: string; description: string }[]
-export const TOOL_STATE_LABEL: Record<ToolRunState, string> = { run: '진행 중', wait: '확인 필요', ok: '완료', err: '실패' }
-export const AWAITING_APPROVAL = '확인을 기다리고 있어요'
 export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
   resolved: '이미 답한 요청이에요',
   expired: '확인 시간이 지났어요. 다시 요청해 주세요.',

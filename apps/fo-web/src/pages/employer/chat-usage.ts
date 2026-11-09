@@ -7,7 +7,9 @@ export type ChatUsage = { plan: string; percent: number; full: boolean; topup: b
 
 export const usedPercent = (billing: Pick<BillingStatus, 'monthlyMicroCredits' | 'spentMicroCredits' | 'balanceMicroCredits'>) => {
   const { monthlyMicroCredits: monthly, spentMicroCredits: spent, balanceMicroCredits: balance } = billing
-  if (monthly <= 0) return balance > 0 ? 0 : 100
+  // Nothing left means the month is used up, whatever top-ups made the spend exceed or trail the grant.
+  if (balance <= 0) return 100
+  if (monthly <= 0) return 0
   return Math.max(0, Math.min(100, Math.round((spent / monthly) * 100)))
 }
 

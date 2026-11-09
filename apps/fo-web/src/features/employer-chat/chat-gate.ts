@@ -9,20 +9,11 @@ export const isChatIntent = (value: unknown): value is ChatIntent =>
 
 export const chatGateFrom = (error: unknown): ChatBlock => {
   if (error instanceof ApiError && error.code === 'BUSINESS_NOT_VERIFIED') return 'verify'
-  if (error instanceof ApiError && error.code === 'INSUFFICIENT_CREDITS') return 'credits'
+  // Employer chat answers 403 FEATURE_DISABLED when the month's credit is used up: the same limit as 402.
+  if (error instanceof ApiError && (error.code === 'INSUFFICIENT_CREDITS' || error.code === 'FEATURE_DISABLED')) return 'credits'
   if (error instanceof ApiError && error.status === HTTP_TOO_MANY_REQUESTS) return 'busy'
-  if (
-    error instanceof ApiError &&
-    error.code === 'PLAN_REQUIRED' &&
-    error.details?.requiredPlan === 'ULTRA'
-  )
-    return 'pdf'
-  if (
-    error instanceof ApiError &&
-    error.code === 'PLAN_REQUIRED' &&
-    error.details?.requiredPlan === 'PRO'
-  )
-    return 'interview'
+  if (error instanceof ApiError && error.code === 'PLAN_REQUIRED' && error.details?.requiredPlan === 'ULTRA') return 'pdf'
+  if (error instanceof ApiError && error.code === 'PLAN_REQUIRED' && error.details?.requiredPlan === 'PRO') return 'interview'
   return 'failed'
 }
 
@@ -35,11 +26,9 @@ export const approvalFailureFrom = (error: unknown): ApprovalFailure => {
 }
 
 export const chatRouteState = (value: unknown) => {
-  const record =
-    value && typeof value === 'object' ? (value as { intent?: unknown; postingId?: unknown }) : {}
+  const record = value && typeof value === 'object' ? (value as { intent?: unknown; postingId?: unknown }) : {}
   return {
     intent: isChatIntent(record.intent) ? record.intent : ('general' as const),
-    postingId:
-      typeof record.postingId === 'string' && record.postingId ? record.postingId : undefined,
+    postingId: typeof record.postingId === 'string' && record.postingId ? record.postingId : undefined,
   }
 }

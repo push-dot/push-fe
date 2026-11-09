@@ -10,5 +10,6 @@ describe('usedPercent', () => {
   it('caps at 100 and reads an empty allowance from the balance', () => {
     expect(usedPercent({ monthlyMicroCredits: 15_000_000, spentMicroCredits: 16_000_000, balanceMicroCredits: 0 })).toBe(100)
     expect(usedPercent({ monthlyMicroCredits: 0, spentMicroCredits: 0, balanceMicroCredits: 0 })).toBe(100)
+    expect(usedPercent({ monthlyMicroCredits: 15_000_000, spentMicroCredits: 9_840_000, balanceMicroCredits: 0 })).toBe(100)
   })
 })
