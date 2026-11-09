@@ -299,24 +299,24 @@ describe('employer billing mock', () => {
     expect(basic.data).toEqual({
       plan: 'BASIC',
       audience: 'EMPLOYER',
-      balanceMicroCredits: 1880000,
+      balanceMicroCredits: 11_280_000,
       subscriptionStatus: 'active',
       periodEndsAt: '2026-11-01T00:00:00.000Z',
       reservedMicroCredits: 0,
-      monthlyMicroCredits: 3000000,
-      spentMicroCredits: 1120000,
+      monthlyMicroCredits: 18_000_000,
+      spentMicroCredits: 6_720_000,
     })
 
     setMockPersona('employer-pro')
     const pro = await read<{ data: { plan: string; balanceMicroCredits: number; audience: string } }>(await billing())
     expect(pro.data.plan).toBe('PRO')
     expect(pro.data.audience).toBe('EMPLOYER')
-    expect(pro.data.balanceMicroCredits).toBe(5160000)
+    expect(pro.data.balanceMicroCredits).toBe(30_960_000)
 
     setMockPersona('employer-ultra')
     const ultra = await read<{ data: { plan: string; balanceMicroCredits: number } }>(await billing())
     expect(ultra.data.plan).toBe('ULTRA')
-    expect(ultra.data.balanceMicroCredits).toBe(25790000)
+    expect(ultra.data.balanceMicroCredits).toBe(154_740_000)
 
     setMockPersona('employer-new')
     const fresh = await read<{ data: { plan: null; audience: string; balanceMicroCredits: number } }>(await billing())
@@ -341,13 +341,15 @@ describe('employer billing mock', () => {
     expect(checkoutUrl.searchParams.get('checkout')).toBe('PRO')
     const afterCheckout = await read<{ data: { plan: string } }>(await billing())
     expect(afterCheckout.data.plan).toBe('PRO')
-    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 }))
+    const topup = await read<{ data: { url: string } }>(await postJson('http://localhost/api/v1/billing/topup', { packs: 2 }))
     const topupUrl = new URL(topup.data.url, 'http://localhost:5175/employer/plans?mock=1')
     expect(topupUrl.origin).toBe('http://localhost:5175')
     expect(topupUrl.pathname).toBe('/employer/plans')
-    expect(topupUrl.searchParams.get('topup')).toBe('3000')
+    expect(topupUrl.searchParams.get('topup')).toBe('2')
+    expect((await postJson('http://localhost/api/v1/billing/topup', { packs: 21 })).status).toBe(400)
+    expect((await postJson('http://localhost/api/v1/billing/topup', { amount: 3000 })).status).toBe(400)
     const afterTopup = await read<{ data: { balanceMicroCredits: number; plan: string } }>(await billing())
-    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(3000000)
+    expect(afterTopup.data.balanceMicroCredits).toBeGreaterThan(18_000_000)
     expect(afterTopup.data.plan).toBe('PRO')
     await postJson('http://localhost/api/v1/billing/checkout', { planId: 'BASIC' })
 
@@ -365,7 +367,7 @@ describe('employer billing mock', () => {
     const forbiddenTopup = await mockFetch('http://localhost/api/v1/billing/topup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 10 }),
+      body: JSON.stringify({ packs: 1 }),
     })
     expect(forbiddenTopup.status).toBe(403)
     await mockFetch('http://localhost/api/v1/companies/me/members/u1', {
@@ -958,7 +960,7 @@ describe('mock route coverage', () => {
       ['POST', '/postings/job-1/close', 200, { expectedRevision: 2 }],
       ['POST', '/companies/me/invites', 403, { email: 'seat@push.app' }],
       ['POST', '/companies/invites/invite-token/accept', 204, undefined],
-      ['POST', '/billing/topup', 200, { amount: 3000 }],
+      ['POST', '/billing/topup', 200, { packs: 1 }],
       ['GET', '/billing/ledger', 200, undefined],
       ['POST', '/conversations', 201, { title: '서류 검토', audience: 'EMPLOYER' }],
     ]
@@ -970,10 +972,11 @@ describe('mock route coverage', () => {
     setMockPersona('employer-ultra')
     const invited = await send('POST', '/companies/me/invites', { email: 'seat@push.app' })
     expect(invited.status).toBe(201)
-    const members = await read<{ data: { userId: string; email: string }[] }>(await get('/companies/me/members'))
-    const added = members.data.find((member) => member.email === 'seat@push.app')
-    expect(added?.userId).toBeTruthy()
-    const removed = await send('DELETE', `/companies/me/members/${added?.userId}`)
-    expect(removed.status).toBe(204)
+    const members = await read<{ data: { email: string }[] }>(await get('/companies/me/members'))
+    expect(members.data.map((member) => member.email)).not.toContain('seat@push.app')
+    const invites = await read<{ data: { email: string }[] }>(await get('/companies/me/invites'))
+    expect(invites.data.map((item) => item.email)).toEqual(['seat@push.app'])
+    const company = await read<{ data: { seats: { used: number } } }>(await get('/companies/me'))
+    expect(company.data.seats.used).toBe(1)
   }, 20_000)
 })

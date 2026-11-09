@@ -104,6 +104,7 @@ export type Offer = {
   createdAt: string
 }
 export type OfferMessage = { id: string; offerId: string; sender: UserRef; body: string; createdAt: string }
+export type BlockedUser = { user: UserRef & { companyName?: string | null }; createdAt: string }
 
 export type Post = {
   id: string
@@ -436,6 +437,8 @@ export type BillingStatus = {
   spentMicroCredits: number
   audience?: BillingAudience
   source?: BillingSource
+  /** False while push-be has payments closed (PAYMENTS_ENABLED off); missing on servers before push-be #246. */
+  paymentsEnabled?: boolean
 }
 
 export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
@@ -482,9 +485,22 @@ export type Company = {
   verifiedAt: string
   role: CompanyRole
   seats: { used: number; limit: number }
+  legalName?: string | null
+  representativeName?: string | null
+  industry?: string | null
+  website?: string | null
+  intro?: string | null
+  logoKey?: string | null
+  logoUrl?: string | null
 }
 
-export type CompanyMember = { userId: string; email: string; role: CompanyRole; joinedAt: string }
+export type UpdateCompanyInput = Partial<
+  Record<'legalName' | 'representativeName' | 'industry' | 'website' | 'intro' | 'logoKey', string | null>
+>
+
+export type CompanyMember = { userId: string; email: string; displayName?: string; role: CompanyRole; joinedAt: string }
+
+export type CompanyInvite = { id: string; email: string; expiresAt: string; invitedAt: string }
 
 export type EmployerStage = 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
 
@@ -536,10 +552,17 @@ export type CreatePostingInput = {
 export type UpdatePostingInput = Partial<CreatePostingInput> & { expectedRevision: number }
 
 export type LedgerEntry = {
+  id: string
   type: 'PURCHASE' | 'REFUND'
   amountMicroCredits: number
   balanceAfter: number
+  referenceId: string | null
   createdAt: string
+  /** Payment label ({Plan} 월 구독, 크레딧 구매, 크레딧 구매 환불, 요금제 변경 환급); null for credit grants. */
+  description: string | null
+  /** USD of a Stripe payment, negative for a refund; null when the row is not a Stripe payment. */
+  amountUsd: number | null
+  receiptUrl: string | null
 }
 
 export type EmailSignupInput = {
@@ -547,6 +570,8 @@ export type EmailSignupInput = {
   password: string
   accountType: AccountType
   displayName: string
+  /** The 약관·개인정보처리방침 checkbox; push-be #240 requires true for every email signup. */
+  agreeTerms?: boolean
   consentReference?: boolean
 }
 

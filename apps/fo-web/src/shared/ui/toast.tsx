@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { isWebView } from '../lib/bridge'
 import { Icon } from './icon'
 
 const TOAST_MS = 2800
@@ -24,7 +25,7 @@ const Toast = ({ message, tone = 'ok', action }: { message: string | null; tone?
   if (!message) return null
   return (
     <div className={tone === 'err' ? 'toast err' : 'toast'} role={tone === 'err' ? 'alert' : 'status'}>
-      {tone === 'err' ? <Icon name="info" size={20} width={2.2} className="toast-ic" /> : <Icon name="check" size={18} width={2.6} className="toast-ic" />}
+      {isWebView() ? null : tone === 'err' ? <Icon name="info" size={20} width={2.2} className="toast-ic" /> : <Icon name="check" size={18} width={2.6} className="toast-ic" />}
       <span className="toast-text">{message}</span>
       {action ? (
         <button type="button" className="ta" onClick={action.onClick}>

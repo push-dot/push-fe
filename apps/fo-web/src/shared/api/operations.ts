@@ -27,11 +27,21 @@ export const billingCompanyStatus = (...args: Parameters<Api['billing']['company
 
 export const billingTopup = (...args: Parameters<Api['billing']['topup']>) => api.billing.topup(...args)
 
+export const billingLedger = (...args: Parameters<Api['billing']['ledger']>) => api.billing.ledger(...args)
+
 export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) => api.calendar.events(...args)
 
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
+
+export const companiesInvites = (...args: Parameters<Api['companies']['invites']>) => api.companies.invites(...args)
+
+export const companiesResendInvite = (...args: Parameters<Api['companies']['resendInvite']>) => api.companies.resendInvite(...args)
+
+export const companiesCancelInvite = (...args: Parameters<Api['companies']['cancelInvite']>) => api.companies.cancelInvite(...args)
+
+export const companiesUpdate = (...args: Parameters<Api['companies']['update']>) => api.companies.update(...args)
 
 export const companiesMe = (...args: Parameters<Api['companies']['me']>) => api.companies.me(...args)
 

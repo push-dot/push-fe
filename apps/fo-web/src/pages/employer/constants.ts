@@ -1,6 +1,7 @@
-import { ApiError, QueueBusyError, type AccessMode, type EmployerStage, type ToolRunState } from '@push/api-client'
+import { ApiError, QueueBusyError, type AccessMode, type EmployerStage, type LedgerEntry, type ToolRunState } from '@push/api-client'
 import type { ApprovalFailure } from '../../features/employer-chat'
-import { creditCount, creditText } from '../../entities/billing'
+import { creditText } from '../../entities/billing'
+import { PLAN_NAME, seatLimit, type EmployerPlanId } from '../../shared/model/employer-plan'
 
 export const BNO_DIGITS = 10
 export const START_DT_DIGITS = 8
@@ -162,6 +163,8 @@ export const APPROVAL_FAILURE: Record<ApprovalFailure, string> = {
   failed: '답을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
 }
 export const CHAT_CREDITS = '크레딧이 모자라요. 충전하고 다시 보내 주세요.'
+export const CHAT_CREDITS_CLOSED = '크레딧이 다 떨어졌어요. 결제는 아직 준비 중이에요.'
+export const PLAN_REQUIRED_CLOSED = '이 기능은 상위 요금제에서 쓸 수 있어요. 결제는 아직 준비 중이에요.'
 export const CHAT_BUSY = '지금 요청이 많아요. 잠시 후 다시 보내 주세요.'
 export const STREAM_ERROR_TEXT: Record<string, string> = {
   NOT_CONFIGURED: '지금은 에이전트를 쓸 수 없어요. 잠시 뒤에 다시 해 주세요.',
@@ -180,28 +183,87 @@ const retryAfterSec = (error: ApiError) => {
   return typeof value === 'number' ? value : undefined
 }
 
-export const streamErrorText = (error: unknown) => {
+const CLOSED_STREAM_ERROR_TEXT: Record<string, string> = {
+  PLAN_REQUIRED: PLAN_REQUIRED_CLOSED,
+  FEATURE_DISABLED: CHAT_CREDITS_CLOSED,
+  INSUFFICIENT_CREDITS: CHAT_CREDITS_CLOSED,
+}
+
+// While payments are closed the credit and plan lines state the fact instead of sending people to pay.
+export const streamErrorText = (error: unknown, paymentsOpen = true) => {
   if (!(error instanceof ApiError)) return DEFAULT_STREAM_ERROR_TEXT
   const sec = error.code === 'QUEUE_BUSY' ? retryAfterSec(error) : undefined
   if (sec) return queueBusyText(sec)
-  return STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
+  return (paymentsOpen ? undefined : CLOSED_STREAM_ERROR_TEXT[error.code]) ?? STREAM_ERROR_TEXT[error.code] ?? DEFAULT_STREAM_ERROR_TEXT
 }
 
 export const PLANS_TITLE = '기업 요금제'
 export const PLANS_LOADING = '요금제를 불러오고 있어요'
 export const PLANS_PERSONAL = '기업 요금제는 기업 계정에서 구독해요'
 export const PLAN_CURRENT = '지금 쓰는 중'
-export const PLAN_NOW = '지금'
-export const PLAN_DEPTH = '사용량 ↑ · 더 깊이 분석'
-export const PLAN_RECOMMENDED = '추천'
 export const PLAN_SUBSCRIBE = '구독하기'
-export const PLAN_TOPUP = '충전'
-export const PLAN_AMOUNT = '충전 금액'
-export const PLAN_ADMIN_ONLY = '요금제 변경은 관리자만 할 수 있어요'
-export const PLAN_RENEWAL = '매월 1일에 크레딧이 충전돼요'
 export const PLAN_ACTION_FAILED = '요금제 변경을 시작하지 못했어요'
-export const TOPUP_DONE = '크레딧을 충전했어요'
-export const planStarted = (name: string) => `${name} 구독을 시작했어요`
+export const PAYMENTS_CLOSED = '결제는 아직 준비 중이에요'
+export const planActionError = (error: unknown) =>
+  error instanceof ApiError && error.code === 'PAYMENTS_DISABLED' ? PAYMENTS_CLOSED : PLAN_ACTION_FAILED
+export const PLAN_USAGE_TITLE = '이번 달 사용량'
+export const PLAN_USAGE_RESET = '매월 1일에 사용량이 다시 채워져요.'
+export const PLAN_BUY_TITLE = '크레딧 구매'
+export const PLAN_BUY_HINT = '이번 달 크레딧이 모자라면 더 살 수 있어요'
+export const PLAN_BUY = '구매'
+export const PLAN_BUY_PACKS = '구매할 팩 수'
+export const PLAN_BUY_PACK_HINT = '1팩에 1,500크레딧 · $10예요. 한 번에 20팩까지 살 수 있어요.'
+export const buyTotal = (packs: number) => `${creditText(packs * 1500)}크레딧 · $${packs * 10}`
+export const PLAN_HISTORY = '결제 내역'
+export const PLAN_CLOSE = '닫기'
+export const PLAN_CANCEL = '취소'
+export const PLAN_LEAD = '요금제마다 쓸 수 있는 양이 달라요'
+export const PLAN_PER_MONTH = '/ 월'
+export const PLAN_NOTE = '요금제는 에이전트에만 적용돼요. 공고 등록과 지원자 관리는 요금제 없이도 쓸 수 있어요. 결제와 변경은 관리자만 해요 · 월 구독 · USD'
+export const PLAN_SECURE = 'Stripe로 안전하게 결제돼요'
+export const PLAN_CANCELED_TITLE = '결제를 취소했어요'
+export const PLAN_CANCELED_BODY = '요금은 나가지 않았어요. 요금제와 크레딧은 그대로예요.'
+export const PLAN_VIEWER_TITLE = '요금제는 관리자만 바꿀 수 있어요'
+export const planViewerBody = (admin?: string) =>
+  admin ? `바꾸거나 크레딧을 사려면 관리자 ${admin} 님에게 말해 주세요.` : '바꾸거나 크레딧을 사려면 관리자에게 말해 주세요.'
+export const TOPUP_DONE = '크레딧을 구매했어요'
+export const LEDGER_LOADING = '결제 내역을 불러오고 있어요'
+export const LEDGER_FAILED = '결제 내역을 불러오지 못했어요'
+export const LEDGER_EMPTY = '아직 결제 내역이 없어요'
+export const LEDGER_REFUND = '환불'
+export const LEDGER_RECEIPT = '영수증'
+
+export const PLAN_BLURB = {
+  BASIC: '기본 사용량',
+  PRO: 'Basic의 5배 사용량',
+  ULTRA: 'Pro의 2배 사용량',
+} as const
+
+const endsWithVowel = (name: string) => /[aeiouy]$/i.test(name)
+
+export const planPaid = (name: string) => `결제를 마쳤어요. 이제 ${name}${endsWithVowel(name) ? '를' : '을'} 써요`
+
+export const planUsedPercent = (spentMicroCredits: number, monthlyMicroCredits: number) =>
+  monthlyMicroCredits > 0 ? Math.min(100, Math.max(0, Math.round((spentMicroCredits / monthlyMicroCredits) * 100))) : 0
+
+export const planUsed = (percent: number) => `이번 달 ${percent}% 썼어요`
+
+export const ledgerSubtitle = (company: string, count: number) => `${company} · 최근 ${count}건`
+
+export const ledgerDate = (iso: string) =>
+  new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' }).format(new Date(iso))
+
+const usd = (amount: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: Number.isInteger(amount) ? 0 : 2 }).format(amount)
+
+// A refund row is negative in USD; the sign goes before the dollar sign.
+// 결제 내역 = Stripe payments only (rows with amountUsd), in the server's order. A refund row whose label is missing reads 환불.
+export const ledgerPayments = (rows: readonly LedgerEntry[]) =>
+  rows.flatMap(({ id, type, description, amountUsd, receiptUrl, createdAt }) =>
+    amountUsd === null ? [] : [{ id, createdAt, amountUsd, receiptUrl, title: description ?? (type === 'REFUND' ? LEDGER_REFUND : PLAN_HISTORY) }],
+  )
+
+export const ledgerUsd = (amountUsd: number) => (amountUsd < 0 ? `-${usd(-amountUsd)}` : usd(amountUsd))
 
 export const PLAN_FEATURES = {
   BASIC: [
@@ -228,16 +290,78 @@ export const PLAN_FEATURES = {
 } as const
 
 export const MEMBER_SELF = '나'
-export const MEMBERS_ADMIN_CAN = '관리자 · 결제, 요금제 변경, 담당자 초대·내보내기'
-export const MEMBERS_MEMBER_CAN = '담당자 · 공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_PERM_TITLE = '권한'
+export const MEMBERS_ADMIN_CAN = '결제, 요금제 변경, 담당자 초대·내보내기'
+export const MEMBERS_MEMBER_CAN = '공고, 지원자, 에이전트 대화를 함께 써요'
+export const MEMBERS_ACTION_FAILED = '처리하지 못했어요. 잠시 후 다시 시도해 주세요.'
+export const MEMBERS_CLOSE = '닫기'
+export const SEAT_FULL_TITLE = '담당자 자리가 꽉 찼어요'
+export const SEAT_FULL_PLANS = '요금제 보기'
 export const INVITE_DIALOG_TITLE = '담당자 초대'
 export const INVITE_CANCEL = '취소'
+export const TRANSFER_CONFIRM = '넘기기'
+export const MEMBER_MORE = '더 보기'
+export const INVITE_PENDING_TITLE = '초대 보냄'
+export const INVITE_PENDING = '대기 중'
+export const INVITE_RESEND = '초대 다시 보내기'
+export const INVITE_RESENT = '초대 메일을 다시 보냈어요'
+export const INVITE_REVOKE = '초대 취소'
+export const INVITE_REVOKED = '초대를 취소했어요'
+export const INVITE_REVOKE_BODY = '보낸 초대 링크로는 더 들어올 수 없어요. 자리는 바로 비어요.'
+export const MEMBERS_ADMIN_ONLY = '관리자만 할 수 있어요. 권한이 바뀌었는지 확인해 주세요.'
+export const INVITE_GONE = '이미 수락했거나 취소된 초대예요'
+export const revokeTitle = (email: string) => `${email} 초대를 취소할까요?`
+export const resendWait = (sec: number) => `${sec}초 뒤에 다시 보낼 수 있어요`
+
+const DAY_MS = 86_400_000
+
+export const inviteExpiry = (email: string, expiresAt: string, now = Date.now()) => {
+  const days = Math.ceil((Date.parse(expiresAt) - now) / DAY_MS)
+  return `${email} · ${days > 0 ? `${days}일 뒤 만료` : '만료됨'}`
+}
+
+// Korean names show the given name (last two syllables) like the boards; anything else its first letter.
+export const memberInitials = (name: string) => {
+  const chars = [...name.trim()]
+  return /^[가-힣]{3,}$/.test(name.trim()) ? chars.slice(-2).join('') : (chars[0] ?? '').toUpperCase()
+}
+
+// Every member and invite write is ADMIN only on push-be; resend has its own cooldown and seat answers.
+export const memberActionError = (error: unknown) => {
+  if (!(error instanceof ApiError)) return MEMBERS_ACTION_FAILED
+  if (error.status === 429) {
+    const sec = retryAfterSec(error)
+    return sec ? resendWait(sec) : MEMBERS_ACTION_FAILED
+  }
+  if (error.code === 'SEAT_LIMIT') return SEAT_FULL_TITLE
+  if (error.status === 403) return MEMBERS_ADMIN_ONLY
+  if (error.status === 404 && error.code === 'NOT_FOUND') return INVITE_GONE
+  return MEMBERS_ACTION_FAILED
+}
 export const inviteLead = (company: string) => `초대받은 사람은 사업자 확인 없이 ${company}로 들어와요.`
 
-export const remainingCredits = (balanceMicroCredits: number) => `남은 크레딧 ${creditText(creditCount(balanceMicroCredits))}`
+type SeatPlan = 'PRO' | 'ULTRA'
+
+export const seatPlan = (plan: EmployerPlanId): SeatPlan | null => (plan === 'PRO' || plan === 'ULTRA' ? plan : null)
+
+export const seatFullBody = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 관리자 말고 담당자를 ${seatLimit(plan)}명까지 둘 수 있어요. 초대 대기 중인 사람도 1명으로 세요.${plan === 'PRO' ? ` Ultra는 ${seatLimit('ULTRA')}명까지예요.` : ''}`
+
+export const inviteFullNote = (plan: SeatPlan) =>
+  `${PLAN_NAME[plan]}는 담당자 ${seatLimit(plan)}명까지 초대할 수 있어요. 더 초대하려면 ${plan === 'PRO' ? 'Ultra로 올리거나 ' : ''}기존 담당자를 내보내 주세요.`
+
+export const adminOnlyNote = (admin?: string) =>
+  admin ? `담당자 초대와 내보내기는 관리자 ${admin} 님만 할 수 있어요.` : '담당자 초대와 내보내기는 관리자만 할 수 있어요.'
+
+export const removeTitle = (name: string) => `${name} 님을 내보낼까요?`
+export const removeBody = (company: string, name: string) =>
+  `내보내면 ${company}의 공고, 지원자, 에이전트 대화를 더 볼 수 없어요. ${name} 님이 만든 공고와 대화는 회사에 남아요.`
+export const transferTitle = (name: string) => `${name} 님에게 관리자를 넘길까요?`
+export const transferBody = (name: string, self: string) =>
+  `넘기면 결제, 요금제 변경, 담당자 초대·내보내기는 ${name} 님만 할 수 있어요. ${self} 님은 담당자가 돼요.`
 
 export const planSwitchLabel = (name: string, current: boolean, higher: boolean, hasPlan: boolean) => {
   if (current) return PLAN_CURRENT
   if (!hasPlan) return PLAN_SUBSCRIBE
-  return higher ? `${name}로 올리기` : `${name}로 바꾸기`
+  return `${name}${endsWithVowel(name) ? '로' : '으로'} ${higher ? '올리기' : '바꾸기'}`
 }

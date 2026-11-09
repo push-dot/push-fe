@@ -3,9 +3,9 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
-  AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
+  AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
@@ -109,7 +109,7 @@ export const createApi = (c: Client) => ({
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
     posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
     commentedPosts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
-    offers: (box: 'received' | 'sent', p: PageParams = {}) =>
+    offers: (box: 'received' | 'sent', p: PageParams & { archived?: 1 } = {}) =>
       c.get<ListEnvelope<Offer>>('me/offers', { query: { box, ...p } }),
     offer: (id: string) => unwrap(c.get<DataEnvelope<Offer>>(`me/offers/${id}`)),
     acceptOffer: (id: string, reply?: string) =>
@@ -118,6 +118,7 @@ export const createApi = (c: Client) => ({
     archiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/archive`)),
     unarchiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/unarchive`)),
     reportOffer: (id: string, reason?: string) => c.post<void>(`me/offers/${id}/report`, { body: reason ? { reason } : {} }),
+    blocks: (p: PageParams = {}) => c.get<ListEnvelope<BlockedUser>>('me/blocks', { query: p }),
     blockUser: (userId: string) => c.post<void>('me/blocks', { body: { userId } }),
     unblockUser: (userId: string) => c.delete<void>(`me/blocks/${userId}`),
     offerMessages: (id: string, p: PageParams = {}) =>
@@ -142,6 +143,8 @@ export const createApi = (c: Client) => ({
     consents: (accessToken?: string) => unwrap(c.get<DataEnvelope<Consent>>('me/consents', { headers: bearer(accessToken) })),
     updateConsents: (referenceData: boolean) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
+    updateMarketing: (marketing: boolean) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body: { marketing } })),
     updateTerms: (body: SignupTermsInput, accessToken?: string) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body, headers: bearer(accessToken) })),
   },
@@ -165,7 +168,7 @@ export const createApi = (c: Client) => ({
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
     companyStatus: () => unwrap(c.get<DataEnvelope<CompanyBillingStatus>>('billing')),
     checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
-    topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
+    topup: (packs: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { packs } })),
     portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
     ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
     verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
@@ -268,8 +271,12 @@ export const createApi = (c: Client) => ({
     verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
       unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    update: (body: UpdateCompanyInput) => unwrap(c.patch<DataEnvelope<Company>>('companies/me', { body })),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invites: () => unwrap(c.get<DataEnvelope<CompanyInvite[]>>('companies/me/invites')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    resendInvite: (id: string) => unwrap(c.post<DataEnvelope<CompanyInvite>>(`companies/me/invites/${id}/resend`)),
+    cancelInvite: (id: string) => c.delete<void>(`companies/me/invites/${id}`),
     acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>
