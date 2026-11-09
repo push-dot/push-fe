@@ -14,6 +14,7 @@ const OfferRow = ({ item, box, archived, selected }: OfferRowProps) => {
   const badge = offerBadge(item, box)
   return (
     <Link
+      preventScrollReset
       to={`${OFFERS_PATH}/${item.id}?box=${archived ? 'archived' : box}`}
       className={selected ? 'inbox-row on' : 'inbox-row'}
       aria-current={selected ? 'true' : undefined}

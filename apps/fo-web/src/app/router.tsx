@@ -1,4 +1,12 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { useState } from 'react'
+import {
+  Outlet,
+  Route,
+  RouterProvider,
+  ScrollRestoration,
+  createBrowserRouter,
+  createRoutesFromElements,
+} from 'react-router-dom'
 import { isWebView } from '../shared/lib/bridge'
 import CallbackPage from '../pages/login/callback-page'
 import LoginPage from '../pages/login/login-page'
@@ -33,22 +41,27 @@ import EmployerVerifyPage from '../pages/employer/verify-page'
 import LegalPage from '../pages/legal/legal-page'
 import NotFoundPage from '../pages/not-found/not-found-page'
 import RequireAuth from './require-auth'
+import { RouteError, WebViewNotFound } from './route-error'
 import Shell from './shell'
 
-const AppRouter = () => {
-  if (isWebView()) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/postings/:id" element={<PostingPage />} />
-          <Route path="/profiles/:id" element={<ProfilePage />} />
-        </Routes>
-      </BrowserRouter>
-    )
-  }
-  return (
-    <BrowserRouter>
-      <Routes>
+// A new page opens at the top; back and forward restore where the reader was.
+export const ScrollRoot = () => (
+  <>
+    <ScrollRestoration />
+    <Outlet />
+  </>
+)
+
+export const appRoutes = (webView: boolean) =>
+  createRoutesFromElements(
+    webView ? (
+      <Route element={<ScrollRoot />} errorElement={<RouteError />}>
+        <Route path="/postings/:id" element={<PostingPage />} />
+        <Route path="/profiles/:id" element={<ProfilePage />} />
+        <Route path="*" element={<WebViewNotFound />} />
+      </Route>
+    ) : (
+      <Route element={<ScrollRoot />} errorElement={<RouteError />}>
         <Route element={<Shell />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/jobs" element={<JobsPage />} />
@@ -77,7 +90,10 @@ const AppRouter = () => {
             <Route path="/employer/postings/new" element={<PostingEditorPage />} />
             <Route path="/employer/postings/:id/edit" element={<PostingEditorPage />} />
             <Route path="/employer/postings/:id/applicants" element={<ApplicantsPage />} />
-            <Route path="/employer/postings/:id/applicants/:applicationId" element={<ApplicantPage />} />
+            <Route
+              path="/employer/postings/:id/applicants/:applicationId"
+              element={<ApplicantPage />}
+            />
             <Route path="/employer/chat" element={<ChatPage />} />
             <Route path="/employer/chat/new" element={<ChatNewPage />} />
             <Route path="/employer/chat/:id" element={<ChatThreadPage />} />
@@ -87,9 +103,13 @@ const AppRouter = () => {
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+      </Route>
+    ),
   )
+
+const AppRouter = () => {
+  const [router] = useState(() => createBrowserRouter(appRoutes(isWebView())))
+  return <RouterProvider router={router} />
 }
 
 export default AppRouter

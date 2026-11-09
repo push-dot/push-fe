@@ -62,7 +62,7 @@ const OfferList = ({ view, items, ready, selectedId, counts }: OfferListProps) =
                   type="button"
                   role="tab"
                   aria-selected={view === tab.key}
-                  onClick={() => navigate(tab.key === 'received' ? OFFERS_PATH : `${OFFERS_PATH}?box=${tab.key}`)}
+                  onClick={() => navigate(tab.key === 'received' ? OFFERS_PATH : `${OFFERS_PATH}?box=${tab.key}`, { preventScrollReset: true })}
                 >
                   {`${tab.label} ${counts[tab.key]}`}
                 </button>
