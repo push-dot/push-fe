@@ -1,7 +1,7 @@
 import { ApiError, type Settings } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import MySide from '../my/my-side'
 import { sessionStore } from '../../shared/auth/session'
@@ -178,7 +178,9 @@ const SettingsPage = () => {
         </section>
         <section className="box">
           <div className="settings-row">고객센터</div>
-          <div className="settings-row">약관 및 정책</div>
+          <Link to="/terms" className="settings-row">
+            약관 및 정책
+          </Link>
           <button
             type="button"
             className="settings-row danger"
