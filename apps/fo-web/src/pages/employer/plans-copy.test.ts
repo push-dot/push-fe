@@ -48,6 +48,7 @@ describe('ledger rows', () => {
       row({ id: 'b', description: 'Pro 월 구독', amountUsd: 100, receiptUrl: 'https://r/b' }),
       row({ id: 'grant', amountMicroCredits: 15_000_000, referenceId: 'monthly:2026-10:PRO' }),
       row({ id: 'a', description: 'Basic 월 구독', amountUsd: 20, createdAt: '2026-07-01T00:00:00.000Z' }),
+      row({ id: 'w', type: 'WRITE_OFF', amountMicroCredits: 120_000 }),
     ])
     expect(rows.map((item) => item.id)).toEqual(['b', 'a'])
     expect(rows[0]).toMatchObject({ title: 'Pro 월 구독', receiptUrl: 'https://r/b' })

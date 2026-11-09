@@ -553,7 +553,8 @@ export type UpdatePostingInput = Partial<CreatePostingInput> & { expectedRevisio
 
 export type LedgerEntry = {
   id: string
-  type: 'PURCHASE' | 'REFUND'
+  /** WRITE_OFF (push-be #253): credits forgiven when an AI job overran; never a payment, amountUsd null. */
+  type: 'PURCHASE' | 'REFUND' | 'WRITE_OFF'
   amountMicroCredits: number
   balanceAfter: number
   referenceId: string | null
