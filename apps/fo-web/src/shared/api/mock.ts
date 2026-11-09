@@ -758,9 +758,11 @@ const personaKey = () => mockPersona() ?? 'default'
 
 const currentUserId = () => sessionStore.load()?.user.id ?? 'u1'
 
+// push-be sends every member's displayName; the boards' admin is 이민아.
 const adminMember = (joinedAt: string): CompanyMember => ({
   userId: currentUserId(),
   email: MEMBER_EMAIL,
+  displayName: sessionStore.load()?.user.displayName ?? '이민아',
   role: 'ADMIN',
   joinedAt,
 })
@@ -771,9 +773,9 @@ const COMPANY_BNO = '2148703921'
 const memberSeats = (plan: Company['plan'], verifiedAt: string): CompanyRecord => ({
   company: { id: 'co-1', bNo: COMPANY_BNO, name: COMPANY_BRAND, ...MOAPAY_PROFILE, plan, verifiedAt, role: 'MEMBER', seats: { used: 2, limit: 2 } },
   members: [
-    { userId: 'u-admin', email: MEMBER_EMAIL, role: 'ADMIN', joinedAt: verifiedAt },
-    { userId: MEMBER_USER.id, email: MEMBER_USER.email, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
-    { userId: 'u-sora', email: 'sora.park@moapay.kr', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
+    { userId: 'u-admin', email: MEMBER_EMAIL, displayName: '이민아', role: 'ADMIN', joinedAt: verifiedAt },
+    { userId: MEMBER_USER.id, email: MEMBER_USER.email, displayName: MEMBER_USER.displayName, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
+    { userId: 'u-sora', email: 'sora.park@moapay.kr', displayName: '박소라', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
   ],
   invites: [],
 })
@@ -815,7 +817,7 @@ const seedCompany = (): CompanyRecord | null => {
       },
       members: [
         adminMember(verifiedAt),
-        { userId: 'u-member', email: 'jiho.han@moapay.kr', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
+        { userId: 'u-member', email: 'jiho.han@moapay.kr', displayName: '한지호', role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
       ],
       invites: [],
     }
