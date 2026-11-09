@@ -18,7 +18,8 @@ const AccountMenu = () => {
   const [open, setOpen] = useState(false)
   const employer = session?.user.accountType === 'EMPLOYER'
   const company = useMyCompany({ enabled: employer && Boolean(session?.user.companyId) })
-  const me = useAuthMe(open)
+  // Loaded with the session so the email is there when the menu opens (no line popping in).
+  const me = useAuthMe(Boolean(session))
   if (!session) return null
   const person = session.user.displayName
   const name = employer ? company.data?.name || person : person

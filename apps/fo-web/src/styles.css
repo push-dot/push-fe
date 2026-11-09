@@ -474,13 +474,16 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .row-more{position:relative;flex:none}
 .browser .row-more .hbtn[aria-expanded=true]{background:var(--fill)}
 .browser .pop.row-pop{top:calc(100% + 3px);right:0;width:220px}
+.browser .row-pop .mi .w6{font-weight:400}
+.browser .row-pop .mi.red{color:var(--t1)}
+.browser .row-pop .mi.red svg{color:var(--red)}
 .browser .name-field{display:flex;flex-direction:column;gap:6px}
 .browser .name-field>.num{align-self:flex-end}
 .browser .name-box{position:relative;display:block}
 .browser .sheet .name-box input:not([type=checkbox]):not([type=radio]){width:100%;padding-right:48px}
 .browser .name-clear{position:absolute;top:15px;right:14px;width:22px;height:22px;border-radius:11px;background:var(--fill2);color:var(--t2);display:flex;align-items:center;justify-content:center}
 .browser .mp{display:flex;flex-direction:column;gap:24px}
-.browser .mp-sub{margin-top:-10px}
+.browser .mp-sub{margin-top:-14px}
 .browser .mp-body{display:flex;flex-direction:column;gap:36px}
 .browser .mp-av{width:96px;height:96px;font-size:26px}
 .browser .mp-head{display:flex;flex-wrap:wrap;align-items:center;gap:22px}
