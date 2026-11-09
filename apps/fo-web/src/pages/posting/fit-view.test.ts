@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FIT_LOCK, FIT_PART_LABELS, firstDocument, fitCardModel, fitStatus, runPostingFit, type FitPayload } from './fit-view'
+import { FIT_LOCK, FIT_LOCK_CLOSED, FIT_PART_LABELS, firstDocument, fitCardModel, fitLockText, fitStatus, runPostingFit, type FitPayload } from './fit-view'
 
 const payload = (plan: string): FitPayload => ({
   fitScore: 6.9,
@@ -65,6 +65,15 @@ describe('fit card', () => {
     const polled = await runPostingFit('p1', doc, client('PRO', ['RUNNING', 'DONE']), noSleep)
     expect(polled?.locked).toBe(false)
     expect(polled?.document).toBe('김서준_백엔드_이력서_2026')
+  })
+})
+
+describe('fitLockText', () => {
+  it('invites the upgrade only while payments are open', () => {
+    expect(fitLockText(true)).toBe(FIT_LOCK)
+    expect(fitLockText(false)).toBe(FIT_LOCK_CLOSED)
+    expect(FIT_LOCK_CLOSED).toBe('🔒 항목별 점수와 약점은 PRO에서 볼 수 있어요')
+    expect(FIT_LOCK_CLOSED).not.toContain('올리면')
   })
 })
 
