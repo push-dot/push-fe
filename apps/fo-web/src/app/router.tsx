@@ -40,6 +40,7 @@ import EmployerVerifyPage from '../pages/employer/verify-page'
 import LegalPage from '../pages/legal/legal-page'
 import NotFoundPage from '../pages/not-found/not-found-page'
 import RequireAuth from './require-auth'
+import { RouteError, WebViewNotFound } from './route-error'
 import Shell from './shell'
 
 // A new page opens at the top; back and forward restore where the reader was.
@@ -53,12 +54,13 @@ export const ScrollRoot = () => (
 export const appRoutes = (webView: boolean) =>
   createRoutesFromElements(
     webView ? (
-      <Route element={<ScrollRoot />}>
+      <Route element={<ScrollRoot />} errorElement={<RouteError />}>
         <Route path="/postings/:id" element={<PostingPage />} />
         <Route path="/profiles/:id" element={<ProfilePage />} />
+        <Route path="*" element={<WebViewNotFound />} />
       </Route>
     ) : (
-      <Route element={<ScrollRoot />}>
+      <Route element={<ScrollRoot />} errorElement={<RouteError />}>
         <Route element={<Shell />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/jobs" element={<JobsPage />} />
