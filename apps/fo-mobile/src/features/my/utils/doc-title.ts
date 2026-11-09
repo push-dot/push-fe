@@ -22,7 +22,10 @@ export const typedTitle = (prev: string, typed: string, max = DOC_TITLE_MAX) => 
   return titleLength(prev) > max ? prev : clipTitle(typed, max)
 }
 
-export const titleOver = (title: string, max = DOC_TITLE_MAX) => titleLength(title.trim()) > max
+/** What the counter shows and the cap checks: the trimmed name, the one that gets saved. */
+export const savedLength = (title: string) => titleLength(title.trim())
+
+export const titleOver = (title: string, max = DOC_TITLE_MAX) => savedLength(title) > max
 
 export const renamedTitle = (current: string, typed: string) => {
   const next = typed.trim()
