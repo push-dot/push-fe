@@ -3,7 +3,8 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApplicantCounts, ApprovalResolution, BlockedUser, CompanyInvite, CompanyPosting, ConversationListItem,
+  CreateCalendarEventInput, GoogleIntegration, InvitePreview, PostingFacetFilters, PostingFacets, PostingStatus, SearchCounts, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
@@ -45,7 +46,9 @@ export const createApi = (c: Client) => ({
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
-    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
+    mine: (p: PageParams & { status?: PostingStatus } = {}) =>
+      c.get<ListEnvelope<CompanyPosting>>('companies/me/postings', { query: p }),
+    facets: (f: PostingFacetFilters = {}) => unwrap(c.get<DataEnvelope<PostingFacets>>('postings/facets', { query: f })),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
@@ -63,6 +66,7 @@ export const createApi = (c: Client) => ({
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
+    applicantCounts: (id: string) => unwrap(c.get<DataEnvelope<ApplicantCounts>>(`postings/${id}/applicant-counts`)),
     fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),
   },
 
@@ -89,6 +93,8 @@ export const createApi = (c: Client) => ({
 
   searchTrending: () => unwrap(c.get<DataEnvelope<SearchTrending>>('search/trending')),
 
+  searchCounts: (q: string) => unwrap(c.get<DataEnvelope<SearchCounts>>('search/counts', { query: { q } })),
+
   profiles: {
     list: (f: ProfileFilters = {}) => c.get<ListEnvelope<Profile>>('profiles', { query: f }),
     get: (userId: string) => unwrap(c.get<DataEnvelope<Profile>>(`profiles/${userId}`)),
@@ -109,8 +115,8 @@ export const createApi = (c: Client) => ({
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
     posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
     commentedPosts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
-    offers: (box: 'received' | 'sent', p: PageParams = {}) =>
-      c.get<ListEnvelope<Offer>>('me/offers', { query: { box, ...p } }),
+    offers: (box: 'received' | 'sent', { archived, ...p }: PageParams & { archived?: boolean } = {}) =>
+      c.get<ListEnvelope<Offer>>('me/offers', { query: { box, archived: archived ? '1' : undefined, ...p } }),
     offer: (id: string) => unwrap(c.get<DataEnvelope<Offer>>(`me/offers/${id}`)),
     acceptOffer: (id: string, reply?: string) =>
       unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/accept`, { body: reply ? { reply } : {} })),
@@ -118,6 +124,7 @@ export const createApi = (c: Client) => ({
     archiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/archive`)),
     unarchiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/unarchive`)),
     reportOffer: (id: string, reason?: string) => c.post<void>(`me/offers/${id}/report`, { body: reason ? { reason } : {} }),
+    blocks: (p: PageParams = {}) => c.get<ListEnvelope<BlockedUser>>('me/blocks', { query: p }),
     blockUser: (userId: string) => c.post<void>('me/blocks', { body: { userId } }),
     unblockUser: (userId: string) => c.delete<void>(`me/blocks/${userId}`),
     offerMessages: (id: string, p: PageParams = {}) =>
@@ -147,7 +154,7 @@ export const createApi = (c: Client) => ({
   },
 
   posts: {
-    list: (category?: PostCategory | null, p: PageParams = {}) =>
+    list: (category?: PostCategory | null, p: PageParams & { sort?: 'latest' | 'popular'; period?: 'week' } = {}) =>
       c.get<ListEnvelope<Post>>('posts', { query: { category: category ?? undefined, ...p } }),
     get: (id: string) => unwrap(c.get<DataEnvelope<Post>>(`posts/${id}`)),
     create: (body: { category: PostCategory; title: string; body: string; imageKeys: string[] }) =>
@@ -185,7 +192,7 @@ export const createApi = (c: Client) => ({
   },
   conversations: {
     list: (p: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' } = {}) =>
-      c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
+      c.get<ListEnvelope<ConversationListItem>>('conversations', { query: p }),
     create: (title: string) => unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { title } })),
     createEmployer: (body: { title: string; postingId?: string; applicationId?: string }) =>
       unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { ...body, audience: 'EMPLOYER' } })),
@@ -268,7 +275,10 @@ export const createApi = (c: Client) => ({
     verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
       unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    update: (body: UpdateCompanyInput) => unwrap(c.patch<DataEnvelope<Company>>('companies/me', { body })),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invites: () => unwrap(c.get<DataEnvelope<CompanyInvite[]>>('companies/me/invites')),
+    invitePreview: (token: string) => unwrap(c.get<DataEnvelope<InvitePreview>>(`companies/invites/${token}`)),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
     acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
@@ -278,6 +288,11 @@ export const createApi = (c: Client) => ({
 
   calendar: {
     events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
+    create: (body: CreateCalendarEventInput) => unwrap(c.post<DataEnvelope<CalendarEvent>>('calendar/events', { body })),
+  },
+
+  integrations: {
+    google: () => unwrap(c.get<DataEnvelope<GoogleIntegration>>('integrations/google')),
   },
 })
 

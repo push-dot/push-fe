@@ -444,6 +444,43 @@ describe('employer api', () => {
     expect(decodeURIComponent(hits[1]!.url)).toBe('http://x/api/v1/me/notifications?limit=10')
   })
 
+  it('calls the web v2 routes push-be develop serves', async () => {
+    const { api, hits } = harness((req) => json(req.method === 'POST' ? 201 : 200, { data: {}, page: { nextCursor: null, hasMore: false } }))
+    await api.companies.update({ industry: '핀테크', website: null })
+    await api.companies.invites()
+    await api.companies.invitePreview('tok')
+    await api.postings.applicantCounts('p1')
+    await api.postings.facets({ category: ['dev'], q: '백엔드' })
+    await api.postings.mine({ status: 'DRAFT' })
+    await api.searchCounts('토스')
+    await api.me.blocks({ limit: 20 })
+    await api.posts.list('dev', { sort: 'popular', period: 'week' })
+    await api.calendar.create({ type: 'INTERVIEW', title: '면접', startsAt: '2026-11-10T01:00:00.000Z', endsAt: '2026-11-10T02:00:00.000Z' })
+    await api.integrations.google()
+    expect(hits.map((hit) => `${hit.method} ${new URL(hit.url).pathname}${new URL(hit.url).search}`)).toEqual([
+      'PATCH /api/v1/companies/me',
+      'GET /api/v1/companies/me/invites',
+      'GET /api/v1/companies/invites/tok',
+      'GET /api/v1/postings/p1/applicant-counts',
+      'GET /api/v1/postings/facets?category=dev&q=%EB%B0%B1%EC%97%94%EB%93%9C',
+      'GET /api/v1/companies/me/postings?status=DRAFT',
+      'GET /api/v1/search/counts?q=%ED%86%A0%EC%8A%A4',
+      'GET /api/v1/me/blocks?limit=20',
+      'GET /api/v1/posts?category=dev&sort=popular&period=week',
+      'POST /api/v1/calendar/events',
+      'GET /api/v1/integrations/google',
+    ])
+    expect(bodyOf(hits[0]!)).toEqual({ industry: '핀테크', website: null })
+  })
+
+  it('asks for archived offers with archived=1 and leaves it out otherwise', async () => {
+    const { api, hits } = harness(() => json(200, { data: [], page: { nextCursor: null, hasMore: false } }))
+    await api.me.offers('received', { archived: true, limit: 10 })
+    await api.me.offers('sent', { archived: false })
+    await api.me.offers('received')
+    expect(hits.map((hit) => new URL(hit.url).search)).toEqual(['?box=received&archived=1&limit=10', '?box=sent', '?box=received'])
+  })
+
   it('keeps employer fields optional on existing shapes', () => {
     const legacyBilling: BillingStatus = {
       subscriptionStatus: 'ACTIVE',

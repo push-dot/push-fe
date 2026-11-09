@@ -12,6 +12,8 @@ export type Tenure = '0-2' | '3-5' | '6-9' | '10+'
 export type PostCategory = 'work' | 'dev' | 'daily' | 'career' | 'talk' | 'coffeechat' | 'marketing'
 export type Tone = 'as_is' | 'professional' | 'confident' | 'concise' | 'technical' | 'friendly'
 
+export type PostingStatus = 'DRAFT' | 'OPEN' | 'CLOSED'
+
 export type Posting = {
   id: string
   company: string
@@ -30,14 +32,29 @@ export type Posting = {
   createdAt: string
   revision?: number
   closedAt?: string | null
+  status?: PostingStatus
 }
+
+export type PostingCreator = { displayName: string }
 
 export type PostingDetail = Posting & {
   description: string
   requirements: string[]
   workConditions: Record<string, unknown>
   preferred?: string[]
+  applicantCount?: number
+  newApplicantCount?: number
+  createdBy?: PostingCreator | null
 }
+
+export type CompanyPosting = Posting & {
+  status: PostingStatus
+  applicantCount: number
+  newApplicantCount: number
+  createdBy: PostingCreator | null
+}
+
+export type ApplicantCounts = { total: number; applied: number; screening: number; interview: number; offer: number; rejected: number }
 
 export type PostingFilters = PageParams & {
   q?: string
@@ -49,6 +66,11 @@ export type PostingFilters = PageParams & {
   location?: string[]
   employmentType?: EmploymentType[]
 }
+
+export type PostingFacetFilters = Pick<PostingFilters, 'q' | 'category' | 'skills' | 'careerYears' | 'location' | 'employmentType'>
+export type PostingFacet = { id: string; count: number }
+export type PostingFacets = { career: PostingFacet[]; category: PostingFacet[]; location: PostingFacet[]; skills: PostingFacet[] }
+export type SearchCounts = { postings: number; people: number; posts: number }
 
 export type Career = { company: string; role: string; startedOn: string; endedOn: string | null; description: string }
 
@@ -103,6 +125,7 @@ export type Offer = {
   archivedAt?: string | null
   createdAt: string
 }
+export type BlockedUser = { user: { id: string; displayName: string }; createdAt: string }
 export type OfferMessage = { id: string; offerId: string; sender: UserRef; body: string; createdAt: string }
 
 export type Post = {
@@ -229,6 +252,14 @@ export type Conversation = {
   pinned: boolean
   createdAt: string
   updatedAt: string
+}
+
+export type ConversationListItem = Conversation & {
+  status: 'NEEDS_APPROVAL' | 'RUNNING' | 'DONE'
+  lastLine: string | null
+  lastMessagePreview: string
+  createdBy: { displayName: string }
+  postingId: string | null
 }
 
 export type Message = {
@@ -482,15 +513,34 @@ export type Company = {
   verifiedAt: string
   role: CompanyRole
   seats: { used: number; limit: number }
+  representativeName?: string | null
+  industry?: string | null
+  website?: string | null
+  intro?: string | null
+  logoKey?: string | null
+  logoUrl?: string | null
 }
 
-export type CompanyMember = { userId: string; email: string; role: CompanyRole; joinedAt: string }
+export type UpdateCompanyInput = Partial<Record<'representativeName' | 'industry' | 'website' | 'intro' | 'logoKey', string | null>>
+
+export type CompanyMember = { userId: string; email: string; displayName?: string; role: CompanyRole; joinedAt: string }
+
+export type CompanyInvite = { id: string; email: string; expiresAt: string }
+
+export type InvitePreview = { companyName: string; inviterName: string; inviterRole: CompanyRole; email: string; expiresAt: string }
 
 export type EmployerStage = 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
 
 export type ApplicantSummary = {
   applicationId: string
-  applicant: { displayName: string; headline: string | null }
+  applicant: {
+    displayName: string
+    headline: string | null
+    avatarUrl?: string | null
+    jobCategory?: string | null
+    tenureYears?: number | null
+  }
+  documents?: { title: string; pages: number | null }[]
   stage: ApplicationStage
   appliedAt: string
 }
@@ -574,8 +624,22 @@ export type CalendarEvent = {
   source: 'LOCAL' | 'GOOGLE'
   externalId: string | null
   notes: string
+  location?: string | null
+  remindAt?: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type CreateCalendarEventInput = Pick<CalendarEvent, 'type' | 'title' | 'startsAt' | 'endsAt'> &
+  Partial<Pick<CalendarEvent, 'timeZone' | 'applicationId' | 'notes' | 'location' | 'remindAt'>>
+
+export type GoogleIntegration = {
+  enabled: boolean
+  connected: boolean
+  scopes: string[]
+  gmailStatus: 'CONNECTED' | 'DISCONNECTED' | 'DISABLED'
+  calendarStatus: 'CONNECTED' | 'DISCONNECTED'
+  lastSyncedAt: string | null
 }
 
 export type ConversationAttachment = { id: string }
