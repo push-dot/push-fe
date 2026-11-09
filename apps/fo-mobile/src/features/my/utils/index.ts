@@ -1,4 +1,5 @@
 export * from './given-name'
+export * from './avatar-text'
 export * from './ym-label'
 export * from './career-period'
 export * from './parse-ym'

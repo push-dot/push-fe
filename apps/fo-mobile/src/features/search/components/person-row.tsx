@@ -20,7 +20,7 @@ const PersonRow = ({ p, q, onOpen }: { p: Profile; q: string; onOpen: () => void
       <Avatar name={p.displayName} url={p.avatarUrl} size={48} />
       <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
         <Text v="b1" weight="700" numberOfLines={1}>
-          <Highlight text={p.displayName} q={q} />
+          <Highlight text={p.displayName} q={q} weight="700" />
         </Text>
         <Text v="b2" color="t2" numberOfLines={1}>
           <Highlight text={p.headline} q={q} />

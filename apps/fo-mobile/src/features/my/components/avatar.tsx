@@ -4,7 +4,7 @@ import { View } from 'react-native'
 import { Text } from '@/shared/components'
 import { onAccent } from '../../../theme'
 import { assetUrl } from '@/shared/utility'
-import { givenName } from '../utils'
+import { avatarTextSize, givenName } from '../utils'
 
 const Avatar = ({
   name,
@@ -36,7 +36,7 @@ const Avatar = ({
         weight="700"
         style={{
           color: onAccent,
-          fontSize: Math.round(size * 0.31),
+          fontSize: avatarTextSize(size),
           lineHeight: Math.round(size * 0.4),
         }}
       >

@@ -12,6 +12,9 @@ export const NEXT_EVENT_DAYS = 90
 export const FOLLOW_PREVIEW = 5
 export const POST_PREVIEW = 4
 
+// Person avatar size -> initials font size on the boards; not a ratio (36/13 but 48/15).
+export const AVATAR_TEXT: Record<number, number> = { 36: 13, 44: 14, 48: 15, 56: 18, 64: 20, 84: 26 }
+
 export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 export const EVENT_TYPES: { key: CalendarEventType; label: string }[] = [
