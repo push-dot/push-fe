@@ -143,9 +143,6 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .sheet{box-sizing:border-box;width:min(560px,100%);max-height:min(80vh,720px);overflow:auto;display:flex;flex-direction:column;gap:14px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--card)}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .sheet input{box-sizing:border-box;width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--t1);padding:0 14px;font:inherit}
-.option-list{display:flex;flex-direction:column;gap:8px}
-.option{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;padding:0 14px;border-radius:14px;background:var(--fill);font-weight:700}
-.option[aria-pressed="true"]{background:var(--acSoft);color:var(--acText)}
 .sheet .primary{width:100%}
 .bottom-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
 .bottom-bar .pill{flex:1;height:52px;border:0;font-size:16px}
@@ -168,7 +165,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cu
 .search mark{background:var(--acSoft);color:var(--acText);border-radius:3px}
 .source-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .source-list .check>span{display:flex;flex-direction:column}
-.shortcut:focus-visible,.chip:focus-visible,.option:focus-visible,.bookmark:focus-visible,.posting-card-body:focus-visible,.more:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.shortcut:focus-visible,.chip:focus-visible,.bookmark:focus-visible,.posting-card-body:focus-visible,.more:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 
 .hub-head,.social-head,.my-head{gap:14px}
 .hub-search{display:flex;align-items:center;height:48px;padding:0 16px;border-radius:24px;background:var(--fill);color:var(--t3);text-decoration:none}
@@ -403,13 +400,31 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .jc .bm.on{color:var(--acText)}
 .browser .jc .bm.on .ic{fill:currentColor}
 .browser .jc .bm .ic{width:17px;height:17px}
-.browser .jobs-meta{padding:0}
+.browser .jobs-page{gap:24px}
+.browser .jobs-chips{flex-wrap:wrap;overflow:visible}
+.browser .jobs-facet,.browser .jobs-sort{position:relative}
+.browser .jobs-meta{align-items:center;padding:0}
+.browser .jobs-sort-btn{display:flex;align-items:center;gap:4px}
+.browser .pop.jobs-sort-pop{top:calc(100% + 14px);right:0;width:200px}
+.browser .jobs-sort-pop .mi{justify-content:space-between}
+.browser .jobs-sort-pop .mi.on{background:var(--fill)}
+.browser .jobs-sort-pop .mi svg{color:var(--acText)}
+.browser .pop.jobs-pop{top:calc(100% + 32px);left:0;width:300px}
+.browser .jobs-pop-title{padding:6px 8px 8px}
+.browser .jobs-pop-search{margin:0 4px 6px}
+.browser .jobs-opt{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 8px;text-align:left}
+.browser .jobs-opt .b2{flex:1}
+.browser .jobs-ck{display:flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border-radius:7px;box-shadow:inset 0 0 0 2px var(--ctl);color:#fff}
+.browser .jobs-ck.on{background:var(--ac);box-shadow:none}
+.browser .jobs-pop-actions{display:flex;gap:8px;padding:10px 4px 4px}
+.browser .jobs-pop-actions .btn.pri{flex:1}
+.browser .jobs-loader{display:flex;align-items:center;justify-content:center;gap:8px;padding-top:8px}
+.browser .jobs-spin{width:16px;height:16px;border-radius:8px;border:2px solid var(--fill2);border-top-color:var(--t3);animation:auth-spin .8s linear infinite}
 .browser .sheet-scrim{align-items:flex-start;padding:160px 16px 24px;background:rgba(10,12,16,.42);overflow:auto}
 .browser .sheet{width:min(480px,100%);max-height:none;overflow:visible;gap:16px;padding:28px;border-radius:28px;background:var(--bg);box-shadow:var(--popWeb)}
 .browser .sheet.wide{width:min(560px,100%)}
 .browser .sheet-grabber{display:none}
 .browser .sheet-actions{display:flex;justify-content:flex-end;gap:8px}
-.browser .option[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--ac)}
 .browser .back{display:inline-flex;align-items:center;gap:4px;width:fit-content;color:var(--t3);font-weight:600;text-decoration:none}
 .browser .source-link{display:flex;align-items:center;gap:6px;text-decoration:none}
 .browser .job-detail,.browser .profile-layout,.browser .search-layout,.browser .my-layout,.browser .inbox,.browser .social-layout{display:grid;gap:48px;align-items:start}
@@ -628,6 +643,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 
 .browser .chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:18px;font-weight:600}
 .browser .chip[aria-pressed="true"],.browser .chip[aria-selected="true"],.browser .chip.on{background:var(--acSoft);color:var(--acText);box-shadow:inset 0 0 0 1.5px var(--ac)}
+.browser .chip.open{box-shadow:0 0 0 2px var(--ac)}
 .browser .sheet label:has(input[type="radio"]:checked){background:var(--acSoft);box-shadow:inset 0 0 0 1.5px var(--ac)}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
