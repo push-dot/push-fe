@@ -770,6 +770,21 @@ const removeSource = (id: string) => {
   return false
 }
 
+// Push documents (AI_MADE sources) carry a push-be document revision; archive is how push-be deletes them.
+const documentRevisions = new Map<string, number>()
+
+const pushDocument = (source: SeedSource, status = 'DRAFT') => ({
+  id: source.id,
+  revision: documentRevisions.get(source.id) ?? 1,
+  title: source.fileName,
+  kind: 'TAILORED',
+  status,
+  updatedAt: source.createdAt,
+  applicationId: null,
+  latestVersionId: `${source.id}-v1`,
+  finalizedVersionId: null,
+})
+
 const libraryItem = (source: SeedSource) => ({
   ...(source.company ? { company: source.company, postingTitle: source.postingTitle } : {}),
   id: source.id,
@@ -1046,6 +1061,34 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       const payload = await readJson(input, init)
       if (typeof payload.fileName === 'string' && payload.fileName.trim()) found.fileName = payload.fileName.trim()
       return json(200, { data: found })
+    }
+  }
+  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/versions\/[^/]+\/export)?$/)
+  if (documentMatch) {
+    const [, id = '', sub] = documentMatch
+    const found = allSources().find((item) => item.id === decodeURIComponent(id) && item.kind === 'AI_MADE')
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
+    if (method === 'GET' && !sub) return json(200, { data: pushDocument(found) })
+    if (method === 'GET' && sub?.endsWith('/export')) {
+      return new Response(new Blob([`%PDF-1.4 mock ${found.fileName}`], { type: 'application/pdf' }), {
+        status: 200,
+        headers: { 'content-type': 'application/pdf' },
+      })
+    }
+    const payload = await readJson(input, init)
+    const revision = documentRevisions.get(found.id) ?? 1
+    if (payload.expectedRevision !== revision) {
+      return json(409, { error: { code: 'REVISION_CONFLICT', message: 'resource was modified', details: { currentRevision: revision } } })
+    }
+    if (method === 'POST' && sub === '/archive') {
+      documentRevisions.set(found.id, revision + 1)
+      removeSource(found.id)
+      return json(200, { data: pushDocument(found, 'ARCHIVED') })
+    }
+    if (method === 'PATCH' && !sub && typeof payload.title === 'string' && payload.title.trim()) {
+      documentRevisions.set(found.id, revision + 1)
+      found.fileName = payload.title.trim()
+      return json(200, { data: pushDocument(found) })
     }
   }
   if (method === 'GET' && tail === '/profiles') {
@@ -2085,7 +2128,9 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
     if (mockSwitch('profile-save-fail') && tail === '/me/profile') return internalError()
     if (mockSwitch('applicant-move-fail') && /^\/postings\/[^/]+\/applicants\/[^/]+$/.test(tail)) return internalError()
   }
-  if (method === 'DELETE' && mockSwitch('docs-delete-fail') && /^\/sources\/[^/]+$/.test(tail)) return internalError()
+  if (mockSwitch('docs-delete-fail') && (method === 'DELETE' ? /^\/sources\/[^/]+$/ : /^\/documents\/[^/]+\/archive$/).test(tail)) {
+    return internalError()
+  }
   return null
 }
 

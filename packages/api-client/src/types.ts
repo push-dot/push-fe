@@ -185,6 +185,7 @@ export type Settings = {
 
 export type ResumeDocument = {
   id: string
+  revision: number
   title: string
   kind: string
   status: string

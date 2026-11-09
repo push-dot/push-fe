@@ -80,6 +80,11 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`)),
     exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
       c.raw('GET', `documents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/export`, { query: { format } }),
+    rename: (id: string, expectedRevision: number, title: string) =>
+      unwrap(c.patch<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`, { body: { expectedRevision, title } })),
+    // push-be deletes a Push document by archiving it; DELETE sources/:id is for uploaded files only.
+    archive: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/archive`, { body: { expectedRevision } })),
   },
 
   jobs: {

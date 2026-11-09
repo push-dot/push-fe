@@ -246,3 +246,19 @@ describe('ms= switches', () => {
     expect((await call('/postings/p1')).status).toBe(200)
   })
 })
+
+describe('Push documents', () => {
+  it('archives like push-be: revision-guarded, gone from the list after', async () => {
+    using('personal', '')
+    const doc = (await read<{ data: { revision: number } }>('/documents/src-ai')).body.data
+    expect((await errorCode('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision + 1 })).code).toBe('REVISION_CONFLICT')
+    expect((await call('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision })).status).toBe(200)
+    const ids = (await read<{ data: { id: string }[] }>('/sources')).body.data.map((item) => item.id)
+    expect(ids).not.toContain('src-ai')
+  })
+
+  it('fails the archive under docs-delete-fail too', async () => {
+    using('personal', 'docs-delete-fail')
+    expect((await call('/documents/src-ai-toss/archive', 'POST', { expectedRevision: 1 })).status).toBe(500)
+  })
+})

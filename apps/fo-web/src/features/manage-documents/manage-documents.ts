@@ -1,6 +1,7 @@
 import type { SourceItem } from '@push/api-client'
 import {
   applicationsList,
+  documentsArchive,
   documentsExportFile,
   documentsGet,
   documentsRename,
@@ -13,7 +14,9 @@ const REVOKE_AFTER_MS = 60_000
 
 export const isPushDocument = (item: Pick<SourceItem, 'origin'>) => item.origin === 'AI'
 
-export const removeDocument = (id: string) => sourcesRemove(id)
+// push-be deletes a Push document by archiving it; DELETE sources/:id only removes uploaded files.
+export const removeDocument = (item: Pick<SourceItem, 'id' | 'origin'>) =>
+  isPushDocument(item) ? documentsArchive(item.id) : sourcesRemove(item.id)
 
 export const renameDocument = (id: string, title: string) => documentsRename(id, title)
 

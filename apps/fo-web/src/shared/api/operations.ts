@@ -1,5 +1,5 @@
-import type { Api } from '@push/api-client'
-import { api, http } from './client'
+import { atDocumentRevision, type Api } from '@push/api-client'
+import { api } from './client'
 
 export const searchCatalog = (...args: Parameters<Api['search']>) => api.search(...args)
 
@@ -192,11 +192,11 @@ export const documentsGet = (...args: Parameters<Api['documents']['get']>) => ap
 
 export const documentsExportFile = (...args: Parameters<Api['documents']['exportFile']>) => api.documents.exportFile(...args)
 
-export const documentsRename = async (id: string, title: string) => {
-  const path = `documents/${encodeURIComponent(id)}`
-  const current = await http.get<{ data: { revision: number } }>(path)
-  return http.patch<void>(path, { body: { expectedRevision: current.data.revision, title } })
-}
+export const documentsRename = (id: string, title: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.rename(id, revision, title))
+
+export const documentsArchive = (id: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.archive(id, revision))
 
 export const meDeleteLink = (...args: Parameters<Api['me']['deleteLink']>) => api.me.deleteLink(...args)
 

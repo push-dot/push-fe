@@ -68,7 +68,7 @@ const DocumentsPanel = () => {
   const [renaming, setRenaming] = useState<SourceItem | null>(null)
   const [deleting, setDeleting] = useState<SourceItem | null>(null)
   const refresh = () => queryClient.invalidateQueries({ queryKey: SOURCES_KEY })
-  const { hidden, start, undo } = useUndoDelete({
+  const { hidden, start, undo } = useUndoDelete<SourceItem>({
     remove: removeDocument,
     onDone: refresh,
     onFail: (retry) =>
@@ -104,7 +104,7 @@ const DocumentsPanel = () => {
     upload.mutate(file, {
       onSuccess: async (source) => {
         if (cancelledRef.current === file) {
-          await removeDocument(source.id).catch(() => undefined)
+          await removeDocument({ id: source.id, origin: 'UPLOAD' }).catch(() => undefined)
           return
         }
         setFresh(source.id)
@@ -129,7 +129,7 @@ const DocumentsPanel = () => {
 
   const remove = (item: SourceItem) => {
     setDeleting(null)
-    start(item.id)
+    start(item)
     toast.show(DOCUMENT_DELETE.done, {
       action: {
         label: UNDO_LABEL,
