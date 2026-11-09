@@ -8,7 +8,7 @@ import { Icon } from '../../shared/ui/icon'
 import { Popover } from '../../shared/ui/popover'
 import Skeleton from '../../shared/ui/skeleton'
 import StateBlock from '../../shared/ui/state-block'
-import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, FILTERED_EMPTY_HINT, JOB_PAGE_SIZE, JOB_SORTS, LOADING_MORE, SORT_LABEL, type FilterKey, type JobFilters, type JobSort } from './constants'
+import { EMPTY_FILTERS, FILTER_CHIPS, FILTER_RESET, FILTERED_EMPTY, FILTERED_EMPTY_HINT, JOB_PAGE_SIZE, JOB_SORTS, LOAD_MORE_MARGIN, LOADING_MORE, SORT_LABEL, sortFrom, type FilterKey, type JobFilters, type JobSort } from './constants'
 import { usePostingCount, usePostingLocations, usePostingPages } from '../../entities/posting'
 
 
@@ -28,8 +28,7 @@ const labelsFor = (facet: FilterKey, filters: JobFilters) => {
 
 const JobsPage = () => {
   const [params, setParams] = useSearchParams()
-  const sortParam = params.get('sort')
-  const sort: JobSort = JOB_SORTS.includes(sortParam as JobSort) ? (sortParam as JobSort) : 'latest'
+  const sort = sortFrom(params.get('sort'))
   const filters = useMemo<JobFilters>(
     () => ({
       category: readList(params, 'category') as JobCategory[],
@@ -95,9 +94,25 @@ const JobsPage = () => {
     window.addEventListener('scroll', () => setScrolled(true), { once: true, passive: true })
   }, [])
   useEffect(() => {
+    if (items.length === 0) return
+    let live = true
+    void document.fonts.ready.then(() => {
+      if (live && document.documentElement.scrollHeight <= window.innerHeight) setScrolled(true)
+    })
+    return () => {
+      live = false
+    }
+  }, [items.length])
+  useEffect(() => {
     const node = loader.current
-    const fits = document.documentElement.scrollHeight <= window.innerHeight
-    if (!node || !hasNextPage || !(scrolled || fits)) return
+    if (!node || !hasNextPage || !scrolled) return
+    if (typeof IntersectionObserver === 'undefined') {
+      const onScroll = () => {
+        if (!isFetchingNextPage && node.getBoundingClientRect().top < window.innerHeight + LOAD_MORE_MARGIN) void fetchNextPage()
+      }
+      window.addEventListener('scroll', onScroll, { passive: true })
+      return () => window.removeEventListener('scroll', onScroll)
+    }
     const observer = new IntersectionObserver(([entry]) => {
       if (entry?.isIntersecting && !isFetchingNextPage) void fetchNextPage()
     })
