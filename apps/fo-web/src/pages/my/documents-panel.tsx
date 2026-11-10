@@ -47,7 +47,14 @@ import DocumentGroup from './document-group'
 import DocumentPushRow from './document-push-row'
 import DocumentRenameDialog from './document-rename-dialog'
 import DocumentUploadingRow from './document-uploading-row'
-import { pushDocGroups, splitDocuments, uploadProblem, type PushDocAction } from './my-rules'
+import {
+  documentDeleteNotice,
+  pushDocGroups,
+  referencedByEvidence,
+  splitDocuments,
+  uploadProblem,
+  type PushDocAction,
+} from './my-rules'
 import { useUndoDelete } from './use-undo-delete'
 
 const ACCEPT =
@@ -71,10 +78,10 @@ const DocumentsPanel = () => {
   const { hidden, start, undo } = useUndoDelete<SourceItem>({
     remove: removeDocument,
     onDone: refresh,
-    onFail: (retry) =>
-      toast.show(DOCUMENT_DELETE.failed, {
+    onFail: (retry, error) =>
+      toast.show(documentDeleteNotice(error), {
         tone: 'err',
-        action: { label: RETRY_LABEL, onClick: retry },
+        ...(referencedByEvidence(error) ? {} : { action: { label: RETRY_LABEL, onClick: retry } }),
       }),
   })
   const upload = useMutation({ mutationFn: (file: File) => uploadResume(file) })

@@ -6,12 +6,13 @@ const ops = vi.hoisted(() => ({
   documentsExportFile: vi.fn(),
   documentsGet: vi.fn(),
   documentsRename: vi.fn(),
+  documentsRestore: vi.fn(async () => ({})),
   sourcesContent: vi.fn(),
   sourcesRemove: vi.fn(async () => undefined),
 }))
 vi.mock('../../shared/api/operations', () => ops)
 
-const { removeDocument } = await import('./manage-documents')
+const { removeDocument, restoreDocument } = await import('./manage-documents')
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -26,5 +27,17 @@ describe('removeDocument', () => {
     await removeDocument({ id: 'src-1', origin: 'UPLOAD' })
     expect(ops.sourcesRemove).toHaveBeenCalledWith('src-1')
     expect(ops.documentsArchive).not.toHaveBeenCalled()
+  })
+})
+
+describe('restoreDocument', () => {
+  it('restores a Push document at the revision archive returned', async () => {
+    await restoreDocument({ id: 'doc-1', origin: 'AI' }, { revision: 4 })
+    expect(ops.documentsRestore).toHaveBeenCalledWith('doc-1', 4)
+  })
+
+  it('does not restore an upload, which push-be hard-deletes', async () => {
+    await restoreDocument({ id: 'src-1', origin: 'UPLOAD' }, undefined)
+    expect(ops.documentsRestore).not.toHaveBeenCalled()
   })
 })

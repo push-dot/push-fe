@@ -1,4 +1,5 @@
 html,body{margin:0;background:var(--bg);color:var(--t1)}
+html:has(.sheet-scrim),html:has(.msheet-scrim){overflow:hidden}
 body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;letter-spacing:-.02em;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 h1,h2,p{margin:0}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;text-align:inherit;letter-spacing:inherit}
@@ -141,7 +142,7 @@ a{color:inherit;text-decoration:none}
 .chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--ac);color:#fff}
 .more{display:block;margin:0 auto 24px;height:44px;padding:0 18px;border-radius:999px;background:var(--fill);font-weight:700}
 .sheet-scrim{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:var(--scrim)}
-.sheet{box-sizing:border-box;width:min(560px,100%);max-height:min(80vh,720px);overflow:auto;display:flex;flex-direction:column;gap:14px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--card)}
+.sheet{box-sizing:border-box;width:min(560px,100%);max-height:min(80vh,720px);overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:14px;padding:18px 18px calc(18px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--card)}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .sheet input{box-sizing:border-box;width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--t1);padding:0 14px;font:inherit}
 .sheet .primary{width:100%}
@@ -489,7 +490,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 @media (max-width:1024px){.browser .pop.jobs-pop{left:-10px}.browser .pop.jobs-sort-pop{right:8px}}
 .browser .jobs-loader{display:flex;align-items:center;justify-content:center;gap:8px;padding-top:8px}
 .browser .jobs-spin{width:16px;height:16px;border-radius:8px;border:2px solid var(--fill2);border-top-color:var(--t3);animation:auth-spin .8s linear infinite}
-.browser .sheet-scrim{align-items:flex-start;padding:160px 16px 24px;background:rgba(10,12,16,.42);overflow:auto}
+.browser .sheet-scrim{align-items:flex-start;padding:160px 16px 24px;background:rgba(10,12,16,.42);overflow:auto;overscroll-behavior:contain}
 .browser .sheet{width:min(480px,100%);max-height:none;overflow:visible;gap:16px;padding:28px;border-radius:28px;background:var(--bg);box-shadow:var(--popWeb)}
 .browser .sheet.wide{width:min(560px,100%)}
 .browser .sheet-grabber{display:none}
@@ -1523,7 +1524,7 @@ button.shortcut{border:0;cursor:pointer;font:inherit}
 .browser .mi.red{color:var(--red)}
 .browser :is(.pop,.msheet) .hr{height:1px;margin:6px 4px;background:var(--line)}
 .browser .msheet-scrim{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;background:rgba(10,12,16,.42)}
-.browser .msheet{position:relative;display:flex;flex-direction:column;width:100%;max-height:calc(100% - 72px);overflow:auto;padding:28px 20px calc(24px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:var(--bg);box-shadow:var(--popWeb)}
+.browser .msheet{position:relative;display:flex;flex-direction:column;width:100%;max-height:calc(100% - 72px);overflow:auto;overscroll-behavior:contain;padding:28px 20px calc(24px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:var(--bg);box-shadow:var(--popWeb)}
 .browser .msheet::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:var(--fill2)}
 .browser .msheet .mi{height:52px;font-size:16px}
 

@@ -4,9 +4,14 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 
 import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
 import { sessionStore } from '../../shared/auth/session'
-import { EMAIL_TAKEN_EMPLOYER_COPY, EMAIL_TAKEN_PERSONAL_COPY, PASSWORD_LENGTH_COPY } from '../../shared/model/constants'
+import {
+  EMAIL_TAKEN_EMPLOYER_COPY,
+  EMAIL_TAKEN_PERSONAL_COPY,
+  PASSWORD_LENGTH_COPY,
+} from '../../shared/model/constants'
 import { emailSignupInput, emailTakenCopy, passwordError } from '../../shared/model/login-providers'
 import { Icon } from '../../shared/ui/icon'
+import Toast from '../../shared/ui/toast'
 import AccountTypeControl from './account-type-control'
 import AuthCheck from './auth-check'
 import AuthPasswordField from './auth-password-field'
@@ -32,6 +37,7 @@ import { useOAuthStart } from './oauth-start'
 import PhoneFlow from './phone-flow'
 import VerifyMail from './verify-mail'
 import { authEmailSignup } from '../../features/sign-up'
+import { useVerifyResend } from './verify-resend'
 
 // Personal accounts start with a phone number (owner ruling: email/password is employer only); a first social login
 // arrives here with push-be's pendingToken to attach the number.
@@ -55,10 +61,21 @@ const SignupPage = () => {
       />
     )
   }
-  return <EmployerSignup initialEmail={params.get('email') ?? ''} onPersonal={() => setEmployer(false)} />
+  return (
+    <EmployerSignup
+      initialEmail={params.get('email') ?? ''}
+      onPersonal={() => setEmployer(false)}
+    />
+  )
 }
 
-const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; onPersonal: () => void }) => {
+const EmployerSignup = ({
+  initialEmail,
+  onPersonal,
+}: {
+  initialEmail: string
+  onPersonal: () => void
+}) => {
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
@@ -67,6 +84,7 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
   const [taken, setTaken] = useState(false)
   const [done, setDone] = useState(false)
   const [pending, setPending] = useState(false)
+  const resend = useVerifyResend(email)
   const emailTaken = error === EMAIL_TAKEN_PERSONAL_COPY || error === EMAIL_TAKEN_EMPLOYER_COPY
   const passwordInvalid = error === PASSWORD_LENGTH_COPY
   const blocked = !terms || taken
@@ -103,17 +121,20 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
 
   if (done) {
     return (
-      <VerifyMail
-        email={email}
-        pending={pending}
-        error={error}
-        onResend={() => void send()}
-        onEdit={() => {
-          setDone(false)
-          setError(null)
-          setTaken(false)
-        }}
-      />
+      <>
+        <VerifyMail
+          email={email}
+          pending={resend.pending || resend.cooling}
+          error={resend.error}
+          onResend={() => void resend.send()}
+          onEdit={() => {
+            setDone(false)
+            setError(null)
+            setTaken(false)
+          }}
+        />
+        <Toast message={resend.toast.message} tone={resend.toast.tone} />
+      </>
     )
   }
 
@@ -123,12 +144,20 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
         <h1>{SIGNUP_EMPLOYER_TITLE}</h1>
         <p>{SIGNUP_LEAD}</p>
       </header>
-      <AccountTypeControl value="EMPLOYER" onChange={(next) => next === 'PERSONAL' && onPersonal()} />
+      <AccountTypeControl
+        value="EMPLOYER"
+        onChange={(next) => next === 'PERSONAL' && onPersonal()}
+      />
       <form className="auth-stack" onSubmit={(event) => void submit(event)}>
         <label className="auth-block">
           <span className="auth-label">{NAME_LABEL}</span>
           <span className="auth-control">
-            <input value={displayName} autoComplete="name" required onChange={(event) => setDisplayName(event.target.value)} />
+            <input
+              value={displayName}
+              autoComplete="name"
+              required
+              onChange={(event) => setDisplayName(event.target.value)}
+            />
           </span>
         </label>
         <label className="auth-block">
@@ -190,7 +219,11 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
             {error}
           </p>
         ) : null}
-        <button type="submit" className={blocked ? 'auth-btn pri dis' : 'auth-btn pri'} disabled={blocked || pending}>
+        <button
+          type="submit"
+          className={blocked ? 'auth-btn pri dis' : 'auth-btn pri'}
+          disabled={blocked || pending}
+        >
           {SIGNUP_SUBMIT_COPY}
         </button>
       </form>

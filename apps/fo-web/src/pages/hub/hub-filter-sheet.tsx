@@ -1,9 +1,17 @@
-import { CAREER_STATUSES, TENURES, type CareerStatus, type Tenure } from '@push/api-client'
+import {
+  CAREER_STATUSES,
+  TENURES,
+  type CareerStatus,
+  type JobCategory,
+  type Tenure,
+} from '@push/api-client'
 
 import { Popover } from '../../shared/ui/popover'
 import { HUB_STATUS_ORDER } from './constants'
 
-const STATUSES = [...CAREER_STATUSES].sort((a, b) => HUB_STATUS_ORDER.indexOf(a.key) - HUB_STATUS_ORDER.indexOf(b.key))
+const STATUSES = [...CAREER_STATUSES].sort(
+  (a, b) => HUB_STATUS_ORDER.indexOf(a.key) - HUB_STATUS_ORDER.indexOf(b.key),
+)
 
 export type HubDraft = {
   tenure?: Tenure
@@ -11,6 +19,12 @@ export type HubDraft = {
 }
 
 export const countApplied = (draft: HubDraft) => (draft.tenure ? 1 : 0) + (draft.status ? 1 : 0)
+
+export const profileFilters = (categories: JobCategory[], draft: HubDraft) => ({
+  category: categories.length > 0 ? categories : undefined,
+  tenure: draft.tenure ? [draft.tenure] : undefined,
+  status: draft.status ? [draft.status] : undefined,
+})
 
 const HubFilterSheet = ({
   draft,
@@ -39,7 +53,9 @@ const HubFilterSheet = ({
               type="button"
               className="chip"
               aria-pressed={draft.tenure === item.key}
-              onClick={() => onChange({ ...draft, tenure: draft.tenure === item.key ? undefined : item.key })}
+              onClick={() =>
+                onChange({ ...draft, tenure: draft.tenure === item.key ? undefined : item.key })
+              }
             >
               {item.label}
             </button>
@@ -55,7 +71,9 @@ const HubFilterSheet = ({
               type="button"
               className="chip"
               aria-pressed={draft.status === item.key}
-              onClick={() => onChange({ ...draft, status: draft.status === item.key ? undefined : item.key })}
+              onClick={() =>
+                onChange({ ...draft, status: draft.status === item.key ? undefined : item.key })
+              }
             >
               {item.label}
             </button>

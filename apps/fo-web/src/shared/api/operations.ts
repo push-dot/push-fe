@@ -13,6 +13,8 @@ export const authEmailSignup = (...args: Parameters<Api['auth']['emailSignup']>)
 
 export const authEmailVerify = (...args: Parameters<Api['auth']['emailVerify']>) => api.auth.emailVerify(...args)
 
+export const authEmailResendVerify = (email: string) => api.auth.email.resendVerify(email)
+
 export const authExchange = (...args: Parameters<Api['auth']['exchange']>) => api.auth.exchange(...args)
 
 export const authPhoneSend = (...args: Parameters<Api['auth']['phoneSend']>) => api.auth.phoneSend(...args)
@@ -213,6 +215,10 @@ export const documentsRename = (id: string, title: string) =>
 
 export const documentsArchive = (id: string) =>
   atDocumentRevision(api.documents, id, (revision) => api.documents.archive(id, revision))
+
+// Known revision is the one archive just returned, so a restore does not GET a row the list hides.
+export const documentsRestore = (id: string, revision: number) =>
+  atDocumentRevision(api.documents, id, (next) => api.documents.restore(id, next), revision)
 
 export const meDeleteLink = (...args: Parameters<Api['me']['deleteLink']>) => api.me.deleteLink(...args)
 
