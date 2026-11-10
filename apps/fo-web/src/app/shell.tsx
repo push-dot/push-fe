@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { AgentMark, Icon } from '../shared/ui/icon'
-import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
@@ -12,6 +11,7 @@ import TabBar from './tab-bar'
 import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
+import { useSignOut } from '../features/sign-out'
 import NotificationBell from '../pages/notifications/notification-bell'
 
 
@@ -34,6 +34,7 @@ const Shell = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const session = useSession()
+  const signOut = useSignOut()
   const auth = isAuthChrome(location.pathname)
   const queryText = location.pathname === '/search' ? '' : (new URLSearchParams(location.search).get('q') ?? '')
   const [searchDraft, setSearchDraft] = useState(queryText)
@@ -56,6 +57,8 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   const tabs = !auth && tabBarShown(location.pathname)
+  // The WebInbox boards fill the viewport with the inbox card and draw no footer.
+  const footer = !auth && !chatScreen && !location.pathname.startsWith('/offers')
   const shellClass = ['shell', 'browser', auth ? 'auth-shell' : '', chatScreen ? 'chat-screen' : '', tabs ? 'has-tabs' : ''].filter(Boolean).join(' ')
   return (
     <div className={shellClass}>
@@ -73,10 +76,7 @@ const Shell = () => {
                 <span aria-hidden="true">·</span>
                 <button
                   type="button"
-                  onClick={() => {
-                    sessionStore.clear()
-                    navigate('/')
-                  }}
+                  onClick={() => void signOut()}
                 >
                   {AUTH_LOGOUT}
                 </button>
@@ -159,7 +159,7 @@ const Shell = () => {
       <div className="shell-main">
         <Outlet />
       </div>
-      {auth || chatScreen ? null : (
+      {!footer ? null : (
         <footer className="ft">
           <div className="wrap">
             <span className="wordmark">

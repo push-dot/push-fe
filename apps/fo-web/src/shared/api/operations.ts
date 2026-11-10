@@ -1,4 +1,4 @@
-import type { Api } from '@push/api-client'
+import { atDocumentRevision, type Api } from '@push/api-client'
 import { api } from './client'
 
 export const searchCatalog = (...args: Parameters<Api['search']>) => api.search(...args)
@@ -15,6 +15,8 @@ export const authEmailVerify = (...args: Parameters<Api['auth']['emailVerify']>)
 
 export const authExchange = (...args: Parameters<Api['auth']['exchange']>) => api.auth.exchange(...args)
 
+export const authLogout = (...args: Parameters<Api['auth']['logout']>) => api.auth.logout(...args)
+
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
 
 export const authRequestPasswordReset = (...args: Parameters<Api['auth']['requestPasswordReset']>) => api.auth.requestPasswordReset(...args)
@@ -27,11 +29,25 @@ export const billingCompanyStatus = (...args: Parameters<Api['billing']['company
 
 export const billingTopup = (...args: Parameters<Api['billing']['topup']>) => api.billing.topup(...args)
 
+export const billingLedger = (...args: Parameters<Api['billing']['ledger']>) => api.billing.ledger(...args)
+
 export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) => api.calendar.events(...args)
+
+export const calendarCreate = (...args: Parameters<Api['calendar']['create']>) => api.calendar.create(...args)
+
+export const integrationsGoogle = (...args: Parameters<Api['integrations']['google']>) => api.integrations.google(...args)
 
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
+
+export const companiesInvites = (...args: Parameters<Api['companies']['invites']>) => api.companies.invites(...args)
+
+export const companiesResendInvite = (...args: Parameters<Api['companies']['resendInvite']>) => api.companies.resendInvite(...args)
+
+export const companiesCancelInvite = (...args: Parameters<Api['companies']['cancelInvite']>) => api.companies.cancelInvite(...args)
+
+export const companiesUpdate = (...args: Parameters<Api['companies']['update']>) => api.companies.update(...args)
 
 export const companiesMe = (...args: Parameters<Api['companies']['me']>) => api.companies.me(...args)
 
@@ -64,7 +80,15 @@ export const meAcceptOffer = (...args: Parameters<Api['me']['acceptOffer']>) => 
 
 export const meAddLink = (...args: Parameters<Api['me']['addLink']>) => api.me.addLink(...args)
 
+export const meArchiveOffer = (...args: Parameters<Api['me']['archiveOffer']>) => api.me.archiveOffer(...args)
+
+export const meBlockUser = (...args: Parameters<Api['me']['blockUser']>) => api.me.blockUser(...args)
+
 export const meBookmarks = (...args: Parameters<Api['me']['bookmarks']>) => api.me.bookmarks(...args)
+
+export const meBlocks = (...args: Parameters<Api['me']['blocks']>) => api.me.blocks(...args)
+
+export const meCommentedPosts = (...args: Parameters<Api['me']['commentedPosts']>) => api.me.commentedPosts(...args)
 
 export const meConsents = (...args: Parameters<Api['me']['consents']>) => api.me.consents(...args)
 
@@ -88,9 +112,13 @@ export const meProfile = (...args: Parameters<Api['me']['profile']>) => api.me.p
 
 export const meReadNotifications = (...args: Parameters<Api['me']['readNotifications']>) => api.me.readNotifications(...args)
 
+export const meReportOffer = (...args: Parameters<Api['me']['reportOffer']>) => api.me.reportOffer(...args)
+
 export const meSendOfferMessage = (...args: Parameters<Api['me']['sendOfferMessage']>) => api.me.sendOfferMessage(...args)
 
 export const meSettings = (...args: Parameters<Api['me']['settings']>) => api.me.settings(...args)
+
+export const meUnarchiveOffer = (...args: Parameters<Api['me']['unarchiveOffer']>) => api.me.unarchiveOffer(...args)
 
 export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']>) => api.me.updateConsents(...args)
 
@@ -98,9 +126,15 @@ export const meUpdateProfile = (...args: Parameters<Api['me']['updateProfile']>)
 
 export const meUpdateSettings = (...args: Parameters<Api['me']['updateSettings']>) => api.me.updateSettings(...args)
 
+export const meUnblockUser = (...args: Parameters<Api['me']['unblockUser']>) => api.me.unblockUser(...args)
+
 export const meWebNotifications = (...args: Parameters<Api['me']['webNotifications']>) => api.me.webNotifications(...args)
 
 export const postingsApplicant = (...args: Parameters<Api['postings']['applicant']>) => api.postings.applicant(...args)
+
+export const postingsApplicantFile = (...args: Parameters<Api['postings']['applicantFile']>) => api.postings.applicantFile(...args)
+
+export const postingsApplicantCounts = (...args: Parameters<Api['postings']['applicantCounts']>) => api.postings.applicantCounts(...args)
 
 export const postingsApplicants = (...args: Parameters<Api['postings']['applicants']>) => api.postings.applicants(...args)
 
@@ -151,5 +185,23 @@ export const sourcesGet = (...args: Parameters<Api['sources']['get']>) => api.so
 export const sourcesList = (...args: Parameters<Api['sources']['list']>) => api.sources.list(...args)
 
 export const sourcesUpload = (...args: Parameters<Api['sources']['upload']>) => api.sources.upload(...args)
+
+export const sourcesRemove = (...args: Parameters<Api['sources']['remove']>) => api.sources.remove(...args)
+
+export const sourcesContent = (...args: Parameters<Api['sources']['content']>) => api.sources.content(...args)
+
+export const documentsGet = (...args: Parameters<Api['documents']['get']>) => api.documents.get(...args)
+
+export const documentsExportFile = (...args: Parameters<Api['documents']['exportFile']>) => api.documents.exportFile(...args)
+
+export const documentsRename = (id: string, title: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.rename(id, revision, title))
+
+export const documentsArchive = (id: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.archive(id, revision))
+
+export const meDeleteLink = (...args: Parameters<Api['me']['deleteLink']>) => api.me.deleteLink(...args)
+
+export const meRestoreLink = (...args: Parameters<Api['me']['restoreLink']>) => api.me.restoreLink(...args)
 
 export const uploadsImage = (...args: Parameters<Api['uploads']['image']>) => api.uploads.image(...args)

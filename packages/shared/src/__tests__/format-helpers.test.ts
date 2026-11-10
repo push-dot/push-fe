@@ -26,6 +26,13 @@ describe('brandColor', () => {
     expect(brandColor('모아페이')).toBe('#1F3A8A')
     expect(brandColor('파도AI')).toBe('#862E9C')
   })
+
+  it('gives the mock people the avatar colours the app boards draw', () => {
+    registerMockBrandColors()
+    expect(brandColor('오지현')).toBe('#E8590C')
+    expect(brandColor('정해린')).toBe('#D6336C')
+    expect(brandColor('강민호')).toBe('#2F9E44')
+  })
 })
 
 describe('fileSize', () => {

@@ -38,7 +38,7 @@ const MySide = () => {
     return want ? want === chip : true
   }
   const offersOn = location.pathname === '/offers' || location.pathname.startsWith('/offers/')
-  const settingsOn = location.pathname === '/settings'
+  const settingsOn = location.pathname === '/settings' || location.pathname.startsWith('/settings/')
   const name = session?.user.displayName ?? ''
   const companyName = company.data?.name || name
   const role = company.data?.role ?? session?.user.companyRole

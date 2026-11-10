@@ -3,8 +3,8 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
@@ -45,7 +45,7 @@ export const createApi = (c: Client) => ({
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
-    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
+    mine: (p: PageParams = {}) => c.get<ListEnvelope<CompanyPosting>>('companies/me/postings', { query: p }),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
@@ -61,6 +61,10 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
     applicant: (postingId: string, applicationId: string) =>
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    /** The attached file's bytes (Content-Disposition carries the name). */
+    applicantFile: (postingId: string, applicationId: string, fileId: string) =>
+      c.raw('GET', `postings/${postingId}/applicants/${applicationId}/files/${fileId}`),
+    applicantCounts: (id: string) => unwrap(c.get<DataEnvelope<ApplicantCounts>>(`postings/${id}/applicant-counts`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
     fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),
@@ -76,6 +80,11 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`)),
     exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
       c.raw('GET', `documents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/export`, { query: { format } }),
+    rename: (id: string, expectedRevision: number, title: string) =>
+      unwrap(c.patch<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`, { body: { expectedRevision, title } })),
+    // push-be deletes a Push document by archiving it; DELETE sources/:id is for uploaded files only.
+    archive: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/archive`, { body: { expectedRevision } })),
   },
 
   jobs: {
@@ -271,8 +280,12 @@ export const createApi = (c: Client) => ({
     verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
       unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    update: (body: UpdateCompanyInput) => unwrap(c.patch<DataEnvelope<Company>>('companies/me', { body })),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invites: () => unwrap(c.get<DataEnvelope<CompanyInvite[]>>('companies/me/invites')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
+    resendInvite: (id: string) => unwrap(c.post<DataEnvelope<CompanyInvite>>(`companies/me/invites/${id}/resend`)),
+    cancelInvite: (id: string) => c.delete<void>(`companies/me/invites/${id}`),
     acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>
@@ -280,7 +293,13 @@ export const createApi = (c: Client) => ({
   },
 
   calendar: {
-    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
+    // shortcut: one page of 100 (same as the app); page once a month view can hold more events.
+    events: (from: string, to: string, limit = 100) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to, limit } }),
+    create: (body: CreateCalendarEventInput) => unwrap(c.post<DataEnvelope<CalendarEvent>>('calendar/events', { body })),
+  },
+
+  integrations: {
+    google: () => unwrap(c.get<DataEnvelope<GoogleIntegration>>('integrations/google')),
   },
 })
 

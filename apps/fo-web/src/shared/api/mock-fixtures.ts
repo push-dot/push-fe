@@ -240,7 +240,7 @@ const career = (company: string, role: string, startedOn: string, endedOn: strin
   description,
 })
 
-const TAEYOON_CAREERS = [
+export const TAEYOON_CAREERS = [
   career('모아페이', '백엔드 엔지니어', '2022-03-01', null, '결제 승인 API 성능 개선, 정산 파이프라인 재설계'),
   career('누리클라우드', '서버 개발자', '2021-01-01', '2022-02-28', '멀티 테넌트 과금 시스템 개발'),
 ]
@@ -538,8 +538,8 @@ export const RECEIVED_OFFERS: Offer[] = [
 ]
 
 export const BLOCK_SEEDS = [
-  { user: party('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'), blockedAt: '2026-11-07T01:00:00.000Z' },
-  { user: party('u-minjae-h', '한민재', null, ''), blockedAt: '2026-10-03T01:00:00.000Z' },
+  { user: party('u-jihyun', '오지현', '모아페이', '결제 플랫폼팀 채용 담당'), createdAt: '2026-11-07T01:00:00.000Z' },
+  { user: party('u-minjae-h', '한민재', null, ''), createdAt: '2026-10-03T01:00:00.000Z' },
 ]
 
 export const CANT_SEND_REPLY = { id: 'om-3', body: '좋아요, 수요일 4시에 뵐게요', createdAt: '2026-10-21T05:53:00.000Z' }
@@ -753,9 +753,13 @@ export type ApplicantSeed = {
   id: string
   stage: Application['stage']
   displayName: string
-  headline: string
+  headline: string | null
+  jobCategory: JobCategory
+  tenureYears: number
   appliedAt: string
-  documents: { id: string; title: string; content: string }[]
+  documents: { id: string; title: string; content: string; pages?: number }[]
+  /** Hub profile fields the applicant detail serves; absent = an applicant with no profile data. */
+  profile?: { email: string; headline: string; careers: typeof TAEYOON_CAREERS; skills: string[]; hubProfileId: string | null }
 }
 
 const PROFILE_DOC = { title: '이력서 (프로필)', content: TAEYOON_INTRO }
@@ -765,18 +769,29 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     id: 'app-2',
     stage: 'SCREENING',
     displayName: '김태윤',
-    headline: '개발 · 5년 · 모아페이와 같은 결제 도메인',
+    headline: '모아페이와 같은 결제 도메인',
+    jobCategory: 'dev',
+    tenureYears: 5,
     appliedAt: '2026-10-20T01:00:00.000Z',
     documents: [
       { id: 'doc-3', ...PROFILE_DOC },
-      { id: 'doc-4', title: '포트폴리오.pdf', content: '' },
+      { id: 'doc-4', title: '포트폴리오.pdf', content: '', pages: 14 },
     ],
+    profile: {
+      email: 'taeyoon.kim@gmail.com',
+      headline: '백엔드 엔지니어',
+      careers: TAEYOON_CAREERS,
+      skills: TAEYOON_SKILLS.slice(0, 7),
+      hubProfileId: 'u-taeyoon',
+    },
   },
   {
     id: 'app-3',
     stage: 'APPLIED',
     displayName: '정민재',
-    headline: '개발 · 5년',
+    headline: null,
+    jobCategory: 'dev',
+    tenureYears: 5,
     appliedAt: '2026-10-19T01:00:00.000Z',
     documents: [{ id: 'doc-5', title: '이력서.pdf', content: '' }],
   },
@@ -784,7 +799,9 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     id: 'app-4',
     stage: 'INTERVIEW',
     displayName: '윤채원',
-    headline: '데이터 · 5년',
+    headline: null,
+    jobCategory: 'data',
+    tenureYears: 5,
     appliedAt: '2026-10-18T01:00:00.000Z',
     documents: [{ id: 'doc-6', title: '이력서 (프로필)', content: '' }],
   },
@@ -792,7 +809,9 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     id: 'app-1',
     stage: 'APPLIED',
     displayName: '박도윤',
-    headline: '개발 · 3년',
+    headline: null,
+    jobCategory: 'dev',
+    tenureYears: 3,
     appliedAt: '2026-10-15T01:00:00.000Z',
     documents: [
       { id: 'doc-1', title: '이력서 (프로필)', content: '' },
@@ -803,7 +822,9 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     id: 'app-5',
     stage: 'REJECTED',
     displayName: '서준호',
-    headline: '개발 · 6년',
+    headline: null,
+    jobCategory: 'dev',
+    tenureYears: 6,
     appliedAt: '2026-10-12T01:00:00.000Z',
     documents: [
       { id: 'doc-7', title: '이력서.pdf', content: '' },

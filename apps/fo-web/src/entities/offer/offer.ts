@@ -8,6 +8,9 @@ export const meOfferMessages = (...args: Parameters<typeof fetchOfferMessages>) 
 export const useOffers = (box: 'received' | 'sent', enabled = true) =>
   useQuery({ queryKey: ['offers', box], queryFn: () => meOffers(box), enabled })
 
+export const useArchivedOffers = (enabled = true) =>
+  useQuery({ queryKey: ['offers', 'archived'], queryFn: () => meOffers('received', { archived: 1 }), enabled })
+
 export const useOffer = (id: string | undefined) =>
   useQuery({ queryKey: ['offer', id], queryFn: () => meOffer(id ?? ''), enabled: Boolean(id) })
 

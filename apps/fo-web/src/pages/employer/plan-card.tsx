@@ -1,41 +1,44 @@
-import { PLAN_NOW } from './constants'
+import { Icon } from '../../shared/ui/icon'
+import { PLAN_PER_MONTH } from './constants'
 
 const PlanCard = ({
   name,
   price,
-  credits,
   blurb,
   features,
+  featured,
   current,
   action,
-  pending,
+  disabled,
   onSubscribe,
 }: {
   name: string
   price: string
-  credits: string
   blurb: string
   features: readonly { label: string; on: boolean }[]
+  featured: boolean
   current: boolean
   action: string
-  pending: boolean
-  onSubscribe?: () => void
+  disabled: boolean
+  onSubscribe: () => void
 }) => (
-  <li className={current ? 'plan-card now' : 'plan-card'}>
-    <div className="biz-bar">
-      <h2 className="h3">{name}</h2>
-      {current ? <span className="badge ac">{PLAN_NOW}</span> : null}
-    </div>
-    <p className="b1 w7">{`${price} / 월`}</p>
-    <p className="c1 t3">{`월 ${credits} 크레딧 · ${blurb}`}</p>
+  <li className={featured ? 'plan-card featured' : 'plan-card'}>
+    <h3 className="h2">{name}</h3>
+    <p className="plan-price">
+      <b className="num">{price}</b>
+      <span className="b2 t3">{PLAN_PER_MONTH}</span>
+    </p>
+    <p className="c1 t3">{blurb}</p>
+    <div className="plan-hr" />
     <ul className="plan-features">
       {features.map((feature) => (
-        <li key={feature.label} className={feature.on ? 'on' : 'off'}>
+        <li key={feature.label} className={feature.on ? 'b2 on' : 'b2 off'}>
+          <Icon name={feature.on ? 'check' : 'close'} size={16} width={2.6} />
           {feature.label}
         </li>
       ))}
     </ul>
-    <button type="button" className={current ? 'btn sec' : 'btn pri'} disabled={current || pending || !onSubscribe} onClick={onSubscribe}>
+    <button type="button" className={current ? 'btn sec block now' : featured ? 'btn pri block' : 'btn sec block'} disabled={disabled || current} onClick={onSubscribe}>
       {action}
     </button>
   </li>
