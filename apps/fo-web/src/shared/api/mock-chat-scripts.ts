@@ -180,7 +180,9 @@ export const CHAT_SCRIPTS: Record<ChatScriptName, ChatScript> = {
         kind: 'TOOL_ACTION',
         title: '3명을 면접 단계로 옮길까요?',
         toolName: 'move_stage',
-        args: { rows: MOVE_ROWS },
+        // Raw tool args stay ids. The people the card draws come from rows, with no colour.
+        args: { stage: 'INTERVIEW' },
+        rows: MOVE_ROWS.map(({ name, initial, from, to }) => ({ name, initial, from, to })),
         foot: '옮기면 세 분에게 “지원 상태 변경” 알림이 가요.',
         options: [
           { id: 'reject', label: '취소' },
@@ -270,7 +272,7 @@ export const CHAT_TURNS: Record<string, ConversationTurn[]> = {
   'c-interview': [turn('c-interview', INTERVIEW)],
 }
 
-const TAEYOON: Message['attachments'] = [{ type: 'APPLICATION', id: 'app-2', title: '김태윤' }]
+const TAEYOON: Message['attachments'] = [{ type: 'APPLICATION', id: 'app-2', title: '김태윤', documentTitles: ['이력서', '포트폴리오'] }]
 
 export const CHAT_SEED_ATTACHMENTS: Record<string, Message['attachments']> = {
   'c-ref': [{ type: 'POSTING', id: 'p9', title: '백엔드 개발자' }],

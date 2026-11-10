@@ -758,6 +758,10 @@ export type ApplicantSeed = {
   tenureYears: number
   appliedAt: string
   documents: { id: string; title: string; content: string; pages?: number }[]
+  /** True until a member opens the applicant. Omitted means already seen. */
+  isNew?: boolean
+  /** CURRENT is the live profile. SUBMITTED is the snapshot taken at apply time. */
+  profileSource?: 'SUBMITTED' | 'CURRENT'
   /** Hub profile fields the applicant detail serves; absent = an applicant with no profile data. */
   profile?: { email: string; headline: string; careers: typeof TAEYOON_CAREERS; skills: string[]; hubProfileId: string | null }
 }
@@ -793,6 +797,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     jobCategory: 'dev',
     tenureYears: 5,
     appliedAt: '2026-10-19T01:00:00.000Z',
+    isNew: true,
     documents: [{ id: 'doc-5', title: '이력서.pdf', content: '' }],
   },
   {
@@ -803,6 +808,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     jobCategory: 'data',
     tenureYears: 5,
     appliedAt: '2026-10-18T01:00:00.000Z',
+    profileSource: 'SUBMITTED',
     documents: [{ id: 'doc-6', title: '이력서 (프로필)', content: '' }],
   },
   {
@@ -813,6 +819,7 @@ export const APPLICANT_SEEDS: ApplicantSeed[] = [
     jobCategory: 'dev',
     tenureYears: 3,
     appliedAt: '2026-10-15T01:00:00.000Z',
+    isNew: true,
     documents: [
       { id: 'doc-1', title: '이력서 (프로필)', content: '' },
       { id: 'doc-2', title: '경력기술서.pdf', content: '' },
@@ -859,6 +866,13 @@ export type ChatSeed = {
   updatedAt: string
   postingId?: string
   messages: ['USER' | 'ASSISTANT', string][]
+  /** List row when no job is live. The board shows a running chat and one that needs approval. */
+  list?: {
+    status: 'NEEDS_APPROVAL' | 'RUNNING' | 'DONE'
+    queuePosition: number | null
+    lastLine: string | null
+    author: string
+  }
 }
 
 export const CHAT_SEEDS: ChatSeed[] = [
@@ -884,6 +898,7 @@ export const CHAT_SEEDS: ChatSeed[] = [
     id: 'c-review',
     title: '백엔드 지원자 김태윤 서류 검토',
     updatedAt: '2026-10-20T08:00:00.000Z',
+    list: { status: 'RUNNING', queuePosition: 3, lastLine: '이력서 읽기 · 김서준_이력서.pdf', author: '한지호' },
     messages: [
       ['USER', '이 지원자 서류 검토해 줘'],
       [
@@ -902,6 +917,7 @@ export const CHAT_SEEDS: ChatSeed[] = [
     id: 'c-interview',
     title: '결제 플랫폼 시니어 면접 질문',
     updatedAt: '2026-10-20T07:00:00.000Z',
+    list: { status: 'NEEDS_APPROVAL', queuePosition: null, lastLine: '3명을 면접 단계로 옮길까요?', author: '이민아' },
     messages: [
       ['USER', '면접 질문 만들어 줘'],
       [

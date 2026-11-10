@@ -100,8 +100,7 @@ const hexColor = (value: unknown) => {
   return color && HEX_COLOR.test(color) ? color : undefined
 }
 
-const moveRows = (args: unknown): MoveRow[] => {
-  const rows = recordOf(args).rows
+const moveRows = (rows: unknown): MoveRow[] => {
   if (!Array.isArray(rows)) return []
   return rows.flatMap((row) => {
     const item = recordOf(row)
@@ -123,6 +122,9 @@ const moveRows = (args: unknown): MoveRow[] => {
     ]
   })
 }
+
+/** push-be sends the people on the event. Older streams only put them on args.rows. */
+const approvalRows = (event: { rows?: unknown; args?: unknown }) => moveRows(event.rows ?? recordOf(event.args).rows)
 
 const toolBlock = (event: Extract<StreamEvent, { type: 'tool' }>, key: string): TurnTool => {
   const result = recordOf(event.result)
@@ -198,7 +200,7 @@ export const applyTurnEvent = (turn: ChatTurn, event: StreamEvent): ChatTurn => 
             id: event.id,
             title: event.title,
             options: event.options,
-            rows: moveRows(event.args),
+            rows: approvalRows(event),
             ...(event.foot ? { foot: event.foot } : {}),
           },
         ],

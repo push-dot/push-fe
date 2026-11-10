@@ -66,7 +66,7 @@ import {
   CHAT_BUSY,
   CHAT_FAILED,
   CHAT_LOADING,
-  CHAT_STOP_FAILED,
+  stopFailedText,
   PDF_LOCK,
   streamErrorText,
   VERIFY_LINK,
@@ -194,8 +194,8 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     setHalting(true)
     // The stream's own refresh ran before the cancel committed; this one shows the job as stopped.
     cancelTurn(chatTurnDeps, id)
-      .then(refresh, () => {
-        setAlert(CHAT_STOP_FAILED)
+      .then(refresh, (error: unknown) => {
+        setAlert(stopFailedText(error))
         // The job is still running: following it again brings the stop button back.
         attached.current = null
       })

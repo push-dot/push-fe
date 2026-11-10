@@ -5,6 +5,7 @@ import {
   documentsExportFile,
   documentsGet,
   documentsRename,
+  documentsRestore,
   sourcesContent,
   sourcesRemove,
 } from '../../shared/api/operations'
@@ -17,6 +18,19 @@ export const isPushDocument = (item: Pick<SourceItem, 'origin'>) => item.origin 
 // push-be deletes a Push document by archiving it; DELETE sources/:id only removes uploaded files.
 export const removeDocument = (item: Pick<SourceItem, 'id' | 'origin'>) =>
   isPushDocument(item) ? documentsArchive(item.id) : sourcesRemove(item.id)
+
+export const archivedRevision = (removed: unknown) => {
+  if (!removed || typeof removed !== 'object' || !('revision' in removed)) return null
+  const revision = removed.revision
+  return typeof revision === 'number' ? revision : null
+}
+
+// Undo after archive uses the revision the archive response already carries.
+export const restoreDocument = (item: Pick<SourceItem, 'id' | 'origin'>, removed: unknown) => {
+  const revision = archivedRevision(removed)
+  if (!isPushDocument(item) || revision == null) return Promise.resolve()
+  return documentsRestore(item.id, revision)
+}
 
 export const renameDocument = (id: string, title: string) => documentsRename(id, title)
 

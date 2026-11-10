@@ -480,6 +480,8 @@ const toCard = (item: CompanyPosting): Posting => ({
 type ApplicantRecord = {
   application: Application
   seed: (typeof APPLICANT_SEEDS)[number]
+  /** Cleared the first time any member opens the applicant, matching company_seen_at. */
+  seen: boolean
 }
 
 const applicantRecord = (seed: (typeof APPLICANT_SEEDS)[number]): ApplicantRecord => ({
@@ -494,6 +496,7 @@ const applicantRecord = (seed: (typeof APPLICANT_SEEDS)[number]): ApplicantRecor
     createdAt: seed.appliedAt,
   },
   seed,
+  seen: seed.isNew !== true,
 })
 
 const isPdf = (title: string) => title.endsWith('.pdf')
@@ -503,13 +506,14 @@ const documentKinds = (seed: ApplicantRecord['seed']) => [
   ...(seed.documents.some((item) => isPdf(item.title)) ? (['PDF'] as const) : []),
 ]
 
-const applicantSummary = ({ application, seed }: ApplicantRecord) => ({
+const applicantSummary = ({ application, seed, seen }: ApplicantRecord) => ({
   applicationId: application.id,
   applicant: { displayName: seed.displayName, headline: seed.headline, jobCategory: seed.jobCategory, tenureYears: seed.tenureYears, avatarUrl: null },
   stage: application.stage,
   appliedAt: application.appliedAt ?? application.createdAt,
   documentKinds: documentKinds(seed),
   documents: seed.documents.map((item) => ({ title: item.title, pages: item.pages ?? null })),
+  isNew: !seen,
 })
 
 // push-be keeps text documents in documents and attached PDFs in files.
@@ -526,6 +530,8 @@ const applicantDetail = ({ application, seed }: ApplicantRecord) => ({
     careers: seed.profile?.careers ?? [],
     skills: seed.profile?.skills ?? [],
     hubProfileId: seed.profile?.hubProfileId ?? null,
+    profileSource: seed.profileSource ?? 'CURRENT',
+    capturedAt: seed.profileSource === 'SUBMITTED' ? seed.appliedAt : null,
   },
 })
 
@@ -787,6 +793,7 @@ const removeSource = (id: string) => {
 
 // Push documents (AI_MADE sources) carry a push-be document revision; archive is how push-be deletes them.
 const documentRevisions = new Map<string, number>()
+const archivedDocs = new Map<string, { source: SeedSource; list: SeedSource[] }>()
 
 const pushDocument = (source: SeedSource, status = 'DRAFT') => ({
   id: source.id,
@@ -885,7 +892,15 @@ const memberSeats = (plan: Company['plan'], verifiedAt: string): CompanyRecord =
     { userId: MEMBER_USER.id, email: MEMBER_USER.email, displayName: MEMBER_USER.displayName, role: 'MEMBER', joinedAt: '2026-09-02T00:00:00.000Z' },
     { userId: 'u-sora', email: 'sora.park@moapay.kr', displayName: '박소라', role: 'MEMBER', joinedAt: '2026-11-01T00:00:00.000Z' },
   ],
-  invites: [],
+  invites: [
+    {
+      id: 'inv-pending',
+      email: 'nuri.choi@moapay.kr',
+      invitedAt: '2026-11-03T00:00:00.000Z',
+      expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+      sentAt: Date.now(),
+    },
+  ],
 })
 
 const seedCompany = (): CompanyRecord | null => {
@@ -1078,11 +1093,13 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       return json(200, { data: found })
     }
   }
-  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/versions\/[^/]+\/export)?$/)
+  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/restore|\/versions\/[^/]+\/export)?$/)
   if (documentMatch) {
-    const [, id = '', sub] = documentMatch
-    const found = allSources().find((item) => item.id === decodeURIComponent(id) && item.kind === 'AI_MADE')
-    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
+    const [, rawId = '', sub] = documentMatch
+    const id = decodeURIComponent(rawId)
+    const archived = archivedDocs.get(id)
+    const found = allSources().find((item) => item.id === id && item.kind === 'AI_MADE') ?? archived?.source
+    if (!found || found.kind !== 'AI_MADE') return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
     if (method === 'GET' && !sub) return json(200, { data: pushDocument(found) })
     if (method === 'GET' && sub?.endsWith('/export')) {
       return new Response(new Blob([`%PDF-1.4 mock ${found.fileName}`], { type: 'application/pdf' }), {
@@ -1097,8 +1114,17 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     }
     if (method === 'POST' && sub === '/archive') {
       documentRevisions.set(found.id, revision + 1)
+      const list = uploadedSources.includes(found) ? uploadedSources : seedSources
       removeSource(found.id)
+      archivedDocs.set(found.id, { source: found, list })
       return json(200, { data: pushDocument(found, 'ARCHIVED') })
+    }
+    if (method === 'POST' && sub === '/restore') {
+      if (!archived) return json(200, { data: pushDocument(found) })
+      documentRevisions.set(found.id, revision + 1)
+      archived.list.unshift(archived.source)
+      archivedDocs.delete(found.id)
+      return json(200, { data: pushDocument(found) })
     }
     if (method === 'PATCH' && !sub && typeof payload.title === 'string' && payload.title.trim()) {
       documentRevisions.set(found.id, revision + 1)
@@ -1597,6 +1623,7 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
       if (stage) record.application.stage = stage
       return json(200, { data: record.application })
     }
+    record.seen = true
     return json(200, { data: applicantDetail(record) })
   }
   const fileMatch = tail.match(/^\/postings\/([^/]+)\/applicants\/([^/]+)\/files\/([^/]+)$/)
@@ -1655,10 +1682,13 @@ const handleEmployerPostings = async (method: string, url: URL, pathname: string
   return null
 }
 
+type ChatListMeta = NonNullable<(typeof CHAT_SEEDS)[number]['list']>
+
 type ChatBucket = {
   conversations: Conversation[]
   messages: Map<string, Message[]>
   postingIds: Map<string, string>
+  listMeta: Map<string, ChatListMeta>
   // Finished jobs, oldest first: push-be stores every streamed job and GET .../turns replays them.
   turns: Map<string, ConversationTurn[]>
 }
@@ -1668,7 +1698,7 @@ let chatSeq = 0
 let messageSeq = 0
 
 const seededChat = (): ChatBucket => {
-  const bucket: ChatBucket = { conversations: [], messages: new Map(), postingIds: new Map(), turns: new Map() }
+  const bucket: ChatBucket = { conversations: [], messages: new Map(), postingIds: new Map(), listMeta: new Map(), turns: new Map() }
   if (!companyMe()) return bucket
   for (const seed of CHAT_SEEDS) {
     bucket.conversations.push({
@@ -1693,6 +1723,7 @@ const seededChat = (): ChatBucket => {
       })),
     )
     if (seed.postingId) bucket.postingIds.set(seed.id, seed.postingId)
+    if (seed.list) bucket.listMeta.set(seed.id, seed.list)
   }
   return bucket
 }
@@ -1921,13 +1952,14 @@ const conversationListItem = (bucket: ChatBucket, conversation: Conversation): C
   const job = runningJobs.get(conversation.id)
   const live = job && !job.ended ? job : undefined
   const approval = live ? approvalTitle(live.frames) : null
+  const seeded = bucket.listMeta.get(conversation.id)
   return {
     ...conversation,
-    status: approval ? 'NEEDS_APPROVAL' : live ? 'RUNNING' : 'DONE',
-    queuePosition: null,
-    lastLine: approval ?? (live ? runningLine(live.frames) : null),
+    status: approval ? 'NEEDS_APPROVAL' : live ? 'RUNNING' : (seeded?.status ?? 'DONE'),
+    queuePosition: live ? null : (seeded?.queuePosition ?? null),
+    lastLine: approval ?? (live ? runningLine(live.frames) : (seeded?.lastLine ?? null)),
     lastMessagePreview: (messages.at(-1)?.text ?? '').slice(0, 140),
-    createdBy: { displayName: sessionStore.load()?.user.displayName ?? '이민아' },
+    createdBy: { displayName: seeded?.author ?? sessionStore.load()?.user.displayName ?? '이민아' },
     postingId: bucket.postingIds.get(conversation.id) ?? null,
   }
 }
@@ -2208,7 +2240,12 @@ const INVITE = {
 const inviteFailure = (token: string) => {
   if (mockSwitch('invite-invalid') || token === 'bad-token') return failure(404, 'NOT_FOUND', '초대 링크를 열 수 없어요', { reason: 'INVALID' })
   if (mockSwitch('invite-expired') || token === 'expired-token') {
-    return failure(404, 'NOT_FOUND', '초대가 만료됐어요', { reason: 'EXPIRED', companyName: INVITE.companyName })
+    return failure(404, 'NOT_FOUND', '초대가 만료됐어요', {
+      reason: 'EXPIRED',
+      companyName: INVITE.companyName,
+      inviterName: INVITE.inviterName,
+      expiresAt: INVITE.expiresAt,
+    })
   }
   return null
 }
@@ -2454,6 +2491,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
     }
     return json(200, { data: mockSession(loginPersona(email)) })
   }
+  if (method === 'POST' && matches(pathname, '/auth/email/verify/resend')) return new Response(null, { status: 204 })
   if (method === 'POST' && matches(pathname, '/auth/email/verify')) {
     const payload = await readJson(input, init)
     const token = String(payload.token ?? '')

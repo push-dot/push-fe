@@ -6,6 +6,6 @@ export const companiesMembers = (...args: Parameters<typeof fetchMembers>) => fe
 export const useCompanyMembers = (options?: { enabled?: boolean }) =>
   useQuery({ queryKey: ['company', 'members'], queryFn: () => companiesMembers(), ...(options ?? {}) })
 
-/** Pending invites; push-be serves the list to an ADMIN only. */
-export const useCompanyInvites = (enabled: boolean) =>
+/** Pending invites. Members can read them; sending, resending and cancelling stay admin-only. */
+export const useCompanyInvites = (enabled = true) =>
   useQuery({ queryKey: ['company', 'invites'], queryFn: () => companiesInvites(), enabled })

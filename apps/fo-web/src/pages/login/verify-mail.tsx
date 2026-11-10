@@ -38,7 +38,12 @@ const VerifyMail = ({
         {error}
       </p>
     ) : null}
-    <button type="button" className="auth-btn sec" disabled={pending} onClick={onResend}>
+    <button
+      type="button"
+      className={pending ? 'auth-btn sec dis' : 'auth-btn sec'}
+      disabled={pending}
+      onClick={onResend}
+    >
       {VERIFY_MAIL_RESEND}
     </button>
     <button type="button" className="auth-text" onClick={onEdit}>

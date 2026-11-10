@@ -37,7 +37,8 @@ describe('chat list row', () => {
     expect(markup).toContain('작업 중')
     expect(markup).toContain('badge ac')
     expect(markup).toContain('이력서 읽기 · 김서준_이력서.pdf')
-    expect(markup).not.toContain('이민아')
+    expect(markup).toContain('이민아')
+    expect(markup).toContain('앞에 대기 3건')
   })
 
   it('shows 확인 필요 for a pending approval', () => {
@@ -52,8 +53,10 @@ describe('chat list row', () => {
   it('draws a finished chat with its title and no status mark or blank last line', () => {
     const markup = html(row({ status: 'DONE', lastLine: null }))
     expect(markup).toContain('면접 질문')
+    expect(markup).toContain('이민아')
     expect(markup).not.toContain('badge')
     expect(markup).not.toContain('작업 중')
     expect(markup).not.toContain('확인 필요')
+    expect(markup).not.toContain('앞에 대기')
   })
 })

@@ -24,6 +24,8 @@ import {
   INVITE_EXPIRED_TITLE,
   INVITE_EXPIRED_WHY,
   INVITE_FACT_COMPANY,
+  INVITE_FACT_EXPIRES,
+  INVITE_FACT_INVITER,
   INVITE_GOOGLE,
   INVITE_HAS_ACCOUNT,
   INVITE_HOME,
@@ -35,6 +37,7 @@ import {
   INVITE_LEAD_ROLE,
   INVITE_LEAD_SUBJECT,
   INVITE_LIMIT,
+  ledgerDate,
   INVITE_LOGIN,
   INVITE_OTHER_ACCOUNT,
   INVITE_OTHER_AS,
@@ -55,9 +58,9 @@ import {
   inviteWelcome,
 } from './constants'
 
-// push-be details on the preview (404) and on accept (403/404/409): reason, plus companyName for EXPIRED.
-const detailOf = (caught: unknown, key: 'reason' | 'companyName') =>
-  caught instanceof ApiError ? String(caught.details?.[key] ?? '') : ''
+// push-be details on the preview (404) and on accept (403/404/409). EXPIRED also carries inviterName and expiresAt.
+const detailOf = (caught: unknown, key: string) =>
+  caught instanceof ApiError && caught.details?.[key] != null ? String(caught.details[key]) : ''
 const DEAD_LINK = new Set(['INVALID', 'ACCEPTED', 'COMPANY_DELETING'])
 
 const Perks = ({ title, items }: { title: string; items: readonly string[] }) => (
@@ -110,6 +113,14 @@ const InvitePage = () => {
 
   if (reason === 'EXPIRED') {
     const company = detailOf(failure, 'companyName')
+    const inviter = detailOf(failure, 'inviterName')
+    const expiresAt = detailOf(failure, 'expiresAt')
+    const expiry = expiresAt && !Number.isNaN(Date.parse(expiresAt)) ? ledgerDate(expiresAt) : ''
+    const facts = [
+      company ? { label: INVITE_FACT_COMPANY, value: company } : null,
+      inviter ? { label: INVITE_FACT_INVITER, value: inviter } : null,
+      expiry ? { label: INVITE_FACT_EXPIRES, value: expiry } : null,
+    ].flatMap((fact) => (fact ? [fact] : []))
     return (
       <main className="auth-card">
         <AuthResult icon="clock" tone="grey" title={INVITE_EXPIRED_TITLE}>
@@ -117,12 +128,14 @@ const InvitePage = () => {
           <br />
           {INVITE_EXPIRED_NEXT}
         </AuthResult>
-        {company ? (
+        {facts.length ? (
           <dl className="auth-facts plain">
-            <div>
-              <dt>{INVITE_FACT_COMPANY}</dt>
-              <dd>{company}</dd>
-            </div>
+            {facts.map((fact) => (
+              <div key={fact.label}>
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))}
           </dl>
         ) : null}
         <Link className="auth-btn sec" to="/">

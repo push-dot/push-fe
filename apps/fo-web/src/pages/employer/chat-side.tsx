@@ -2,7 +2,7 @@ import type { ConversationListItem, ConversationStatus } from '@push/api-client'
 import { Link } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
 import { Icon } from '../../shared/ui/icon'
-import { CHAT_BUY, usedText } from './chat-copy'
+import { CHAT_BUY, queueAhead, usedText } from './chat-copy'
 import type { ChatUsage } from './chat-usage'
 import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED } from './constants'
 
@@ -53,6 +53,9 @@ const ChatSide = ({
     <nav className="chat-rooms">
       {conversations.map((conversation) => {
         const mark = chatListMark(conversation.status)
+        const author = conversation.createdBy.displayName
+        const queued = conversation.queuePosition !== null && conversation.queuePosition > 0 ? queueAhead(conversation.queuePosition) : ''
+        const meta = [author, queued].filter(Boolean).join(' · ')
         return (
           <Link
             key={conversation.id}
@@ -65,6 +68,7 @@ const ChatSide = ({
               {mark ? <span className={`badge ${mark.tone}`}>{mark.label}</span> : null}
               <span className="c1 t3">{relativeTime(conversation.updatedAt)}</span>
             </span>
+            {meta ? <span className="c1 t3 cap">{meta}</span> : null}
             {conversation.lastLine ? (
               <span className="c1 t3 cap">{conversation.lastLine}</span>
             ) : null}

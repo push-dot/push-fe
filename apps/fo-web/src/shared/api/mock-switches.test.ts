@@ -104,7 +104,7 @@ describe('ms= switches', () => {
     using('employer-new', 'invite-expired')
     expect(await errorCode('/companies/invites/expired-token/accept', 'POST')).toMatchObject({
       code: 'NOT_FOUND',
-      details: { reason: 'EXPIRED', companyName: '모아페이' },
+      details: { reason: 'EXPIRED', companyName: '모아페이', inviterName: '이민아', expiresAt: '2026-11-08T00:00:00.000Z' },
     })
     using('personal', 'invite-other-account')
     expect(await errorCode('/companies/invites/demo-token/accept', 'POST')).toMatchObject({ code: 'FORBIDDEN', details: { reason: 'EMAIL_MISMATCH' } })
@@ -163,11 +163,29 @@ describe('ms= switches', () => {
     expect((await read<{ data: { calendarStatus: string } }>('/integrations/google')).body.data.calendarStatus).toBe('DISCONNECTED')
   })
 
+  it('lists a running chat and one waiting for approval, with the last line', async () => {
+    using('employer', '')
+    const list = await read<{ data: { id: string; status: string; lastLine: string | null; queuePosition: number | null; createdBy: { displayName: string } }[] }>('/conversations?audience=EMPLOYER')
+    expect(list.body.data.find((item) => item.id === 'c-review')).toMatchObject({
+      status: 'RUNNING',
+      queuePosition: 3,
+      lastLine: '이력서 읽기 · 김서준_이력서.pdf',
+      createdBy: { displayName: '한지호' },
+    })
+    expect(list.body.data.find((item) => item.id === 'c-interview')).toMatchObject({
+      status: 'NEEDS_APPROVAL',
+      lastLine: '3명을 면접 단계로 옮길까요?',
+      createdBy: { displayName: '이민아' },
+    })
+  })
+
   it('shows the member view of a Pro company', async () => {
     using('employer-pro', 'role-member')
     const company = await read<{ data: { role: string; seats: { used: number; limit: number } } }>('/companies/me')
     expect(company.body.data).toMatchObject({ role: 'MEMBER', seats: { used: 2, limit: 2 } })
     expect((await call('/companies/me/invites', 'POST', { email: 'a@moapay.kr' })).status).toBe(403)
+    const invites = await read<{ data: { email: string }[] }>('/companies/me/invites')
+    expect(invites.body.data.map((item) => item.email)).toEqual(['nuri.choi@moapay.kr'])
     expect((await call('/billing/checkout', 'POST', { planId: 'ULTRA' })).status).toBe(403)
     setMockPersona(null)
   })
@@ -331,6 +349,25 @@ describe('ms= switches', () => {
 })
 
 describe('Push documents', () => {
+  it('answers a verification resend with 204 and no body', async () => {
+    using('personal', '')
+    const response = await call('/auth/email/verify/resend', 'POST', { email: 'a@push.app' })
+    expect(response.status).toBe(204)
+    expect(await response.text()).toBe('')
+  })
+
+  it('puts an archived Push document back when it is restored', async () => {
+    using('personal', '')
+    const doc = (await read<{ data: { revision: number } }>('/documents/src-ai-kakao')).body.data
+    const archived = await read<{ data: { revision: number; status: string } }>('/documents/src-ai-kakao/archive', 'POST', { expectedRevision: doc.revision })
+    expect(archived.body.data).toMatchObject({ status: 'ARCHIVED', revision: doc.revision + 1 })
+    const restored = await read<{ data: { revision: number; status: string } }>('/documents/src-ai-kakao/restore', 'POST', { expectedRevision: archived.body.data.revision })
+    expect(restored.status).toBe(200)
+    expect(restored.body.data).toMatchObject({ status: 'DRAFT', revision: archived.body.data.revision + 1 })
+    const ids = (await read<{ data: { id: string }[] }>('/sources')).body.data.map((item) => item.id)
+    expect(ids).toContain('src-ai-kakao')
+  })
+
   it('archives like push-be: revision-guarded, gone from the list after', async () => {
     using('personal', '')
     const doc = (await read<{ data: { revision: number } }>('/documents/src-ai')).body.data

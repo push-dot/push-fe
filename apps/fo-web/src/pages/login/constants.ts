@@ -31,7 +31,8 @@ export const UNVERIFIED_TAIL = '으로 보낸 인증 메일의 링크를 누르�
 export const OTHER_METHOD = '다른 방법으로 로그인'
 
 export const PHONE_TITLE = '휴대폰 번호를 입력해 주세요'
-export const PHONE_LEAD = '지원 결과와 면접 일정을 알려 드릴 번호예요. 다른 사람에게는 보이지 않아요.'
+export const PHONE_LEAD =
+  '지원 결과와 면접 일정을 알려 드릴 번호예요. 다른 사람에게는 보이지 않아요.'
 export const PHONE_LABEL = '휴대폰 번호'
 export const PHONE_SEND = '인증번호 받기'
 export const PHONE_TAKEN_TITLE = '이미 가입된 번호예요'
@@ -82,7 +83,7 @@ export const SIGNUP_LEAD = '인증 메일의 링크를 누르면 계정이 만�
 export const SIGNUP_SUBMIT_COPY = '인증 메일 보내기'
 export const SIGNUP_HAS_ACCOUNT = '이미 계정이 있나요?'
 export const PASSWORD_HINT = '8자 이상, 영문과 숫자를 섞어 주세요'
-export const TERMS_LABEL = '만 14세 이상이며 이용약관과 개인정보 처리방침에 동의해요'
+export const TERMS_LABEL = '만 14세 이상이며 이용약관과 개인정보 수집·이용에 동의해요'
 export const TERMS_REQUIRED = '필수'
 
 export const VERIFY_MAIL_TITLE = '메일을 확인해 주세요'
@@ -91,6 +92,10 @@ export const VERIFY_MAIL_DONE = '메일의 링크를 누르면 기업 계정이 
 export const VERIFY_MAIL_MISSING = '메일이 오지 않았나요?'
 export const VERIFY_MAIL_SPAM = '스팸함을 확인해 주세요. 링크는 24시간 동안 쓸 수 있어요.'
 export const VERIFY_MAIL_RESEND = '인증 메일 다시 보내기'
+export const VERIFY_RESEND_SENT = '인증 메일을 다시 보냈어요'
+export const VERIFY_RESEND_LATER = '잠시 뒤에 다시 보내 주세요'
+export const VERIFY_RESEND_FAILED = '인증 메일을 다시 보내지 못했어요'
+export const VERIFY_RESEND_COOLDOWN_MS = 60_000
 export const VERIFY_MAIL_OTHER = '다른 이메일로 가입하기'
 export const VERIFY_EXPIRED_TITLE = '인증 링크가 만료됐어요'
 export const VERIFY_EXPIRED_WHY = '인증 메일의 링크는 24시간 동안 쓸 수 있어요.'
@@ -105,7 +110,8 @@ export const EXCHANGE_CANCEL = '취소하고 다른 방법으로 로그인'
 export const SHOW_PASSWORD = '비밀번호 보기'
 export const HIDE_PASSWORD = '비밀번호 숨기기'
 export const RESET_TITLE = '비밀번호 찾기'
-export const RESET_LEAD = '가입한 회사 이메일을 입력하면 비밀번호를 바꿀 수 있는 링크를 보내 드려요.'
+export const RESET_LEAD =
+  '가입한 회사 이메일을 입력하면 비밀번호를 바꿀 수 있는 링크를 보내 드려요.'
 export const RESET_SEND_COPY = '재설정 링크 보내기'
 export const RESET_GOOGLE_NOTE = 'Google로 가입했다면 비밀번호 없이 Google로 로그인해 주세요.'
 export const RESET_SENT_TITLE = '메일을 보냈어요'
@@ -136,7 +142,8 @@ export const RESET_SEND_FAILED = '메일을 보내지 못했어요. 잠시 후 �
 
 export const MISSING_VERIFY_COPY = '인증 링크가 없어요'
 export const LOGIN_FAILED_COPY = '로그인에 실패했어요'
-export const TERMS_READ_FAILED = '번호는 확인했지만 로그인을 마치지 못했어요. 새 인증번호를 받아 다시 시도해 주세요.'
+export const TERMS_READ_FAILED =
+  '번호는 확인했지만 로그인을 마치지 못했어요. 새 인증번호를 받아 다시 시도해 주세요.'
 export const BAD_CREDENTIALS_COPY = '이메일 또는 비밀번호가 맞지 않아요. 다시 확인해 주세요.'
 export const EMAIL_LABEL = '이메일'
 export const PASSWORD_LABEL = '비밀번호'

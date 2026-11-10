@@ -17,8 +17,47 @@ import {
   VERIFY_MAIL_RESEND,
 } from './constants'
 import { authEmailVerify } from '../../features/verify-email'
+import Toast from '../../shared/ui/toast'
+import { useVerifyResend } from './verify-resend'
 
 const SIGNUP = '/signup?accountType=EMPLOYER'
+
+export const VerifyExpired = ({ email }: { email: string }) => {
+  const resend = useVerifyResend(email)
+  const quiet = resend.pending || resend.cooling || !email
+  return (
+    <main className="auth-card">
+      <AuthResult icon="clock" tone="grey" title={VERIFY_EXPIRED_TITLE}>
+        {VERIFY_EXPIRED_WHY}
+        <br />
+        {VERIFY_EXPIRED_NEXT}
+      </AuthResult>
+      {email ? (
+        <div className="auth-note-card tight">
+          <span>{VERIFY_EXPIRED_TO}</span>
+          <strong>{email}</strong>
+        </div>
+      ) : null}
+      {resend.error ? (
+        <p className="auth-error" role="alert">
+          {resend.error}
+        </p>
+      ) : null}
+      <button
+        type="button"
+        className={quiet ? 'auth-btn pri dis' : 'auth-btn pri'}
+        disabled={quiet}
+        onClick={() => void resend.send()}
+      >
+        {VERIFY_MAIL_RESEND}
+      </button>
+      <Link className="auth-text" to={SIGNUP}>
+        {VERIFY_MAIL_OTHER}
+      </Link>
+      <Toast message={resend.toast.message} tone={resend.toast.tone} />
+    </main>
+  )
+}
 
 const VerifyPage = () => {
   const [params] = useSearchParams()
@@ -36,40 +75,22 @@ const VerifyPage = () => {
         const session = await authEmailVerify(token)
         sessionStore.save(session)
         // The session carries no email; the saved return path is used only for the address it was saved for.
-        const email = await authMe().then((me) => me.email, () => '')
+        const email = await authMe().then(
+          (me) => me.email,
+          () => '',
+        )
         navigate(pathAfterAuth(takeSignupReturnTo(email), session), { replace: true })
       } catch (caught) {
-        // 410 TOKEN_EXPIRED carries the sign-up email; a new link comes from sending the sign-up form again.
-        if (caught instanceof ApiError && caught.code === 'TOKEN_EXPIRED') setExpired(String(caught.details?.email ?? ''))
+        // 410 TOKEN_EXPIRED carries the sign-up email. A new link is resendVerify, not another sign-up.
+        if (caught instanceof ApiError && caught.code === 'TOKEN_EXPIRED')
+          setExpired(String(caught.details?.email ?? ''))
         else setMessage(LOGIN_FAILED_COPY)
       }
     }
     void run()
   }, [navigate, token])
 
-  if (expired !== null) {
-    return (
-      <main className="auth-card">
-        <AuthResult icon="clock" tone="grey" title={VERIFY_EXPIRED_TITLE}>
-          {VERIFY_EXPIRED_WHY}
-          <br />
-          {VERIFY_EXPIRED_NEXT}
-        </AuthResult>
-        {expired ? (
-          <div className="auth-note-card tight">
-            <span>{VERIFY_EXPIRED_TO}</span>
-            <strong>{expired}</strong>
-          </div>
-        ) : null}
-        <Link className="auth-btn pri" to={expired ? `${SIGNUP}&email=${encodeURIComponent(expired)}` : SIGNUP}>
-          {VERIFY_MAIL_RESEND}
-        </Link>
-        <Link className="auth-text" to={SIGNUP}>
-          {VERIFY_MAIL_OTHER}
-        </Link>
-      </main>
-    )
-  }
+  if (expired !== null) return <VerifyExpired email={expired} />
 
   return (
     <main className="auth-card" aria-busy={message ? undefined : true}>

@@ -91,7 +91,8 @@ export const LINK_EMPTY = '아직 모아 둔 링크가 없어요.'
 export const LINK_FAILED = '링크를 불러오지 못했어요.'
 export const LINK_ADD_FAILED = '링크를 추가하지 못했어요. 잠시 후 다시 시도해 주세요.'
 export const LINK_NOTE = '에이전트에서 @언급으로 불러오거나, 서류를 고칠 때 근거로 써요.'
-export const FIT_NOTE = '적합도는 앱에서 계산한 점수예요. 자세한 항목과 고칠 점은 앱의 에이전트에서 볼 수 있어요.'
+export const FIT_NOTE =
+  '적합도는 앱에서 계산한 점수예요. 자세한 항목과 고칠 점은 앱의 에이전트에서 볼 수 있어요.'
 export const LINK_KINDS = [
   { key: 'all', label: '전체' },
   { key: 'job', label: '공고' },
@@ -121,7 +122,8 @@ export const EMPLOYER_MENU = [
   { label: '기업 요금제', to: '/employer/plans', icon: 'card' },
 ] as const
 
-export const COMPANY_LOCKED = '사업자 정보는 바꿀 수 없어요. 상호가 바뀌었다면 고객센터로 알려 주세요.'
+export const COMPANY_LOCKED =
+  '사업자 정보는 바꿀 수 없어요. 상호가 바뀌었다면 고객센터로 알려 주세요.'
 export const COMPANY_NO_HUB = '기업 계정에는 허브 프로필이 없어요.'
 export const COMPANY_VERIFIED = '확인됨'
 export const COMPANY_REPRESENTATIVE = '대표자명'
@@ -137,7 +139,8 @@ export const EMPLOYER_ACTIVITY_MENU = [
   { label: '게시글', to: '/me?tab=activity&chip=posts', icon: 'chat' },
 ] as const
 export const ACTIVITY_LOAD_ERROR = '목록을 불러오지 못했어요.'
-export const listTotal = (envelope: { data: unknown[]; page: { total?: number } }) => envelope.page.total ?? envelope.data.length
+export const listTotal = (envelope: { data: unknown[]; page: { total?: number } }) =>
+  envelope.page.total ?? envelope.data.length
 
 export const PUSH_DOCS_TITLE = 'Push 서류'
 export const UPLOADS_TITLE = '올린 파일'
@@ -173,6 +176,7 @@ export const DOCUMENT_DELETE = {
   title: '이 서류를 삭제할까요?',
   done: '서류를 삭제했어요',
   failed: '서류를 삭제하지 못했어요',
+  referenced: '경력 기록에서 쓰고 있어 지울 수 없어요',
 } as const
 export const DOCUMENT_RENAME = {
   title: '서류 이름 바꾸기',
