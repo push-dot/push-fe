@@ -21,6 +21,8 @@ import {
   SIGNUP_HAS_ACCOUNT,
   SIGNUP_LEAD,
   SIGNUP_SUBMIT_COPY,
+  TERM_VIEW,
+  TERMS_COLLECTION_LINK,
   TERMS_LABEL,
   TERMS_PRIVACY_POLICY,
   TERMS_REQUIRED,
@@ -174,6 +176,9 @@ const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; on
           <span className="auth-legal-links">
             <a href="/terms" target="_blank" rel="noreferrer">
               {TERMS_SERVICE_LINK}
+            </a>
+            <a href={TERM_VIEW.privacy} target="_blank" rel="noreferrer">
+              {TERMS_COLLECTION_LINK}
             </a>
             <a href="/privacy" target="_blank" rel="noreferrer">
               {TERMS_PRIVACY_POLICY}
