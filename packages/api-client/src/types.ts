@@ -14,7 +14,8 @@ export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sa
 export type CareerYears = '0' | '1-3' | '4-6' | '7-9' | '10+'
 export type EmploymentType = 'full_time' | 'contract' | 'intern' | 'freelance' | 'dispatch'
 export type CareerStatus = 'satisfied' | 'seeking' | 'feedback'
-export type Tenure = '0-2' | '3-5' | '6-9' | '10+'
+/** Hub tenure filter. push-be still accepts a legacy `0-2` from older clients. */
+export type Tenure = '0' | '1-2' | '3-5' | '6-9' | '10+'
 export type PostCategory = 'work' | 'dev' | 'daily' | 'career' | 'talk' | 'coffeechat' | 'marketing'
 export type Tone = 'as_is' | 'professional' | 'confident' | 'concise' | 'technical' | 'friendly'
 
@@ -201,6 +202,9 @@ export type ResumeDocument = {
   finalizedVersionId: string | null
 }
 
+/** GET /documents?archived=1. archivedAt is updatedAt; purgeAt is 30 days later. */
+export type ArchivedDocument = ResumeDocument & { archivedAt: string; purgeAt: string }
+
 export type DocumentExport = {
   id: string
   documentId: string
@@ -272,12 +276,21 @@ export type ConversationListItem = Conversation & {
   postingId: string | null
 }
 
+export type MessageAttachment = {
+  type: string
+  id: string
+  documentId?: string
+  title?: string
+  /** APPLICATION chips in a company conversation: snapshot titles and file names. */
+  documentTitles?: string[]
+}
+
 export type Message = {
   id: string
   conversationId: string
   role: 'USER' | 'ASSISTANT'
   text: string
-  attachments: { type: string; id: string; documentId?: string; title?: string }[]
+  attachments: MessageAttachment[]
   operationId: string | null
   createdAt: string
 }
@@ -356,6 +369,8 @@ export type StreamEvent = (
       documentId?: string
       hunks?: StreamHunk[]
       foot?: string
+      /** change_applicant_stage: the person and the stage change. No colour. */
+      rows?: { name: string; initial?: string; from: string; to: string }[]
       resolution?: CardResolution
     }
   | {
@@ -555,7 +570,12 @@ export type ApplicantSummary = {
   /** Distinct kinds in fixed order PROFILE, PDF, FILE. */
   documentKinds?: ApplicantDocumentKind[]
   documents?: { title: string; pages: number | null }[]
+  /** True until any member of the company opens this applicant. */
+  isNew: boolean
 }
+
+/** GET /postings/:id/applicants row. */
+export type ApplicantListItem = ApplicantSummary
 
 export type ApplicantFile = { id: string; fileName: string; mimeType: string; size: number; pageCount: number | null }
 
@@ -571,8 +591,36 @@ export type ApplicantDetail = {
     skills: string[]
     /** The applicant's user id when the hub profile is public, else null. */
     hubProfileId: string | null
+    /** SUBMITTED is the profile captured at apply time. CURRENT is the live profile, when there is no snapshot. */
+    profileSource: 'SUBMITTED' | 'CURRENT'
+    /** When the submitted profile was captured. Null when profileSource is CURRENT. */
+    capturedAt: string | null
   }
 }
+
+/** 404/409 details when an invite link has expired. inviterName is empty when that member is gone. */
+export type InviteExpiredDetails = {
+  reason: 'EXPIRED'
+  companyName: string
+  inviterName: string
+  expiresAt: string | null
+}
+
+/** 409 INVALID_TRANSITION details when DELETE /sources/:id is still cited by career evidence. */
+export type ReferencedByEvidenceDetails = {
+  reason: 'REFERENCED_BY_EVIDENCE'
+  evidenceCount: number
+}
+
+/** details.reason values from the follow-up contract. Other routes still add their own. */
+export type ApiErrorReason =
+  | ReferencedByEvidenceDetails['reason']
+  | InviteExpiredDetails['reason']
+  | 'INVALID'
+  | 'ACCEPTED'
+  | 'COMPANY_DELETING'
+  | 'EMAIL_MISMATCH'
+  | 'ALREADY_MEMBER'
 
 export type ApplicantCounts = { total: number; applied: number; screening: number; interview: number; offer: number; rejected: number }
 

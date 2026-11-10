@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs'
 import type { Consent, Session } from '@push/api-client'
+import { LEGAL_VERSION } from '@push/shared'
 import { describe, expect, it, vi } from 'vitest'
 
 import { termsOutcome, termsPending } from './terms-gate'
 
 const session = (accountType: 'PERSONAL' | 'EMPLOYER') =>
   ({ accessToken: 'at', refreshToken: 'rt', user: { id: 'u1', accountType } }) as unknown as Session
-const agreed = { privacyAt: 'x', serviceTermsAt: 'x', age14At: 'x' } as Consent['terms']
+const agreed = { version: LEGAL_VERSION, privacyAt: 'x', serviceTermsAt: 'x', age14At: 'x' } as Consent['terms']
 
 describe('termsPending', () => {
   it('asks a returning personal account that left the consent step before', async () => {

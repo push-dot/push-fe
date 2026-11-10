@@ -11,6 +11,8 @@ const profile = {
   careers: [{ company: '모아페이', role: '백엔드 엔지니어', startedOn: '2022-03-01', endedOn: null, description: '' }],
   skills: ['Kotlin'],
   hubProfileId: null,
+  profileSource: 'CURRENT' as const,
+  capturedAt: null,
 }
 const badge = { label: '프로필', tone: 'ac' as const }
 

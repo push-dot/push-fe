@@ -13,7 +13,8 @@ const harness = (reply: (req: Request, body: Record<string, unknown>) => Respons
   const fetch = vi.fn(async (input: RequestInfo | URL) => {
     const req = input as Request
     const text = await req.clone().text()
-    hits.push(`${req.method} ${new URL(req.url).pathname} ${text}`)
+    const url = new URL(req.url)
+    hits.push(`${req.method} ${url.pathname}${url.search} ${text}`)
     return reply(req, text ? (JSON.parse(text) as Record<string, unknown>) : {})
   })
   const api = createApi(createClient({ baseUrl: 'http://x/api/v1', getToken: () => 't', fetch, uuid: () => 'idem' }))
@@ -52,5 +53,18 @@ describe('documents.archive', () => {
     const { api, hits } = harness(() => json(200, doc(2)))
     await api.documents.rename('doc1', 1, '새 이름')
     expect(hits).toEqual(['PATCH /api/v1/documents/doc1 {"expectedRevision":1,"title":"새 이름"}'])
+  })
+
+  it('restores an archived document through POST documents/:id/restore', async () => {
+    const { api, hits } = harness(() => json(200, doc(5, 'DRAFT')))
+    await expect(api.documents.restore('doc 1', 4)).resolves.toMatchObject({ revision: 5, status: 'DRAFT' })
+    expect(hits).toEqual(['POST /api/v1/documents/doc%201/restore {"expectedRevision":4}'])
+  })
+
+  it('lists archived documents with archived=1 and keeps the other filters', async () => {
+    const page = { data: [], page: { nextCursor: null, hasMore: false } }
+    const { api, hits } = harness(() => json(200, page))
+    await expect(api.documents.listArchived({ limit: 20, applicationId: 'app-1', kind: 'RESUME' })).resolves.toEqual(page)
+    expect(hits).toEqual(['GET /api/v1/documents?limit=20&applicationId=app-1&kind=RESUME&archived=1 '])
   })
 })

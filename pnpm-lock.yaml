@@ -196,6 +196,9 @@ importers:
 
   packages/api-client:
     dependencies:
+      '@push/shared':
+        specifier: workspace:*
+        version: link:../shared
       ky:
         specifier: ^1.14.3
         version: 1.14.3

@@ -79,6 +79,14 @@ describe('employer api', () => {
     })
   })
 
+  it('resends a verification mail and reads a 204 as success', async () => {
+    const { api, hits } = harness(() => noContent(204))
+    await expect(api.auth.email.resendVerify('a@push.app')).resolves.toBeUndefined()
+    expect(hits[0]).toMatchObject({ method: 'POST' })
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/verify/resend')
+    expect(bodyOf(hits[0]!)).toEqual({ email: 'a@push.app' })
+  })
+
   it('posts company verify fields and returns the company', async () => {
     const { api, hits } = harness(() => json(201, { data: company }))
     await expect(
