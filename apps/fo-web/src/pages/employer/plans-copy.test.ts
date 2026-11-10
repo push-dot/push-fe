@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LedgerEntry } from '@push/api-client'
-import { buyTotal, ledgerDate, ledgerPayments, ledgerUsd, planPaid, planSwitchLabel, planUsedPercent, planViewerBody } from './constants'
+import { buyTotal, ledgerDate, ledgerNeedsAnotherPage, ledgerPayments, ledgerShowsMore, ledgerUsd, ledgerView, planPaid, planSwitchLabel, planUsedPercent, planViewerBody } from './constants'
 
 describe('plan switch label', () => {
   it('picks the josa by the last sound of the plan name', () => {
@@ -71,6 +71,31 @@ describe('ledger rows', () => {
   it('writes the day in Korean', () => {
     expect(ledgerDate('2026-10-01T00:00:00.000Z')).toBe('2026년 10월 1일')
   })
+
+  it('keeps paging while the loaded pages have no payments, so the empty state and 더 보기 never show together', () => {
+    const base = {
+      isError: false,
+      isPending: false,
+      isFetchingNextPage: false,
+      isFetchNextPageError: false,
+    }
+    const emptyPage = { ...base, hasNextPage: true, paymentCount: 0 }
+    const done = { ...base, hasNextPage: false, paymentCount: 0 }
+    const paid = { ...base, hasNextPage: true, paymentCount: 2 }
+    expect(ledgerNeedsAnotherPage(0, true)).toBe(true)
+    expect(ledgerView(emptyPage)).toBe('loading')
+    expect(ledgerShowsMore(emptyPage.paymentCount, emptyPage.hasNextPage)).toBe(false)
+    expect(ledgerView(done)).toBe('empty')
+    expect(ledgerShowsMore(done.paymentCount, done.hasNextPage)).toBe(false)
+    expect(ledgerView(paid)).toBe('rows')
+    expect(ledgerShowsMore(paid.paymentCount, paid.hasNextPage)).toBe(true)
+    expect(ledgerView({ ...emptyPage, isFetchNextPageError: true })).toBe('error')
+    for (const state of [emptyPage, done, paid]) {
+      expect(
+        ledgerView(state) === 'empty' && ledgerShowsMore(state.paymentCount, state.hasNextPage),
+      ).toBe(false)
+    }
+  })
 })
 
 describe('credit purchase', () => {
@@ -80,7 +105,9 @@ describe('credit purchase', () => {
   })
 
   it('names the admin to ask when the member knows them', () => {
-    expect(planViewerBody('이민아')).toBe('바꾸거나 크레딧을 사려면 관리자 이민아 님에게 말해 주세요.')
+    expect(planViewerBody('이민아')).toBe(
+      '바꾸거나 크레딧을 사려면 관리자 이민아 님에게 말해 주세요.',
+    )
     expect(planViewerBody()).toBe('바꾸거나 크레딧을 사려면 관리자에게 말해 주세요.')
   })
 })

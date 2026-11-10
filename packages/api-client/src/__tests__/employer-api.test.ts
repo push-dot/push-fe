@@ -148,6 +148,14 @@ describe('employer api', () => {
     expect(decodeURIComponent(hits[2]!.url)).toBe('http://x/api/v1/conversations?limit=10&audience=EMPLOYER')
   })
 
+  it('sends sort and period on the posts list', async () => {
+    const { api, hits } = harness(() => json(200, { data: [], page: { nextCursor: null, hasMore: false } }))
+    await api.posts.list(null, { sort: 'popular', period: 'week', limit: 12 })
+    await api.posts.list('dev', { sort: 'latest' })
+    expect(decodeURIComponent(hits[0]!.url)).toBe('http://x/api/v1/posts?sort=popular&period=week&limit=12')
+    expect(decodeURIComponent(hits[1]!.url)).toBe('http://x/api/v1/posts?category=dev&sort=latest')
+  })
+
   it('sends accountType on oauth start', async () => {
     const { api, hits } = harness(() => json(200, { data: { authorizationUrl: 'https://auth.example', state: 's' } }))
     await api.auth.start('google', {

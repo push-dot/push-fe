@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 
 import { topupReady } from '../../shared/model/employer-plans'
 import { useBillingLedger } from '../../entities/billing'
@@ -11,6 +11,9 @@ import {
   LEDGER_LOADING,
   LEDGER_MORE,
   LEDGER_RECEIPT,
+  ledgerNeedsAnotherPage,
+  ledgerShowsMore,
+  ledgerView,
   PLAN_BUY,
   PLAN_BUY_PACK_HINT,
   PLAN_BUY_PACKS,
@@ -40,14 +43,28 @@ const DialogHead = ({ title, subtitle, onClose }: { title: string; subtitle?: Re
 export const LedgerDialog = ({ company, onClose }: { company: string; onClose: () => void }) => {
   const ledger = useBillingLedger()
   const rows = ledgerPayments(ledger.data?.pages.flatMap((page) => page.data) ?? [])
+  const hasNextPage = Boolean(ledger.hasNextPage)
+  const view = ledgerView({
+    isError: ledger.isError,
+    isPending: ledger.isPending,
+    isFetchingNextPage: ledger.isFetchingNextPage,
+    isFetchNextPageError: ledger.isFetchNextPageError,
+    hasNextPage,
+    paymentCount: rows.length,
+  })
+  // Pages of credit grants have no payment rows. Keep reading so 아직 없어요 and 더 보기 never show together.
+  useEffect(() => {
+    if (!ledger.isSuccess || ledger.isFetchingNextPage || ledger.isFetchNextPageError) return
+    if (ledgerNeedsAnotherPage(rows.length, hasNextPage)) void ledger.fetchNextPage()
+  }, [hasNextPage, ledger.isSuccess, ledger.isFetchingNextPage, ledger.isFetchNextPageError, ledger.fetchNextPage, rows.length])
   return (
     <Dialog label={PLAN_HISTORY} onClose={onClose} wide className="plan-dialog">
-      <DialogHead title={PLAN_HISTORY} subtitle={ledger.isSuccess && rows.length > 0 ? ledgerSubtitle(company, rows.length) : undefined} onClose={onClose} />
-      {ledger.isError ? (
+      <DialogHead title={PLAN_HISTORY} subtitle={view === 'rows' ? ledgerSubtitle(company, rows.length) : undefined} onClose={onClose} />
+      {view === 'error' ? (
         <ErrorState title={LEDGER_FAILED} onRetry={() => void ledger.refetch()} />
-      ) : ledger.isPending ? (
+      ) : view === 'loading' ? (
         <p className="b2 t3">{LEDGER_LOADING}</p>
-      ) : rows.length === 0 ? (
+      ) : view === 'empty' ? (
         <p className="b2 t3">{LEDGER_EMPTY}</p>
       ) : (
         <ul className="plan-ledger">
@@ -68,7 +85,7 @@ export const LedgerDialog = ({ company, onClose }: { company: string; onClose: (
           ))}
         </ul>
       )}
-      {ledger.hasNextPage ? (
+      {ledgerShowsMore(rows.length, hasNextPage) ? (
         <button type="button" className="btn sec sm" disabled={ledger.isFetchingNextPage} onClick={() => void ledger.fetchNextPage()}>
           {LEDGER_MORE}
         </button>

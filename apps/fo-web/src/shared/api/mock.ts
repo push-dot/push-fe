@@ -6,6 +6,7 @@ import type {
   CompanyMember,
   Consent,
   Conversation,
+  ConversationListItem,
   ConversationTurn,
   EmploymentType,
   GoogleIntegration,
@@ -1893,6 +1894,44 @@ const rememberJob = (bucket: ChatBucket, conversation: Conversation) => (job: Mo
   ])
 }
 
+const approvalTitle = (frames: JobFrame[]) => {
+  for (let index = frames.length - 1; index >= 0; index -= 1) {
+    const frame = frames[index]
+    if (frame?.type === 'approval' && frame.title) return frame.title
+  }
+  return null
+}
+
+const runningLine = (frames: JobFrame[]) => {
+  for (let index = frames.length - 1; index >= 0; index -= 1) {
+    const frame = frames[index]
+    if (!frame) continue
+    if (frame.type === 'status' && frame.text) return frame.text
+    if (frame.type === 'tool') {
+      const line = [frame.summary, frame.target].filter(Boolean).join(' · ')
+      if (line) return line
+    }
+  }
+  return null
+}
+
+/** GET /conversations row, matching push-be conversationJson. */
+const conversationListItem = (bucket: ChatBucket, conversation: Conversation): ConversationListItem => {
+  const messages = bucket.messages.get(conversation.id) ?? []
+  const job = runningJobs.get(conversation.id)
+  const live = job && !job.ended ? job : undefined
+  const approval = live ? approvalTitle(live.frames) : null
+  return {
+    ...conversation,
+    status: approval ? 'NEEDS_APPROVAL' : live ? 'RUNNING' : 'DONE',
+    queuePosition: null,
+    lastLine: approval ?? (live ? runningLine(live.frames) : null),
+    lastMessagePreview: (messages.at(-1)?.text ?? '').slice(0, 140),
+    createdBy: { displayName: sessionStore.load()?.user.displayName ?? '이민아' },
+    postingId: bucket.postingIds.get(conversation.id) ?? null,
+  }
+}
+
 const handleEmployerChat = async (method: string, url: URL, pathname: string, input: RequestInfo | URL, init?: RequestInit) => {
   const tail = routeTail(pathname)
   if (!tail.startsWith('/conversations')) return null
@@ -1991,10 +2030,11 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
   }
   if (method === 'GET' && tail === '/conversations') {
     const audience = url.searchParams.get('audience')
+    const bucket = chatBucket()
     const items =
       audience && audience !== 'EMPLOYER'
         ? []
-        : [...chatBucket().conversations].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+        : [...bucket.conversations].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((conversation) => conversationListItem(bucket, conversation))
     return json(200, { data: items, page: { nextCursor: null, hasMore: false, total: items.length } })
   }
   if (method === 'POST' && tail === '/conversations') {

@@ -1,10 +1,20 @@
-import type { Conversation } from '@push/api-client'
+import type { ConversationListItem, ConversationStatus } from '@push/api-client'
 import { Link } from 'react-router-dom'
 import { relativeTime } from '../../shared/lib/format'
 import { Icon } from '../../shared/ui/icon'
 import { CHAT_BUY, usedText } from './chat-copy'
 import type { ChatUsage } from './chat-usage'
 import { CHAT_EMPTY, CHAT_FAILED, CHAT_LOADING, CHAT_NEW, CHAT_SHARED } from './constants'
+
+/** Board marks: a running job is accent, a pending approval is orange, a finished chat has none. */
+export const chatListMark = (
+  status: ConversationStatus,
+): { label: string; tone: 'ac' | 'orange' } | null =>
+  status === 'RUNNING'
+    ? { label: '작업 중', tone: 'ac' }
+    : status === 'NEEDS_APPROVAL'
+      ? { label: '확인 필요', tone: 'orange' }
+      : null
 
 export const UsageMeter = ({ usage, className }: { usage: ChatUsage; className: string }) => (
   <span className={usage.full ? `${className} full` : className} aria-hidden="true">
@@ -19,7 +29,7 @@ const ChatSide = ({
   failed,
   usage,
 }: {
-  conversations: Conversation[]
+  conversations: ConversationListItem[]
   activeId?: string
   loading: boolean
   failed: boolean
@@ -41,17 +51,26 @@ const ChatSide = ({
       <p className="c1 t3 chat-side-note">{CHAT_EMPTY}</p>
     ) : null}
     <nav className="chat-rooms">
-      {conversations.map((conversation) => (
-        <Link
-          key={conversation.id}
-          className={conversation.id === activeId ? 'chat-link on' : 'chat-link'}
-          aria-current={conversation.id === activeId ? 'page' : undefined}
-          to={`/employer/chat/${conversation.id}`}
-        >
-          <span className="b2 w7 cap">{conversation.title || CHAT_NEW}</span>
-          <span className="c1 t3">{relativeTime(conversation.updatedAt)}</span>
-        </Link>
-      ))}
+      {conversations.map((conversation) => {
+        const mark = chatListMark(conversation.status)
+        return (
+          <Link
+            key={conversation.id}
+            className={conversation.id === activeId ? 'chat-link on' : 'chat-link'}
+            aria-current={conversation.id === activeId ? 'page' : undefined}
+            to={`/employer/chat/${conversation.id}`}
+          >
+            <span className="chat-link-title">
+              <span className="b2 w7 cap">{conversation.title || CHAT_NEW}</span>
+              {mark ? <span className={`badge ${mark.tone}`}>{mark.label}</span> : null}
+              <span className="c1 t3">{relativeTime(conversation.updatedAt)}</span>
+            </span>
+            {conversation.lastLine ? (
+              <span className="c1 t3 cap">{conversation.lastLine}</span>
+            ) : null}
+          </Link>
+        )
+      })}
     </nav>
     {usage ? (
       <div className="chat-usage">

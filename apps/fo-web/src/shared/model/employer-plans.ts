@@ -27,12 +27,65 @@ export const checkoutReturn = (params: URLSearchParams) => {
 
 // The success return names no plan and the webhook may land after it, so the tab remembers which plan it sent to Stripe.
 const CHECKOUT_PLAN = 'push.checkoutPlan'
+const CHECKOUT_PLAN_IDS = ['BASIC', 'PRO', 'ULTRA'] as const
+export type CheckoutPlanId = (typeof CHECKOUT_PLAN_IDS)[number]
+
 export const rememberCheckoutPlan = (planId: string | null) => {
   const store = browserSessionStorage()
   if (planId) store?.setItem(CHECKOUT_PLAN, planId)
   else store?.removeItem(CHECKOUT_PLAN)
 }
-export const checkoutPlanName = () => EMPLOYER_PLAN_CARDS.find((card) => card.id === browserSessionStorage()?.getItem(CHECKOUT_PLAN))?.name
+
+export const checkoutPlanId = (): CheckoutPlanId | null => {
+  const stored = browserSessionStorage()?.getItem(CHECKOUT_PLAN) ?? null
+  return CHECKOUT_PLAN_IDS.find((id) => id === stored) ?? null
+}
+
+export const checkoutPlanName = () => EMPLOYER_PLAN_CARDS.find((card) => card.id === checkoutPlanId())?.name
+
+// The webhook can land after Stripe sends the browser back. Read billing a few times, then stop.
+export const CHECKOUT_READS = 5
+
+/** Milliseconds before the next billing read, or null when this read was the last. */
+export const checkoutBackoff = (attempt: number): number | null => (attempt >= CHECKOUT_READS - 1 ? null : 500 * 2 ** attempt)
+
+export const paidPlanVisible = (
+  kind: 'success' | 'credits',
+  billing: { plan: string | null; balanceMicroCredits: number } | undefined,
+  pendingPlan: string | null,
+  balanceBefore: number | null,
+) => {
+  if (!billing) return false
+  if (kind === 'credits') return balanceBefore === null || billing.balanceMicroCredits > balanceBefore
+  return pendingPlan === null || billing.plan === pendingPlan
+}
+
+/**
+ * Refetch until the bought plan (or the added credits) shows, with bounded backoff.
+ * `alive` lets the page stop the loop when it unmounts. A read that throws counts as not yet visible.
+ */
+export const refreshUntilPaid = async (
+  kind: 'success' | 'credits',
+  pendingPlan: string | null,
+  balanceBefore: number | null,
+  read: () => Promise<{ plan: string | null; balanceMicroCredits: number } | undefined>,
+  wait: (ms: number) => Promise<void>,
+  alive: () => boolean = () => true,
+) => {
+  for (let attempt = 0; ; attempt += 1) {
+    if (!alive()) return
+    let billing: { plan: string | null; balanceMicroCredits: number } | undefined
+    try {
+      billing = await read()
+    } catch {
+      billing = undefined
+    }
+    if (!alive() || paidPlanVisible(kind, billing, pendingPlan, balanceBefore)) return
+    const delay = checkoutBackoff(attempt)
+    if (delay === null) return
+    await wait(delay)
+  }
+}
 
 export const checkoutTarget = (url: string, currentHref: string) => {
   const next = new URL(url, currentHref)

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type { Company, CompanyBillingStatus } from '@push/api-client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -44,7 +45,8 @@ const render = (role: Company['role'], paymentsEnabled?: boolean) => {
 }
 
 // The <button> whose label is `label`, or undefined when the page leaves it out.
-const button = (html: string, label: string) => html.match(new RegExp(`<button[^>]*>(?:(?!</button>).)*${label}</button>`))?.[0]
+const button = (html: string, label: string) =>
+  html.match(new RegExp(`<button[^>]*>(?:(?!</button>).)*${label}</button>`))?.[0]
 
 describe('plans page canPay = canManage && paymentsOpen', () => {
   it('lets an admin buy and switch while payments are open', () => {
@@ -63,6 +65,13 @@ describe('plans page canPay = canManage && paymentsOpen', () => {
     expect(button(html, '구매')).toBeUndefined()
     expect(button(html, 'Ultra로 올리기')).toContain('disabled')
     expect(html).toContain(PAYMENTS_CLOSED)
+  })
+
+  it('refetches billing after checkout and forgets the pending plan when checkout fails', () => {
+    const source = readFileSync(new URL('./plans-page.tsx', import.meta.url), 'utf8')
+    const checkout = source.slice(source.indexOf('const checkout'), source.indexOf('const topup'))
+    expect(source).toContain('refreshUntilPaid')
+    expect(checkout).toContain('rememberCheckoutPlan(null)')
   })
 
   it('shows a member the disabled actions and the admin-only banner', () => {

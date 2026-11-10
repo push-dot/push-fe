@@ -263,9 +263,9 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
         await conversationsAttach(conversationId, form)
         setFile(null)
       }
-      // Stopped during the upload: the question never left, so it goes back to the composer.
+      // Stopped during the upload: the question never left. Typing since then stays; an empty composer gets it back.
       if (current.stopped) {
-        setText(out.text)
+        setText((typed) => composerAfterVanish(typed, out.text))
         return
       }
       const body = {

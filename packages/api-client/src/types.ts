@@ -2,6 +2,12 @@ export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: nu
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
+
+/** GET /posts. push-be accepts sort=latest|popular and period=week (omitted means no window). */
+export type PostsListParams = PageParams & {
+  sort?: 'latest' | 'popular'
+  period?: 'week'
+}
 export type SearchTrending = { terms: { term: string; count: number }[]; skills: { id: string; count: number }[] }
 
 export type JobCategory = 'dev' | 'data' | 'design' | 'plan' | 'marketing' | 'sales' | 'hr' | 'ops'
@@ -253,6 +259,17 @@ export type Conversation = {
   pinned: boolean
   createdAt: string
   updatedAt: string
+}
+
+/** GET /conversations list row. push-be gateway conversationJson adds these beside Conversation. */
+export type ConversationStatus = 'NEEDS_APPROVAL' | 'RUNNING' | 'DONE'
+export type ConversationListItem = Conversation & {
+  status: ConversationStatus
+  queuePosition: number | null
+  lastLine: string | null
+  lastMessagePreview: string
+  createdBy: { displayName: string }
+  postingId: string | null
 }
 
 export type Message = {

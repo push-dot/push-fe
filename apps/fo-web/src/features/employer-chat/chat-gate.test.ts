@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { ApiError, QueueBusyError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
 import { approvalFailureFrom, chatGateFrom, composerAfterVanish, questionForComposer } from './chat-gate'
@@ -30,6 +31,15 @@ describe('chatGateFrom', () => {
     expect(composerAfterVanish('', '정리해 줘')).toBe('정리해 줘')
     expect(composerAfterVanish('이어서 쓸 말', '정리해 줘')).toBe('이어서 쓸 말')
     expect(composerAfterVanish('', null)).toBe('')
+  })
+
+  it('keeps text typed while a file upload is stopped, and restores the question only into an empty composer', () => {
+    expect(composerAfterVanish('그 사이 적은 말', '첨부해서 정리해 줘')).toBe('그 사이 적은 말')
+    expect(composerAfterVanish('', '첨부해서 정리해 줘')).toBe('첨부해서 정리해 줘')
+    const room = readFileSync(new URL('../../pages/employer/chat-room.tsx', import.meta.url), 'utf8')
+    const stopped = room.slice(room.indexOf('if (current.stopped)'), room.indexOf('const body'))
+    expect(stopped).toContain('composerAfterVanish(typed, out.text)')
+    expect(stopped).not.toContain('setText(out.text)')
   })
 
   it('maps approval answer failures', () => {

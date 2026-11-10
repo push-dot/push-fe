@@ -8,15 +8,21 @@ import { menuStep, rememberOpener, returnFocus, trapTab } from './focus'
 import { Icon, type IconName } from './icon'
 
 const GAP = 8
+const TAB_BAR = 64
+const TAB_BAR_MAX = 1024
 
 // A menu that would run past the bottom of the window opens above its button instead, when it fits there.
-export const opensUp = (pop: { top: number; bottom: number }, host: { top: number }, viewport: number) =>
-  pop.bottom > viewport - GAP && host.top - (pop.bottom - pop.top) - GAP >= 0
+// At ≤1024px the fixed tab bar takes 64px, so that strip is not available space.
+export const opensUp = (pop: { top: number; bottom: number }, host: { top: number }, viewport: number, windowWidth = Number.POSITIVE_INFINITY) => {
+  const reserved = windowWidth <= TAB_BAR_MAX ? TAB_BAR : 0
+  return pop.bottom > viewport - reserved - GAP && host.top - (pop.bottom - pop.top) - GAP >= 0
+}
 
 type PopoverProps = { label: string; onClose: () => void; className?: string; style?: CSSProperties; children: ReactNode }
 
 export const Popover = ({ label, onClose, className, style, children }: PopoverProps) => {
   const narrow = useMedia(NARROW)
+  const tabbed = useMedia('(max-width: 1024px)')
   const ref = useRef<HTMLDivElement>(null)
   const [opener] = useState(() => (document.activeElement instanceof HTMLElement ? document.activeElement : null))
   const [up, setUp] = useState(false)
@@ -29,8 +35,8 @@ export const Popover = ({ label, onClose, className, style, children }: PopoverP
   useLayoutEffect(() => {
     const host = ref.current?.parentElement
     if (narrow || !ref.current || !host) return
-    setUp(opensUp(ref.current.getBoundingClientRect(), host.getBoundingClientRect(), window.innerHeight))
-  }, [narrow])
+    setUp(opensUp(ref.current.getBoundingClientRect(), host.getBoundingClientRect(), window.innerHeight, window.innerWidth))
+  }, [narrow, tabbed])
   useEffect(() => {
     if (narrow) return
     const onDown = (event: PointerEvent) => {
