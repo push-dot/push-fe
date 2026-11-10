@@ -33,6 +33,11 @@ export const colors = {
     toastBg: '#16191D',
     toastText: '#FFFFFF',
     toastShadow: '0 12px 30px rgba(0,0,0,.2)',
+    notifStage: '#0E9F55',
+    notifOffer: '#5B4CF0',
+    notifComment: '#0C8093',
+    notifDeadline: '#E5484D',
+    notifAi: '#7C5CFF',
   },
   dark: {
     bg: '#0F1012',
@@ -68,6 +73,11 @@ export const colors = {
     toastBg: '#2E3238',
     toastText: '#F3F4F6',
     toastShadow: '0 12px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)',
+    notifStage: '#0E9F55',
+    notifOffer: '#5B4CF0',
+    notifComment: '#0C8093',
+    notifDeadline: '#E5484D',
+    notifAi: '#7C5CFF',
   },
 } as const
 

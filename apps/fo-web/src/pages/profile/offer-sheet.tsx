@@ -1,43 +1,70 @@
-import { ApiError } from '@push/api-client'
+import { CAREER_STATUSES, JOB_CATEGORIES, type Profile } from '@push/api-client'
+import { brandColor } from '@push/shared'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { OFFER_MAX, OFFER_SENT } from './constants'
+import { assetUrl } from '../../shared/api/client'
+import { initials, lengthCount } from '../../shared/lib/format'
+import { Dialog } from '../../shared/ui/dialog'
+import { Icon } from '../../shared/ui/icon'
+import { OFFER_BLOCKED, OFFER_MAX, OFFER_SENT } from './constants'
+import { offerFailure } from './offer-error'
 import { profilesOffer } from '../../features/send-offer'
 
+type OfferTarget = Profile & { blockedMe?: boolean }
 
-const OfferSheet = ({ userId, name, onClose, onSent }: { userId: string; name: string; onClose: () => void; onSent: (message: string) => void }) => {
+const OfferSheet = ({ profile, onClose, onSent }: { profile: OfferTarget; onClose: () => void; onSent: (message: string) => void }) => {
   const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [blocked, setBlocked] = useState(profile.blockedMe === true)
   const ready = message.trim().length >= 1 && message.trim().length <= OFFER_MAX
+  const category = JOB_CATEGORIES.find((item) => item.key === profile.jobCategory)?.label
+  const status = CAREER_STATUSES.find((item) => item.key === profile.careerStatus)?.label
+  const meta = [category, profile.tenureYears != null ? `${profile.tenureYears}년` : null, status].filter(Boolean).join(' · ')
   const send = useMutation({
-    mutationFn: () => profilesOffer(userId, { message: message.trim() }),
+    mutationFn: () => profilesOffer(profile.userId, { message: message.trim() }),
     onSuccess: () => onSent(OFFER_SENT),
     onError: (reason) => {
-      setError(reason instanceof ApiError && reason.code === 'CONFLICT' ? '이미 제안을 보냈어요.' : '제안을 보내지 못했어요. 잠시 후 다시 시도해 주세요.')
+      const failure = offerFailure(reason)
+      if (failure.blocked) setBlocked(true)
+      else setError(failure.message)
     },
   })
   return (
-    <div className="sheet-scrim" role="presentation" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label="제안하기" onClick={(event) => event.stopPropagation()}>
-        <div className="sheet-head">
-          <h2 className="h3">제안하기</h2>
-          <button type="button" className="text-link" onClick={onClose}>
-            닫기
-          </button>
+    <Dialog label="제안하기" onClose={onClose} wide>
+      <div className="offer-head">
+        {profile.avatarUrl ? (
+          <img className="av" src={assetUrl(profile.avatarUrl)} alt="" />
+        ) : (
+          <span className="av" style={{ background: brandColor(profile.displayName) }}>
+            {initials(profile.displayName)}
+          </span>
+        )}
+        <div className="offer-who">
+          <h2 className="h3">{`${profile.displayName} 님에게`}</h2>
+          <span className="c1 t3">{meta}</span>
         </div>
-        <label className="field">
-          메시지
-          <textarea value={message} maxLength={OFFER_MAX} rows={6} onChange={(event) => setMessage(event.target.value)} />
-          <span className="c1 t3">{`${message.length} / ${OFFER_MAX}`}</span>
-        </label>
-        <p className="c1 t3">{`제안은 ${name} 님의 알림과 메시지함으로 전달돼요.`}</p>
-        {error ? <p className="auth-error">{error}</p> : null}
-        <button type="button" className="primary" disabled={!ready || send.isPending} onClick={() => send.mutate()}>
-          제안 보내기
+        <button type="button" className="hbtn offer-close" aria-label="닫기" onClick={onClose}>
+          <Icon name="close" size={18} width={2.4} />
         </button>
       </div>
-    </div>
+      <label className="offer-box">
+        <textarea aria-label="메시지" value={message} maxLength={OFFER_MAX} rows={5} onChange={(event) => setMessage(event.target.value)} />
+        <span className="c1 t3 num">{lengthCount(message.length, OFFER_MAX)}</span>
+      </label>
+      {blocked ? (
+        <div className="offer-blocked b2 t2" role="alert">
+          <Icon name="info" size={20} />
+          {OFFER_BLOCKED}
+        </div>
+      ) : (
+        <p className="c1 t3">{`제안은 ${profile.displayName} 님의 알림과 제안함으로 전달돼요.`}</p>
+      )}
+      {error ? <p className="auth-error">{error}</p> : null}
+      <button type="button" className="btn pri lg block offer-send" disabled={!ready || blocked || send.isPending} onClick={() => send.mutate()}>
+        제안 보내기
+      </button>
+    </Dialog>
   )
 }
 

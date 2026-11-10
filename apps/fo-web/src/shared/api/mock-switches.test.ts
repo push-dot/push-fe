@@ -127,7 +127,10 @@ describe('ms= switches', () => {
     const names = async (query: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?${query}`)).body.data.map((item) => item.sender.displayName)
     expect(await names('box=received&archived=1')).toEqual(['정하린'])
     expect(await names('box=received')).not.toContain('오지현')
-    expect((await read<{ data: { user: { displayName: string } }[] }>('/me/blocks')).body.data.map((item) => item.user.displayName)).toEqual(['오지현', '한민재'])
+    expect((await read<{ data: { user: { displayName: string }; createdAt: string }[] }>('/me/blocks')).body.data.map((item) => [item.user.displayName, item.createdAt])).toEqual([
+      ['오지현', '2026-11-07T01:00:00.000Z'],
+      ['한민재', '2026-10-03T01:00:00.000Z'],
+    ])
     await call('/me/blocks/u-jihyun', 'DELETE')
     expect(await names('box=received')).toEqual(['오지현', '박도윤', '최지우'])
     await call('/me/offers/offer-1/archive', 'POST')
@@ -151,6 +154,13 @@ describe('ms= switches', () => {
       ['offer-3', null, false],
       ['offer-4', '2026-10-15T01:00:00.000Z', false],
     ])
+  })
+
+  it('answers the Google connection as push-be integrations/google does', async () => {
+    using('personal', '')
+    expect((await read<{ data: { calendarStatus: string } }>('/integrations/google')).body.data.calendarStatus).toBe('CONNECTED')
+    using('personal', 'calendar-google-off')
+    expect((await read<{ data: { calendarStatus: string } }>('/integrations/google')).body.data.calendarStatus).toBe('DISCONNECTED')
   })
 
   it('shows the member view of a Pro company', async () => {
@@ -317,5 +327,21 @@ describe('ms= switches', () => {
     vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
     using(null, MOCK_SWITCHES.join(','))
     expect((await call('/postings/p1')).status).toBe(200)
+  })
+})
+
+describe('Push documents', () => {
+  it('archives like push-be: revision-guarded, gone from the list after', async () => {
+    using('personal', '')
+    const doc = (await read<{ data: { revision: number } }>('/documents/src-ai')).body.data
+    expect((await errorCode('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision + 1 })).code).toBe('REVISION_CONFLICT')
+    expect((await call('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision })).status).toBe(200)
+    const ids = (await read<{ data: { id: string }[] }>('/sources')).body.data.map((item) => item.id)
+    expect(ids).not.toContain('src-ai')
+  })
+
+  it('fails the archive under docs-delete-fail too', async () => {
+    using('personal', 'docs-delete-fail')
+    expect((await call('/documents/src-ai-toss/archive', 'POST', { expectedRevision: 1 })).status).toBe(500)
   })
 })

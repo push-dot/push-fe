@@ -8,6 +8,7 @@ import type {
   Conversation,
   ConversationTurn,
   EmploymentType,
+  GoogleIntegration,
   JobCategory,
   Message,
   Offer,
@@ -770,6 +771,21 @@ const removeSource = (id: string) => {
   return false
 }
 
+// Push documents (AI_MADE sources) carry a push-be document revision; archive is how push-be deletes them.
+const documentRevisions = new Map<string, number>()
+
+const pushDocument = (source: SeedSource, status = 'DRAFT') => ({
+  id: source.id,
+  revision: documentRevisions.get(source.id) ?? 1,
+  title: source.fileName,
+  kind: 'TAILORED',
+  status,
+  updatedAt: source.createdAt,
+  applicationId: null,
+  latestVersionId: `${source.id}-v1`,
+  finalizedVersionId: null,
+})
+
 const libraryItem = (source: SeedSource) => ({
   ...(source.company ? { company: source.company, postingTitle: source.postingTitle } : {}),
   id: source.id,
@@ -973,7 +989,16 @@ const asCareers = (value: unknown): Profile['careers'] | null => {
   })
 }
 
-type Block = { user: Offer['sender']; blockedAt: string }
+const googleIntegration = (connected: boolean): GoogleIntegration => ({
+  enabled: true,
+  connected,
+  scopes: [],
+  gmailStatus: 'DISCONNECTED',
+  calendarStatus: connected ? 'CONNECTED' : 'DISCONNECTED',
+  lastSyncedAt: null,
+})
+
+type Block = { user: Offer['sender']; createdAt: string }
 
 let blocks: Block[] | null = null
 
@@ -1037,6 +1062,34 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       const payload = await readJson(input, init)
       if (typeof payload.fileName === 'string' && payload.fileName.trim()) found.fileName = payload.fileName.trim()
       return json(200, { data: found })
+    }
+  }
+  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/versions\/[^/]+\/export)?$/)
+  if (documentMatch) {
+    const [, id = '', sub] = documentMatch
+    const found = allSources().find((item) => item.id === decodeURIComponent(id) && item.kind === 'AI_MADE')
+    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
+    if (method === 'GET' && !sub) return json(200, { data: pushDocument(found) })
+    if (method === 'GET' && sub?.endsWith('/export')) {
+      return new Response(new Blob([`%PDF-1.4 mock ${found.fileName}`], { type: 'application/pdf' }), {
+        status: 200,
+        headers: { 'content-type': 'application/pdf' },
+      })
+    }
+    const payload = await readJson(input, init)
+    const revision = documentRevisions.get(found.id) ?? 1
+    if (payload.expectedRevision !== revision) {
+      return json(409, { error: { code: 'REVISION_CONFLICT', message: 'resource was modified', details: { currentRevision: revision } } })
+    }
+    if (method === 'POST' && sub === '/archive') {
+      documentRevisions.set(found.id, revision + 1)
+      removeSource(found.id)
+      return json(200, { data: pushDocument(found, 'ARCHIVED') })
+    }
+    if (method === 'PATCH' && !sub && typeof payload.title === 'string' && payload.title.trim()) {
+      documentRevisions.set(found.id, revision + 1)
+      found.fileName = payload.title.trim()
+      return json(200, { data: pushDocument(found) })
     }
   }
   if (method === 'GET' && tail === '/profiles') {
@@ -1198,7 +1251,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const data = calendarEvents.filter((event) => (!from || event.startsAt >= from) && (!to || event.startsAt < to))
     return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
   }
-  if (method === 'GET' && tail === '/calendar/google') return json(200, { data: { connected: true } })
+  if (method === 'GET' && tail === '/integrations/google') return json(200, { data: googleIntegration(true) })
   if (method === 'POST' && tail === '/calendar/events') {
     const payload = await readJson(input, init)
     const now = new Date().toISOString()
@@ -1237,7 +1290,7 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     const known = [...receivedOffers.map((item) => item.sender), ...sentOffers.map((item) => item.recipient)].find((item) => item.id === userId)
     const profile = hubProfiles.find((item) => item.userId === userId)
     const user = known ?? { id: userId, displayName: profile?.displayName ?? userId, avatarUrl: null, companyName: null, headline: profile?.headline ?? '' }
-    if (!blockList().some((item) => item.user.id === userId)) blocks = [{ user, blockedAt: new Date().toISOString() }, ...blockList()]
+    if (!blockList().some((item) => item.user.id === userId)) blocks = [{ user, createdAt: new Date().toISOString() }, ...blockList()]
     return new Response(null, { status: 204 })
   }
   const blockMatch = tail.match(/^\/me\/blocks\/([^/]+)$/)
@@ -2188,7 +2241,7 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
       const data = ledgerEntries()
       return json(200, { data, page: { nextCursor: null, hasMore: false, total: data.length } })
     }
-    if (mockSwitch('calendar-google-off') && tail === '/calendar/google') return json(200, { data: { connected: false } })
+    if (mockSwitch('calendar-google-off') && tail === '/integrations/google') return json(200, { data: googleIntegration(false) })
   }
   if (method === 'POST') {
     if (/^\/postings\/[^/]+\/apply$/.test(tail)) {
@@ -2202,7 +2255,7 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
     // push-be answers this before any role or body check while PAYMENTS_ENABLED is off.
     if (mockSwitch('payments-disabled') && PAYMENT_TAILS.has(tail)) return failure(503, 'PAYMENTS_DISABLED', '지금은 결제할 수 없어요')
     if (mockSwitch('inbox-cant-send') && /^\/me\/offers\/[^/]+\/messages$/.test(tail)) {
-      return failure(403, 'OFFER_CLOSED', '이 대화에는 더 이상 메시지를 보낼 수 없어요')
+      return failure(403, 'BLOCKED', 'this user is not accepting messages from you')
     }
     if (mockSwitch('signup-taken-employer') && tail === '/auth/email/signup') {
       const payload = await readJson(input, init)
@@ -2215,7 +2268,9 @@ const switchResponse = async (method: string, tail: string, url: URL, input: Req
     if (mockSwitch('profile-save-fail') && tail === '/me/profile') return internalError()
     if (mockSwitch('applicant-move-fail') && /^\/postings\/[^/]+\/applicants\/[^/]+$/.test(tail)) return internalError()
   }
-  if (method === 'DELETE' && mockSwitch('docs-delete-fail') && /^\/sources\/[^/]+$/.test(tail)) return internalError()
+  if (mockSwitch('docs-delete-fail') && (method === 'DELETE' ? /^\/sources\/[^/]+$/ : /^\/documents\/[^/]+\/archive$/).test(tail)) {
+    return internalError()
+  }
   return null
 }
 
@@ -2367,6 +2422,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
       },
     })
   }
+  if (method === 'POST' && matches(pathname, '/auth/logout')) return new Response(null, { status: 204 })
   if (method === 'POST' && matches(pathname, '/auth/refresh')) {
     return json(200, { data: sessionStore.load() ?? mockSession(persona ?? 'personal') })
   }

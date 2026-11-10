@@ -115,6 +115,10 @@ export type Offer = {
   posting: OfferPosting | null
   status: OfferStatus
   readAt: string | null
+  /** When the recipient accepted or declined; null while open. */
+  respondedAt?: string | null
+  /** POST me/offers/:id/messages would succeed: ACCEPTED and the other party has not blocked the caller. */
+  canSend?: boolean
   archivedAt?: string | null
   createdAt: string
 }
@@ -181,6 +185,7 @@ export type Settings = {
 
 export type ResumeDocument = {
   id: string
+  revision: number
   title: string
   kind: string
   status: string
@@ -212,6 +217,9 @@ export type SourceItem = Pick<Source, 'id' | 'fileName' | 'mimeType' | 'size'> &
   createdAt: string | null
   origin: string
   kind?: string | null
+  /** AI documents only: the application's company and posting title; null for uploads. */
+  company?: string | null
+  postingTitle?: string | null
 }
 export type ProfileDraft = {
   displayName: string
@@ -636,8 +644,22 @@ export type CalendarEvent = {
   source: 'LOCAL' | 'GOOGLE'
   externalId: string | null
   notes: string
+  remindAt?: string | null
+  location?: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type CreateCalendarEventInput = Pick<CalendarEvent, 'type' | 'title' | 'startsAt' | 'endsAt'> &
+  Partial<Pick<CalendarEvent, 'timeZone' | 'notes' | 'remindAt' | 'location' | 'applicationId'>>
+
+export type GoogleIntegration = {
+  enabled: boolean
+  connected: boolean
+  scopes: string[]
+  gmailStatus: 'CONNECTED' | 'DISCONNECTED' | 'DISABLED'
+  calendarStatus: 'CONNECTED' | 'DISCONNECTED'
+  lastSyncedAt: string | null
 }
 
 export type ConversationAttachment = { id: string }

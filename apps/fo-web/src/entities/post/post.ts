@@ -1,6 +1,7 @@
 import type { PostCategory } from '@push/api-client'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
+  meCommentedPosts as fetchCommentedPosts,
   mePosts as fetchMyPosts,
   postsComments as fetchComments,
   postsGet as fetchPost,
@@ -13,6 +14,9 @@ export const postsComments = (...args: Parameters<typeof fetchComments>) => fetc
 export const mePosts = (...args: Parameters<typeof fetchMyPosts>) => fetchMyPosts(...args)
 
 export const useMyPosts = (enabled = true) => useQuery({ queryKey: ['my-posts'], queryFn: () => mePosts(), enabled })
+
+export const useMyCommentedPosts = (enabled = true) =>
+  useQuery({ queryKey: ['my-commented-posts'], queryFn: () => fetchCommentedPosts(), enabled })
 
 export const usePost = (id: string) => useQuery({ queryKey: ['post', id], queryFn: () => postsGet(id) })
 

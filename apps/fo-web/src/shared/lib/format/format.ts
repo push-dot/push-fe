@@ -43,4 +43,6 @@ export const compactCount = (count: number) => {
   return `${text}천`
 }
 
+export const lengthCount = (length: number, max: number) => `${length.toLocaleString('ko-KR')} / ${max.toLocaleString('ko-KR')}`
+
 export const clockLabel = (iso: string) => new Date(iso).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })

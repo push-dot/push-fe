@@ -35,7 +35,12 @@
       "popWeb": "0 12px 40px rgba(16,24,40,.14),0 0 0 1px rgba(16,24,40,.05)",
       "toastBg": "#16191D",
       "toastText": "#FFFFFF",
-      "toastShadow": "0 12px 30px rgba(0,0,0,.2)"
+      "toastShadow": "0 12px 30px rgba(0,0,0,.2)",
+      "notifStage": "#0E9F55",
+      "notifOffer": "#5B4CF0",
+      "notifComment": "#0C8093",
+      "notifDeadline": "#E5484D",
+      "notifAi": "#7C5CFF"
     },
     "dark": {
       "bg": "#0F1012",
@@ -72,7 +77,12 @@
       "popWeb": "0 16px 48px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)",
       "toastBg": "#2E3238",
       "toastText": "#F3F4F6",
-      "toastShadow": "0 12px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)"
+      "toastShadow": "0 12px 30px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08)",
+      "notifStage": "#0E9F55",
+      "notifOffer": "#5B4CF0",
+      "notifComment": "#0C8093",
+      "notifDeadline": "#E5484D",
+      "notifAi": "#7C5CFF"
     }
   },
   "spacing": {

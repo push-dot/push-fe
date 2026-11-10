@@ -5,21 +5,34 @@ import { useApplications } from '../../entities/application'
 import { useBookmarks, usePostingList } from '../../entities/posting'
 import { saveReturnTo } from '../../shared/auth/return-path'
 import { useSession } from '../../shared/auth/use-session'
-import Skeleton from '../../shared/ui/skeleton'
-import { HOME_SECTIONS, HOME_SHORTCUTS, OPEN_APPLICATION_STAGES } from './constants'
+import { CardSkeletons } from '../../shared/ui/skeleton'
+import { ErrorState } from '../../shared/ui/state-block'
+import { HOME_ERROR, HOME_SECTIONS, HOME_SHORTCUTS, HOME_SKELETON_CARDS, OPEN_APPLICATION_STAGES } from './constants'
+import ShortcutArt from './shortcut-art'
 
+
+const ShortcutSkeleton = () => (
+  <span className="shortcut shortcut-sk" aria-hidden="true">
+    <span className="sk-bar sk-name" />
+    <span className="sk-bar sk-hint" />
+  </span>
+)
 
 const HomeSection = ({ sort, title }: { sort: 'latest' | 'deadline' | 'popular'; title: string }) => {
   const query = usePostingList(sort)
   const items = query.data?.data ?? []
   if (query.isLoading) {
     return (
-      <section className="home-section">
-        <Skeleton rows={1} />
+      <section className="home-section" aria-busy="true">
+        <div className="section-head sk-head">
+          <span className="sk-bar sk-title" />
+          <span className="sk-bar sk-more" />
+        </div>
+        <CardSkeletons count={HOME_SKELETON_CARDS} />
       </section>
     )
   }
-  if (!query.data || items.length === 0) return null
+  if (!query.isError && (!query.data || items.length === 0)) return null
   return (
     <section className="home-section">
       <div className="section-head">
@@ -31,38 +44,18 @@ const HomeSection = ({ sort, title }: { sort: 'latest' | 'deadline' | 'popular';
           </svg>
         </Link>
       </div>
-      <div className="h-scroll">
-        {items.map((posting) => (
-          <PostingCard key={posting.id} posting={posting} />
-        ))}
-      </div>
+      {query.isError ? (
+        <div className="card home-error">
+          <ErrorState title={HOME_ERROR.title} description={HOME_ERROR.body} onRetry={() => void query.refetch()} />
+        </div>
+      ) : (
+        <div className="h-scroll">
+          {items.map((posting) => (
+            <PostingCard key={posting.id} posting={posting} />
+          ))}
+        </div>
+      )}
     </section>
-  )
-}
-
-const ShortcutArt = ({ name }: { name: string }) => {
-  if (name === 'bookmarks') {
-    return (
-      <svg viewBox="0 0 84 72" aria-hidden="true">
-        <rect x="28" y="8" width="28" height="48" rx="6" fill="#FF8A3D" />
-        <path d="M34 8h16v28l-8-5-8 5z" fill="#E5484D" />
-      </svg>
-    )
-  }
-  if (name === 'activity') {
-    return (
-      <svg viewBox="0 0 84 72" aria-hidden="true">
-        <rect x="18" y="34" width="12" height="22" rx="3" fill="#7C6CFF" />
-        <rect x="36" y="22" width="12" height="34" rx="3" fill="#3CCB7F" />
-        <rect x="54" y="12" width="12" height="44" rx="3" fill="#5B8CFF" />
-      </svg>
-    )
-  }
-  return (
-    <svg viewBox="0 0 84 72" aria-hidden="true">
-      <rect x="22" y="28" width="40" height="28" rx="6" fill="#5B4CF0" />
-      <path d="M30 28v-4a12 12 0 0 1 24 0v4" fill="none" stroke="#8B7CFF" strokeWidth="4" />
-    </svg>
   )
 }
 
@@ -80,28 +73,31 @@ const HomePage = () => {
     }
     return hint
   }
+  const shortcutsLoading = Boolean(session) && (bookmarks.isLoading || applications.isLoading)
   return (
     <main className="page home">
       <div className="shortcuts">
-        {HOME_SHORTCUTS.map((shortcut) => (
-          <Link
-            key={shortcut.to}
-            to={shortcut.to}
-            className="shortcut"
-            onClick={(event) => {
-              if (!shortcut.login || session) return
-              event.preventDefault()
-              saveReturnTo(shortcut.to)
-              navigate('/login')
-            }}
-          >
-            <span className="h3">{shortcut.label}</span>
-            <span className="c1 t3">{hintFor(shortcut.key, shortcut.hint)}</span>
-            <span className="shortcut-art">
-              <ShortcutArt name={shortcut.key} />
-            </span>
-          </Link>
-        ))}
+        {shortcutsLoading
+          ? HOME_SHORTCUTS.map((shortcut) => <ShortcutSkeleton key={shortcut.to} />)
+          : HOME_SHORTCUTS.map((shortcut) => (
+              <Link
+                key={shortcut.to}
+                to={shortcut.to}
+                className={`shortcut shortcut-${shortcut.key}`}
+                onClick={(event) => {
+                  if (!shortcut.login || session) return
+                  event.preventDefault()
+                  saveReturnTo(shortcut.to)
+                  navigate('/login')
+                }}
+              >
+                <span className="h3">{shortcut.label}</span>
+                <span className="c1 t3">{hintFor(shortcut.key, shortcut.hint)}</span>
+                <span className="shortcut-art">
+                  <ShortcutArt name={shortcut.key} />
+                </span>
+              </Link>
+            ))}
       </div>
       {HOME_SECTIONS.map((section) => (
         <HomeSection key={section.sort} sort={section.sort} title={section.title} />

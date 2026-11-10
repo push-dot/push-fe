@@ -10,8 +10,12 @@ const FIT_PARTS = [
 
 export const FIT_PART_LABELS = FIT_PARTS.map((part) => part[1])
 export const FIT_LOCK = '🔒 PRO로 올리면 항목별 점수와 약점을 볼 수 있어요'
+export const FIT_LOCK_CLOSED = '🔒 항목별 점수와 약점은 PRO에서 볼 수 있어요'
 export const FIT_SOON = '적합도는 곧 볼 수 있어요'
 export const FIT_COMPARING = '공고와 서류를 비교하는 중…'
+
+// Same rule as fo-mobile: no upgrade invitation while payments are closed or not loaded yet.
+export const fitLockText = (paymentsOpen: boolean) => (paymentsOpen ? FIT_LOCK : FIT_LOCK_CLOSED)
 
 export type FitPayload = {
   fitScore: number
