@@ -44,6 +44,7 @@ const SignedInStack = () => {
       <Stack.Screen name="sidebar/rename/[id]" options={sheetOptions(c)} />
       <Stack.Screen name="access-mode" options={sheetOptions(c)} />
       <Stack.Screen name="consent" options={sheetOptions(c)} />
+      <Stack.Screen name="signup-terms" />
       <Stack.Screen name="quick-start/[key]" options={sheetOptions(c)} />
       <Stack.Screen name="materials" options={sheetOptions(c)} />
       <Stack.Screen
