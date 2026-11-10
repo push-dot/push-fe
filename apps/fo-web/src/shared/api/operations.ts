@@ -67,11 +67,15 @@ export const conversationsList = (...args: Parameters<Api['conversations']['list
 
 export const conversationsMessages = (...args: Parameters<Api['conversations']['messages']>) => api.conversations.messages(...args)
 
+export const conversationsTurns = (...args: Parameters<Api['conversations']['turns']>) => api.conversations.turns(...args)
+
 export const conversationsSend = (...args: Parameters<Api['conversations']['send']>) => api.conversations.send(...args)
 
 export const conversationsStream = (...args: Parameters<Api['conversations']['stream']>) => api.conversations.stream(...args)
 
 export const conversationsFollow = (...args: Parameters<Api['conversations']['follow']>) => api.conversations.follow(...args)
+
+export const conversationsCancel = (...args: Parameters<Api['conversations']['cancel']>) => api.conversations.cancel(...args)
 
 export const conversationsResolveApproval = (...args: Parameters<Api['conversations']['resolveApproval']>) =>
   api.conversations.resolveApproval(...args)

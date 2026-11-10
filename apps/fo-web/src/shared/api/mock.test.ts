@@ -271,7 +271,12 @@ describe('employer chat mock', () => {
     const messages = await read<{ data: { role: string; text: string }[] }>(
       await mockFetch(`http://localhost/api/v1/conversations/${pro.data.id}/messages`),
     )
-    const assistant = messages.data.filter((item) => item.role === 'ASSISTANT').map((item) => item.text)
+    // Newest first, as push-be pages them: the last question comes first.
+    expect(messages.data[0]?.role).toBe('ASSISTANT')
+    const assistant = messages.data
+      .filter((item) => item.role === 'ASSISTANT')
+      .map((item) => item.text)
+      .reverse()
     expect(assistant[0]).toBe(REVIEW_REPLY)
     expect(assistant[0]?.includes('합격')).toBe(false)
     expect(parsePostingDraft(assistant[1] ?? '')?.title).toBe('백엔드 엔지니어')

@@ -56,6 +56,12 @@ describe('harness endpoints', () => {
     expect(hits[0]).toMatchObject({ method: 'POST', url: 'http://x/api/v1/conversations/c1/approvals/a1', body: '{"optionId":"approve"}' })
   })
 
+  it('cancels the active job through stream/cancel', async () => {
+    const { api, hits } = harness(() => json(200, { data: { jobId: 'j1', status: 'CANCELLED' } }))
+    await expect(api.conversations.cancel('c1')).resolves.toEqual({ jobId: 'j1', status: 'CANCELLED' })
+    expect(hits[0]).toMatchObject({ method: 'POST', url: 'http://x/api/v1/conversations/c1/stream/cancel' })
+  })
+
   it('sends every selected id when the card allows several', async () => {
     const { api, hits } = harness(() => json(202, { data: { id: 'a1', status: 'APPROVED', optionId: 'resume', optionIds: ['resume', 'portfolio'], jobId: 'j1' } }))
     await expect(api.conversations.resolveApproval('c1', 'a1', 'resume', ['resume', 'portfolio'])).resolves.toMatchObject({ optionIds: ['resume', 'portfolio'] })

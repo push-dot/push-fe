@@ -13,6 +13,12 @@ describe('streamErrorText', () => {
     expect(streamErrorText(new QueueBusyError('busy', 12))).toBe('지금 요청이 많아요. 12초 뒤에 다시 보내 주세요.')
   })
 
+  it('says billing is busy for QUEUE_BUSY with reason BILLING_LOCKED', () => {
+    expect(streamErrorText(new QueueBusyError('billing is busy', 5, { retryAfterSec: 5, ahead: 0, reason: 'BILLING_LOCKED' }))).toBe(
+      '결제 정보를 정리하고 있어요. 5초 뒤에 다시 보내 주세요.',
+    )
+  })
+
   it('maps PLAN_REQUIRED', () => {
     expect(streamErrorText(new ApiError('plan', 'PLAN_REQUIRED', 403))).toBe('요금제를 올리면 쓸 수 있어요.')
   })
