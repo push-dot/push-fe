@@ -70,6 +70,17 @@ describe('legal documents', () => {
     expect(sections).toEqual(sections.map((_, index) => index + 1))
   })
 
+  it('states the document purge and the employer email sign-up items', () => {
+    const policy = text(LEGAL_DOCUMENTS.privacyPolicy)
+    expect(policy).toContain('| 지운 서류 | 바로 목록·에이전트에서 빼고 30일 뒤 지움 | 이용자의 삭제 요청 |')
+    expect(policy).toContain('올린 파일과 서비스에서 만든 서류를 지우고')
+    expect(policy).toContain('글과 댓글을 지우는 일처럼')
+    const consent = text(LEGAL_DOCUMENTS.privacyConsent)
+    expect(consent).toContain('| 기업 이메일 가입 | 이메일 주소, 비밀번호(되돌릴 수 없게 암호화해 저장), 이름, 상호, 약관 동의 기록 |')
+    expect(policy).not.toMatch(/"회사"|회사(는|가|의) /)
+    expect(consent).not.toMatch(/"회사"|회사(는|가|의) /)
+  })
+
   it('ships no unfilled placeholder in the published texts', () => {
     for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document)).not.toMatch(/\[[^\]]+\]/)
   })
