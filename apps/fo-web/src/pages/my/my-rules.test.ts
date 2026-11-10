@@ -1,6 +1,8 @@
+import { ApiError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
 import {
   careerSpan,
+  documentDeleteNotice,
   guessLinkKind,
   linkHost,
   normalizeUrl,
@@ -15,6 +17,22 @@ import {
 const MB = 1_000_000
 
 describe('documents', () => {
+  it('says when career evidence is why a file cannot be deleted', () => {
+    const referenced = new ApiError('in use', 'INVALID_TRANSITION', 409, {
+      reason: 'REFERENCED_BY_EVIDENCE',
+      evidenceCount: 2,
+    })
+    expect(documentDeleteNotice(referenced)).toBe('경력 기록에서 쓰고 있어 지울 수 없어요')
+    expect(documentDeleteNotice(new ApiError('nope', 'INTERNAL', 500))).toBe(
+      '서류를 삭제하지 못했어요',
+    )
+    expect(
+      documentDeleteNotice(
+        new ApiError('conflict', 'INVALID_TRANSITION', 409, { reason: 'OTHER' }),
+      ),
+    ).toBe('서류를 삭제하지 못했어요')
+  })
+
   it('puts AI-made documents under Push 서류 and the rest under 올린 파일', () => {
     const items = [
       { id: 'a', origin: 'AI' },

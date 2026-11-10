@@ -7,7 +7,12 @@ import { termsOutcome, termsPending } from './terms-gate'
 
 const session = (accountType: 'PERSONAL' | 'EMPLOYER') =>
   ({ accessToken: 'at', refreshToken: 'rt', user: { id: 'u1', accountType } }) as unknown as Session
-const agreed = { version: LEGAL_VERSION, privacyAt: 'x', serviceTermsAt: 'x', age14At: 'x' } as Consent['terms']
+const agreed = {
+  version: LEGAL_VERSION,
+  privacyAt: 'x',
+  serviceTermsAt: 'x',
+  age14At: 'x',
+} as Consent['terms']
 
 describe('termsPending', () => {
   it('asks a returning personal account that left the consent step before', async () => {
@@ -29,6 +34,13 @@ describe('termsPending', () => {
     stored = { ...stored, terms: agreed }
     await expect(termsPending(session('EMPLOYER'), read)).resolves.toBe(false)
     expect(read).toHaveBeenCalledWith('at')
+  })
+
+  it('sends a session whose stored terms version is stale back to consent', async () => {
+    const read = async () =>
+      ({ referenceData: true, updatedAt: null, terms: { ...agreed, version: '0.9' } }) as Consent
+    await expect(termsPending(session('PERSONAL'), read)).resolves.toBe(true)
+    await expect(termsOutcome(session('EMPLOYER'), read)).resolves.toBe('pending')
   })
 
   it('lets an employer that agreed on the email sign-up form through', async () => {

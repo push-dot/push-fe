@@ -6,23 +6,17 @@ import { Icon } from '../../shared/ui/icon'
 import Skeleton from '../../shared/ui/skeleton'
 import StateBlock, { ErrorState } from '../../shared/ui/state-block'
 import { HUB_ERROR, HUB_PAGE_SIZE } from './constants'
-import HubFilterSheet, { countApplied, type HubDraft } from './hub-filter-sheet'
+import HubFilterSheet, { countApplied, profileFilters, type HubDraft } from './hub-filter-sheet'
 import ProfileCard from './profile-card'
 import { useProfilePages } from '../../entities/profile'
 
-
-const filtersOf = (categories: JobCategory[], draft: HubDraft) => ({
-  category: categories.length > 0 ? categories : undefined,
-  tenure: draft.tenure ? [draft.tenure] : undefined,
-  status: draft.status ? [draft.status] : undefined,
-})
 
 const HubPage = () => {
   const [categories, setCategories] = useState<JobCategory[]>([])
   const [applied, setApplied] = useState<HubDraft>({})
   const [draft, setDraft] = useState<HubDraft>({})
   const [open, setOpen] = useState(false)
-  const listQuery = useProfilePages(['profiles', categories, applied], { ...filtersOf(categories, applied), limit: HUB_PAGE_SIZE })
+  const listQuery = useProfilePages(['profiles', categories, applied], { ...profileFilters(categories, applied), limit: HUB_PAGE_SIZE })
   const items = listQuery.data?.pages.flatMap((page) => page.data) ?? []
   const filterCount = countApplied(applied)
   const summary = [

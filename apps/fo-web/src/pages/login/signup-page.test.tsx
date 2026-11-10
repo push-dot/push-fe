@@ -23,4 +23,10 @@ describe('employer sign-up consent', () => {
   it('has no placeholder copy left', () => {
     expect(employerForm()).not.toContain('[자리 표시]')
   })
+
+  it('asks for consent to collection and use, which is what the checkbox records', () => {
+    const html = employerForm()
+    expect(html).toContain('만 14세 이상이며 이용약관과 개인정보 수집·이용에 동의해요')
+    expect(html).not.toContain('개인정보 처리방침에 동의해요')
+  })
 })

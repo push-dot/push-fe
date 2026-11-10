@@ -349,6 +349,25 @@ describe('ms= switches', () => {
 })
 
 describe('Push documents', () => {
+  it('answers a verification resend with 204 and no body', async () => {
+    using('personal', '')
+    const response = await call('/auth/email/verify/resend', 'POST', { email: 'a@push.app' })
+    expect(response.status).toBe(204)
+    expect(await response.text()).toBe('')
+  })
+
+  it('puts an archived Push document back when it is restored', async () => {
+    using('personal', '')
+    const doc = (await read<{ data: { revision: number } }>('/documents/src-ai-kakao')).body.data
+    const archived = await read<{ data: { revision: number; status: string } }>('/documents/src-ai-kakao/archive', 'POST', { expectedRevision: doc.revision })
+    expect(archived.body.data).toMatchObject({ status: 'ARCHIVED', revision: doc.revision + 1 })
+    const restored = await read<{ data: { revision: number; status: string } }>('/documents/src-ai-kakao/restore', 'POST', { expectedRevision: archived.body.data.revision })
+    expect(restored.status).toBe(200)
+    expect(restored.body.data).toMatchObject({ status: 'DRAFT', revision: archived.body.data.revision + 1 })
+    const ids = (await read<{ data: { id: string }[] }>('/sources')).body.data.map((item) => item.id)
+    expect(ids).toContain('src-ai-kakao')
+  })
+
   it('archives like push-be: revision-guarded, gone from the list after', async () => {
     using('personal', '')
     const doc = (await read<{ data: { revision: number } }>('/documents/src-ai')).body.data

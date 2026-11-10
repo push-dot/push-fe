@@ -1,8 +1,14 @@
-import type { Career, CareerStatus, LinkKind, SourceItem } from '@push/api-client'
+import {
+  ApiError,
+  type Career,
+  type CareerStatus,
+  type LinkKind,
+  type SourceItem,
+} from '@push/api-client'
 import { fileSize, monthDay } from '@push/shared'
 import { isPushDocument } from '../../features/manage-documents'
 import { RESUME_MAX_BYTES, resumeFileError } from '../../features/upload-resume'
-import { CAREER_NOW, DOCUMENT_TOO_BIG, DOCUMENT_UPLOADING } from './constants'
+import { CAREER_NOW, DOCUMENT_DELETE, DOCUMENT_TOO_BIG, DOCUMENT_UPLOADING } from './constants'
 
 const MONTHS_PER_YEAR = 12
 
@@ -34,6 +40,14 @@ export const fileBadgeClass = (fileName: string) =>
   fileExt(fileName) === 'PDF' ? 'badge red' : 'badge ac'
 
 export const uploadingMeta = (size: number) => joinDot([DOCUMENT_UPLOADING, fileSize(size)])
+
+export const referencedByEvidence = (error: unknown) =>
+  error instanceof ApiError &&
+  error.status === 409 &&
+  error.details?.reason === 'REFERENCED_BY_EVIDENCE'
+
+export const documentDeleteNotice = (error: unknown) =>
+  referencedByEvidence(error) ? DOCUMENT_DELETE.referenced : DOCUMENT_DELETE.failed
 
 export const uploadProblem = (file: { name: string; type: string; size: number }) => {
   const typeError = resumeFileError({ name: file.name, type: file.type, size: 0 })

@@ -793,6 +793,7 @@ const removeSource = (id: string) => {
 
 // Push documents (AI_MADE sources) carry a push-be document revision; archive is how push-be deletes them.
 const documentRevisions = new Map<string, number>()
+const archivedDocs = new Map<string, { source: SeedSource; list: SeedSource[] }>()
 
 const pushDocument = (source: SeedSource, status = 'DRAFT') => ({
   id: source.id,
@@ -1092,11 +1093,13 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
       return json(200, { data: found })
     }
   }
-  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/versions\/[^/]+\/export)?$/)
+  const documentMatch = tail.match(/^\/documents\/([^/]+)(\/archive|\/restore|\/versions\/[^/]+\/export)?$/)
   if (documentMatch) {
-    const [, id = '', sub] = documentMatch
-    const found = allSources().find((item) => item.id === decodeURIComponent(id) && item.kind === 'AI_MADE')
-    if (!found) return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
+    const [, rawId = '', sub] = documentMatch
+    const id = decodeURIComponent(rawId)
+    const archived = archivedDocs.get(id)
+    const found = allSources().find((item) => item.id === id && item.kind === 'AI_MADE') ?? archived?.source
+    if (!found || found.kind !== 'AI_MADE') return json(404, { error: { code: 'NOT_FOUND', message: 'resource not found' } })
     if (method === 'GET' && !sub) return json(200, { data: pushDocument(found) })
     if (method === 'GET' && sub?.endsWith('/export')) {
       return new Response(new Blob([`%PDF-1.4 mock ${found.fileName}`], { type: 'application/pdf' }), {
@@ -1111,8 +1114,17 @@ const handleCommunity = async (method: string, url: URL, pathname: string, input
     }
     if (method === 'POST' && sub === '/archive') {
       documentRevisions.set(found.id, revision + 1)
+      const list = uploadedSources.includes(found) ? uploadedSources : seedSources
       removeSource(found.id)
+      archivedDocs.set(found.id, { source: found, list })
       return json(200, { data: pushDocument(found, 'ARCHIVED') })
+    }
+    if (method === 'POST' && sub === '/restore') {
+      if (!archived) return json(200, { data: pushDocument(found) })
+      documentRevisions.set(found.id, revision + 1)
+      archived.list.unshift(archived.source)
+      archivedDocs.delete(found.id)
+      return json(200, { data: pushDocument(found) })
     }
     if (method === 'PATCH' && !sub && typeof payload.title === 'string' && payload.title.trim()) {
       documentRevisions.set(found.id, revision + 1)
@@ -2479,6 +2491,7 @@ export const mockFetch: typeof fetch = async (input, init) => {
     }
     return json(200, { data: mockSession(loginPersona(email)) })
   }
+  if (method === 'POST' && matches(pathname, '/auth/email/verify/resend')) return new Response(null, { status: 204 })
   if (method === 'POST' && matches(pathname, '/auth/email/verify')) {
     const payload = await readJson(input, init)
     const token = String(payload.token ?? '')
