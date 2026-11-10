@@ -2,6 +2,7 @@ import { createApi, createClient } from '@push/api-client'
 import { fetch as expoFetch } from 'expo/fetch'
 import * as Crypto from 'expo-crypto'
 import { API_BASE_URL } from './config'
+import { isRefreshAuthFailure } from './refresh-auth-failure'
 import { useSession } from './session-store'
 
 // The flag is read inline, not from config, so Metro folds it and production bundles leave the mock out.
@@ -13,15 +14,15 @@ if (MOCK) require('../../mock/links').listenMockLinks()
 
 let refreshing: Promise<boolean> | null = null
 
-const refresh = () => {
+export const refreshSession = () => {
   refreshing ??= (async () => {
     const { session, set } = useSession.getState()
     if (!session?.refreshToken) return false
     try {
       await set(await api.auth.refresh(session.refreshToken))
       return true
-    } catch {
-      await set(null)
+    } catch (error) {
+      if (isRefreshAuthFailure(error)) await set(null)
       return false
     } finally {
       refreshing = null
@@ -33,7 +34,7 @@ const refresh = () => {
 export const http = createClient({
   baseUrl: API_BASE_URL,
   getToken: () => useSession.getState().session?.accessToken,
-  refresh,
+  refresh: refreshSession,
   fetch: mockFetch ?? (expoFetch as unknown as typeof fetch),
   uuid: () => Crypto.randomUUID(),
 })

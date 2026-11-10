@@ -38,7 +38,13 @@ const TermsScreen = () => {
     if (!held) router.replace('/sign-in')
   }, [held])
 
-  useEffect(() => () => useTermsConsent.getState().reset(), [])
+  useEffect(
+    () => () => {
+      useTermsConsent.getState().reset()
+      if (usePhoneAuth.getState().held) clear()
+    },
+    [clear],
+  )
 
   const opening = useRef(false)
   useFocusEffect(
