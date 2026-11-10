@@ -37,7 +37,7 @@ describe('useTermsConsent', () => {
     const rows = TERM_DOCUMENTS.privacy.articles
       .flatMap((article) => article.blocks)
       .flatMap((block) => (block.kind === 'table' ? block.rows : []))
-    expect(rows.some((row) => row.join(' ').includes('이메일 주소, 비밀번호(되돌릴 수 없게 암호화해 저장), 이름, 상호'))).toBe(true)
+    expect(rows.some((row) => row.join(' ').includes('이메일 주소, 비밀번호(되돌릴 수 없게 암호화해 저장), 이름, 약관 동의 기록'))).toBe(true)
   })
 
   it('accepts only own term keys, not inherited object properties or other values', () => {
