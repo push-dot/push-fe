@@ -1,24 +1,25 @@
-import type { QueryClient } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useSession } from '@/shared/infrastructure'
-import { HOME_SNAPSHOT_VERSION } from './snapshot/constants'
-import { collectHomeSnapshotPayload, hydrateHomeQueries } from './snapshot/hydrate'
-import { clearHomeSnapshot, readHomeSnapshot, writeHomeSnapshot } from './snapshot/store'
+import { clearHomeSnapshot, readHomeSnapshot } from './snapshot/store'
+import { hydrateHomeQueries } from './snapshot/hydrate'
+import { isHomeQueryKey, removeHomeQueries } from './snapshot/query-keys'
+import { createSnapshotPersistGate, persistHomeSnapshotIfCurrent } from './snapshot/persist'
 
-const isHomeQueryKey = (key: readonly unknown[]) =>
-  (key[0] === 'postings' && key[1] === 'home') || key[0] === 'notifications'
-
-const schedulePersist = (qc: QueryClient, userId: string, timers: Map<string, ReturnType<typeof setTimeout>>) => {
+const schedulePersist = (
+  userId: string,
+  gate: ReturnType<typeof createSnapshotPersistGate>,
+  qc: ReturnType<typeof useQueryClient>,
+  timers: Map<string, ReturnType<typeof setTimeout>>,
+) => {
   const prev = timers.get(userId)
   if (prev) clearTimeout(prev)
+  const generation = gate.currentGeneration()
   timers.set(
     userId,
     setTimeout(() => {
       timers.delete(userId)
-      const payload = collectHomeSnapshotPayload(qc)
-      if (!payload) return
-      void writeHomeSnapshot(userId, { version: HOME_SNAPSHOT_VERSION, ...payload })
+      void persistHomeSnapshotIfCurrent(qc, userId, generation, gate)
     }, 400),
   )
 }
@@ -28,19 +29,27 @@ export const useHomeSnapshotSync = () => {
   const userId = useSession((s) => s.session?.user.id ?? null)
   const [hydratedUser, setHydratedUser] = useState<string | null>(null)
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+  const gate = useRef(createSnapshotPersistGate(() => useSession.getState().session?.user.id))
   const ready = !userId || hydratedUser === userId
 
   useEffect(() => {
     return useSession.subscribe((next, prev) => {
+      if (next.session) return
+      gate.current.bumpGeneration()
+      timers.current.forEach((t) => clearTimeout(t))
+      timers.current.clear()
+      removeHomeQueries(qc)
       const id = prev.session?.user.id
-      if (id && !next.session) void clearHomeSnapshot(id)
+      if (id) void clearHomeSnapshot(id)
     })
-  }, [])
+  }, [qc])
 
   useEffect(() => {
     if (!userId) return
     let cancelled = false
+    gate.current.bumpGeneration()
     void (async () => {
+      removeHomeQueries(qc)
       const snapshot = await readHomeSnapshot(userId)
       if (cancelled) return
       if (snapshot) hydrateHomeQueries(qc, snapshot)
@@ -58,7 +67,7 @@ export const useHomeSnapshotSync = () => {
       const query = event.query
       if (query.state.status !== 'success') return
       if (!isHomeQueryKey(query.queryKey)) return
-      schedulePersist(qc, userId, timers.current)
+      schedulePersist(userId, gate.current, qc, timers.current)
     })
   }, [qc, userId])
 
