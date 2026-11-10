@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutBackoff, checkoutPlanId, checkoutPlanName, checkoutReturn, checkoutTarget, paidPlanVisible, paymentsOpen, refreshUntilPaid, rememberCheckoutPlan, showEmployerCheckout, topupReady } from './employer-plans'
+import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutBackoff, checkoutBalance, checkoutPlanId, checkoutPlanName, checkoutReturn, checkoutTarget, paidPlanVisible, paymentsOpen, refreshUntilPaid, rememberCheckoutBalance, rememberCheckoutPlan, showEmployerCheckout, topupReady } from './employer-plans'
 
 const FORBIDDEN_MODEL_NAMES = ['Sonnet', 'Opus', 'Fable']
 
@@ -121,6 +121,34 @@ describe('Stripe return (push-be billing.ts returnUrls)', () => {
     rememberCheckoutPlan(null)
     expect(checkoutPlanId()).toBeNull()
     expect(checkoutPlanName()).toBeUndefined()
+  })
+
+  it('remembers the pre-checkout balance and uses it when the return page has no cache', async () => {
+    const store = new Map<string, string>()
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => store.set(key, value),
+      removeItem: (key: string) => store.delete(key),
+    })
+    rememberCheckoutBalance(100)
+    expect(checkoutBalance()).toBe(100)
+    expect(paidPlanVisible('credits', { plan: 'PRO', balanceMicroCredits: 100 }, null, null)).toBe(false)
+    expect(paidPlanVisible('credits', { plan: 'PRO', balanceMicroCredits: 250 }, null, null)).toBe(true)
+    const balances = [100, 100, 250]
+    const waits: number[] = []
+    await refreshUntilPaid(
+      'credits',
+      null,
+      null,
+      async () => ({ plan: 'PRO', balanceMicroCredits: balances.shift() ?? 250 }),
+      async (ms) => {
+        waits.push(ms)
+      },
+    )
+    expect(waits).toEqual([500, 1000])
+    rememberCheckoutBalance(null)
+    expect(checkoutBalance()).toBeNull()
+    expect(paidPlanVisible('credits', { plan: 'PRO', balanceMicroCredits: 10 }, null, null)).toBe(true)
   })
 })
 

@@ -403,6 +403,29 @@ describe('applyTurnEvent', () => {
     expect(turn.blocks.map((block) => block.kind)).toEqual(['approval', 'choice'])
   })
 
+  it('reads approval rows from the event, and keeps args.rows for an older event', () => {
+    const base = {
+      type: 'approval' as const,
+      id: 'a1',
+      kind: 'TOOL_ACTION' as const,
+      title: '단계를 바꿔요',
+      options: [{ id: 'approve', label: '옮기기' }],
+    }
+    const fromEvent = applyTurnEvent(EMPTY_TURN, {
+      ...base,
+      rows: [{ name: '김태윤', initial: '태윤', from: '서류 통과', to: '면접' }],
+      args: { rows: [{ name: '옛 이름', from: '지원함', to: '불합격' }] },
+    })
+    const eventCard = fromEvent.blocks[0]
+    expect(eventCard?.kind === 'approval' ? eventCard.rows : []).toEqual([{ name: '김태윤', initial: '태윤', from: '서류 통과', to: '면접' }])
+    const fromArgs = applyTurnEvent(EMPTY_TURN, {
+      ...base,
+      args: { rows: [{ name: '이서연', from: '서류 통과', to: '면접' }] },
+    })
+    const argsCard = fromArgs.blocks[0]
+    expect(argsCard?.kind === 'approval' ? argsCard.rows : []).toEqual([{ name: '이서연', initial: '이서연', from: '서류 통과', to: '면접' }])
+  })
+
   it('shows the queue position until the job starts', () => {
     const queued = applyTurnEvent(EMPTY_TURN, {
       type: 'status',
