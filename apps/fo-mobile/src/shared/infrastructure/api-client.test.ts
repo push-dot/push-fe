@@ -55,6 +55,14 @@ describe('refreshSession', () => {
     expect(set).not.toHaveBeenCalled()
   })
 
+  it('does not hang when the refresh call itself returns 401', async () => {
+    authRefresh.mockRejectedValue(new ApiError('nope', 'UNAUTHENTICATED', 401))
+    const done = refreshSession()
+    const raced = await Promise.race([done, new Promise((_, reject) => setTimeout(() => reject(new Error('hang')), 200))])
+    await expect(raced).toBe(false)
+    expect(set).toHaveBeenCalledWith(null)
+  })
+
   it('shares one in-flight refresh across concurrent 401 retries', async () => {
     let release!: () => void
     authRefresh.mockImplementation(

@@ -12,14 +12,24 @@ const mockFetch: typeof fetch | undefined = MOCK ? require('../../mock').mockFet
 if (MOCK) require('../../mock/links').listenMockLinks()
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+const clientFetch = mockFetch ?? (expoFetch as unknown as typeof fetch)
+const clientConfig = {
+  baseUrl: API_BASE_URL,
+  getToken: () => useSession.getState().session?.accessToken,
+  fetch: clientFetch,
+  uuid: () => Crypto.randomUUID(),
+}
+
 let refreshing: Promise<boolean> | null = null
+
+const refreshApi = createApi(createClient(clientConfig))
 
 export const refreshSession = () => {
   refreshing ??= (async () => {
     const { session, set } = useSession.getState()
     if (!session?.refreshToken) return false
     try {
-      await set(await api.auth.refresh(session.refreshToken))
+      await set(await refreshApi.auth.refresh(session.refreshToken))
       return true
     } catch (error) {
       if (isRefreshAuthFailure(error)) await set(null)
@@ -31,12 +41,6 @@ export const refreshSession = () => {
   return refreshing
 }
 
-export const http = createClient({
-  baseUrl: API_BASE_URL,
-  getToken: () => useSession.getState().session?.accessToken,
-  refresh: refreshSession,
-  fetch: mockFetch ?? (expoFetch as unknown as typeof fetch),
-  uuid: () => Crypto.randomUUID(),
-})
+export const http = createClient({ ...clientConfig, refresh: refreshSession })
 
 export const api = createApi(http)

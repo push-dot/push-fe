@@ -30,8 +30,9 @@ vi.mock('react', async (orig) => {
   }
 })
 vi.mock('react-native', () => ({ Platform: { OS: 'ios' }, Pressable: 'Pressable', View: 'View' }))
+const router = vi.hoisted(() => ({ back: vi.fn(), replace: vi.fn(), push: vi.fn() }))
 vi.mock('expo-router', () => ({
-  router: { back: vi.fn(), replace: vi.fn(), push: vi.fn() },
+  router,
   useFocusEffect: (cb: () => void) => cb(),
 }))
 vi.mock('@/features/auth', () => ({
@@ -86,10 +87,27 @@ describe('signup terms screen', () => {
     expect(h.reset).toHaveBeenCalled()
   })
 
-  it('does not clear held tokens after they were already released', () => {
-    h.held = null
+  it('does not clear again after consent releases held tokens before unmount', () => {
     TermsScreen()
+    h.clear.mockImplementation(() => {
+      h.held = null
+    })
+    h.clear()
     for (const cleanup of h.unmount) cleanup()
+    expect(h.clear).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps held tokens when a term document is opened', () => {
+    TermsScreen()
+    router.push({ pathname: '/terms-view', params: { term: 'service' } })
     expect(h.clear).not.toHaveBeenCalled()
+    expect(h.held).toBe(heldSession)
+  })
+
+  it('wires the top bar back action to clear held tokens before router.back', async () => {
+    const { readFileSync } = await import('node:fs')
+    const source = readFileSync(new URL('./terms-screen.tsx', import.meta.url), 'utf8')
+    expect(source).toContain('onBack={leave}')
+    expect(source).toMatch(/const leave = \(\) => \{[^}]*clear\(\)[^}]*router\.back\(\)/s)
   })
 })
