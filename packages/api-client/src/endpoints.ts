@@ -4,7 +4,7 @@ import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
@@ -80,6 +80,11 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`)),
     exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
       c.raw('GET', `documents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/export`, { query: { format } }),
+    rename: (id: string, expectedRevision: number, title: string) =>
+      unwrap(c.patch<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`, { body: { expectedRevision, title } })),
+    // push-be deletes a Push document by archiving it; DELETE sources/:id is for uploaded files only.
+    archive: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/archive`, { body: { expectedRevision } })),
   },
 
   jobs: {
@@ -288,7 +293,13 @@ export const createApi = (c: Client) => ({
   },
 
   calendar: {
-    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
+    // shortcut: one page of 100 (same as the app); page once a month view can hold more events.
+    events: (from: string, to: string, limit = 100) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to, limit } }),
+    create: (body: CreateCalendarEventInput) => unwrap(c.post<DataEnvelope<CalendarEvent>>('calendar/events', { body })),
+  },
+
+  integrations: {
+    google: () => unwrap(c.get<DataEnvelope<GoogleIntegration>>('integrations/google')),
   },
 })
 

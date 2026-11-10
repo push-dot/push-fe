@@ -1,4 +1,6 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+
+import { openerOf, returnFocus, trapTab } from './focus'
 
 type DialogProps = { label: string; onClose: () => void; wide?: boolean; className?: string; children: ReactNode }
 
@@ -14,10 +16,16 @@ export const useEscape = (onClose: () => void) => {
 
 export const Dialog = ({ label, onClose, wide = false, className, children }: DialogProps) => {
   const ref = useRef<HTMLDivElement>(null)
+  // Read while rendering: by the first effect an autoFocus field inside already holds focus.
+  const [opener] = useState(() => openerOf(document.activeElement))
   useEscape(onClose)
   useEffect(() => {
-    ref.current?.focus()
+    if (!ref.current?.contains(document.activeElement)) ref.current?.focus()
   }, [])
+  useLayoutEffect(() => {
+    const dialog = ref.current
+    return () => returnFocus(opener, dialog)
+  }, [opener])
   return (
     <div className="sheet-scrim" role="presentation" onClick={onClose}>
       <div
@@ -28,6 +36,7 @@ export const Dialog = ({ label, onClose, wide = false, className, children }: Di
         aria-modal="true"
         aria-label={label}
         onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => ref.current && trapTab(ref.current, event)}
       >
         {children}
       </div>

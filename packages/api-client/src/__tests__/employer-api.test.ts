@@ -402,7 +402,7 @@ describe('employer api', () => {
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/me/consents')
     expect(hits[0]!.method).toBe('GET')
     expect(decodeURIComponent(hits[1]!.url)).toBe(
-      'http://x/api/v1/calendar/events?from=2026-10-01T00:00:00.000Z&to=2026-10-31T00:00:00.000Z',
+      'http://x/api/v1/calendar/events?from=2026-10-01T00:00:00.000Z&to=2026-10-31T00:00:00.000Z&limit=100',
     )
   })
 

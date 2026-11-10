@@ -1,9 +1,5 @@
-import { useParams } from 'react-router-dom'
-import OfferInbox from './offer-inbox'
+import OffersPage from './offers-page'
 
-const OfferDetailPage = () => {
-  const { id = '' } = useParams()
-  return <OfferInbox selectedId={id} />
-}
+const OfferDetailPage = OffersPage
 
 export default OfferDetailPage

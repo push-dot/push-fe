@@ -15,14 +15,10 @@ export const meProfile = (...args: Parameters<typeof fetchMyProfile>) => fetchMy
 export const meLinks = (...args: Parameters<typeof fetchLinks>) => fetchLinks(...args)
 export const meFollows = (...args: Parameters<typeof fetchFollows>) => fetchFollows(...args)
 
-export const loadDocuments = () => listSources('UPLOAD')
-
 export const useMyProfile = (enabled = true) =>
   useQuery({ queryKey: ['me', 'profile'], queryFn: () => meProfile(), enabled })
 
 export const useFollows = (enabled = true) => useQuery({ queryKey: ['follows'], queryFn: () => meFollows(), enabled })
-
-export const useDocuments = () => useQuery({ queryKey: ['documents'], queryFn: loadDocuments })
 
 export const useSources = () => useQuery({ queryKey: ['sources'], queryFn: () => listSources() })
 
