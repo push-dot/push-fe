@@ -29,16 +29,21 @@ const AuthPasswordField = ({
         placeholder={placeholder}
         aria-label={label ? undefined : placeholder}
         required
+        aria-invalid={error ? true : undefined}
         onChange={(event) => onChange(event.target.value)}
       />
-      <button
-        type="button"
-        className="auth-eye"
-        aria-label={visible ? HIDE_PASSWORD : SHOW_PASSWORD}
-        onClick={() => setVisible((current) => !current)}
-      >
-        <Icon name={visible ? 'eyeOff' : 'eye'} size={20} />
-      </button>
+      {error ? (
+        <Icon name="warn" size={20} className="auth-warn" />
+      ) : (
+        <button
+          type="button"
+          className="auth-eye"
+          aria-label={visible ? HIDE_PASSWORD : SHOW_PASSWORD}
+          onClick={() => setVisible((current) => !current)}
+        >
+          <Icon name={visible ? 'eyeOff' : 'eye'} size={20} />
+        </button>
+      )}
     </span>
   )
   const note = error ? (
@@ -50,10 +55,10 @@ const AuthPasswordField = ({
   ) : null
   if (!label) {
     return (
-      <>
+      <div className="auth-block">
         {input}
         {note}
-      </>
+      </div>
     )
   }
   return (

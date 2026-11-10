@@ -1,17 +1,16 @@
-import { ApiError, type AccountType } from '@push/api-client'
+import { ApiError, type Session } from '@push/api-client'
 import { useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
+import { pathAfterAuth, takeReturnTo } from '../../shared/auth/return-path'
+import { sessionStore } from '../../shared/auth/session'
 import { EMAIL_TAKEN_EMPLOYER_COPY, EMAIL_TAKEN_PERSONAL_COPY, PASSWORD_LENGTH_COPY } from '../../shared/model/constants'
 import { emailSignupInput, emailTakenCopy, passwordError } from '../../shared/model/login-providers'
 import { Icon } from '../../shared/ui/icon'
 import AccountTypeControl from './account-type-control'
+import AuthCheck from './auth-check'
 import AuthPasswordField from './auth-password-field'
 import {
-  CONSENT_COPY,
-  CONSENT_LABEL,
-  CONSENT_MORE,
-  CONSENT_OPTIONAL,
   EMAIL_LABEL,
   LOGIN_FAILED_COPY,
   LOGIN_SUBMIT_COPY,
@@ -21,31 +20,51 @@ import {
   SIGNUP_EMPLOYER_TITLE,
   SIGNUP_HAS_ACCOUNT,
   SIGNUP_LEAD,
-  SIGNUP_PERSONAL_TITLE,
   SIGNUP_SUBMIT_COPY,
-  TERMS_DETAIL,
   TERMS_LABEL,
+  TERMS_PRIVACY_POLICY,
   TERMS_REQUIRED,
+  TERMS_SERVICE_LINK,
 } from './constants'
+import { useOAuthStart } from './oauth-start'
+import PhoneFlow from './phone-flow'
 import VerifyMail from './verify-mail'
 import { authEmailSignup } from '../../features/sign-up'
 
-
+// Personal accounts start with a phone number (owner ruling: email/password is employer only); a first social login
+// arrives here with push-be's pendingToken to attach the number.
 const SignupPage = () => {
   const [params] = useSearchParams()
-  const [accountType, setAccountType] = useState<AccountType>(
-    params.get('accountType') === 'EMPLOYER' ? 'EMPLOYER' : 'PERSONAL',
-  )
+  const location = useLocation()
+  const navigate = useNavigate()
+  const oauth = useOAuthStart()
+  const [employer, setEmployer] = useState(params.get('accountType') === 'EMPLOYER')
+  const pendingToken = (location.state as { pendingToken?: string } | null)?.pendingToken
+
+  if (!employer) {
+    return (
+      <PhoneFlow
+        pendingToken={pendingToken}
+        onProvider={(provider) => void oauth.start(provider, 'PERSONAL')}
+        onDone={(session: Session) => {
+          sessionStore.save(session)
+          navigate(pathAfterAuth(takeReturnTo(), session), { replace: true })
+        }}
+      />
+    )
+  }
+  return <EmployerSignup initialEmail={params.get('email') ?? ''} onPersonal={() => setEmployer(false)} />
+}
+
+const EmployerSignup = ({ initialEmail, onPersonal }: { initialEmail: string; onPersonal: () => void }) => {
   const [displayName, setDisplayName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [terms, setTerms] = useState(false)
-  const [consent, setConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [taken, setTaken] = useState(false)
   const [done, setDone] = useState(false)
   const [pending, setPending] = useState(false)
-  const employer = accountType === 'EMPLOYER'
   const emailTaken = error === EMAIL_TAKEN_PERSONAL_COPY || error === EMAIL_TAKEN_EMPLOYER_COPY
   const passwordInvalid = error === PASSWORD_LENGTH_COPY
   const blocked = !terms || taken
@@ -56,7 +75,7 @@ const SignupPage = () => {
       setError(invalid)
       return
     }
-    const input = emailSignupInput({ email, password, accountType, displayName, terms, consent })
+    const input = emailSignupInput({ email, password, accountType: 'EMPLOYER', displayName, terms })
     if (!input) return
     setError(null)
     setPending(true)
@@ -99,20 +118,15 @@ const SignupPage = () => {
   return (
     <main className="auth-card">
       <header className="auth-lead">
-        <h1>{employer ? SIGNUP_EMPLOYER_TITLE : SIGNUP_PERSONAL_TITLE}</h1>
+        <h1>{SIGNUP_EMPLOYER_TITLE}</h1>
         <p>{SIGNUP_LEAD}</p>
       </header>
-      <AccountTypeControl value={accountType} onChange={setAccountType} />
+      <AccountTypeControl value="EMPLOYER" onChange={(next) => next === 'PERSONAL' && onPersonal()} />
       <form className="auth-stack" onSubmit={(event) => void submit(event)}>
         <label className="auth-block">
           <span className="auth-label">{NAME_LABEL}</span>
           <span className="auth-control">
-            <input
-              value={displayName}
-              autoComplete="name"
-              required
-              onChange={(event) => setDisplayName(event.target.value)}
-            />
+            <input value={displayName} autoComplete="name" required onChange={(event) => setDisplayName(event.target.value)} />
           </span>
         </label>
         <label className="auth-block">
@@ -123,6 +137,7 @@ const SignupPage = () => {
               value={email}
               autoComplete="email"
               required
+              aria-invalid={emailTaken ? true : undefined}
               onChange={(event) => {
                 setEmail(event.target.value)
                 if (taken) {
@@ -131,9 +146,7 @@ const SignupPage = () => {
                 }
               }}
             />
-            {emailTaken ? (
-              <Icon name="warn" size={20} className="auth-warn" />
-            ) : null}
+            {emailTaken ? <Icon name="warn" size={20} className="auth-warn" /> : null}
           </span>
           {emailTaken ? (
             <span className="auth-error" role="alert">
@@ -150,42 +163,22 @@ const SignupPage = () => {
           error={passwordInvalid ? error : null}
         />
         <div className="auth-consents">
-          <label className="auth-check">
-            <input type="checkbox" checked={terms} onChange={(event) => setTerms(event.target.checked)} />
-            <span className={terms ? 'auth-tick on' : 'auth-tick'} aria-hidden="true">
-              {terms ? (
-                <svg viewBox="0 0 24 24">
-                  <path d="M5 12l5 5L20 7" />
-                </svg>
-              ) : null}
-            </span>
+          <AuthCheck checked={terms} onChange={setTerms}>
             <span>
               <span className="auth-check-title">
                 {TERMS_LABEL}
                 <span className="auth-req">{TERMS_REQUIRED}</span>
               </span>
-              <span className="auth-check-detail">{TERMS_DETAIL}</span>
             </span>
-          </label>
-          <label className="auth-check">
-            <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
-            <span className={consent ? 'auth-tick on' : 'auth-tick'} aria-hidden="true">
-              {consent ? (
-                <svg viewBox="0 0 24 24">
-                  <path d="M5 12l5 5L20 7" />
-                </svg>
-              ) : null}
-            </span>
-            <span>
-              <span className="auth-check-title">
-                {CONSENT_LABEL}
-                <span className="auth-opt">{CONSENT_OPTIONAL}</span>
-              </span>
-              <span className="auth-check-detail">
-                {CONSENT_COPY}. {CONSENT_MORE}
-              </span>
-            </span>
-          </label>
+          </AuthCheck>
+          <span className="auth-legal-links">
+            <a href="/terms" target="_blank" rel="noreferrer">
+              {TERMS_SERVICE_LINK}
+            </a>
+            <a href="/privacy" target="_blank" rel="noreferrer">
+              {TERMS_PRIVACY_POLICY}
+            </a>
+          </span>
         </div>
         {error && !emailTaken && !passwordInvalid ? (
           <p className="auth-error" role="alert">
@@ -197,7 +190,7 @@ const SignupPage = () => {
         </button>
       </form>
       <p className="auth-foot">
-        {SIGNUP_HAS_ACCOUNT} <Link to={`/login?accountType=${accountType}`}>{LOGIN_SUBMIT_COPY}</Link>
+        {SIGNUP_HAS_ACCOUNT} <Link to="/login?accountType=EMPLOYER">{LOGIN_SUBMIT_COPY}</Link>
       </p>
     </main>
   )

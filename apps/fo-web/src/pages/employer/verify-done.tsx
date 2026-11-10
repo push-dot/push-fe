@@ -14,6 +14,7 @@ import {
   VERIFY_STATUS,
 } from './constants'
 import { formatBno } from '../../features/verify-business'
+import { AgentMark } from '../../shared/ui/icon'
 
 const VerifyDone = ({ company }: { company: Company }) => (
   <>
@@ -50,10 +51,8 @@ const VerifyDone = ({ company }: { company: Company }) => (
       <Link className="auth-btn pri" to="/employer/postings/new">
         {VERIFY_FIRST_POSTING}
       </Link>
-      <Link className="auth-btn sec" to="/employer/chat/new">
-        <svg className="auth-spark" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z" />
-        </svg>
+      <Link className="auth-btn sec icon" to="/employer/chat/new">
+        <AgentMark />
         {VERIFY_AI_POSTING}
       </Link>
     </div>

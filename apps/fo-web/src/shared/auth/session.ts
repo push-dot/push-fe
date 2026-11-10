@@ -1,6 +1,7 @@
 import type { Session } from '@push/api-client'
 import { browserLocalStorage, browserSessionStorage } from '../lib/storage'
 import { SESSION_STORAGE_KEY } from './constants'
+import { forgetSignupReturnTo } from './return-path'
 
 export type StorageLike = {
   getItem: (key: string) => string | null
@@ -62,6 +63,8 @@ export const createSessionStore = (storage: StorageLike) => {
     },
     clear: () => {
       storage.removeItem(SESSION_STORAGE_KEY)
+      // Signing out hands the browser to someone else, so this user's pending sign-up return goes too.
+      forgetSignupReturnTo()
       emit()
     },
     subscribe: (listener: () => void) => {

@@ -15,9 +15,15 @@ export const authEmailVerify = (...args: Parameters<Api['auth']['emailVerify']>)
 
 export const authExchange = (...args: Parameters<Api['auth']['exchange']>) => api.auth.exchange(...args)
 
+export const authPhoneSend = (...args: Parameters<Api['auth']['phoneSend']>) => api.auth.phoneSend(...args)
+
+export const authPhoneVerify = (...args: Parameters<Api['auth']['phoneVerify']>) => api.auth.phoneVerify(...args)
+
 export const authLogout = (...args: Parameters<Api['auth']['logout']>) => api.auth.logout(...args)
 
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
+
+export const authPasswordResetEmail = (...args: Parameters<Api['auth']['passwordResetEmail']>) => api.auth.passwordResetEmail(...args)
 
 export const authRequestPasswordReset = (...args: Parameters<Api['auth']['requestPasswordReset']>) => api.auth.requestPasswordReset(...args)
 
@@ -40,6 +46,8 @@ export const integrationsGoogle = (...args: Parameters<Api['integrations']['goog
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
 export const companiesInvite = (...args: Parameters<Api['companies']['invite']>) => api.companies.invite(...args)
+
+export const companiesInvitePreview = (...args: Parameters<Api['companies']['invitePreview']>) => api.companies.invitePreview(...args)
 
 export const companiesInvites = (...args: Parameters<Api['companies']['invites']>) => api.companies.invites(...args)
 
@@ -125,6 +133,8 @@ export const meSettings = (...args: Parameters<Api['me']['settings']>) => api.me
 export const meUnarchiveOffer = (...args: Parameters<Api['me']['unarchiveOffer']>) => api.me.unarchiveOffer(...args)
 
 export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']>) => api.me.updateConsents(...args)
+
+export const meUpdateTerms = (...args: Parameters<Api['me']['updateTerms']>) => api.me.updateTerms(...args)
 
 export const meUpdateProfile = (...args: Parameters<Api['me']['updateProfile']>) => api.me.updateProfile(...args)
 

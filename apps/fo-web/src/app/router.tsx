@@ -71,9 +71,12 @@ export const appRoutes = (webView: boolean) =>
           <Route path="/auth/callback" element={<CallbackPage />} />
           <Route path="/auth/verify" element={<EmailVerifyPage />} />
           <Route path="/auth/reset" element={<ResetPage />} />
+          <Route path="/invites/:token" element={<InvitePage />} />
           <Route path="/postings/:id" element={<PostingPage />} />
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+          <Route path="/privacy-consent" element={<LegalPage kind="privacyConsent" />} />
+          <Route path="/marketing-consent" element={<LegalPage kind="marketingConsent" />} />
           <Route element={<RequireAuth />}>
             <Route path="/profiles/:id" element={<ProfilePage />} />
             <Route path="/hub" element={<HubPage />} />
@@ -99,7 +102,6 @@ export const appRoutes = (webView: boolean) =>
             <Route path="/employer/chat/:id" element={<ChatThreadPage />} />
             <Route path="/employer/members" element={<MembersPage />} />
             <Route path="/employer/plans" element={<PlansPage />} />
-            <Route path="/invites/:token" element={<InvitePage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

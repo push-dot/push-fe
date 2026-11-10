@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { authMe as fetchAuthMe, meBlocks as fetchBlocks, meSettings as fetchSettings } from '../../shared/api/operations'
+import { authMe as fetchAuthMe, meBlocks as fetchBlocks, meConsents as fetchConsents, meSettings as fetchSettings } from '../../shared/api/operations'
 
 export const authMe = (...args: Parameters<typeof fetchAuthMe>) => fetchAuthMe(...args)
 export const meSettings = (...args: Parameters<typeof fetchSettings>) => fetchSettings(...args)
+export const meConsents = (...args: Parameters<typeof fetchConsents>) => fetchConsents(...args)
 
 export const useAuthMe = (enabled = true) => useQuery({ queryKey: ['auth', 'me'], queryFn: () => authMe(), enabled })
 

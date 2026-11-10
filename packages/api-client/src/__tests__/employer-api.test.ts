@@ -198,6 +198,13 @@ describe('employer api', () => {
     expect(bodyOf(hits[1]!)).toEqual({ token: 'tok', password: 'new-secret' })
   })
 
+  it('looks up the account email of a reset link without using it', async () => {
+    const { api, hits } = harness(() => json(200, { data: { email: 'a@push.app' } }))
+    await expect(api.auth.passwordResetEmail('tok_1')).resolves.toEqual({ email: 'a@push.app' })
+    expect(hits[0]!.method).toBe('GET')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/password-reset/tok_1')
+  })
+
   it('tops up, opens the portal, lists the ledger, and verifies iap', async () => {
     const ledger = {
       data: [{ type: 'PURCHASE' as const, amountMicroCredits: 30, balanceAfter: 30, createdAt: '2026-10-21T00:00:00.000Z' }],
@@ -253,6 +260,14 @@ describe('employer api', () => {
     expect(hits[3]!.method).toBe('PATCH')
     expect(new URL(hits[3]!.url).pathname).toBe('/api/v1/companies/me/members/u2')
     expect(bodyOf(hits[3]!)).toEqual({ role: 'ADMIN' })
+  })
+
+  it('keeps an invite token inside its own path segment', async () => {
+    const { api, hits } = harness((req) => (req.method === 'POST' ? noContent(204) : json(200, { data: {} })))
+    await api.companies.invitePreview('../../me/members')
+    await api.companies.acceptInvite('a/../../b?x=1#y')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/companies/invites/..%2F..%2Fme%2Fmembers')
+    expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/companies/invites/a%2F..%2F..%2Fb%3Fx%3D1%23y/accept')
   })
 
   it('creates, updates, and closes a posting', async () => {
