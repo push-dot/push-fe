@@ -27,6 +27,7 @@ import {
   chatGateFrom,
   chatRouteState,
   chatTurnDeps,
+  composerAfterVanish,
   questionForComposer,
   conversationsAttach,
   conversationsCreateEmployer,
@@ -306,7 +307,8 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
       const back = vanished
         ? questionForComposer(vanished, out.text, savedMessages(conversationId), knownAtSend)
         : null
-      if (back) setText(back)
+      // `text` here is from the render that sent. Typing since then lives in state, so read that.
+      if (back) setText((current) => composerAfterVanish(current, back))
       if (!keep) setLive(null)
       release(current)
       setSending(false)

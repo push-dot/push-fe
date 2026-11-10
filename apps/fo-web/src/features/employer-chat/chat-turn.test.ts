@@ -164,6 +164,56 @@ describe('runTurn', () => {
     expect(deps.follow).toHaveBeenCalledWith('c1', undefined, undefined)
   })
 
+  it('does not repeat text when a follow delivers frames and then a seq-less INTERNAL', async () => {
+    const poll: StreamEvent = { type: 'error', error: { code: 'INTERNAL', message: 'internal error' } }
+    const rows: StreamEvent[] = [
+      { type: 'token', text: '안녕', seq: 1 },
+      { type: 'token', text: '하세요 ', seq: 2 },
+      { type: 'token', text: '반가워요', seq: 3 },
+      { type: 'token', text: ' 끝', seq: 4 },
+      { type: 'done', operation: null, seq: 5 },
+    ]
+    const pending = (after?: number) => rows.filter((event) => after === undefined || (event.seq ?? 0) > after)
+    const follow = vi.fn((_id: string, after?: number) => {
+      const rest = pending(after)
+      // The first read of each job dies after the frames it already had, the way a gateway poll throws.
+      if (follow.mock.calls.length === 1) {
+        const shown = rest.filter((event) => event.type === 'token').slice(0, after === undefined ? 4 : 2)
+        return frames(...shown, poll)
+      }
+      return frames(...rest)
+    })
+    const live = depsOf({
+      stream: vi.fn(() => frames(rows[0]!)),
+      follow,
+    })
+    let liveText = ''
+    await runTurn(live, 'c1', { text: 'x', accessMode: 'AUTO' }, (event) => {
+      if (event.type === 'token') liveText += event.text
+    })
+    expect(liveText).toBe('안녕하세요 반가워요 끝')
+    expect(follow).toHaveBeenNthCalledWith(1, 'c1', 1, undefined)
+    expect(follow).toHaveBeenNthCalledWith(2, 'c1', 3, undefined)
+
+    follow.mockClear()
+    const stored = {
+      jobId: 'j1',
+      status: 'RUNNING' as const,
+      createdAt: '',
+      userMessageId: 'm1',
+      assistantMessageId: null,
+      answer: null,
+      events: [{ type: 'token' as const, text: '안녕하세요 반가워요 끝', seq: 1 }],
+    }
+    let resumed = ''
+    await resumeStoredTurn(depsOf({ follow }), 'c1', stored, (event) => {
+      if (event.type === 'token') resumed += event.text
+    })
+    expect(resumed).toBe('안녕하세요 반가워요 끝')
+    expect(follow).toHaveBeenNthCalledWith(1, 'c1', undefined, undefined)
+    expect(follow).toHaveBeenNthCalledWith(2, 'c1', 4, undefined)
+  })
+
   it('still rejects a job INTERNAL frame, which carries a seq', async () => {
     const deps = depsOf({
       stream: vi.fn(() =>

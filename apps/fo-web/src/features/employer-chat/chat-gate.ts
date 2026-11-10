@@ -47,6 +47,10 @@ export const questionForComposer = (
   return kept ? null : question
 }
 
+/** A vanished question goes back only into an empty composer, so typing during the run is kept. */
+export const composerAfterVanish = (current: string, question: string | null) =>
+  question !== null && current === '' ? question : current
+
 export type ApprovalFailure = 'resolved' | 'expired' | 'failed'
 
 export const approvalFailureFrom = (error: unknown): ApprovalFailure => {

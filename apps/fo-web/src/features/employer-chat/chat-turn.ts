@@ -333,7 +333,9 @@ const finish = async (
     }
     const next = await consume(deps.follow(id, seq, signal), onEvent, seq)
     if (next.pollFailed) {
+      // Frames before the poll failure already moved seq. The reconnect must start after them.
       pollFailed = true
+      seq = next.seq
       continue
     }
     pollFailed = false

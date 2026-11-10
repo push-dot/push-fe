@@ -1,6 +1,6 @@
 import { ApiError, QueueBusyError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
-import { approvalFailureFrom, chatGateFrom, questionForComposer } from './chat-gate'
+import { approvalFailureFrom, chatGateFrom, composerAfterVanish, questionForComposer } from './chat-gate'
 
 describe('chatGateFrom', () => {
   it('maps plan, verification, and unknown failures', () => {
@@ -24,6 +24,12 @@ describe('chatGateFrom', () => {
     expect(questionForComposer(new ApiError('x', 'INTERNAL', 0), '정리해 줘', kept, known)).toBeNull()
     expect(questionForComposer(new ApiError('x', 'PLAN_REQUIRED', 0), '정리해 줘', [], known)).toBeNull()
     expect(questionForComposer(new ApiError('x', 'NETWORK_ERROR', 0), '정리해 줘', [], known)).toBeNull()
+  })
+
+  it('puts the vanished question back only when the composer is still empty', () => {
+    expect(composerAfterVanish('', '정리해 줘')).toBe('정리해 줘')
+    expect(composerAfterVanish('이어서 쓸 말', '정리해 줘')).toBe('이어서 쓸 말')
+    expect(composerAfterVanish('', null)).toBe('')
   })
 
   it('maps approval answer failures', () => {
