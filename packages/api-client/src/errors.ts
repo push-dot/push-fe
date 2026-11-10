@@ -2,6 +2,7 @@ export type ApiErrorBody = {
   code: string
   message: string
   requestId?: string
+  /** reason is an ApiErrorReason when the route sets one, including REFERENCED_BY_EVIDENCE and EXPIRED. */
   details?: Record<string, unknown> | null
 }
 

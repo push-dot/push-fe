@@ -3,7 +3,7 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
@@ -34,6 +34,10 @@ export const createApi = (c: Client) => ({
       await c.raw('POST', 'auth/email/signup', { body })
     },
     emailVerify: (token: string) => unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token } })),
+    email: {
+      // 204 whether or not the address exists. 429 RATE_LIMITED is the shared mail bucket.
+      resendVerify: (email: string) => c.post<void>('auth/email/verify/resend', { body: { email } }),
+    },
     emailLogin: (email: string, password: string) =>
       unwrap(c.post<DataEnvelope<Session>>('auth/email/login', { body: { email, password } })),
     requestPasswordReset: async (email: string) => {
@@ -75,6 +79,8 @@ export const createApi = (c: Client) => ({
   documents: {
     list: (query: PageParams & { applicationId?: string; kind?: string } = {}) =>
       c.get<ListEnvelope<ResumeDocument>>('documents', { query }),
+    listArchived: (query: PageParams & { applicationId?: string; kind?: string } = {}) =>
+      c.get<ListEnvelope<ArchivedDocument>>('documents', { query: { ...query, archived: 1 } }),
     generate: (id: string, body: GenerateDocumentInput) =>
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
     setBaseProfile: (id: string) =>
@@ -87,6 +93,8 @@ export const createApi = (c: Client) => ({
     // push-be deletes a Push document by archiving it; DELETE sources/:id is for uploaded files only.
     archive: (id: string, expectedRevision: number) =>
       unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/archive`, { body: { expectedRevision } })),
+    restore: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/restore`, { body: { expectedRevision } })),
   },
 
   jobs: {
