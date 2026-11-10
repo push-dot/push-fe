@@ -7,11 +7,13 @@ import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
   checkoutPlanName,
+  checkoutBalance,
   checkoutPlanId,
   checkoutReturn,
   checkoutTarget,
   paymentsOpen,
   refreshUntilPaid,
+  rememberCheckoutBalance,
   rememberCheckoutPlan,
   showEmployerCheckout,
 } from '../../shared/model/employer-plans'
@@ -67,6 +69,17 @@ const PlansPage = () => {
   const toast = useToast()
   const returned = checkoutReturn(params)
   const noted = useRef<string | null>(null)
+  const alive = useRef(true)
+  const timer = useRef<number | undefined>(undefined)
+  const releaseWait = useRef<(() => void) | undefined>(undefined)
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+      if (timer.current !== undefined) window.clearTimeout(timer.current)
+      releaseWait.current?.()
+    }
+  }, [])
   useEffect(() => {
     if (!returned) {
       noted.current = null
@@ -76,13 +89,13 @@ const PlansPage = () => {
     noted.current = returned
     if (returned === 'canceled') {
       rememberCheckoutPlan(null)
+      rememberCheckoutBalance(null)
       return
     }
     const kind = returned
     const pending = checkoutPlanId()
-    const balanceBefore =
-      queryClient.getQueryData<CompanyBillingStatus>(['billing', 'company'])?.balanceMicroCredits ??
-      null
+    const cached = queryClient.getQueryData<CompanyBillingStatus>(['billing', 'company'])?.balanceMicroCredits
+    const balanceBefore = cached ?? checkoutBalance()
     // The webhook can land after this page. Keep reading until the bought plan, or the added credits, shows.
     void refreshUntilPaid(
       kind,
@@ -94,7 +107,12 @@ const PlansPage = () => {
           queryFn: () => billingCompanyStatus(),
           staleTime: 0,
         }),
-      (ms) => new Promise((resolve) => window.setTimeout(resolve, ms)),
+      (ms) =>
+        new Promise((resolve) => {
+          releaseWait.current = resolve
+          timer.current = window.setTimeout(resolve, ms)
+        }),
+      () => alive.current,
     )
     // The stored plan stays until the next checkout overwrites it, so the reads above can name it.
     toast.show(kind === 'credits' ? TOPUP_DONE : planPaid(checkoutPlanName()))
@@ -132,6 +150,7 @@ const PlansPage = () => {
     },
     onError: (error) => {
       rememberCheckoutPlan(null)
+      rememberCheckoutBalance(null)
       setActionError(planActionError(error))
     },
   })
@@ -142,6 +161,7 @@ const PlansPage = () => {
       void openLocal(result.url)
     },
     onError: (error) => {
+      rememberCheckoutBalance(null)
       setActionError(planActionError(error))
     },
   })
@@ -175,6 +195,7 @@ const PlansPage = () => {
     if (!canPay || checkout.isPending) return
     setActionError(null)
     rememberCheckoutPlan(planId)
+    rememberCheckoutBalance(billing.data?.balanceMicroCredits ?? null)
     checkout.mutate(planId)
   }
   const currentPlan = billing.data?.plan ?? null
@@ -237,6 +258,7 @@ const PlansPage = () => {
           error={actionError}
           onSubmit={(packs) => {
             setActionError(null)
+            rememberCheckoutBalance(billing.data?.balanceMicroCredits ?? null)
             topup.mutate(packs)
           }}
           onClose={() => setDialog(null)}

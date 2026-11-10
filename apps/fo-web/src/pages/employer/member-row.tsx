@@ -77,7 +77,18 @@ export const MemberRow = ({
   </Row>
 )
 
-export const InviteRow = ({ expiry, busy, onResend, onRevoke }: { expiry: string; busy: boolean; onResend: () => void; onRevoke: () => void }) => (
+export const InviteRow = ({
+  expiry,
+  busy,
+  onResend,
+  onRevoke,
+}: {
+  expiry: string
+  busy: boolean
+  /** Omitted for a MEMBER, who can see the invite but cannot send it again or cancel it. */
+  onResend?: () => void
+  onRevoke?: () => void
+}) => (
   <Row
     avatar={
       <span className="av member-pending">
@@ -88,9 +99,11 @@ export const InviteRow = ({ expiry, busy, onResend, onRevoke }: { expiry: string
     sub={expiry}
     badge={<span className="badge orange">{INVITE_PENDING}</span>}
   >
-    <button type="button" className="btn sec sm" disabled={busy} onClick={onResend}>
-      {INVITE_RESEND}
-    </button>
-    <More items={[{ label: INVITE_REVOKE, icon: 'close', danger: true, onSelect: onRevoke }]} />
+    {onResend ? (
+      <button type="button" className="btn sec sm" disabled={busy} onClick={onResend}>
+        {INVITE_RESEND}
+      </button>
+    ) : null}
+    {onRevoke ? <More items={[{ label: INVITE_REVOKE, icon: 'close', danger: true, onSelect: onRevoke }]} /> : null}
   </Row>
 )

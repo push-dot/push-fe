@@ -56,6 +56,8 @@ export const INVITE_EXPIRED_TITLE = '초대가 만료됐어요'
 export const INVITE_EXPIRED_WHY = '초대는 7일 뒤 만료돼요.'
 export const INVITE_EXPIRED_NEXT = '관리자에게 초대를 다시 보내 달라고 해 주세요.'
 export const INVITE_FACT_COMPANY = '회사'
+export const INVITE_FACT_INVITER = '초대한 사람'
+export const INVITE_FACT_EXPIRES = '만료'
 export const INVITE_HOME = 'Push 홈으로'
 export const INVITE_INVALID_TITLE = '초대 링크를 열 수 없어요'
 export const INVITE_INVALID_WHY = '링크가 잘못됐거나 이미 취소된 초대예요.'
@@ -116,6 +118,7 @@ export const josaGa = (name: string) => {
 export const postedBy = (name: string) => `${name}${josaGa(name)} 올림`
 export const draftBy = (name: string) => `${name}${josaGa(name)} 쓴 초안`
 export const APPLICANTS_LINK = '지원자'
+export const APPLICANT_NEW = '새'
 export const APPLICANTS_TITLE = '지원자'
 export const APPLICANTS_HEAD = ['지원자', '제출 서류', '지원일', '단계'] as const
 export const APPLICANTS_EMPTY = '아직 지원자가 없어요'
@@ -140,11 +143,13 @@ export const stageNotice = (name: string) => (name ? `바꾸면 ${name} 님에�
 export const stageFailed = (stage: EmployerStage) =>
   `${{ SCREENING: '서류 통과로', INTERVIEW: '면접으로', OFFER: '합격으로', REJECTED: '불합격으로' }[stage]} 바꾸지 못했어요.`
 export const submittedAsIs = (date: string) => `${date} 제출한 그대로예요`
+/** Pre-snapshot applications: the detail is the live profile, so the board must not say 제출한 그대로. */
+export const PROFILE_NOW = '지금 프로필 기준'
 export const DOCUMENT_EMPTY = '내용을 미리 볼 수 없는 파일이에요'
 export const SHEET_INTRO = '소개'
 export const SHEET_CAREERS = '경력'
 export const SHEET_SKILLS = '기술'
-// push-be reads careers and skills from the applicant's profile today, not from the submitted snapshot.
+// Careers and skills are the live profile only when there is no apply-time snapshot.
 export const SHEET_LIVE = '경력과 기술은 지금 프로필 기준이에요'
 export const FILE_DOWNLOAD = '파일 받기'
 export const FILE_FAILED = '파일을 받지 못했어요'
@@ -195,6 +200,10 @@ export const CHAT_LOADING = '대화를 불러오고 있어요'
 export const CHAT_CREATING = '대화를 만들고 있어요'
 export const CHAT_FAILED = '대화를 불러오지 못했어요'
 export const CHAT_STOP_FAILED = '멈추지 못했어요. 한 번 더 눌러 주세요'
+/** 403 FORBIDDEN: another member started the job, so a retry cannot stop it. */
+export const CHAT_STOP_FORBIDDEN = '다른 담당자가 시작한 작업이라 멈출 수 없어요'
+export const stopFailedText = (error: unknown) =>
+  error instanceof ApiError && error.status === 403 && error.code === 'FORBIDDEN' ? CHAT_STOP_FORBIDDEN : CHAT_STOP_FAILED
 export const CHAT_EMPTY = '아직 대화가 없어요'
 export const PLANS_LINK = '요금제 보기'
 export const REFERENCE_POSTING = '참고 공고'

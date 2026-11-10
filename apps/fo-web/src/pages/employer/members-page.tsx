@@ -67,7 +67,7 @@ const MembersPage = () => {
   const companyQuery = useMyCompany()
   const membersQuery = useCompanyMembers()
   const isAdmin = companyQuery.data?.role === 'ADMIN'
-  const invitesQuery = useCompanyInvites(isAdmin)
+  const invitesQuery = useCompanyInvites()
   const refresh = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['company', 'me'] }),
@@ -129,7 +129,7 @@ const MembersPage = () => {
   }
   const company = companyQuery.data
   const members = membersQuery.data
-  const invites = isAdmin ? (invitesQuery.data ?? []) : []
+  const invites = invitesQuery.data ?? []
   const full = !canInvite(company.plan, company.seats.used)
   const plan = seatPlan(company.plan)
   const hint = isAdmin && !plan ? inviteHint(company.plan, company.seats.used, true) : null
@@ -192,8 +192,8 @@ const MembersPage = () => {
             key={invite.id}
             expiry={inviteExpiry(invite.email, invite.expiresAt)}
             busy={busy}
-            onResend={() => resend.mutate(invite)}
-            onRevoke={() => setPending({ kind: 'revoke', invite })}
+            onResend={isAdmin ? () => resend.mutate(invite) : undefined}
+            onRevoke={isAdmin ? () => setPending({ kind: 'revoke', invite }) : undefined}
           />
         ))}
       </ul>

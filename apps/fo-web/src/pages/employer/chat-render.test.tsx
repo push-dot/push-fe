@@ -47,6 +47,15 @@ describe('chat rows', () => {
     expect(html).not.toContain('포트폴리오')
   })
 
+  it('names the person and the document titles push-be sends on an APPLICATION chip', () => {
+    const html = renderToStaticMarkup(
+      <ChatActionsContext.Provider value={actions([{ applicationId: 'a1', name: '김태윤', postingId: 'p1', postingTitle: '백엔드' }])}>
+        <ChatUser text="검토해 줘" attachments={[{ type: 'APPLICATION', id: 'a1', title: '김태윤', documentTitles: ['이력서', '포트폴리오'] }]} />
+      </ChatActionsContext.Provider>,
+    )
+    expect(html).toContain('김태윤 · 이력서 · 포트폴리오')
+  })
+
   it('puts the company, place, career and type line under the draft title', () => {
     const client = new QueryClient()
     client.setQueryData(['company', 'me'], { name: '모아페이' })

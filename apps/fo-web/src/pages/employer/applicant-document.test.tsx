@@ -25,6 +25,20 @@ describe('ApplicantDocument', () => {
     expect(html.indexOf('소개 글')).toBeLessThan(html.indexOf(SHEET_LIVE))
   })
 
+  it('does not call a submitted snapshot the live profile', () => {
+    const html = renderToStaticMarkup(
+      <ApplicantDocument
+        chip={{ key: 'd1', label: '이력서', badge, content: '소개 글', file: null }}
+        name="김태윤"
+        sub=""
+        profile={{ ...profile, profileSource: 'SUBMITTED', capturedAt: '2026-10-20T01:00:00.000Z' }}
+        now={0}
+      />,
+    )
+    expect(html).not.toContain(SHEET_LIVE)
+    expect(html).toContain('소개 글')
+  })
+
   it('offers the attached file for download', () => {
     const html = renderToStaticMarkup(
       <ApplicantDocument chip={{ key: 'f1', label: '포트폴리오.pdf · 14쪽', badge, content: '', file: { id: 'f1', name: '포트폴리오.pdf' } }} name="김태윤" sub="" now={0} />,

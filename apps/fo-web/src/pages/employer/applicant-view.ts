@@ -1,6 +1,6 @@
 import { JOB_CATEGORIES, type ApplicantCounts, type ApplicantDetail, type ApplicantDocumentKind, type ApplicantSummary, type ApplicationStage } from '@push/api-client'
 
-import { DOC_FILE, DOC_PDF, DOC_PROFILE, FILTER_ALL, STAGE_APPLIED } from './constants'
+import { DOC_FILE, DOC_PDF, DOC_PROFILE, FILTER_ALL, PROFILE_NOW, STAGE_APPLIED, submittedAsIs } from './constants'
 import { EMPLOYER_STAGE_ACTIONS } from '../../shared/model/applicant-stage'
 
 type Tone = 'ac' | 'red' | 'grey'
@@ -35,6 +35,10 @@ export const applicantSub = (applicant: ApplicantSummary['applicant']) =>
   ]
     .filter(Boolean)
     .join(' · ')
+
+/** CURRENT is the live profile (no snapshot). SUBMITTED keeps the "as submitted" line. */
+export const applicantProfileLine = (source: 'SUBMITTED' | 'CURRENT' | undefined, applied: string) =>
+  source === 'CURRENT' ? PROFILE_NOW : applied ? submittedAsIs(applied) : ''
 
 const COUNT_KEY = { APPLIED: 'applied', SCREENING: 'screening', INTERVIEW: 'interview', OFFER: 'offer', REJECTED: 'rejected' } as const
 
