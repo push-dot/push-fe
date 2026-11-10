@@ -23,6 +23,7 @@ import OffersPage from '../pages/offers/offers-page'
 import PostingPage from '../pages/posting/posting-page'
 import ProfilePage from '../pages/profile/profile-page'
 import SearchPage from '../pages/search/search-page'
+import BlockedPage from '../pages/settings/blocked-page'
 import SettingsPage from '../pages/settings/settings-page'
 import PostPage from '../pages/social/post-page'
 import SocialPage from '../pages/social/social-page'
@@ -86,6 +87,7 @@ export const appRoutes = (webView: boolean) =>
             <Route path="/offers/:id" element={<OfferDetailPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/blocked" element={<BlockedPage />} />
             <Route path="/employer/verify" element={<EmployerVerifyPage />} />
             <Route path="/employer/postings" element={<PostingsPage />} />
             <Route path="/employer/postings/new" element={<PostingEditorPage />} />

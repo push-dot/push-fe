@@ -1,24 +1,25 @@
 import type { Comment } from '@push/api-client'
-import { authorLabel } from '../../entities/post'
-import { Icon } from '../../shared/ui/icon'
-import { EMPLOYER_BADGE } from './constants'
 
-const CommentItem = ({ comment, onReply }: { comment: Comment; onReply: (id: string) => void }) => (
-  <li className="comment">
-    <span className="post-author">
-      <span className="b2 w7">{authorLabel(comment.author)}</span>
-      {comment.author.employer ? (
-        <span className="badge biz">
-          <Icon name="company" size={12} width={2.2} />
-          {EMPLOYER_BADGE}
-        </span>
-      ) : null}
+import { authorLabel } from '../../entities/post'
+import { relativeTime } from '../../shared/lib/format'
+import AuthorAvatar from './author-avatar'
+import EmployerBadge from './employer-badge'
+
+const CommentItem = ({ comment, reply = false, active = false, onReply }: { comment: Comment; reply?: boolean; active?: boolean; onReply: () => void }) => (
+  <div className={reply ? 'cm reply' : 'cm'}>
+    <AuthorAvatar author={comment.author} size={36} />
+    <span className="cm-body">
+      <span className="b2 w7 cm-name">
+        {authorLabel(comment.author)}
+        {comment.author.employer ? <EmployerBadge /> : null}
+        <span className="c1 t3 w6">{relativeTime(comment.createdAt)}</span>
+      </span>
+      <span className="b2 t2 cm-text">{comment.body}</span>
+      <button type="button" className={active ? 'cm-reply c1 ac w7' : 'cm-reply c1 t3 w6'} onClick={onReply}>
+        답글 달기
+      </button>
     </span>
-    <p className="b2">{comment.body}</p>
-    <button type="button" className="text-link" onClick={() => onReply(comment.id)}>
-      답글 달기
-    </button>
-  </li>
+  </div>
 )
 
 export default CommentItem

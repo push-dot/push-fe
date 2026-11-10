@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readEvents } from '@push/api-client'
-import { MOCK_SWITCHES, mockFetch, setMockPersona, setMockSwitches } from './mock'
+import { MOCK_SWITCHES, mockFetch, queueBusyBody, setMockPersona, setMockSwitches } from './mock'
 
 const API = 'http://localhost/api/v1'
 const SIGNED = { Authorization: 'Bearer mock-access' }
@@ -127,7 +127,10 @@ describe('ms= switches', () => {
     const names = async (query: string) => (await read<{ data: { sender: { displayName: string } }[] }>(`/me/offers?${query}`)).body.data.map((item) => item.sender.displayName)
     expect(await names('box=received&archived=1')).toEqual(['정하린'])
     expect(await names('box=received')).not.toContain('오지현')
-    expect((await read<{ data: { user: { displayName: string } }[] }>('/me/blocks')).body.data.map((item) => item.user.displayName)).toEqual(['오지현', '한민재'])
+    expect((await read<{ data: { user: { displayName: string }; createdAt: string }[] }>('/me/blocks')).body.data.map((item) => [item.user.displayName, item.createdAt])).toEqual([
+      ['오지현', '2026-11-07T01:00:00.000Z'],
+      ['한민재', '2026-10-03T01:00:00.000Z'],
+    ])
     await call('/me/blocks/u-jihyun', 'DELETE')
     expect(await names('box=received')).toEqual(['오지현', '박도윤', '최지우'])
     await call('/me/offers/offer-1/archive', 'POST')
@@ -151,6 +154,13 @@ describe('ms= switches', () => {
       ['offer-3', null, false],
       ['offer-4', '2026-10-15T01:00:00.000Z', false],
     ])
+  })
+
+  it('answers the Google connection as push-be integrations/google does', async () => {
+    using('personal', '')
+    expect((await read<{ data: { calendarStatus: string } }>('/integrations/google')).body.data.calendarStatus).toBe('CONNECTED')
+    using('personal', 'calendar-google-off')
+    expect((await read<{ data: { calendarStatus: string } }>('/integrations/google')).body.data.calendarStatus).toBe('DISCONNECTED')
   })
 
   it('shows the member view of a Pro company', async () => {
@@ -223,6 +233,89 @@ describe('ms= switches', () => {
     setMockPersona(null)
   })
 
+  it('stores a streamed job so GET turns replays it, newest first, like push-be', async () => {
+    using('employer-pro', 'chat-approve')
+    const created = await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })
+    const id = created.body.data.id
+    const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '서류 통과한 사람 면접 단계로 옮겨 줘', accessMode: 'AUTO' })
+    // The job is stored by the time the done frame arrives, not a moment after it.
+    for await (const event of readEvents<{ type: string }>(response.body!)) {
+      if (event.type !== 'done') continue
+      expect((await read<{ data: unknown[] }>(`/conversations/${id}/turns`)).body.data).toHaveLength(1)
+    }
+    const turns = await read<{ data: { userMessageId: string | null; assistantMessageId: string | null; events: { type: string }[] }[] }>(`/conversations/${id}/turns`)
+    expect(turns.body.data).toHaveLength(1)
+    expect(turns.body.data[0]!.userMessageId).not.toBeNull()
+    expect(turns.body.data[0]!.events.map((event) => event.type)).toEqual(['tool', 'tool', 'token', 'approval'])
+    setMockPersona(null)
+  })
+
+  it('cancels a running job like push-be: a cancelled frame, a CANCELLED turn, then 409', async () => {
+    using('employer-pro', 'chat-tool')
+    const id = (await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })).body.data.id
+    expect((await errorCode(`/conversations/${id}/stream/cancel`, 'POST')).code).toBe('CONFLICT')
+    const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '이번 주 새 지원자 정리해 줘', accessMode: 'AUTO' })
+    const frames = readEvents<{ type: string; name?: string; seq?: number }>(response.body!)[Symbol.asyncIterator]()
+    // The tool script stalls on its last tool line, still running.
+    let first = (await frames.next()).value as { type: string; name?: string; seq: number }
+    while (first.name !== 'read_documents') first = (await frames.next()).value as typeof first
+    // The job runs apart from the stream: it is listed as running, and a follow picks it up.
+    const running = await read<{ data: { status: string; events: unknown[] }[] }>(`/conversations/${id}/turns`)
+    expect(running.body.data[0]!.status).toBe('RUNNING')
+    expect(running.body.data[0]!.events.at(-1)).toMatchObject({ type: 'tool', state: 'run' })
+    const follow = await call(`/conversations/${id}/messages/stream/active?after=${first.seq}`)
+    expect(follow.status).toBe(200)
+    expect((await read<{ data: { status: string } }>(`/conversations/${id}/stream/cancel`, 'POST')).body.data.status).toBe('CANCELLED')
+    const rest: string[] = []
+    for await (const event of { [Symbol.asyncIterator]: () => frames }) rest.push(event.type)
+    expect(rest.at(-1)).toBe('cancelled')
+    const followed: string[] = []
+    for await (const event of readEvents<{ type: string }>(follow.body!)) followed.push(event.type)
+    expect(followed).toEqual(['cancelled'])
+    const turns = await read<{ data: { status: string; assistantMessageId: string | null; events: { type: string }[] }[] }>(`/conversations/${id}/turns`)
+    expect(turns.body.data[0]).toMatchObject({ status: 'CANCELLED', assistantMessageId: null })
+    expect(turns.body.data[0]!.events.map((event) => event.type).slice(-2)).toEqual(['tool', 'cancelled'])
+    expect((await errorCode(`/conversations/${id}/stream/cancel`, 'POST')).code).toBe('CONFLICT')
+    expect((await call(`/conversations/${id}/messages/stream/active`)).status).toBe(204)
+    setMockPersona(null)
+  })
+
+  it('joins consecutive token rows into the first seq, the way push-be turn_events does', async () => {
+    using('employer-pro', 'chat-writing')
+    const id = (await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })).body.data.id
+    const response = await call(`/conversations/${id}/messages/stream`, 'POST', { text: '면접 질문 만들어 줘', accessMode: 'AUTO' })
+    const live: { type: string; text?: string; seq?: number }[] = []
+    for await (const event of readEvents<{ type: string; text?: string; seq?: number }>(response.body!)) {
+      live.push(event)
+      if (live.filter((item) => item.type === 'token').length >= 3) break
+    }
+    const tokens = live.filter((item) => item.type === 'token')
+    const turns = await read<{ data: { events: { type: string; text?: string; seq?: number }[] }[] }>(`/conversations/${id}/turns`)
+    const stored = turns.body.data[0]!.events.filter((event) => event.type === 'token')
+    expect(stored).toHaveLength(1)
+    expect(stored[0]).toEqual({ type: 'token', text: tokens.map((item) => item.text).join(''), seq: tokens[0]!.seq })
+    await call(`/conversations/${id}/stream/cancel`, 'POST')
+    setMockPersona(null)
+  })
+
+  it('returns QUEUE_BUSY only when the whole queue is past the plan depth', async () => {
+    expect(queueBusyBody(1, 'PRO')).toBeNull()
+    expect(queueBusyBody(200, 'PRO')).toBeNull()
+    expect(queueBusyBody(201, 'PRO')).toEqual({
+      code: 'QUEUE_BUSY',
+      message: 'queue is busy',
+      details: { retryAfterSec: 30, ahead: 201 },
+    })
+    expect(queueBusyBody(41, 'BASIC')?.code).toBe('QUEUE_BUSY')
+    using('employer-pro', 'chat-queue')
+    const id = (await read<{ data: { id: string } }>('/conversations', 'POST', { audience: 'EMPLOYER', title: '' })).body.data.id
+    expect((await call(`/conversations/${id}/messages/stream`, 'POST', { text: '정리해 줘', accessMode: 'AUTO' })).status).toBe(200)
+    // A running job in this conversation is not a full queue.
+    expect((await call(`/conversations/${id}/messages/stream`, 'POST', { text: '또', accessMode: 'AUTO' })).status).toBe(200)
+    await call(`/conversations/${id}/stream/cancel`, 'POST')
+    setMockPersona(null)
+  })
+
   it('spends the month for chat-limit', async () => {
     using('employer-ultra', 'chat-limit')
     expect((await read<{ data: { balanceMicroCredits: number } }>('/billing')).body.data.balanceMicroCredits).toBe(0)
@@ -234,5 +327,21 @@ describe('ms= switches', () => {
     vi.stubGlobal('window', { ReactNativeWebView: { postMessage: () => {} } })
     using(null, MOCK_SWITCHES.join(','))
     expect((await call('/postings/p1')).status).toBe(200)
+  })
+})
+
+describe('Push documents', () => {
+  it('archives like push-be: revision-guarded, gone from the list after', async () => {
+    using('personal', '')
+    const doc = (await read<{ data: { revision: number } }>('/documents/src-ai')).body.data
+    expect((await errorCode('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision + 1 })).code).toBe('REVISION_CONFLICT')
+    expect((await call('/documents/src-ai/archive', 'POST', { expectedRevision: doc.revision })).status).toBe(200)
+    const ids = (await read<{ data: { id: string }[] }>('/sources')).body.data.map((item) => item.id)
+    expect(ids).not.toContain('src-ai')
+  })
+
+  it('fails the archive under docs-delete-fail too', async () => {
+    using('personal', 'docs-delete-fail')
+    expect((await call('/documents/src-ai-toss/archive', 'POST', { expectedRevision: 1 })).status).toBe(500)
   })
 })

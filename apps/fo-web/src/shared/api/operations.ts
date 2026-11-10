@@ -1,4 +1,4 @@
-import type { Api } from '@push/api-client'
+import { atDocumentRevision, type Api } from '@push/api-client'
 import { api } from './client'
 
 export const searchCatalog = (...args: Parameters<Api['search']>) => api.search(...args)
@@ -19,6 +19,8 @@ export const authPhoneSend = (...args: Parameters<Api['auth']['phoneSend']>) => 
 
 export const authPhoneVerify = (...args: Parameters<Api['auth']['phoneVerify']>) => api.auth.phoneVerify(...args)
 
+export const authLogout = (...args: Parameters<Api['auth']['logout']>) => api.auth.logout(...args)
+
 export const authMe = (...args: Parameters<Api['auth']['me']>) => api.auth.me(...args)
 
 export const authPasswordResetEmail = (...args: Parameters<Api['auth']['passwordResetEmail']>) => api.auth.passwordResetEmail(...args)
@@ -36,6 +38,10 @@ export const billingTopup = (...args: Parameters<Api['billing']['topup']>) => ap
 export const billingLedger = (...args: Parameters<Api['billing']['ledger']>) => api.billing.ledger(...args)
 
 export const calendarEvents = (...args: Parameters<Api['calendar']['events']>) => api.calendar.events(...args)
+
+export const calendarCreate = (...args: Parameters<Api['calendar']['create']>) => api.calendar.create(...args)
+
+export const integrationsGoogle = (...args: Parameters<Api['integrations']['google']>) => api.integrations.google(...args)
 
 export const companiesAcceptInvite = (...args: Parameters<Api['companies']['acceptInvite']>) => api.companies.acceptInvite(...args)
 
@@ -69,11 +75,15 @@ export const conversationsList = (...args: Parameters<Api['conversations']['list
 
 export const conversationsMessages = (...args: Parameters<Api['conversations']['messages']>) => api.conversations.messages(...args)
 
+export const conversationsTurns = (...args: Parameters<Api['conversations']['turns']>) => api.conversations.turns(...args)
+
 export const conversationsSend = (...args: Parameters<Api['conversations']['send']>) => api.conversations.send(...args)
 
 export const conversationsStream = (...args: Parameters<Api['conversations']['stream']>) => api.conversations.stream(...args)
 
 export const conversationsFollow = (...args: Parameters<Api['conversations']['follow']>) => api.conversations.follow(...args)
+
+export const conversationsCancel = (...args: Parameters<Api['conversations']['cancel']>) => api.conversations.cancel(...args)
 
 export const conversationsResolveApproval = (...args: Parameters<Api['conversations']['resolveApproval']>) =>
   api.conversations.resolveApproval(...args)
@@ -82,7 +92,15 @@ export const meAcceptOffer = (...args: Parameters<Api['me']['acceptOffer']>) => 
 
 export const meAddLink = (...args: Parameters<Api['me']['addLink']>) => api.me.addLink(...args)
 
+export const meArchiveOffer = (...args: Parameters<Api['me']['archiveOffer']>) => api.me.archiveOffer(...args)
+
+export const meBlockUser = (...args: Parameters<Api['me']['blockUser']>) => api.me.blockUser(...args)
+
 export const meBookmarks = (...args: Parameters<Api['me']['bookmarks']>) => api.me.bookmarks(...args)
+
+export const meBlocks = (...args: Parameters<Api['me']['blocks']>) => api.me.blocks(...args)
+
+export const meCommentedPosts = (...args: Parameters<Api['me']['commentedPosts']>) => api.me.commentedPosts(...args)
 
 export const meConsents = (...args: Parameters<Api['me']['consents']>) => api.me.consents(...args)
 
@@ -106,9 +124,13 @@ export const meProfile = (...args: Parameters<Api['me']['profile']>) => api.me.p
 
 export const meReadNotifications = (...args: Parameters<Api['me']['readNotifications']>) => api.me.readNotifications(...args)
 
+export const meReportOffer = (...args: Parameters<Api['me']['reportOffer']>) => api.me.reportOffer(...args)
+
 export const meSendOfferMessage = (...args: Parameters<Api['me']['sendOfferMessage']>) => api.me.sendOfferMessage(...args)
 
 export const meSettings = (...args: Parameters<Api['me']['settings']>) => api.me.settings(...args)
+
+export const meUnarchiveOffer = (...args: Parameters<Api['me']['unarchiveOffer']>) => api.me.unarchiveOffer(...args)
 
 export const meUpdateConsents = (...args: Parameters<Api['me']['updateConsents']>) => api.me.updateConsents(...args)
 
@@ -117,6 +139,8 @@ export const meUpdateTerms = (...args: Parameters<Api['me']['updateTerms']>) => 
 export const meUpdateProfile = (...args: Parameters<Api['me']['updateProfile']>) => api.me.updateProfile(...args)
 
 export const meUpdateSettings = (...args: Parameters<Api['me']['updateSettings']>) => api.me.updateSettings(...args)
+
+export const meUnblockUser = (...args: Parameters<Api['me']['unblockUser']>) => api.me.unblockUser(...args)
 
 export const meWebNotifications = (...args: Parameters<Api['me']['webNotifications']>) => api.me.webNotifications(...args)
 
@@ -175,5 +199,23 @@ export const sourcesGet = (...args: Parameters<Api['sources']['get']>) => api.so
 export const sourcesList = (...args: Parameters<Api['sources']['list']>) => api.sources.list(...args)
 
 export const sourcesUpload = (...args: Parameters<Api['sources']['upload']>) => api.sources.upload(...args)
+
+export const sourcesRemove = (...args: Parameters<Api['sources']['remove']>) => api.sources.remove(...args)
+
+export const sourcesContent = (...args: Parameters<Api['sources']['content']>) => api.sources.content(...args)
+
+export const documentsGet = (...args: Parameters<Api['documents']['get']>) => api.documents.get(...args)
+
+export const documentsExportFile = (...args: Parameters<Api['documents']['exportFile']>) => api.documents.exportFile(...args)
+
+export const documentsRename = (id: string, title: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.rename(id, revision, title))
+
+export const documentsArchive = (id: string) =>
+  atDocumentRevision(api.documents, id, (revision) => api.documents.archive(id, revision))
+
+export const meDeleteLink = (...args: Parameters<Api['me']['deleteLink']>) => api.me.deleteLink(...args)
+
+export const meRestoreLink = (...args: Parameters<Api['me']['restoreLink']>) => api.me.restoreLink(...args)
 
 export const uploadsImage = (...args: Parameters<Api['uploads']['image']>) => api.uploads.image(...args)

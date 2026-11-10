@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { AgentMark, Icon } from '../shared/ui/icon'
-import { sessionStore } from '../shared/auth/session'
 import { useSession } from '../shared/auth/use-session'
 import { isAuthChrome } from './auth-chrome'
 import { AUTH_BIZ, AUTH_LOGOUT, BRAND, FOOTER_LINKS, FOOTER_MARK, NAV, SEARCH_PLACEHOLDER } from './constants'
@@ -13,6 +12,8 @@ import { tabBarShown } from './tab-items'
 import { useNotifications } from '../entities/notification'
 import { useOffers } from '../entities/offer'
 import { useAuthMe } from '../entities/session'
+import { useSignOut } from '../features/sign-out'
+import NotificationBell from '../pages/notifications/notification-bell'
 
 
 const MAIN_NAV = [
@@ -34,8 +35,9 @@ const Shell = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const session = useSession()
+  const signOut = useSignOut()
   const auth = isAuthChrome(location.pathname)
-  const queryText = new URLSearchParams(location.search).get('q') ?? ''
+  const queryText = location.pathname === '/search' ? '' : (new URLSearchParams(location.search).get('q') ?? '')
   const [searchDraft, setSearchDraft] = useState(queryText)
   useEffect(() => {
     setSearchDraft(queryText)
@@ -58,6 +60,8 @@ const Shell = () => {
   const unread = notes.data?.data.filter((item) => !item.readAt).length ?? 0
   const offerCount = received.data?.data.filter((item) => item.status === 'SENT').length ?? 0
   const tabs = !auth && tabBarShown(location.pathname)
+  // The WebInbox boards fill the viewport with the inbox card and draw no footer.
+  const footer = !auth && !chatScreen && !location.pathname.startsWith('/offers')
   const shellClass = ['shell', 'browser', auth ? 'auth-shell' : '', chatScreen ? 'chat-screen' : '', tabs ? 'has-tabs' : ''].filter(Boolean).join(' ')
   return (
     <div className={shellClass}>
@@ -74,10 +78,7 @@ const Shell = () => {
                 {`${me.data?.email ?? session.user.displayName} · `}
                 <button
                   type="button"
-                  onClick={() => {
-                    sessionStore.clear()
-                    navigate('/')
-                  }}
+                  onClick={() => void signOut()}
                 >
                   {AUTH_LOGOUT}
                 </button>
@@ -134,14 +135,7 @@ const Shell = () => {
               </form>
             ) : null}
             <div className="hd-end">
-              {end
-                .filter((link) => link.to === '/notifications')
-                .map((link) => (
-                  <NavLink key={link.to} to={link.to} className="hbtn" aria-label={unread > 0 ? `${link.label} ${unread}개` : link.label}>
-                    <Icon name="bell" size={22} />
-                    {unread > 0 ? <span className="nb">{unread}</span> : null}
-                  </NavLink>
-                ))}
+              {end.some((link) => link.to === '/notifications') ? <NotificationBell unread={unread} /> : null}
               {session ? (
                 <NavLink to="/offers" className="hbtn" aria-label={offerCount > 0 ? `${NAV.offers} ${offerCount}개` : NAV.offers}>
                   <Icon name="inbox" size={22} />
@@ -167,7 +161,7 @@ const Shell = () => {
       <div className="shell-main">
         <Outlet />
       </div>
-      {auth || chatScreen ? null : (
+      {!footer ? null : (
         <footer className="ft">
           <div className="wrap">
             <span className="wordmark">

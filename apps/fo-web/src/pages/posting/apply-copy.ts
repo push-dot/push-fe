@@ -1,7 +1,26 @@
-export const APPLY_GUIDANCE = '지원하면 마이 › 내 활동 › 지원활동에 기록돼요.'
-export const APPLY_PENDING = '지원하는 중…'
-export const APPLY_FAILURE = '지원하지 못했어요. 잠시 후 다시 눌러 주세요.'
-export const TAILORED_DOC = '에이전트로 맞춘 서류'
+import type { ListedSource } from '../../shared/api/sources'
+
+export const APPLY_HINT = '프로필이나 서류 중 하나만 골라도 지원할 수 있어요.'
+export const APPLY_LOCK = '지원한 뒤에는 서류를 고쳐도 회사에는 제출한 그대로 보여요.'
+export const APPLY_SENDING = '보내는 중…'
+export const APPLY_RETRY = '다시 보내기'
+export const APPLY_ERROR_TITLE = '지원을 보내지 못했어요'
+export const APPLY_ERROR_BODY = '연결이 잠시 끊겼어요. 고른 서류는 그대로 있으니 다시 보내 주세요.'
+export const APPLY_CANCEL = '취소'
+export const APPLY_CLOSE = '닫기'
+export const GROUP_PROFILE = '프로필'
+export const GROUP_PUSH = 'Push 서류'
+export const GROUP_UPLOAD = '올린 파일'
+export const PROFILE_TITLE = '내 프로필'
+export const PUSH_BADGE = 'Push'
+export const ORIGINAL_BADGE = '원본'
+export const NO_DOCS_TITLE = '지원할 서류가 없어요'
+export const NO_DOCS_BODY = '프로필을 채우거나 이력서 파일을 등록하면 바로 지원할 수 있어요.'
+export const NO_DOCS_CTA = '서류 등록하기'
+export const DOCS_PATH = '/me?tab=documents'
+export const PROFILE_ID = 'profile'
+
+export const applyConfirmLabel = (count: number) => `서류 ${count}개로 지원하기`
 
 export const applyPair = (company?: string | null, title?: string | null) =>
   [company, title].filter((part): part is string => Boolean(part)).join(' · ')
@@ -19,14 +38,26 @@ export const seoulWhen = (createdAt: string, now = new Date()) => {
   return `${created.month}월 ${created.day}일`
 }
 
-export const sourceSub = (origin: string, createdAt?: string | null, now = new Date()) => {
-  if (origin !== 'AI') return '원본'
-  if (!createdAt) return TAILORED_DOC
-  return `${TAILORED_DOC} · ${seoulWhen(createdAt, now)}`
+type Described = Pick<ListedSource, 'createdAt' | 'pageCount'> & { company?: string | null; postingTitle?: string | null }
+
+export const pushDocSub = (source: Described, now = new Date()) =>
+  [source.company, source.postingTitle, source.createdAt ? seoulWhen(source.createdAt, now) : null].filter(Boolean).join(' · ')
+
+export const uploadSub = (source: Described, now = new Date()) =>
+  [source.createdAt ? seoulWhen(source.createdAt, now) : null, source.pageCount ? `${source.pageCount}쪽` : null].filter(Boolean).join(' · ')
+
+export const fileBadge = (fileName: string) => fileName.split('.').pop()?.toUpperCase() ?? ''
+
+export const profileSub = (roleLine: string, careers: number, skills: number) =>
+  [roleLine, `경력 ${careers}개`, `기술 ${skills}개`].filter(Boolean).join(' · ')
+
+export const defaultPicked = (sources: Pick<ListedSource, 'id' | 'origin'>[]) => {
+  const firstPush = sources.find((source) => source.origin === 'AI')
+  return firstPush ? [PROFILE_ID, firstPush.id] : [PROFILE_ID]
 }
 
-/** Choosing the selected radio again leaves it selected. */
-export const keepRadio = (current: string | null, id: string) => (current === id ? current : id)
+// the profile row only counts once the profile has loaded; without it an empty pick would send an empty application
+export const effectivePicks = (picked: string[] | null, sources: Pick<ListedSource, 'id' | 'origin'>[], hasProfile: boolean) =>
+  (picked ?? defaultPicked(sources)).filter((id) => hasProfile || id !== PROFILE_ID)
 
-/** The extra line is the selected row's kind, and only when kind is a non-empty string. */
-export const kindLine = (kind?: string | null) => (kind && kind.length > 0 ? kind : null)
+export const togglePick = (picked: string[], id: string) => (picked.includes(id) ? picked.filter((item) => item !== id) : [...picked, id])

@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { APPLY_CONFIRM, guestApplyAction } from './constants'
+import { guestApplyAction } from './constants'
 import { postingActionMode } from '../../entities/posting'
-
-describe('apply label', () => {
-  it('uses one confirm label for any count', () => {
-    expect(APPLY_CONFIRM).toBe('이 서류로 지원하기')
-    expect([0, 1, 2].map(() => APPLY_CONFIRM)).toEqual(['이 서류로 지원하기', '이 서류로 지원하기', '이 서류로 지원하기'])
-  })
-})
 
 describe('guest apply', () => {
   it('opens the login dialog for a guest and the sheet for a person', () => {

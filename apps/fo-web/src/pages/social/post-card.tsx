@@ -1,27 +1,42 @@
 import { POST_CATEGORIES, type Post } from '@push/api-client'
 import { Link } from 'react-router-dom'
-import { compactCount, relativeTime } from '../../shared/lib/format'
+
 import { authorLabel } from '../../entities/post'
+import { assetUrl } from '../../shared/api/client'
+import { relativeTime } from '../../shared/lib/format'
 import { Icon } from '../../shared/ui/icon'
-import { EMPLOYER_BADGE } from './constants'
+import AuthorAvatar from './author-avatar'
+import EmployerBadge from './employer-badge'
+import { POST_THUMBS } from './constants'
 
 const PostCard = ({ post }: { post: Post }) => {
   const category = POST_CATEGORIES.find((item) => item.key === post.category)?.label ?? post.category
   return (
     <Link to={`/posts/${post.id}`} className="post-card">
-      <span className="post-author">
-        <span className="b2 w7">{authorLabel(post.author)}</span>
-        {post.author.employer ? (
-          <span className="badge biz">
-            <Icon name="company" size={12} width={2.2} />
-            {EMPLOYER_BADGE}
+      <span className="post-head">
+        <AuthorAvatar author={post.author} size={40} />
+        <span className="post-who">
+          <span className="b2 w7 post-name">
+            {authorLabel(post.author)}
+            {post.author.employer ? <EmployerBadge /> : null}
           </span>
-        ) : null}
-        <span className="c1 t3">{`${category} · ${relativeTime(post.createdAt)}`}</span>
+          <span className="c1 t3">{`${category} · ${relativeTime(post.createdAt)}`}</span>
+        </span>
       </span>
-      <strong className="b1">{post.title}</strong>
+      <strong className="h3">{post.title}</strong>
       <p className="b2 t2 post-excerpt">{post.body}</p>
-      <span className="c1 t3">{`댓글 ${compactCount(post.commentCount)} · 조회 ${compactCount(post.viewCount)}`}</span>
+      {post.imageUrls.length > 0 ? (
+        <span className="post-thumbs">
+          {post.imageUrls.slice(0, POST_THUMBS).map((url) => (
+            <img key={url} src={assetUrl(url)} alt="" />
+          ))}
+        </span>
+      ) : null}
+      <span className="c1 t3 post-count">
+        <Icon name="chat" size={15} />
+        <span className="sr-only">댓글</span>
+        {post.commentCount}
+      </span>
     </Link>
   )
 }

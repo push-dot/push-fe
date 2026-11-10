@@ -23,6 +23,12 @@ export const saveRecentSearch = (term: string, storage: KeyValueStore | null = b
   return next
 }
 
+export const removeRecentSearch = (term: string, storage: KeyValueStore | null = browserLocalStorage()) => {
+  const next = readStored(storage).filter((item) => item !== term)
+  storage?.setItem(RECENT_SEARCH_KEY, JSON.stringify(next))
+  return next
+}
+
 export const clearRecentSearches = (storage: KeyValueStore | null = browserLocalStorage()) => {
   storage?.removeItem(RECENT_SEARCH_KEY)
 }

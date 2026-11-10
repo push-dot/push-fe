@@ -22,7 +22,7 @@ const BrowserPosting = ({ posting, message, onToast }: { posting: PostingView; m
   const dday = dDay(posting.deadline)
   const duties = posting.description.split('\n').map((line) => line.trim()).filter(Boolean)
   const career = careerLabel(posting)
-const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
+  const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employmentType)?.label
   const conditions = workConditionLines(posting.workConditions)
   const deadline = longDate(posting.deadline)
   return (
@@ -38,7 +38,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           </div>
           <header className="head">
             <div className="cover-meta">
-              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
+              <span className="av co-mark" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
               <span className="b1 w7">{posting.company}</span>
@@ -55,6 +55,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
               ) : null}
             </p>
           </header>
+          <div className="hr" />
           {duties.length ? (
             <section className="section">
               <h2 className="sect">하는 일</h2>
@@ -111,7 +112,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
           ) : null}
           {posting.sourceUrl ? (
             <a
-              className="b2 w6 t2 source-link"
+              className="b2 w6 source-link"
               href={posting.sourceUrl}
               onClick={(event) => {
                 event.preventDefault()
@@ -119,7 +120,7 @@ const employment = EMPLOYMENT_TYPES.find((item) => item.key === posting.employme
               }}
             >
               <Icon name="ext" size={18} />
-              원문 보기 · {posting.company} 채용 사이트
+              {`원문 보기 · ${posting.company} 채용 사이트`}
             </a>
           ) : null}
         </div>

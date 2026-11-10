@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dDay, initials, periodLabel, roleLabel } from './format'
+import { dDay, initials, lengthCount, periodLabel, roleLabel } from './format'
 
 describe('format', () => {
   const today = new Date(2026, 9, 20, 23, 30)
@@ -17,5 +17,9 @@ describe('format', () => {
     expect(roleLabel('ops', null)).toBe('경영지원')
     expect(initials('이하은')).toBe('하은')
     expect(initials('민지')).toBe('민지')
+  })
+  it('lengthCount writes every text counter the same way', () => {
+    expect(lengthCount(86, 2000)).toBe('86 / 2,000')
+    expect(lengthCount(96, 500)).toBe('96 / 500')
   })
 })

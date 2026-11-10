@@ -2,6 +2,7 @@ export { createClient, type Client, type ClientConfig, type RequestOptions } fro
 export { createApi, type Api } from './endpoints'
 export { needsTerms } from './consent'
 export { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
+export { atDocumentRevision } from './documents'
 export { isJobSettled, jobQuery } from './jobs'
 export { withDeadlineWindow } from './posting-query'
 export { JOB_POLL_MS } from './constants'

@@ -11,3 +11,7 @@ export const HOME_SECTIONS = [
 ] as const
 
 export const OPEN_APPLICATION_STAGES = ['DISCOVERED', 'PREPARING', 'READY', 'APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER'] as const
+
+export const HOME_ERROR = { title: '공고를 불러오지 못했어요.', body: '잠시 후 다시 열어 주세요.' } as const
+
+export const HOME_SKELETON_CARDS = 5

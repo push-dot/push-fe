@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { KeyValueStore } from '../../shared/lib/storage'
-import { clearRecentSearches, readRecentSearches, saveRecentSearch } from './recent-searches'
+import { clearRecentSearches, readRecentSearches, removeRecentSearch, saveRecentSearch } from './recent-searches'
 
 const memory = (): KeyValueStore => {
   const items = new Map<string, string>()
@@ -23,6 +23,7 @@ describe('recent searches', () => {
     expect(saveRecentSearch('kotlin', storage)).toEqual(['kotlin'])
     expect(saveRecentSearch('ios', storage)).toEqual(['ios', 'kotlin'])
     expect(saveRecentSearch('   ', storage)).toEqual(['ios', 'kotlin'])
+    expect(removeRecentSearch('ios', storage)).toEqual(['kotlin'])
     clearRecentSearches(storage)
     expect(readRecentSearches(storage)).toEqual([])
   })

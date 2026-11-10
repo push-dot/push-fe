@@ -12,16 +12,17 @@ import { canUseEmployerAi } from '../../shared/model/employer-plan'
 import type { PostingView } from '../../shared/api/mock'
 import ApplySheet from './apply-sheet'
 import {
+  APPLIED_HINT,
   APPLIED_LABEL,
   APPLIED_TOAST,
   APPLY_ASIDE,
   APPLY_LABEL,
   BOOKMARK_LABEL,
-  BOOKMARK_SAVED,
   EMPLOYER_POSTING_CTA,
   EMPLOYER_POSTING_NOTE,
   EMPLOYER_VERIFY_PATH,
   SHARE_LABEL,
+  applicantsLabel,
   guestApplyAction,
 } from './constants'
 import GuestApplyDialog from './guest-apply-dialog'
@@ -29,6 +30,11 @@ import { postingActionMode } from '../../entities/posting'
 import { shareLink } from '../../features/share-posting'
 import { postingsBookmark, postingsUnbookmark } from '../../features/bookmark-posting'
 
+const ClockIcon = () => (
+  <svg className="ic" viewBox="0 0 24 24" width={16} height={16} aria-hidden="true">
+    <path d="M20.5 12a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0ZM12 7.5V12l3 2" />
+  </svg>
+)
 
 const copyUrl = async (url: string) => {
   try {
@@ -98,55 +104,86 @@ const PostingActions = ({ posting, onToast }: { posting: PostingView; onToast: (
   }
   const dday = dDay(posting.deadline)
   const when = monthDay(posting.deadline)
+  const applicants = (posting as { applicantCount?: number }).applicantCount
+  const applied = mode === 'personal' && posting.applied
+  const primary = (className: string) =>
+    mode === 'employer' ? (
+      <Link
+        className={`btn pri lg ${className}`}
+        to={
+          canUseEmployerAi(session?.user.companyId != null && session.user.companyId !== '')
+            ? `/employer/chat/new?postingId=${encodeURIComponent(posting.id)}`
+            : EMPLOYER_VERIFY_PATH
+        }
+      >
+        <Icon name="spark" size={18} filled />
+        {EMPLOYER_POSTING_CTA}
+      </Link>
+    ) : (
+      <button type="button" className={`btn pri lg ${className}${applied ? ' dis' : ''}`} disabled={applied} onClick={onApply}>
+        {applied ? APPLIED_LABEL : APPLY_LABEL}
+      </button>
+    )
+  const secondary = (className: string) => (
+    <>
+      <button type="button" className={`btn sec ${className}${posting.bookmarked ? ' on' : ''}`} aria-label={BOOKMARK_LABEL} aria-pressed={posting.bookmarked} disabled={bookmark.isPending} onClick={onBookmark}>
+        <Icon name="bookmark" size={18} width={2.2} filled={posting.bookmarked} />
+        <span className="job-lbl">{BOOKMARK_LABEL}</span>
+      </button>
+      <button type="button" className={`btn sec ${className}`} aria-label={SHARE_LABEL} onClick={() => void share()}>
+        <Icon name="share" size={18} width={2.2} />
+        <span className="job-lbl">{SHARE_LABEL}</span>
+      </button>
+    </>
+  )
   return (
     <>
       <aside className="job-aside">
         <div className="box job-apply">
           <div className="pair">
             {posting.imageUrl ? (
-              <img className="av hd-av" src={assetUrl(posting.imageUrl)} alt="" />
+              <img className="av co-mark lg" src={assetUrl(posting.imageUrl)} alt="" />
             ) : (
-              <span className="av hd-av" style={{ background: brandColor(posting.company) }}>
+              <span className="av co-mark lg" style={{ background: brandColor(posting.company) }}>
                 {[...posting.company][0]}
               </span>
             )}
             <span>
-              <span className="b2 w7">{posting.company}</span>
-              <span className="c1 t3 cap">{posting.title}</span>
+              <span className="c1 t3 w6">{posting.company}</span>
+              <span className="b1 w7 cap">{posting.title}</span>
             </span>
           </div>
-          <p className="b2 t2">{[when ? `${when} 마감` : null, dday].filter(Boolean).join(' · ')}</p>
-          {mode === 'employer' ? (
-            <Link
-              className="btn pri lg block"
-              to={
-                canUseEmployerAi(session?.user.companyId != null && session.user.companyId !== '')
-                  ? `/employer/chat/new?postingId=${encodeURIComponent(posting.id)}`
-                  : EMPLOYER_VERIFY_PATH
-              }
-            >
-              <Icon name="spark" size={18} filled />
-              {EMPLOYER_POSTING_CTA}
-            </Link>
-          ) : (
-            <button type="button" className={mode === 'personal' && posting.applied ? 'btn pri lg block dis' : 'btn pri lg block'} disabled={mode === 'personal' && posting.applied} onClick={onApply}>
-              {mode === 'personal' && posting.applied ? APPLIED_LABEL : APPLY_LABEL}
-            </button>
-          )}
-          {mode === 'employer' ? <p className="c1 t3">{EMPLOYER_POSTING_NOTE}</p> : null}
-          <div className="apply-row">
-            <button type="button" className="btn sec" aria-pressed={posting.bookmarked} disabled={bookmark.isPending} onClick={onBookmark}>
-              <Icon name="bookmark" size={18} width={2.2} filled={posting.bookmarked} />
-              {posting.bookmarked ? BOOKMARK_SAVED : BOOKMARK_LABEL}
-            </button>
-            <button type="button" className="btn sec" onClick={() => void share()}>
-              <Icon name="share" size={18} width={2.2} />
-              {SHARE_LABEL}
-            </button>
+          <div className="job-meta b2 t2">
+            <span>
+              <span className="deco">
+                <ClockIcon />
+              </span>
+              {[when ? `${when} 마감` : null, dday].filter(Boolean).join(' · ')}
+            </span>
+            {applicants != null ? (
+              <span>
+                <span className="deco">
+                  <Icon name="people" size={16} />
+                </span>
+                {applicantsLabel(applicants)}
+              </span>
+            ) : null}
           </div>
+          {primary('block job-cta')}
+          {applied ? <span className="job-note c1 t3">{APPLIED_HINT}</span> : null}
+          {mode === 'employer' ? <span className="job-note c1 t3">{EMPLOYER_POSTING_NOTE}</span> : null}
+          <div className="apply-row job-secondary">{secondary('')}</div>
         </div>
-        <p className="c1 t3">{APPLY_ASIDE}</p>
+        <p className="c1 t3 job-hint">{APPLY_ASIDE}</p>
       </aside>
+      <div className="bottom-bar job-bar">
+        <span className="job-sum">
+          <span className="c1 t3 w6 cap">{posting.company}</span>
+          <span className="b1 w7 cap">{posting.title}</span>
+        </span>
+        {secondary('lg job-bar-btn')}
+        {primary('job-bar-cta')}
+      </div>
       {applyOpen ? (
         <ApplySheet
           postingId={posting.id}
