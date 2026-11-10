@@ -1,15 +1,17 @@
-import { ApiError, type EmployerPlan } from '@push/api-client'
+import { ApiError, type CompanyBillingStatus, type EmployerPlan } from '@push/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   EMPLOYER_PLAN_CARDS,
   canChangeEmployerPlan,
   checkoutPlanName,
+  checkoutPlanId,
   checkoutReturn,
   checkoutTarget,
   paymentsOpen,
+  refreshUntilPaid,
   rememberCheckoutPlan,
   showEmployerCheckout,
 } from '../../shared/model/employer-plans'
@@ -37,7 +39,7 @@ import MySide from '../my/my-side'
 import PlanCard from './plan-card'
 import PlanUsage from './plan-usage'
 import { BuyDialog, LedgerDialog } from './plan-dialogs'
-import { useCompanyBilling } from '../../entities/billing'
+import { billingCompanyStatus, useCompanyBilling } from '../../entities/billing'
 import { useMyCompany } from '../../entities/company'
 import { useCompanyMembers } from '../../entities/member'
 import { billingCheckout, billingTopup } from '../../features/checkout-plan'
@@ -64,14 +66,38 @@ const PlansPage = () => {
   const [dialog, setDialog] = useState<'buy' | 'history' | null>(null)
   const toast = useToast()
   const returned = checkoutReturn(params)
+  const noted = useRef<string | null>(null)
   useEffect(() => {
-    if (!returned) return
+    if (!returned) {
+      noted.current = null
+      return
+    }
+    if (noted.current === returned) return
+    noted.current = returned
     if (returned === 'canceled') {
       rememberCheckoutPlan(null)
       return
     }
-    // The stored plan stays until the next checkout overwrites it, so a re-run of this effect names it again.
-    toast.show(returned === 'credits' ? TOPUP_DONE : planPaid(checkoutPlanName()))
+    const kind = returned
+    const pending = checkoutPlanId()
+    const balanceBefore =
+      queryClient.getQueryData<CompanyBillingStatus>(['billing', 'company'])?.balanceMicroCredits ??
+      null
+    // The webhook can land after this page. Keep reading until the bought plan, or the added credits, shows.
+    void refreshUntilPaid(
+      kind,
+      pending,
+      balanceBefore,
+      () =>
+        queryClient.fetchQuery({
+          queryKey: ['billing', 'company'],
+          queryFn: () => billingCompanyStatus(),
+          staleTime: 0,
+        }),
+      (ms) => new Promise((resolve) => window.setTimeout(resolve, ms)),
+    )
+    // The stored plan stays until the next checkout overwrites it, so the reads above can name it.
+    toast.show(kind === 'credits' ? TOPUP_DONE : planPaid(checkoutPlanName()))
     // A reload must not show the toast again.
     setParams(
       (current) => {
@@ -82,7 +108,7 @@ const PlansPage = () => {
       },
       { replace: true },
     )
-  }, [returned, setParams, toast.show])
+  }, [queryClient, returned, setParams, toast.show])
   const billing = useCompanyBilling()
   const company = useMyCompany({
     retry: (failureCount, error) => !companyMissing(error) && failureCount < 1,
@@ -105,6 +131,7 @@ const PlansPage = () => {
       void openLocal(result.url)
     },
     onError: (error) => {
+      rememberCheckoutPlan(null)
       setActionError(planActionError(error))
     },
   })

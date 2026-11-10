@@ -323,6 +323,33 @@ export const ledgerPayments = (rows: readonly LedgerEntry[]) =>
     amountUsd == null ? [] : [{ id, createdAt, amountUsd, receiptUrl, title: description ?? (type === 'REFUND' ? LEDGER_REFUND : PLAN_HISTORY) }],
   )
 
+/** The loaded pages have no Stripe rows, and push-be still has another page. */
+export const ledgerNeedsAnotherPage = (paymentCount: number, hasNextPage: boolean) => paymentCount === 0 && hasNextPage
+
+export const ledgerView = ({
+  isError,
+  isPending,
+  isFetchingNextPage,
+  isFetchNextPageError,
+  hasNextPage,
+  paymentCount,
+}: {
+  isError: boolean
+  isPending: boolean
+  isFetchingNextPage: boolean
+  isFetchNextPageError: boolean
+  hasNextPage: boolean
+  paymentCount: number
+}): 'error' | 'loading' | 'empty' | 'rows' => {
+  if (isError || (paymentCount === 0 && isFetchNextPageError)) return 'error'
+  if (isPending || ledgerNeedsAnotherPage(paymentCount, hasNextPage) || (paymentCount === 0 && isFetchingNextPage)) return 'loading'
+  if (paymentCount === 0) return 'empty'
+  return 'rows'
+}
+
+/** 더 보기 only once a payment row is on screen, so it never sits next to the empty state. */
+export const ledgerShowsMore = (paymentCount: number, hasNextPage: boolean) => paymentCount > 0 && hasNextPage
+
 export const ledgerUsd = (amountUsd: number) => (amountUsd < 0 ? `-${usd(-amountUsd)}` : usd(amountUsd))
 
 export const PLAN_FEATURES = {

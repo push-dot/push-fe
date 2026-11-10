@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutPlanName, checkoutReturn, checkoutTarget, rememberCheckoutPlan, paymentsOpen, showEmployerCheckout, topupReady } from './employer-plans'
+import { EMPLOYER_PLAN_CARDS, canChangeEmployerPlan, checkoutBackoff, checkoutPlanId, checkoutPlanName, checkoutReturn, checkoutTarget, paidPlanVisible, paymentsOpen, refreshUntilPaid, rememberCheckoutPlan, showEmployerCheckout, topupReady } from './employer-plans'
 
 const FORBIDDEN_MODEL_NAMES = ['Sonnet', 'Opus', 'Fable']
 
@@ -116,8 +116,83 @@ describe('Stripe return (push-be billing.ts returnUrls)', () => {
       removeItem: (key: string) => store.delete(key),
     })
     rememberCheckoutPlan('ULTRA')
+    expect(checkoutPlanId()).toBe('ULTRA')
     expect(checkoutPlanName()).toBe('Ultra')
     rememberCheckoutPlan(null)
+    expect(checkoutPlanId()).toBeNull()
     expect(checkoutPlanName()).toBeUndefined()
+  })
+})
+
+describe('checkout billing refresh', () => {
+  const billing = (plan: string | null, balanceMicroCredits: number) => ({ plan, balanceMicroCredits })
+
+  it('waits 500, 1000, 2000, then 4000ms and stops after five reads', () => {
+    expect(checkoutBackoff(0)).toBe(500)
+    expect(checkoutBackoff(1)).toBe(1000)
+    expect(checkoutBackoff(2)).toBe(2000)
+    expect(checkoutBackoff(3)).toBe(4000)
+    expect(checkoutBackoff(4)).toBeNull()
+  })
+
+  it('sees the bought plan, and added credits, once billing shows them', () => {
+    expect(paidPlanVisible('success', billing('PRO', 1), 'ULTRA', 1)).toBe(false)
+    expect(paidPlanVisible('success', billing('ULTRA', 1), 'ULTRA', 1)).toBe(true)
+    expect(paidPlanVisible('success', undefined, 'ULTRA', 1)).toBe(false)
+    expect(paidPlanVisible('credits', billing('PRO', 100), null, 100)).toBe(false)
+    expect(paidPlanVisible('credits', billing('PRO', 250), null, 100)).toBe(true)
+    expect(paidPlanVisible('credits', billing('PRO', 10), null, null)).toBe(true)
+  })
+
+  it('refetches with backoff until the paid plan shows, and stops when the reads run out', async () => {
+    const plans = ['PRO', 'PRO', 'ULTRA']
+    const waits: number[] = []
+    await refreshUntilPaid('success', 'ULTRA', 1, async () => billing(plans.shift() ?? 'ULTRA', 1), async (ms) => {
+      waits.push(ms)
+    })
+    expect(waits).toEqual([500, 1000])
+
+    let reads = 0
+    const bounded: number[] = []
+    await refreshUntilPaid(
+      'success',
+      'ULTRA',
+      1,
+      async () => {
+        reads += 1
+        return billing('PRO', 1)
+      },
+      async (ms) => {
+        bounded.push(ms)
+      },
+    )
+    expect(reads).toBe(5)
+    expect(bounded).toEqual([500, 1000, 2000, 4000])
+  })
+
+  it('retries a failed read, and stops when the page is gone', async () => {
+    let reads = 0
+    const waits: number[] = []
+    await refreshUntilPaid(
+      'credits',
+      null,
+      100,
+      async () => {
+        reads += 1
+        if (reads === 1) throw new Error('offline')
+        return billing('PRO', 250)
+      },
+      async (ms) => {
+        waits.push(ms)
+      },
+    )
+    expect(waits).toEqual([500])
+
+    let after = 0
+    await refreshUntilPaid('success', 'ULTRA', 1, async () => {
+      after += 1
+      return billing('PRO', 1)
+    }, async () => undefined, () => false)
+    expect(after).toBe(0)
   })
 })

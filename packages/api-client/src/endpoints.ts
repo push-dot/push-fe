@@ -5,8 +5,8 @@ import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
-  AuthResult, BlockedUser, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
-  InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
+  AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
+  InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
@@ -161,7 +161,7 @@ export const createApi = (c: Client) => ({
   },
 
   posts: {
-    list: (category?: PostCategory | null, p: PageParams = {}) =>
+    list: (category?: PostCategory | null, p: PostsListParams = {}) =>
       c.get<ListEnvelope<Post>>('posts', { query: { category: category ?? undefined, ...p } }),
     get: (id: string) => unwrap(c.get<DataEnvelope<Post>>(`posts/${id}`)),
     create: (body: { category: PostCategory; title: string; body: string; imageKeys: string[] }) =>
@@ -199,7 +199,7 @@ export const createApi = (c: Client) => ({
   },
   conversations: {
     list: (p: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' } = {}) =>
-      c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
+      c.get<ListEnvelope<ConversationListItem>>('conversations', { query: p }),
     create: (title: string) => unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { title } })),
     createEmployer: (body: { title: string; postingId?: string; applicationId?: string }) =>
       unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { ...body, audience: 'EMPLOYER' } })),

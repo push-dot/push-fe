@@ -36,7 +36,9 @@ import {
   VERIFY_MAIL_RESEND,
 } from './constants'
 import { useOAuthStart } from './oauth-start'
+import PhoneConsent from './phone-consent'
 import PhoneFlow from './phone-flow'
+import { termsOutcome } from './terms-gate'
 
 export type LoginState = { failed?: OAuthProvider; detail?: string } | null
 
@@ -53,6 +55,7 @@ const LoginPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [unverified, setUnverified] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [consent, setConsent] = useState<Session | null>(null)
   const oauth = useOAuthStart()
   const returned = (location.state as LoginState)?.failed ?? null
   const failed = oauth.failed ?? returned
@@ -84,7 +87,18 @@ const LoginPage = () => {
     clearNotes()
     setPending(true)
     try {
-      leave(await authEmailLogin(email, password))
+      const session = await authEmailLogin(email, password)
+      // The session stays unused until the terms are on record. A failed read blocks it, as social and phone do.
+      const gate = await termsOutcome(session)
+      if (gate === 'blocked') {
+        setError(LOGIN_FAILED_COPY)
+        return
+      }
+      if (gate === 'pending') {
+        setConsent(session)
+        return
+      }
+      leave(session)
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === 'EMAIL_NOT_VERIFIED') setUnverified(email)
       else setError(caught instanceof ApiError && caught.status === 401 ? BAD_CREDENTIALS_COPY : LOGIN_FAILED_COPY)
@@ -92,6 +106,8 @@ const LoginPage = () => {
       setPending(false)
     }
   }
+
+  if (consent) return <PhoneConsent session={consent} onDone={leave} />
 
   if (phone) {
     return (
