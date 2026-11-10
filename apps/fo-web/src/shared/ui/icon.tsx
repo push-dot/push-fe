@@ -49,6 +49,8 @@ const PATHS = {
   menu: 'M4 6.5h16M4 12h16M4 17.5h16',
   logout: 'M14.5 4.5h4a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-4M10 16.5 14.5 12 10 7.5M14.5 12H4.5',
   close: 'M6.5 6.5l11 11M17.5 6.5l-11 11',
+  filter: 'M4 6.5h9M17 6.5h3M15 4.5v4M4 12h3M11 12h9M9 10v4M4 17.5h11M19 17.5h1M17 15.5v4',
+  arrowUp: 'M12 19.5v-15M5.5 11 12 4.5 18.5 11',
 } as const
 
 export type IconName = keyof typeof PATHS

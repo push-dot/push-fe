@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
+import { usePaymentsOpen } from '../../entities/billing'
 import { api } from '../../shared/api/client'
 import { loadMock } from '../../shared/api/mock-loader'
 import { isMock, send } from '../../shared/lib/bridge'
 import { MOCK_FIT_DELAY_MS } from './constants'
 import {
   FIT_COMPARING,
-  FIT_LOCK,
   FIT_PART_LABELS,
   FIT_SOON,
   firstDocument,
+  fitLockText,
   fitStatus,
   runPostingFit,
   type FitCardModel,
@@ -66,6 +67,7 @@ const FitCard = ({ postingId }: { postingId: string }) => {
     staleTime: Infinity,
   })
   const fit = fitQuery.data
+  const paymentsOpen = usePaymentsOpen()
   const status = fitStatus({ documentPending: documentQuery.isPending, document: doc, fitPending: fitQuery.isPending, fit })
   const subtitle =
     status === 'comparing'
@@ -115,7 +117,7 @@ const FitCard = ({ postingId }: { postingId: string }) => {
               <svg className="ic" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7 10.5V8a5 5 0 0 1 10 0v2.5M5.5 10.5h13v10h-13Z" />
               </svg>
-              {FIT_LOCK}
+              {fitLockText(paymentsOpen)}
             </span>
           </span>
         </div>
