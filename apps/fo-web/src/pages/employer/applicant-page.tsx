@@ -12,7 +12,7 @@ import { AgentMark, Icon } from '../../shared/ui/icon'
 import { ErrorState } from '../../shared/ui/state-block'
 import Toast, { useToast } from '../../shared/ui/toast'
 import ApplicantDocument from './applicant-document'
-import { applicantSub, docChips } from './applicant-view'
+import { applicantProfileLine, applicantSub, docChips } from './applicant-view'
 import {
   AI_INTERVIEW,
   AI_REVIEW,
@@ -32,7 +32,6 @@ import {
   stageFailed,
   stageMoved,
   stageNotice,
-  submittedAsIs,
 } from './constants'
 import { dateLabel } from './posting-view'
 import StageMenu from './stage-menu'
@@ -76,6 +75,7 @@ const ApplicantPage = () => {
   const label = employerStageLabel(application.stage)
   const blocked = move.isPending || stageChangeBlocked(application.stage)
   const applied = application.appliedAt ? dateLabel(application.appliedAt) : ''
+  const profileLine = applicantProfileLine(profile?.profileSource, applied)
   const sub = [summary ? applicantSub({ ...summary.applicant, headline: null }) : '', applied ? `${applied} 지원` : ''].filter(Boolean).join(' · ')
   const change = (stage: EmployerStage) => {
     setFailure(null)
@@ -115,7 +115,7 @@ const ApplicantPage = () => {
                     <span className={`badge ${item.badge.tone}`}>{item.badge.label}</span>
                   </button>
                 ))}
-                {applied ? <span className="c1 t3 resume-note">{submittedAsIs(applied)}</span> : null}
+                {profileLine ? <span className="c1 t3 resume-note">{profileLine}</span> : null}
               </div>
               <div className="card resume-stage">
                 <ApplicantDocument

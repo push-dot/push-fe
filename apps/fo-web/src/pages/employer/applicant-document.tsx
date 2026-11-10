@@ -66,7 +66,7 @@ const ApplicantDocument = ({ chip, name, sub, profile, now, downloading = false,
         }
       : null,
   ].filter((section) => section !== null)
-  const firstLive = sections.find((section) => 'live' in section)
+  const firstLive = profile?.profileSource === 'CURRENT' ? sections.find((section) => 'live' in section) : undefined
   return (
     <div className="box resume-sheet">
       <div className="resume-who">

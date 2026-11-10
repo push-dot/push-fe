@@ -844,8 +844,10 @@ describe('mock route coverage', () => {
       act: async () => {
         const response = await get('/postings/job-1/applicants')
         expect(response.status).toBe(200)
-        const body = await read<{ data: { applicationId: string }[] }>(response)
+        const body = await read<{ data: { applicationId: string; isNew: boolean }[] }>(response)
         expect(body.data.some((item) => item.applicationId === 'app-2')).toBe(true)
+        expect(body.data.find((item) => item.applicationId === 'app-3')?.isNew).toBe(true)
+        expect(body.data.find((item) => item.applicationId === 'app-2')?.isNew).toBe(false)
       },
     },
     {
@@ -854,9 +856,10 @@ describe('mock route coverage', () => {
       act: async () => {
         const response = await get('/postings/job-1/applicants/app-2')
         expect(response.status).toBe(200)
-        const body = await read<{ data: { application: { id: string; stage: string } } }>(response)
+        const body = await read<{ data: { application: { id: string; stage: string }; applicant: { profileSource: string } } }>(response)
         expect(body.data.application.id).toBe('app-2')
         expect(body.data.application.stage).toBe('SCREENING')
+        expect(body.data.applicant.profileSource).toBe('CURRENT')
       },
     },
     {

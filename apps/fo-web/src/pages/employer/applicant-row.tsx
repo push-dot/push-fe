@@ -2,7 +2,7 @@ import { brandColor } from '@push/shared'
 import type { ApplicantSummary, EmployerStage } from '@push/api-client'
 import { Link } from 'react-router-dom'
 
-import { APPLICANTS_HEAD, memberInitials } from './constants'
+import { APPLICANTS_HEAD, APPLICANT_NEW, memberInitials } from './constants'
 import { DOC_BADGE, applicantSub } from './applicant-view'
 import { dateLabel } from './posting-view'
 import StagePick from './stage-pick'
@@ -25,7 +25,10 @@ const ApplicantRow = ({
         {memberInitials(name)}
       </span>
       <Link className="biz-main" to={`/employer/postings/${postingId}/applicants/${applicant.applicationId}`}>
-        <strong className="b2 w7">{name}</strong>
+        <span className="badges">
+          <strong className="b2 w7">{name}</strong>
+          {applicant.isNew ? <span className="badge ac">{APPLICANT_NEW}</span> : null}
+        </span>
         <span className="c1 t3">{applicantSub(applicant.applicant)}</span>
       </Link>
       <span className="biz-docs">

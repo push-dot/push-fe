@@ -36,6 +36,22 @@ export const rememberCheckoutPlan = (planId: string | null) => {
   else store?.removeItem(CHECKOUT_PLAN)
 }
 
+// Stripe sends the browser back in a fresh load, so the pre-checkout balance cannot come from the query cache.
+const CHECKOUT_BALANCE = 'push.checkoutBalance'
+
+export const rememberCheckoutBalance = (balance: number | null) => {
+  const store = browserSessionStorage()
+  if (balance === null || !Number.isFinite(balance)) store?.removeItem(CHECKOUT_BALANCE)
+  else store?.setItem(CHECKOUT_BALANCE, String(balance))
+}
+
+export const checkoutBalance = (): number | null => {
+  const raw = browserSessionStorage()?.getItem(CHECKOUT_BALANCE)
+  if (!raw) return null
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : null
+}
+
 export const checkoutPlanId = (): CheckoutPlanId | null => {
   const stored = browserSessionStorage()?.getItem(CHECKOUT_PLAN) ?? null
   return CHECKOUT_PLAN_IDS.find((id) => id === stored) ?? null
@@ -56,7 +72,11 @@ export const paidPlanVisible = (
   balanceBefore: number | null,
 ) => {
   if (!billing) return false
-  if (kind === 'credits') return balanceBefore === null || billing.balanceMicroCredits > balanceBefore
+  if (kind === 'credits') {
+    // An empty cache is not "already paid": the tab remembered the balance it left with.
+    const before = balanceBefore ?? checkoutBalance()
+    return before === null || billing.balanceMicroCredits > before
+  }
   return pendingPlan === null || billing.plan === pendingPlan
 }
 

@@ -55,9 +55,13 @@ const PostingChip = ({ id, title }: { id: string; title?: string }) => {
   )
 }
 
-const ApplicantChip = ({ id, title }: { id: string; title?: string }) => {
+const applicantChipTitle = (name: string, documentTitles: string[] | undefined) => {
+  const titles = (documentTitles ?? []).map((item) => item.trim()).filter(Boolean)
+  return titles.length ? [name, ...titles].join(' · ') : name
+}
+
+const ApplicantChip = ({ id, title, documentTitles }: { id: string; title?: string; documentTitles?: string[] }) => {
   const person = useChatActions().people.find((item) => item.applicationId === id)
-  // push-be sends no title for an APPLICATION attachment, so the chip names the person only.
   const name = person?.name ?? title ?? ''
   if (!name) return null
   return (
@@ -65,7 +69,7 @@ const ApplicantChip = ({ id, title }: { id: string; title?: string }) => {
       mark={name.slice(-2)}
       color={brandColor(name)}
       kicker={applicantKicker(person?.postingTitle ?? '')}
-      title={name}
+      title={applicantChipTitle(name, documentTitles)}
     />
   )
 }
@@ -76,7 +80,7 @@ const ChatUser = ({ text, attachments }: { text: string; attachments: Attachment
       item.type === 'POSTING' ? (
         <PostingChip key={item.id} id={item.id} title={item.title} />
       ) : item.type === 'APPLICATION' ? (
-        <ApplicantChip key={item.id} id={item.id} title={item.title} />
+        <ApplicantChip key={item.id} id={item.id} title={item.title} documentTitles={item.documentTitles} />
       ) : null,
     )}
     <span className="b1 chat-bubble">{text}</span>
