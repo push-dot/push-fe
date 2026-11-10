@@ -6,6 +6,7 @@ import {
   cancelTurn,
   applyTurnEvent,
   EMPTY_TURN,
+  resumeStoredTurn,
   runTurn,
   storedTurn,
   turnText,
@@ -104,6 +105,78 @@ describe('runTurn', () => {
     ).catch((e: unknown) => e)
     expect(chatGateFrom(caught)).toBe('verify')
     expect(Object.keys(deps)).toEqual(['stream', 'follow', 'resolve', 'cancel'])
+    expect(deps.follow).not.toHaveBeenCalled()
+  })
+
+  it('follows a stored running job from the start, so tokens push-be joined into the first seq are not repeated', async () => {
+    const stored = {
+      jobId: 'j1',
+      status: 'RUNNING' as const,
+      createdAt: '',
+      userMessageId: 'm1',
+      assistantMessageId: null,
+      answer: null,
+      // GET .../turns keeps the first seq of a joined token row: "안" + "녕" → "안녕" at seq 3.
+      events: [{ type: 'token' as const, text: '안녕', seq: 3 }],
+    }
+    const deps = depsOf({
+      follow: vi.fn((_id: string, after?: number) => {
+        const rows: StreamEvent[] = [
+          { type: 'token', text: '안', seq: 3 },
+          { type: 'token', text: '녕', seq: 4 },
+          { type: 'done', operation: null, seq: 5 },
+        ]
+        // The gateway follow emits each stored row with id > after, unmerged.
+        return frames(...rows.filter((event) => after === undefined || (event.seq ?? 0) > after))
+      }),
+    })
+    let turn = EMPTY_TURN
+    await resumeStoredTurn(deps, 'c1', stored, (event) => {
+      turn = applyTurnEvent(turn, event)
+    })
+    expect(deps.follow).toHaveBeenCalledWith('c1', undefined, undefined)
+    expect(turnText(turn)).toBe('안녕')
+  })
+
+  it('reconnects after a gateway poll INTERNAL frame and clears that failure once the next read succeeds', async () => {
+    const deps = depsOf({
+      stream: vi.fn(() =>
+        frames({ type: 'error', error: { code: 'INTERNAL', message: 'internal error' } }),
+      ),
+      follow: vi.fn(() =>
+        frames(
+          { type: 'token', text: '이어서', seq: 2 },
+          { type: 'done', operation: null, seq: 3 },
+        ),
+      ),
+    })
+    const notices: string[] = []
+    const { events, onEvent } = collect()
+    await runTurn(deps, 'c1', { text: 'x', accessMode: 'AUTO' }, onEvent, undefined, {
+      onPollFailure: () => notices.push('show'),
+      onPollRecovered: () => notices.push('clear'),
+    })
+    expect(events).toEqual([
+      { type: 'token', text: '이어서', seq: 2 },
+      { type: 'done', operation: null, seq: 3 },
+    ])
+    expect(notices).toEqual(['show', 'clear'])
+    expect(deps.follow).toHaveBeenCalledWith('c1', undefined, undefined)
+  })
+
+  it('still rejects a job INTERNAL frame, which carries a seq', async () => {
+    const deps = depsOf({
+      stream: vi.fn(() =>
+        frames({ type: 'error', error: { code: 'INTERNAL', message: 'internal error' }, seq: 4 }),
+      ),
+    })
+    const caught = await runTurn(
+      deps,
+      'c1',
+      { text: 'x', accessMode: 'AUTO' },
+      () => undefined,
+    ).catch((error: unknown) => error)
+    expect(caught).toMatchObject({ code: 'INTERNAL' })
     expect(deps.follow).not.toHaveBeenCalled()
   })
 

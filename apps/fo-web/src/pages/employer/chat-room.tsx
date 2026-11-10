@@ -1,5 +1,10 @@
-import { ApiError, type AccessMode, type ConversationTurn, type StreamEvent } from '@push/api-client'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  ApiError,
+  type AccessMode,
+  type ConversationTurn,
+  type StreamEvent,
+} from '@push/api-client'
+import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
@@ -22,16 +27,15 @@ import {
   chatGateFrom,
   chatRouteState,
   chatTurnDeps,
+  questionForComposer,
   conversationsAttach,
   conversationsCreateEmployer,
   DEFAULT_ACCESS_MODE,
   EMPTY_TURN,
-  followTurn,
-  lastSeq,
   markStarted,
   markStopped,
+  resumeStoredTurn,
   runTurn,
-  storedTurn,
   threadItems,
   turnRunning,
   turnText,
@@ -159,6 +163,20 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
 
   const knownIds = () => storedMessages.map((message) => message.id)
 
+  const savedMessages = (conversationId: string) => {
+    const cached = queryClient.getQueryData<
+      InfiniteData<{ data: { id: string; role: string; text: string }[] }>
+    >(['employer-messages', conversationId])
+    return cached?.pages.flatMap((page) => page.data) ?? []
+  }
+
+  const pollNotice = streamErrorText(new ApiError('internal error', 'INTERNAL', 0), payable)
+  const clearPollNotice = () => setAlert((current) => (current === pollNotice ? null : current))
+  const watch = {
+    onPollFailure: () => setAlert(pollNotice),
+    onPollRecovered: clearPollNotice,
+  }
+
   const begin = (controller: AbortController | null): Job => {
     const current = { started: false, stopped: false, controller }
     job.current = current
@@ -235,6 +253,8 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     const current = begin(controller)
     const track = tracker(current)
     let keep = false
+    let vanished: unknown = null
+    const knownAtSend = knownIds()
     try {
       if (out.file) {
         const form = new FormData()
@@ -265,41 +285,50 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
           track.onEvent(event)
         },
         controller.signal,
+        watch,
       )
       track.finished()
     } catch (error) {
-      if (!controller.signal.aborted) keep = current.started ? failAccepted(error, out.text) : fail(error, out.text)
+      if (!controller.signal.aborted) {
+        const accepted = acceptedFailure(error)
+        // Kept: the job was accepted. DomainError may have deleted the question; the refresh decides.
+        if (accepted === 'kept') {
+          setAlert(streamErrorText(error, payable))
+          vanished = error
+        } else if (!current.started || accepted !== 'dropped') {
+          keep = fail(error, out.text)
+        }
+      }
     } finally {
       // The stored messages and jobs replace the live turn once they are loaded, so the run never shows twice.
       await refresh()
+      // DomainError INTERNAL / NOT_CONFIGURED deletes the question. Put it back when the refresh has no copy.
+      const back = vanished
+        ? questionForComposer(vanished, out.text, savedMessages(conversationId), knownAtSend)
+        : null
+      if (back) setText(back)
       if (!keep) setLive(null)
       release(current)
       setSending(false)
     }
   }
 
-  /** A failure after push-be took the job: only a rejection that removed the question puts it back in the composer. */
-  const failAccepted = (error: unknown, value: string) => {
-    const accepted = acceptedFailure(error)
-    if (!accepted) return fail(error, value)
-    // A dropped connection leaves the job running; the refresh finds it and the thread follows it again.
-    if (accepted === 'kept') setAlert(streamErrorText(error, payable))
-    return false
-  }
-
-  /** Follows a job that kept running while this screen was closed, so a new send does not hit QUEUE_BUSY. */
+  /**
+   * Follows a job that kept running while this screen was closed.
+   * The stored frames are not a cursor: push-be has already joined token rows into the first seq.
+   */
   const follow = async (turn: ConversationTurn) => {
     if (!id) return
     const controller = new AbortController()
     const current = begin(controller)
     current.started = true
-    const from = storedTurn(turn).turn
-    const track = tracker(current, from)
+    const track = tracker(current)
     setSending(true)
-    setLive({ text: '', attachments: [], turn: from, known: knownIds(), jobId: turn.jobId })
+    setLive({ text: '', attachments: [], turn: EMPTY_TURN, known: knownIds(), jobId: turn.jobId })
     try {
-      await followTurn(chatTurnDeps, id, lastSeq(turn), track.onEvent, controller.signal)
+      await resumeStoredTurn(chatTurnDeps, id, turn, track.onEvent, controller.signal, watch)
       track.finished()
+      clearPollNotice()
     } catch (error) {
       if (!controller.signal.aborted) setAlert(streamErrorText(error, payable))
     } finally {
@@ -361,14 +390,21 @@ const ChatRoom = ({ id, screen }: { id?: string; screen: 'list' | 'new' | 'threa
     setAnswerFailure(null)
     setPicked((current) => ({ ...current, [cardId]: optionId }))
     setLive(
-      (current) =>
-        current ?? { text: '', attachments: [], turn: EMPTY_TURN, known: knownIds() },
+      (current) => current ?? { text: '', attachments: [], turn: EMPTY_TURN, known: knownIds() },
     )
     const controller = new AbortController()
     const current = begin(controller)
     const track = tracker(current)
     try {
-      await answerApproval(chatTurnDeps, id, cardId, optionId, track.onEvent, controller.signal)
+      await answerApproval(
+        chatTurnDeps,
+        id,
+        cardId,
+        optionId,
+        track.onEvent,
+        controller.signal,
+        watch,
+      )
       track.finished()
     } catch (error) {
       if (!controller.signal.aborted) {

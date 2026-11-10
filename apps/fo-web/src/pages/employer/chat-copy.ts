@@ -23,6 +23,7 @@ export const CHECK_POINT = '확인할 점'
 export const WRITING = '답변 쓰는 중'
 export const TOOL_STOPPED = '멈췄어요'
 export const TURN_ENDED = { stopped: '여기서 멈췄어요', failed: '답변을 끝까지 쓰지 못했어요' } as const
+export const TURN_FAILED_HINT = '같은 질문을 다시 보내 주세요.'
 export const COPY = '복사'
 export const COPIED = '복사했어요'
 export const SAVE_PDF = 'PDF로 저장'

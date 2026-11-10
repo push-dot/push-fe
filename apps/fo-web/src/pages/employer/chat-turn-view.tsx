@@ -21,6 +21,7 @@ import {
   OPEN_APPLICANT,
   SAVE_PDF,
   TURN_ENDED,
+  TURN_FAILED_HINT,
   WRITING,
 } from './chat-copy'
 
@@ -100,7 +101,15 @@ const ChatTurnView = ({ item, applicationId }: { item: TurnItem; applicationId?:
       {queued !== null && running ? <ChatQueueCard ahead={queued} /> : null}
       {/* A stopped tool row already says so; otherwise a cut-off answer must not read as finished. */}
       {ended && !blocks.some((block) => block.kind === 'tool' && block.state === 'stop') ? (
-        <p className="c1 t3 chat-note">{TURN_ENDED[ended]}</p>
+        <p className="c1 t3 chat-note">
+          {TURN_ENDED[ended]}
+          {ended === 'failed' ? (
+            <>
+              <br />
+              {TURN_FAILED_HINT}
+            </>
+          ) : null}
+        </p>
       ) : null}
       {running && last?.kind === 'text' ? (
         <span className="c1 t3 chat-writing">

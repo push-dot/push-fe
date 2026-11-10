@@ -1670,6 +1670,7 @@ type JobFrame = ConversationTurn['events'][number] | StreamEvent
  * running, GET .../turns lists it as RUNNING, and stream/active picks it up again after a seq.
  */
 type MockJob = {
+  conversationId: string
   jobId: string
   userMessageId: string | null
   frames: JobFrame[]
@@ -1679,12 +1680,38 @@ type MockJob = {
 }
 
 const runningJobs = new Map<string, MockJob>()
+const activeJobs = new Set<MockJob>()
 let jobSeq = 0
 
 const tokensOf = (events: StreamEvent[]) => events.flatMap((event) => (event.type === 'token' ? [event.text] : [])).join('')
 
-const storedEvents = (frames: JobFrame[]) =>
-  frames.filter((event): event is ConversationTurn['events'][number] => event.type !== 'status' && event.type !== 'done')
+// push-be turn_events joins consecutive token rows and keeps the first seq. Status and done are not replayed.
+const storedEvents = (frames: JobFrame[]): ConversationTurn['events'] => {
+  const events: ConversationTurn['events'] = []
+  for (const event of frames) {
+    if (event.type === 'status' || event.type === 'done') continue
+    const last = events.at(-1)
+    if (event.type === 'token' && last?.type === 'token') {
+      events[events.length - 1] = { ...last, text: `${last.text}${event.text}` }
+      continue
+    }
+    events.push(event.type === 'token' ? { ...event } : event)
+  }
+  return events
+}
+
+// push-be checkBackpressure: QUEUED+RETRY count above the plan depth is QUEUE_BUSY. A running conversation is not.
+const QUEUE_DEPTH_LIMIT = { FREE: 20, BASIC: 40, PRO: 200, ULTRA: 1000 } as const
+
+const queueBusy = (depth: number, plan: string | null | undefined) => {
+  const limit = plan === 'BASIC' || plan === 'PRO' || plan === 'ULTRA' ? QUEUE_DEPTH_LIMIT[plan] : QUEUE_DEPTH_LIMIT.FREE
+  return depth > limit
+}
+
+export const queueBusyBody = (depth: number, plan: string | null | undefined) =>
+  queueBusy(depth, plan)
+    ? { code: 'QUEUE_BUSY' as const, message: 'queue is busy', details: { retryAfterSec: 30, ahead: depth } }
+    : null
 
 const startJob = (
   conversationId: string,
@@ -1696,6 +1723,7 @@ const startJob = (
   let at = 0
   let timer: ReturnType<typeof setTimeout> | undefined
   const job: MockJob = {
+    conversationId,
     jobId: `mock-job-${++jobSeq}`,
     userMessageId,
     frames: [],
@@ -1709,8 +1737,10 @@ const startJob = (
   }
   const notify = () => job.listeners.forEach((listener) => listener())
   const close = (status: 'DONE' | 'CANCELLED') => {
+    clearTimeout(timer)
     job.ended = true
-    runningJobs.delete(conversationId)
+    activeJobs.delete(job)
+    if (runningJobs.get(conversationId) === job) runningJobs.delete(conversationId)
     onEnd(job, status)
     notify()
   }
@@ -1730,6 +1760,7 @@ const startJob = (
     notify()
     timer = setTimeout(tick, SSE_GAP_MS)
   }
+  activeJobs.add(job)
   runningJobs.set(conversationId, job)
   tick()
   return job
@@ -1832,9 +1863,8 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     const payload = await readJson(input, init)
     if (mockSwitch('chat-limit')) return creditsSpent()
     if (interviewBlocked(payload)) return planRequired('PRO', 'Pro부터 면접 질문을 만들 수 있어요')
-    if (runningJobs.has(id)) {
-      return json(429, { error: { code: 'QUEUE_BUSY', message: 'queue is busy', details: { retryAfterSec: 5, ahead: 1 } } })
-    }
+    const busy = queueBusyBody(activeJobs.size, companyMe()?.plan)
+    if (busy) return json(429, { error: busy })
     const text = String(payload.text ?? '')
     const question = chatMessage(id, 'USER', text)
     bucket.messages.set(id, [...(bucket.messages.get(id) ?? []), question])
@@ -1855,9 +1885,10 @@ const handleEmployerChat = async (method: string, url: URL, pathname: string, in
     if (!chatBucket().conversations.some((item) => item.id === id)) {
       return json(404, { error: { code: 'NOT_FOUND', message: '대화를 찾지 못했어요' } })
     }
-    const job = runningJobs.get(id)
+    const jobs = [...activeJobs].filter((job) => job.conversationId === id)
+    const job = jobs.at(-1)
     if (!job) return json(409, { error: { code: 'CONFLICT', message: 'no active stream' } })
-    job.cancel()
+    for (const item of jobs) item.cancel()
     return json(200, { data: { jobId: job.jobId, status: 'CANCELLED' } })
   }
   const approvalPath = tail.match(/^\/conversations\/([^/]+)\/approvals\/([^/]+)$/)

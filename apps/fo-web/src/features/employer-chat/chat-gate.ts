@@ -17,16 +17,34 @@ export const chatGateFrom = (error: unknown): ChatBlock => {
   return 'failed'
 }
 
-// push-be removes the question only when a DomainError rejects the job (_drop_enqueued_user_message).
+// These frames mean the job was accepted. A DomainError of either code still deletes the USER row;
+// questionForComposer looks at the refresh before putting the question back.
 const KEPT_CODES = ['INTERNAL', 'NOT_CONFIGURED']
 
 /**
  * A failure after the job was accepted: `dropped` is the connection (the job keeps running and is followed again),
- * `kept` a job that failed with the question stored, null a rejection that removed the question.
+ * `kept` an INTERNAL or NOT_CONFIGURED frame (the question may have been deleted), null a rejection.
  */
 export const acceptedFailure = (error: unknown): 'dropped' | 'kept' | null => {
   if (!(error instanceof ApiError) || error.code === 'NETWORK_ERROR' || error.code === 'STREAM_PARSE') return 'dropped'
   return error.status === 0 && KEPT_CODES.includes(error.code) ? 'kept' : null
+}
+
+/**
+ * DomainError INTERNAL and NOT_CONFIGURED delete the question push-be already stored
+ * (`_drop_enqueued_user_message`). A generic INTERNAL leaves it. After the refresh, put it back
+ * in the composer only when no new saved message has it.
+ */
+export const questionForComposer = (
+  error: unknown,
+  question: string,
+  messages: { id: string; role: string; text: string }[],
+  known: readonly string[],
+) => {
+  if (acceptedFailure(error) !== 'kept') return null
+  const seen = new Set(known)
+  const kept = messages.some((message) => !seen.has(message.id) && message.role === 'USER' && message.text === question)
+  return kept ? null : question
 }
 
 export type ApprovalFailure = 'resolved' | 'expired' | 'failed'

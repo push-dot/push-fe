@@ -1,6 +1,6 @@
 import { ApiError, QueueBusyError } from '@push/api-client'
 import { describe, expect, it } from 'vitest'
-import { approvalFailureFrom, chatGateFrom } from './chat-gate'
+import { approvalFailureFrom, chatGateFrom, questionForComposer } from './chat-gate'
 
 describe('chatGateFrom', () => {
   it('maps plan, verification, and unknown failures', () => {
@@ -13,6 +13,17 @@ describe('chatGateFrom', () => {
     expect(chatGateFrom(new ApiError('slow down', 'RATE_LIMITED', 429))).toBe('busy')
     expect(chatGateFrom(new ApiError('nope', 'HTTP_ERROR', 500))).toBe('failed')
     expect(chatGateFrom(new Error('offline'))).toBe('failed')
+  })
+
+  it('puts a vanished INTERNAL or NOT_CONFIGURED question back only when the refresh did not keep it', () => {
+    const known = ['m0']
+    const older = [{ id: 'm0', role: 'USER', text: '정리해 줘' }]
+    const kept = [...older, { id: 'm1', role: 'USER', text: '정리해 줘' }]
+    expect(questionForComposer(new ApiError('x', 'INTERNAL', 0), '정리해 줘', [], known)).toBe('정리해 줘')
+    expect(questionForComposer(new ApiError('x', 'NOT_CONFIGURED', 0), '정리해 줘', older, known)).toBe('정리해 줘')
+    expect(questionForComposer(new ApiError('x', 'INTERNAL', 0), '정리해 줘', kept, known)).toBeNull()
+    expect(questionForComposer(new ApiError('x', 'PLAN_REQUIRED', 0), '정리해 줘', [], known)).toBeNull()
+    expect(questionForComposer(new ApiError('x', 'NETWORK_ERROR', 0), '정리해 줘', [], known)).toBeNull()
   })
 
   it('maps approval answer failures', () => {

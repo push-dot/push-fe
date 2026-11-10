@@ -7,6 +7,7 @@ import { ChatActionsContext, type ChatActions } from './chat-actions'
 import ChatApp from './chat-app'
 import ChatDraftCard from './chat-draft-card'
 import ChatToolRow from './chat-tool-row'
+import ChatTurnView from './chat-turn-view'
 import ChatUser from './chat-user'
 
 const actions = (people: ChatActions['people']): ChatActions => ({
@@ -23,7 +24,9 @@ const actions = (people: ChatActions['people']): ChatActions => ({
 describe('chat rows', () => {
   it('ends a tool row the job stopped with 멈췄어요 instead of a loading line', () => {
     const html = renderToStaticMarkup(
-      <ChatToolRow tool={{ kind: 'tool', key: 'k', name: 'list', state: 'stop', summary: '지원자 보기' }} />,
+      <ChatToolRow
+        tool={{ kind: 'tool', key: 'k', name: 'list', state: 'stop', summary: '지원자 보기' }}
+      />,
     )
     expect(html).toContain('멈췄어요')
     expect(html).not.toContain('chat-tool-wait')
@@ -33,7 +36,9 @@ describe('chat rows', () => {
   it('names the applicant only: push-be sends nothing about which documents were attached', () => {
     const html = renderToStaticMarkup(
       <ChatActionsContext.Provider
-        value={actions([{ applicationId: 'a1', name: '김태윤', postingId: 'p1', postingTitle: '백엔드' }])}
+        value={actions([
+          { applicationId: 'a1', name: '김태윤', postingId: 'p1', postingTitle: '백엔드' },
+        ])}
       >
         <ChatUser text="검토해 줘" attachments={[{ type: 'APPLICATION', id: 'a1' }]} />
       </ChatActionsContext.Provider>,
@@ -66,6 +71,30 @@ describe('chat rows', () => {
     expect(html).toContain('모아페이 · 서울 강남구 · 경력 4–6년 · 정규직')
     expect(html).toContain('주 3일 출근')
     expect(html).not.toContain('FULL_TIME')
+  })
+
+  it('tells the reader to send the question again after a cut-off answer', () => {
+    const turn = (ended: 'failed' | 'stopped') =>
+      renderToStaticMarkup(
+        <ChatTurnView
+          item={{
+            kind: 'turn',
+            key: 't',
+            live: false,
+            picked: {},
+            turn: {
+              blocks: [{ kind: 'text', key: 'text-0', text: '여기까지' }],
+              awaiting: null,
+              queued: null,
+              ended,
+            },
+          }}
+        />,
+      )
+    const failed = turn('failed')
+    expect(failed).toContain('답변을 끝까지 쓰지 못했어요')
+    expect(failed).toContain('같은 질문을 다시 보내 주세요.')
+    expect(turn('stopped')).not.toContain('같은 질문을 다시 보내 주세요.')
   })
 
   it('keeps the thread out of the live region so loading a conversation reads nothing, and reads the reply once', () => {

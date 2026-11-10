@@ -261,10 +261,6 @@ export const storedTurn = (turn: ConversationTurn) => {
 export const turnRunning = (turn: ConversationTurn) =>
   turn.status === 'PENDING' || turn.status === 'RUNNING'
 
-/** The seq of the last stored frame, where following a running job picks up. */
-export const lastSeq = (turn: ConversationTurn) =>
-  turn.events.reduce<number | undefined>((seq, event) => event.seq ?? seq, undefined)
-
 export const turnText = (turn: ChatTurn) =>
   turn.blocks.flatMap((block) => (block.kind === 'text' ? [block.text] : [])).join('')
 
@@ -273,35 +269,83 @@ const streamError = (error: { code: string; message: string; details?: unknown }
   return new ApiError(error.message, error.code, 0, Object.keys(details).length ? details : null)
 }
 
+/**
+ * The gateway writes this frame when a poll throws, then closes the stream. It has no seq.
+ * A real job failure is a stored row, so sseFrame gives it a seq. The job itself is still running.
+ */
+export const isGatewayPollError = (event: StreamEvent) =>
+  event.type === 'error' && event.seq === undefined && event.error.code === 'INTERNAL'
+
+type Read = { ended: boolean; seq?: number; pollFailed: boolean }
+
 const consume = async (
   source: AsyncIterable<StreamEvent>,
   onEvent: (event: StreamEvent) => void,
   after?: number,
-) => {
+): Promise<Read> => {
   let seq = after
   for await (const event of source) {
-    if (event.type === 'error') throw streamError(event.error)
+    if (event.type === 'error') {
+      if (isGatewayPollError(event)) return { ended: false, seq, pollFailed: true }
+      throw streamError(event.error)
+    }
     if (event.seq !== undefined) seq = event.seq
     onEvent(event)
-    if (event.type === 'done' || event.type === 'cancelled') return { ended: true, seq }
+    if (event.type === 'done' || event.type === 'cancelled')
+      return { ended: true, seq, pollFailed: false }
   }
-  return { ended: false, seq }
+  return { ended: false, seq, pollFailed: false }
 }
+
+/** Shown while a poll failed, cleared once a later read of the same job succeeds. */
+export type TurnWatch = {
+  onPollFailure?: () => void
+  onPollRecovered?: () => void
+}
+
+// A down database can fail every poll. Stop retrying instead of spinning, and leave the notice up.
+const MAX_POLL_RETRIES = 3
 
 /** Reads the job to its end: a stream the server closes before done or cancelled is followed from the last seq. */
 const finish = async (
   deps: TurnDeps,
   id: string,
-  first: { ended: boolean; seq?: number },
+  first: Read,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
+  watch?: TurnWatch,
 ) => {
-  let { ended, seq } = first
-  while (!ended && !signal?.aborted) {
+  let { ended, seq, pollFailed } = first
+  let noticed = false
+  let polls = 0
+  while (!signal?.aborted) {
+    if (pollFailed) {
+      polls += 1
+      if (!noticed) {
+        noticed = true
+        watch?.onPollFailure?.()
+      }
+      if (polls > MAX_POLL_RETRIES)
+        throw streamError({ code: 'INTERNAL', message: 'internal error' })
+    } else if (ended) {
+      if (noticed) watch?.onPollRecovered?.()
+      return
+    }
     const next = await consume(deps.follow(id, seq, signal), onEvent, seq)
+    if (next.pollFailed) {
+      pollFailed = true
+      continue
+    }
+    pollFailed = false
+    if (noticed) {
+      noticed = false
+      polls = 0
+      watch?.onPollRecovered?.()
+    }
     // No new frame is the 204 of a job that is no longer running.
     if (!next.ended && next.seq === seq) return
     ;({ ended, seq } = next)
+    if (ended) return
   }
 }
 
@@ -311,16 +355,33 @@ export const runTurn = async (
   body: TurnBody,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
-) => finish(deps, id, await consume(deps.stream(id, body, signal), onEvent), onEvent, signal)
+  watch?: TurnWatch,
+) => finish(deps, id, await consume(deps.stream(id, body, signal), onEvent), onEvent, signal, watch)
 
-/** Follows a job that is already running, from the last frame stored for it. */
+/** Follows a job that is already running. `after` is a real gateway seq, not a seq from GET .../turns. */
 export const followTurn = (
   deps: TurnDeps,
   id: string,
   after: number | undefined,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
-) => finish(deps, id, { ended: false, seq: after }, onEvent, signal)
+  watch?: TurnWatch,
+) => finish(deps, id, { ended: false, seq: after, pollFailed: false }, onEvent, signal, watch)
+
+/**
+ * Follows a job loaded from GET .../turns.
+ * push-be `turn_events` joins consecutive token rows and keeps the first seq. The gateway follow
+ * stream then emits each of those rows on its own, so `after` equal to that seq repeats the tail.
+ * Replay from the start; the caller applies the frames onto an empty turn.
+ */
+export const resumeStoredTurn = (
+  deps: TurnDeps,
+  id: string,
+  _stored: ConversationTurn,
+  onEvent: (event: StreamEvent) => void,
+  signal?: AbortSignal,
+  watch?: TurnWatch,
+) => followTurn(deps, id, undefined, onEvent, signal, watch)
 
 export const answerApproval = async (
   deps: TurnDeps,
@@ -329,9 +390,10 @@ export const answerApproval = async (
   optionId: string,
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal,
+  watch?: TurnWatch,
 ) => {
   const { jobId } = await deps.resolve(id, approvalId, optionId)
-  if (jobId) await finish(deps, id, { ended: false }, onEvent, signal)
+  if (jobId) await finish(deps, id, { ended: false, pollFailed: false }, onEvent, signal, watch)
 }
 
 /** One run on screen: `started` once the job exists (its first frame), `stopped` once the member asked to stop it. */

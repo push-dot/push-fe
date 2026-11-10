@@ -5,7 +5,6 @@ import { threadItems } from './chat-thread'
 import {
   applyTurnEvent,
   EMPTY_TURN,
-  lastSeq,
   markStarted,
   markStopped,
   storedTurn,
@@ -50,12 +49,10 @@ describe('a job that ends without done', () => {
     expect(storedTurn(stored('RUNNING', [running])).turn.ended).toBeNull()
   })
 
-  it('knows a running job and where to follow it from', () => {
+  it('knows a running job from its status', () => {
     expect(turnRunning(stored('PENDING', []))).toBe(true)
     expect(turnRunning(stored('RUNNING', []))).toBe(true)
     expect(turnRunning(stored('CANCELLED', []))).toBe(false)
-    expect(lastSeq(stored('RUNNING', [{ type: 'token', text: 'a', seq: 4 }, running]))).toBe(2)
-    expect(lastSeq(stored('RUNNING', []))).toBeUndefined()
   })
 })
 
