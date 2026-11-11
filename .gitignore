@@ -11,3 +11,10 @@ test-results
 playwright-report
 lighthouse
 storybook-static
+
+# Graphify — committed artifacts: graph.json, graph.html, GRAPH_REPORT.md only
+graphify-out/cache/
+graphify-out/.graphify_root
+graphify-out/.graphify_build.json
+graphify-out/.graphify_analysis.json
+graphify-out/manifest.json
