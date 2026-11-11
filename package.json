@@ -9,7 +9,8 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "prettier --write .",
-    "check": "turbo run typecheck lint test build"
+    "check": "turbo run typecheck lint test build",
+    "graphify": "graphify extract . --code-only --no-cluster"
   },
   "devDependencies": {
     "prettier": "^3.9.7",
