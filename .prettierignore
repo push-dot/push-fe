@@ -1,3 +1,5 @@
+graphify-out/
+
 packages/design-system/src/tokens.ts
 packages/design-system/src/tokens.css
 packages/design-system/src/icons.ts
