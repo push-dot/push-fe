@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ApiError, QueueBusyError, type AccessMode, type ChatIntent } from '@push/api-client'
-import { myApi, type PickedFile } from '@/features/my'
+import { myApi } from '@/features/my/api/fetchers'
+import type { PickedFile } from '@/features/my/types'
 import { queryClient } from '@/providers/query-client'
 import { showToast } from '@/shared/components/toast-store'
 import { api, API_MOCK, hapticImpactLight, hapticNotify } from '@/shared/infrastructure'
@@ -16,6 +17,7 @@ import {
 import type { RunInput } from './api/schemas'
 import { CHAT_STOP_FAILED, CHAT_STOP_FORBIDDEN, DEFAULT_ACCESS_MODE, UPLOAD_ERROR_TEXT } from './constants'
 import { applyEvent, emptyChat } from './utils/reducer'
+import { createTokenBatch } from './utils/token-batch'
 import { isConsentRequired } from './utils/consent'
 import { errorText, fromStream } from './utils/stream'
 import { restoreTurns } from './utils/turns'
@@ -101,11 +103,30 @@ export const pickAccessMode = async (mode: AccessMode) => {
 const get = (id: string) => useChatStore.getState().chats[id] ?? emptyChat
 const runs = new Map<string, AbortController>()
 
-const dispatch = (id: string, e: ChatEvent) => {
+const setChatEvent = (id: string, e: ChatEvent) => {
   useChatStore.setState((s) => ({ chats: { ...s.chats, [id]: applyEvent(s.chats[id] ?? emptyChat, e) } }))
   if (e.type === 'approval') void hapticImpactLight()
   if (e.type === 'done') void hapticNotify('success')
   if (e.type === 'error') void hapticNotify('warning')
+}
+
+const schedule =
+  typeof requestAnimationFrame === 'function'
+    ? (fn: () => void) => requestAnimationFrame(fn)
+    : (fn: () => void) => setTimeout(fn, 16)
+
+const tokenBatch = createTokenBatch(
+  (id, text) => setChatEvent(id, { type: 'token', text }),
+  schedule,
+)
+
+const dispatch = (id: string, e: ChatEvent) => {
+  if (e.type === 'token') {
+    tokenBatch.push(id, e.text)
+    return
+  }
+  tokenBatch.flushNow(id)
+  setChatEvent(id, e)
 }
 
 const sleep = (ms: number, signal: AbortSignal) =>
