@@ -1,0 +1,8 @@
+[submodule "apps/fo-mobile"]
+	path = apps/fo-mobile
+	url = https://github.com/push-dot/fo-mobile.git
+	branch = develop
+[submodule "apps/fo-web"]
+	path = apps/fo-web
+	url = https://github.com/push-dot/fo-web.git
+	branch = develop
