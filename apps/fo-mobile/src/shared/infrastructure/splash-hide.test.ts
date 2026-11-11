@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { shouldHideSplash, SPLASH_SNAPSHOT_TIMEOUT_MS } from './splash-hide'
+import { shouldHideSplash, SPLASH_ABSOLUTE_TIMEOUT_MS, SPLASH_SNAPSHOT_TIMEOUT_MS } from './splash-hide'
 
 describe('shouldHideSplash', () => {
   const base = {
@@ -8,6 +8,7 @@ describe('shouldHideSplash', () => {
     hasSession: false,
     snapshotReady: false,
     timedOut: false,
+    absoluteTimedOut: false,
   }
 
   it('waits for session and theme gates', () => {
@@ -34,6 +35,20 @@ describe('shouldHideSplash', () => {
         hasSession: true,
         snapshotReady: true,
         timedOut: false,
+      }),
+    ).toBe(true)
+  })
+
+  it('hides on absolute timeout even when session or theme gates are open', () => {
+    expect(
+      shouldHideSplash({
+        ...base,
+        sessionReady: false,
+        themeReady: false,
+        hasSession: true,
+        snapshotReady: false,
+        timedOut: false,
+        absoluteTimedOut: true,
       }),
     ).toBe(true)
   })
@@ -65,6 +80,7 @@ describe('splash snapshot timeout', () => {
         hasSession: true,
         snapshotReady: false,
         timedOut,
+        absoluteTimedOut: false,
       }),
     ).toBe(false)
     vi.advanceTimersByTime(1)
@@ -77,6 +93,42 @@ describe('splash snapshot timeout', () => {
         hasSession: true,
         snapshotReady: false,
         timedOut,
+        absoluteTimedOut: false,
+      }),
+    ).toBe(true)
+    vi.useRealTimers()
+  })
+})
+
+describe('splash absolute timeout', () => {
+  it('fires hide after SPLASH_ABSOLUTE_TIMEOUT_MS with fake timers', () => {
+    vi.useFakeTimers()
+    let absoluteTimedOut = false
+    const t = setTimeout(() => {
+      absoluteTimedOut = true
+    }, SPLASH_ABSOLUTE_TIMEOUT_MS)
+    vi.advanceTimersByTime(SPLASH_ABSOLUTE_TIMEOUT_MS - 1)
+    expect(
+      shouldHideSplash({
+        sessionReady: false,
+        themeReady: false,
+        hasSession: false,
+        snapshotReady: false,
+        timedOut: false,
+        absoluteTimedOut,
+      }),
+    ).toBe(false)
+    vi.advanceTimersByTime(1)
+    clearTimeout(t)
+    absoluteTimedOut = true
+    expect(
+      shouldHideSplash({
+        sessionReady: false,
+        themeReady: false,
+        hasSession: false,
+        snapshotReady: false,
+        timedOut: false,
+        absoluteTimedOut,
       }),
     ).toBe(true)
     vi.useRealTimers()
