@@ -66,6 +66,15 @@ expo-secure-store                 브라우저 세션 (push-web-session)
 
 ## 실행
 
+### 클론과 서브모듈
+
+`apps/fo-mobile`과 `apps/fo-web`은 별도 저장소를 이 경로에 링크한 git 서브모듈이에요.
+
+- 처음 받을 때: `git clone --recurse-submodules https://github.com/push-dot/push-fe.git`
+- 이미 clone한 저장소: `git pull` 다음 `git submodule update --init`
+- 앱 소스 변경 PR은 [fo-mobile](https://github.com/push-dot/fo-mobile) 또는 [fo-web](https://github.com/push-dot/fo-web)에 열고, `push-fe` PR은 머지된 커밋을 가리키도록 gitlink만 올려요
+- 의존성을 바꾸면 앱 `package.json`은 앱 저장소에, `pnpm-lock.yaml`은 이 저장소 루트에 각각 커밋해요
+
 패키지 매니저는 **pnpm**이에요. `package.json`의 `packageManager`에 고정돼 있어요.
 
 ```bash
