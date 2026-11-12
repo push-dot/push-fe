@@ -7,4 +7,4 @@ export { OFFER_MENU_COPY, offerBlockConfirm, offerBlocked, offerMenu, offerMenuK
 export type { MenuOffer, OfferBox, OfferMenuDeps, OfferMenuKey, OfferMenuToast } from './offer-menu'
 export type { Match, MatchKind } from './hangul-search'
 export { LEGAL_DOCUMENTS, LEGAL_EFFECTIVE_DATE, LEGAL_OPERATOR, LEGAL_VERSION, legalDocuments, legalEffectiveLabel, legalMarkdown } from './legal'
-export type { LegalArticle, LegalBlock, LegalDocument, LegalDocumentKey, LegalOperator } from './legal'
+export type { LegalArticle, LegalBlock, LegalDocument, LegalDocumentKey, LegalOperator, LegalSurface } from './legal'

@@ -1,14 +1,15 @@
 import { marketingConsent, privacyConsent } from './consents'
 import { LEGAL_OPERATOR, koreanDate } from './operator'
 import { privacyPolicy } from './privacy-policy'
+import { renderLegal } from './surface'
 import { termsOfService } from './terms-of-service'
-import type { LegalBlock, LegalDocument, LegalDocumentKey, LegalOperator } from './types'
+import type { LegalBlock, LegalDocument, LegalDocumentKey, LegalOperator, LegalSurface } from './types'
 
-export const legalDocuments = (operator: LegalOperator): Record<LegalDocumentKey, LegalDocument> => ({
-  termsOfService: termsOfService(operator),
-  privacyPolicy: privacyPolicy(operator),
-  privacyConsent,
-  marketingConsent,
+export const legalDocuments = (operator: LegalOperator, surface: LegalSurface = 'web'): Record<LegalDocumentKey, LegalDocument> => ({
+  termsOfService: renderLegal(termsOfService(operator), surface),
+  privacyPolicy: renderLegal(privacyPolicy(operator), surface),
+  privacyConsent: renderLegal(privacyConsent, surface),
+  marketingConsent: renderLegal(marketingConsent, surface),
 })
 
 export const LEGAL_DOCUMENTS = legalDocuments(LEGAL_OPERATOR)
