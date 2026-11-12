@@ -12,19 +12,13 @@ const PARTICLES = ['이/가', '을/를', '은/는', '와/과', '으로/로', '�
 
 const isParticle = (key: string): key is (typeof PARTICLES)[number] => (PARTICLES as readonly string[]).includes(key)
 
-const renderText = (source: string, surface: LegalSurface) => {
-  let word = ''
-  return source.replace(/\{([^{}]*)\}/g, (_, key: string) => {
+// A particle placeholder is valid only right after a term, or after the term's closing quote as in "{agent}"{이란/란}.
+const renderText = (source: string, surface: LegalSurface) =>
+  source.replace(/\{([^{}]*)\}("?)(?:\{([^{}]*)\})?/g, (placeholder: string, key: string, quote: string, particle?: string) => {
     const term = TERMS[key]?.[surface]
-    if (term) {
-      word = term
-      return term
-    }
-    // A particle takes its form from the term before it, as in "{agent}"{이란/란}.
-    if (word && isParticle(key)) return josa.pick(word, key)
-    throw new Error(`Unknown legal placeholder {${key}}`)
+    if (!term || (particle !== undefined && !isParticle(particle))) throw new Error(`Unknown legal placeholder ${placeholder}`)
+    return term + quote + (particle === undefined ? '' : josa.pick(term, particle))
   })
-}
 
 export const renderLegal = (document: LegalDocument, surface: LegalSurface): LegalDocument => {
   const text = (source: string) => renderText(source, surface)

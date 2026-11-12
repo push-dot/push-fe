@@ -143,6 +143,8 @@ describe('legal documents', () => {
     const named = (displayName: string) => () => legalDocuments({ kind: 'individual', displayName, contactEmail: 'support@push.devcyjoon.tech' }, 'app')
     expect(named('{agnet}')).toThrow('{agnet}')
     expect(named('{이/가}')).toThrow('{이/가}')
+    expect(named('{agent} 대화{을/를}')).toThrow('{을/를}')
+    expect(named('{agent}{을/룰}')).toThrow('{agent}{을/룰}')
     expect(named('{agent}{이/가}')).not.toThrow()
   })
 
