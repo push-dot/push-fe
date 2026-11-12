@@ -4,7 +4,7 @@ import { ApiError } from './errors'
 import { readEvents } from './sse'
 import type {
   Bot, BotDetail, BotList, BotSearch, CancelResult, CardAnswer, CardAnswerBody, CardRetry, CreateBotBody, LinkPreview,
-  MaterialDetail, MaterialKind, MaterialsPage, MaterialsQuery, Page, SendBody, StreamEvent, Transcript, TranscriptMatches, UpdateBotBody,
+  Material, MaterialDetail, MaterialKind, MaterialsPage, MaterialsQuery, Page, SendBody, StreamEvent, Transcript, TranscriptMatches, UpdateBotBody,
 } from './bot-contract'
 import type { DataEnvelope, PageParams } from './types'
 
@@ -76,6 +76,8 @@ export const createBotApi = (c: Client) => ({
     list: (query: MaterialsQuery = {}) => unwrap(c.get<DataEnvelope<MaterialsPage>>('materials', { query })),
     get: (kind: MaterialKind, id: string) => unwrap(c.get<DataEnvelope<MaterialDetail>>(`materials/${kind}/${id}`)),
     remove: (kind: MaterialKind, id: string) => c.delete<void>(`materials/${kind}/${id}`),
+    /** Undoes `remove` while the server still keeps the material. 404 once it was erased. */
+    restore: (kind: MaterialKind, id: string) => unwrap(c.post<DataEnvelope<Material>>(`materials/${kind}/${id}/restore`)),
   },
 })
 

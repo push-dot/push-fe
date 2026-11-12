@@ -4,7 +4,7 @@ import type * as BotContract from '../bot-contract'
 import { createClient } from '../client'
 import { IDEMPOTENCY_KEY_HEADER } from '../constants'
 import { ApiError } from '../errors'
-import type { AppNotification, BillingStatus } from '../types'
+import type { AppNotification, BillingStatus, LinkKind } from '../types'
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -116,6 +116,16 @@ const materials: BotContract.MaterialsPage = {
 
 const material: BotContract.MaterialDetail = { ...file, usedBy: [{ id: 'push-id', kind: 'push', displayName: 'Push Bot', color: null }] }
 
+const linkedin: BotContract.Material = {
+  kind: 'link', id: 'l1', title: 'https://www.linkedin.com/in/seojun', url: 'https://www.linkedin.com/in/seojun', host: 'www.linkedin.com',
+  linkKind: 'other', addedAt: '2026-09-02T02:00:00Z', lastCheckedAt: null, lastCheckOk: null,
+}
+
+const botMaterials: BotContract.MaterialsPage = {
+  counts: { doc: 4, bookmark: 1, link: 3 },
+  sections: [{ section: 'link', items: [linkedin], nextCursor: null }],
+}
+
 describe('createBotApi routes', () => {
   const cases: [name: string, call: (api: BotApi) => Promise<unknown>, reply: Response, line: string, result: unknown][] = [
     ['list', (api) => api.bots.list(), json(200, { data: [bot], limit }), 'GET /api/v1/bots', { data: [bot], limit }],
@@ -150,8 +160,13 @@ describe('createBotApi routes', () => {
       'materials.list', (api) => api.materials.list({ tab: 'doc', q: '이력', limit: 20 }), json(200, { data: materials }),
       'GET /api/v1/materials?tab=doc&q=이력&limit=20', materials,
     ],
+    [
+      'materials.list of one bot', (api) => api.materials.list({ bot: 'push' }), json(200, { data: botMaterials }),
+      'GET /api/v1/materials?bot=push', botMaterials,
+    ],
     ['materials.get', (api) => api.materials.get('file', 'f1'), json(200, { data: material }), 'GET /api/v1/materials/file/f1', material],
     ['materials.remove', (api) => api.materials.remove('link', 'l1'), noContent(), 'DELETE /api/v1/materials/link/l1', undefined],
+    ['materials.restore', (api) => api.materials.restore('link', 'l1'), json(200, { data: linkedin }), 'POST /api/v1/materials/link/l1/restore', linkedin],
   ]
 
   it.each(cases)('%s sends its contract request and returns the body the app reads', async (_name, call, reply, line, result) => {
@@ -286,6 +301,15 @@ describe('bot contract types', () => {
     // @ts-expect-error an employer intent is not a bot intent
     const body: BotContract.SendBody = { text: 'x', intent: 'review' }
     void body
+  })
+
+  it('marks LinkedIn from the host, never as a link kind', () => {
+    type Link = Extract<BotContract.Material, { kind: 'link' }>
+    expectTypeOf<Link['host']>().toBeString()
+    expectTypeOf<Link['linkKind']>().toEqualTypeOf<LinkKind>()
+    // @ts-expect-error LinkedIn is not a kind a link is stored or listed with
+    const kind: Link['linkKind'] = 'linkedin'
+    void kind
   })
 
   it('adds the bot target and an optional refill date to the existing types', () => {

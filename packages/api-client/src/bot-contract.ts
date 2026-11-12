@@ -179,16 +179,18 @@ export type Material =
       id: string
       title: string
       url: string
-      /** The server derives `linkedin` from the URL. It is not a kind a link is stored with. */
-      linkKind: LinkKind | 'linkedin'
+      /** The url's host in lower case. The LinkedIn mark comes from it, because LinkedIn is not a link kind. */
+      host: string
+      linkKind: LinkKind
       addedAt: string
       lastCheckedAt: string | null
       lastCheckOk: boolean | null
     }
 
-export type MaterialsQuery = { tab?: 'all' | MaterialSection; q?: string; cursor?: string; limit?: number }
+/** `bot` is a bot id or `push`, and keeps the materials that bot made or that were attached in its chat. */
+export type MaterialsQuery = { tab?: 'all' | MaterialSection; q?: string; bot?: string; cursor?: string; limit?: number }
 
-/** `counts` always holds all three sections. The `all` tab holds a preview of each section and no cursor. */
+/** `counts` always holds all three sections, counted after `q` and `bot`. The `all` tab holds a preview of each section and no cursor. */
 export type MaterialsPage = {
   counts: Record<MaterialSection, number>
   sections: { section: MaterialSection; items: Material[]; nextCursor: string | null }[]
