@@ -12,7 +12,7 @@
 
 **push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/design-system`, `packages/shared`예요.
 
-화면 문구는 한국어예요.
+화면 문구는 한국어예요. 글꼴은 Noto Sans KR이에요.
 
 | 패키지 | 하는 일 |
 | --- | --- |
@@ -24,13 +24,13 @@
 
 ## 개요
 
-개인 웹과 모바일은 공고를 보고, 검색하고, 허브 프로필과 소셜, 제안, 알림, 내 정보를 다뤄요. 웹에서 로그인 없이 열리는 경로는 `/`, `/jobs`, `/search`, `/postings/:id`예요.
+개인 웹과 모바일은 공고를 보고, 검색하고, 허브 프로필과 소셜, 제안, 알림, 내 정보를 다뤄요. 웹에서 로그인 없이 열리는 경로는 `/`, `/jobs`, `/search`, `/postings/:id`와 약관 경로예요.
 
 에이전트(AI 채팅) 화면은 모바일에 있어요. 메시지는 SSE(스트림 v3)로 받고, 진행 중인 응답은 다시 이어 받아요. 대화 목록 사이드바는 탭 위에 쌓이는 스택 화면(`/sidebar`)으로 열려서 탭 바까지 덮어요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
 
-기업 웹은 사업자 확인, 공고 작성, 지원자, 담당자 초대, 요금제 화면을 가져요. 계정 종류는 `PERSONAL`과 `EMPLOYER`이고, 로그인 화면에서 고른 뒤 바뀌지 않아요.
+기업 웹은 사업자 확인, 공고 작성, 지원자, 담당자 초대, 요금제 화면을 가져요. 계정 종류는 `PERSONAL`과 `EMPLOYER`예요.
 
-모바일 로그인은 Google, Apple(iOS만), GitHub, 휴대폰 번호예요. OAuth는 PKCE이고 콜백은 `push://auth/callback`이에요. 개발 빌드에서만 `EXPO_PUBLIC_DEV_AUTH_TOKEN`으로 들어갈 수 있어요. 웹 개인 로그인은 Google, GitHub, 이메일이에요. 기업 로그인은 Google과 이메일이에요. 이메일 가입·인증·비밀번호 재설정 경로는 `/signup`, `/auth/verify`, `/auth/reset`이에요.
+모바일 로그인은 Google, Apple(iOS만), GitHub, 휴대폰 번호예요. OAuth는 PKCE이고 콜백은 `push://auth/callback`이에요. `__DEV__` 빌드에서만 `EXPO_PUBLIC_DEV_AUTH_TOKEN`으로 들어갈 수 있어요. 웹 개인 로그인은 Google, Apple, GitHub, 휴대폰 번호예요. 기업 로그인은 Google과 이메일이에요. 이메일 가입·인증·비밀번호 재설정 경로는 `/signup`, `/auth/verify`, `/auth/reset`이에요.
 
 ## 아키텍처
 
@@ -64,28 +64,31 @@ expo-secure-store                 브라우저 세션 (push-web-session)
 
 웹에는 i18n 라이브러리가 없고, 문구는 페이지의 한국어 상수예요. 모바일 상태 저장은 Zustand, 서버 상태는 TanStack Query예요. 웹의 서버 상태도 TanStack Query이고, Zustand는 쓰지 않아요.
 
-## 실행
+## 시작하기
 
-### 클론과 서브모듈
-
-`apps/fo-mobile`과 `apps/fo-web`은 별도 저장소를 이 경로에 링크한 git 서브모듈이에요.
-
-- 처음 받을 때: `git clone --recurse-submodules https://github.com/push-dot/push-fe.git`
-- 이미 clone한 저장소: `git pull` 다음 `git submodule update --init`
-- 앱 소스 변경 PR은 [fo-mobile](https://github.com/push-dot/fo-mobile) 또는 [fo-web](https://github.com/push-dot/fo-web)에 열고, `push-fe` PR은 머지된 커밋을 가리키도록 gitlink만 올려요
-- 앱 gitlink(`apps/fo-mobile`, `apps/fo-web`)는 Dependabot이 `develop` 대상 PR로 올려요. 각 앱 저장소 `develop` 끝을 따라가요. 앱 저장소에 SemVer 태그가 생기면 Dependabot은 브랜치 끝 대신 더 높은 태그에 핀해요
-- 의존성을 바꾸면 앱 `package.json`은 앱 저장소에, `pnpm-lock.yaml`은 이 저장소 루트에 각각 커밋해요
-
-패키지 매니저는 **pnpm**이에요. `package.json`의 `packageManager`에 고정돼 있어요.
+`apps/fo-mobile`과 `apps/fo-web`의 앱 소스는 각각 [fo-mobile](https://github.com/push-dot/fo-mobile), [fo-web](https://github.com/push-dot/fo-web) 저장소에 있고, 이 워크스페이스에는 그 경로로 링크돼 있어요. 패키지 설치와 실행은 이 저장소 루트에서 해요. `pnpm-lock.yaml`은 여기에만 있어요.
 
 ```bash
+git clone --recurse-submodules https://github.com/push-dot/push-fe.git
+cd push-fe
 pnpm install
 ```
+
+이미 받은 저장소는 `git pull` 다음 `git submodule update --init`이에요.
+
+앱 소스 변경 PR은 [fo-mobile](https://github.com/push-dot/fo-mobile) 또는 [fo-web](https://github.com/push-dot/fo-web)에 열고, 이 저장소 PR은 머지된 커밋을 가리키도록 gitlink만 올려요. 앱 gitlink는 Dependabot이 `develop` 대상 PR로 올려요. 각 앱 저장소 `develop` 끝을 따라가요. 앱 저장소에 SemVer 태그가 생기면 Dependabot은 브랜치 끝 대신 더 높은 태그에 핀해요.
+
+의존성을 바꾸면 앱 `package.json`은 앱 저장소에, `pnpm-lock.yaml`은 이 저장소 루트에 각각 커밋해요. 앱 PR이 잠금 파일을 바꿔야 하면 PR 본문에 한 줄로 적어요.
+
+    push-fe-ref: <branch-or-sha>
+
+패키지 매니저는 **pnpm**이에요. `package.json`의 `packageManager`에 pnpm 11.0.4로 고정돼 있어요.
 
 ### fo-web
 
 ```bash
 pnpm --filter @push/fo-web dev       # http://localhost:5174, host 공개
+pnpm --filter @push/fo-web dev:test  # 스테이징 API로 개발 서버
 pnpm --filter @push/fo-web build     # tsc -b && vite build
 pnpm --filter @push/fo-web preview   # 포트 5174
 pnpm --filter @push/fo-web test
@@ -94,13 +97,13 @@ pnpm --filter @push/fo-web typecheck
 
 `@push/fo-web`에는 `lint` 스크립트가 없어요.
 
-목업은 주소에 `mock` 쿼리를 붙여요. `as`는 `personal`, `employer`, `employer-pro`, `employer-ultra`, `employer-new` 중 하나예요. 목업이면 `shared/api/mock.ts`가 fetch를 대체해요.
+목업은 목업 빌드에서만 켜져요. 주소에 `mock` 쿼리를 붙이고, `as`는 `personal`, `employer`, `employer-pro`, `employer-ultra`, `employer-new` 중 하나예요. 목업이면 `shared/api/mock.ts`가 fetch를 대체해요.
 
 ### fo-mobile
 
 ```bash
-pnpm --filter @push/fo-mobile start      # Expo 개발 서버 (운영 API)
-pnpm --filter @push/fo-mobile start:test # 스테이징 API
+pnpm --filter @push/fo-mobile start      # Expo 개발 서버 (기본 API 주소)
+pnpm --filter @push/fo-mobile start:test # 스테이징 API로 개발 서버
 pnpm --filter @push/fo-mobile ios        # expo run:ios
 pnpm --filter @push/fo-mobile android    # expo run:android
 pnpm --filter @push/fo-mobile test
@@ -114,7 +117,7 @@ Expo 패키지를 더할 때는 앱 디렉터리에서 `npx expo install <packag
 
 목업 API는 `EXPO_PUBLIC_API_MOCK`가 `1`일 때 `src/mock`을 써요. 예시는 `apps/fo-mobile/.env.example`이고, 복사 대상은 `.env.local`이에요.
 
-Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요(00–07, 목업 API 기준). iOS 시뮬레이터와 Android 에뮬레이터에서 돌려요. `.env.local`에 `EXPO_PUBLIC_API_MOCK=1`과 `EXPO_PUBLIC_DEV_AUTH_TOKEN`을 넣고 Metro를 띄운 뒤 `maestro test apps/fo-mobile/.maestro`를 실행해요. npm 스크립트와 CI에는 연결되어 있지 않아요.
+Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요. `.maestro/config.yaml`은 `flows/*`를 실행하고, `_*.yaml` 서브플로와 `visual/`(디자인 비교용 스크린샷)은 제외해요. iOS 시뮬레이터와 Android 에뮬레이터에서 돌려요. `.env.local`에 `EXPO_PUBLIC_API_MOCK=1`과 `EXPO_PUBLIC_DEV_AUTH_TOKEN`을 넣고 Metro를 띄운 뒤 `maestro test apps/fo-mobile/.maestro`를 실행해요. npm 스크립트와 CI에는 연결되어 있지 않아요.
 
 ### 웹·모바일 함께
 
@@ -124,6 +127,8 @@ pnpm --filter @push/fo-web --filter @push/fo-mobile --filter @push/api-client --
 pnpm --filter @push/fo-mobile lint
 pnpm --filter @push/fo-web build
 ```
+
+루트 스크립트는 `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm check`(`turbo run typecheck lint test build`)예요.
 
 ## 환경 변수
 
@@ -153,11 +158,12 @@ pnpm --filter @push/fo-web build
 | `/login`, `/signup` | 로그인, 가입 |
 | `/auth/callback`, `/auth/verify`, `/auth/reset` | OAuth 콜백, 이메일 인증, 비밀번호 재설정 |
 | `/postings/:id` | 공고 상세. 공개 |
+| `/terms`, `/privacy`, `/privacy-consent`, `/marketing-consent` | 약관·처리방침. 공개 |
 | `/profiles/:id` | 허브 프로필. 로그인 |
 | `/hub`, `/social`, `/posts/:id` | 허브, 소셜, 게시물 |
 | `/me` | 마이 |
 | `/offers`, `/offers/:id` | 제안함 |
-| `/notifications`, `/settings` | 알림, 설정 |
+| `/notifications`, `/settings`, `/settings/blocked` | 알림, 설정, 차단 목록 |
 | `/employer/verify` | 사업자 확인 |
 | `/employer/postings`, `…/new`, `…/:id/edit` | 공고 관리 |
 | `/employer/postings/:id/applicants`, `…/:applicationId` | 지원자 |
@@ -175,11 +181,11 @@ Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sig
 
 탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 실행 방식, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `access-mode`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
 
-화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `billing`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
+화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `billing`, `bots`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
 
 ## API 클라이언트
 
-`@push/api-client`의 `createApi`가 묶는 영역은 `auth`, `postings`, `documents`, `jobs`, `search`, `profiles`, `me`, `posts`, `uploads`, `billing`, `sources`, `applications`, `conversations`, `companies`, `calendar`예요. 대화는 SSE `stream`과 이어 받기 `follow`를 포함해요. 오류 타입과 작업 상태 헬퍼(`jobs.ts`)도 같이 내보내요.
+`@push/api-client`의 `createApi`가 묶는 영역은 `auth`, `postings`, `documents`, `jobs`, `search`, `profiles`, `me`, `posts`, `uploads`, `billing`, `sources`, `applications`, `conversations`, `companies`, `calendar`, `integrations`, `bots`예요. 대화는 SSE `stream`과 이어 받기 `follow`를 포함해요. 오류 타입과 작업 상태 헬퍼(`jobs.ts`)도 같이 내보내요.
 
 ## 테스트·CI
 
@@ -199,7 +205,7 @@ pnpm --filter @push/design-system test
 
 `.github/workflows/ci.yml`은 PR과 `develop`·`main` push, `workflow_dispatch`에서 `pnpm install --frozen-lockfile` 뒤에 `turbo run typecheck lint test`를 실행해요. 웹 프로덕션 빌드는 `pnpm --filter @push/fo-web build`예요. 웹 호스팅이나 스토어 제출 워크플로는 이 저장소에 없어요.
 
-## 구조
+## 폴더 구조
 
 ```
 apps/
@@ -212,6 +218,15 @@ packages/
 patches/              pnpm 패치 (expo-router)
 ```
 
-## 기여
+## 브랜치 규칙
 
 브랜치는 `develop`에서 만들고, PR은 `develop`으로 올려요. `main`에는 릴리스 PR로 반영해요. 커밋과 PR 제목은 Conventional Commits를 따라요. 예: `docs(readme): …`. PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md`를 써요.
+
+## 관련 저장소
+
+- [push-be](https://github.com/push-dot/push-be) — API
+- [push-fe](https://github.com/push-dot/push-fe) — 이 저장소
+- [fo-web](https://github.com/push-dot/fo-web) — 웹 앱
+- [fo-mobile](https://github.com/push-dot/fo-mobile) — 모바일 앱
+- [push-workspace](https://github.com/push-dot/push-workspace) — 통합 워크스페이스와 제품 문서
+- [push-langdig](https://github.com/push-dot/push-langdig) — 랜딩 페이지
