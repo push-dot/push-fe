@@ -1,5 +1,7 @@
 export { createClient, type Client, type ClientConfig, type RequestOptions } from './client'
 export { createApi, type Api } from './endpoints'
+export { createBotApi, type BotApi } from './bot-api'
+export type * as BotContract from './bot-contract'
 export { needsTerms } from './consent'
 export { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
 export { atDocumentRevision } from './documents'
