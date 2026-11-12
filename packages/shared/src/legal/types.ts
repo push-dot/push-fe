@@ -5,6 +5,8 @@ export type LegalBlock =
 
 export type LegalArticle = { heading: string; blocks: readonly LegalBlock[] }
 
+export type LegalSurface = 'web' | 'app'
+
 export type LegalDocumentKey = 'termsOfService' | 'privacyPolicy' | 'privacyConsent' | 'marketingConsent'
 
 export type LegalDocument = {

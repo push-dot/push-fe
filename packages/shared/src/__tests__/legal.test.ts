@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LEGAL_DOCUMENTS, legalDocuments, legalMarkdown, type LegalDocument, type LegalOperator } from '../index'
+import { LEGAL_DOCUMENTS, LEGAL_OPERATOR, legalDocuments, legalMarkdown, type LegalDocument, type LegalDocumentKey, type LegalOperator } from '../index'
 
 const BUSINESS: LegalOperator = {
   kind: 'business',
@@ -15,9 +15,53 @@ const BUSINESS: LegalOperator = {
 
 const text = (document: LegalDocument) => legalMarkdown(document)
 
+const APP_DOCUMENTS = legalDocuments(LEGAL_OPERATOR, 'app')
+const SURFACES = [LEGAL_DOCUMENTS, APP_DOCUMENTS]
+
+const APP_FORM: Record<string, string> = {
+  '"에이전트"란': '"봇"이란',
+  에이전트가: '봇이',
+  에이전트를: '봇을',
+  에이전트는: '봇은',
+  에이전트와: '봇과',
+  에이전트로: '봇으로',
+  에이전트: '봇',
+}
+
+const appWording = (web: string) =>
+  web.replace('크롤러, 봇, 스크립트', '크롤러, 매크로, 스크립트').replace(/"에이전트"란|에이전트[가를는와로]?/g, (form) => APP_FORM[form])
+
 describe('legal documents', () => {
   it.each(Object.values(LEGAL_DOCUMENTS))('$key matches the published markdown', async (document) => {
     await expect(legalMarkdown(document)).toMatchFileSnapshot(`../legal/md/${document.key}.md`)
+  })
+
+  it.each(Object.values(APP_DOCUMENTS))('$key matches the published app markdown', async (document) => {
+    await expect(legalMarkdown(document)).toMatchFileSnapshot(`../legal/md/app/${document.key}.md`)
+  })
+
+  it('renders the web text when no surface is named', () => {
+    expect(legalDocuments(LEGAL_OPERATOR)).toEqual(LEGAL_DOCUMENTS)
+    expect(legalDocuments(LEGAL_OPERATOR, 'web')).toEqual(LEGAL_DOCUMENTS)
+  })
+
+  it('says 봇 in the app with the particle 봇 takes, and never 에이전트', () => {
+    for (const document of Object.values(APP_DOCUMENTS)) {
+      expect(text(document)).not.toContain('에이전트')
+      expect(text(document)).not.toMatch(/봇(가|를|는|와|로)/)
+    }
+    const terms = text(APP_DOCUMENTS.termsOfService)
+    for (const form of ['"봇"이란', '봇이', '봇을', '봇은', '봇과', '봇으로', '제9조 (봇(AI) 이용)']) expect(terms).toContain(form)
+  })
+
+  it('says 봇 on the web only for the forbidden tool, which takes another word in the app', () => {
+    for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document).replace('크롤러, 봇, 스크립트 같은 자동화된 수단', '')).not.toContain('봇')
+    expect(text(LEGAL_DOCUMENTS.termsOfService)).toContain('크롤러, 봇, 스크립트 같은 자동화된 수단')
+    expect(text(APP_DOCUMENTS.termsOfService)).toContain('크롤러, 매크로, 스크립트 같은 자동화된 수단')
+  })
+
+  it('differs between the app and the web only in the surface wording', () => {
+    for (const key of Object.keys(LEGAL_DOCUMENTS) as LegalDocumentKey[]) expect(text(APP_DOCUMENTS[key])).toBe(appWording(text(LEGAL_DOCUMENTS[key])))
   })
 
   it('calls the operator 운영자 and never 회사', () => {
@@ -82,7 +126,7 @@ describe('legal documents', () => {
   })
 
   it('ships no unfilled placeholder in the published texts', () => {
-    for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document)).not.toMatch(/\[[^\]]+\]/)
+    for (const documents of SURFACES) for (const document of Object.values(documents)) expect(text(document)).not.toMatch(/\[[^\]]+\]|[{}]/)
   })
 
   it('keeps every table row as wide as its header', () => {
