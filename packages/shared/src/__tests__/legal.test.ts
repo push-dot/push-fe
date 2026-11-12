@@ -64,6 +64,16 @@ describe('legal documents', () => {
     for (const key of Object.keys(LEGAL_DOCUMENTS) as LegalDocumentKey[]) expect(text(APP_DOCUMENTS[key])).toBe(appWording(text(LEGAL_DOCUMENTS[key])))
   })
 
+  it('reads a page the user did not give only after the user allows it, on both surfaces', () => {
+    for (const documents of SURFACES)
+      expect(text(documents.termsOfService)).toContain('다만 이용자가 주지 않은 페이지는 이용자가 그 페이지나 그 사이트를 읽어도 된다고 허락한 뒤에만 읽으며, 이용자는 거절할 수 있습니다.')
+  })
+
+  it('says usage records outlive a deleted chat without its content, on both surfaces', () => {
+    expect(text(LEGAL_DOCUMENTS.privacyPolicy)).toContain('에이전트의 사용 기록(쓴 모델, 처리한 분량)도 잔액 계산에 쓰므로, 이용자가 대화를 지운 뒤에도 대화 내용 없이 계정이 있는 동안 보관합니다.')
+    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('봇의 사용 기록(쓴 모델, 처리한 분량)도 잔액 계산에 쓰므로, 이용자가 대화를 지운 뒤에도 대화 내용 없이 계정이 있는 동안 보관합니다.')
+  })
+
   it('calls the operator 운영자 and never 회사', () => {
     for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document)).not.toMatch(/"회사"|회사(는|가|의) /)
   })
