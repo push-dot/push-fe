@@ -139,6 +139,13 @@ describe('legal documents', () => {
     for (const documents of SURFACES) for (const document of Object.values(documents)) expect(text(document)).not.toMatch(/\[[^\]]+\]|[{}]/)
   })
 
+  it('refuses a placeholder it cannot fill instead of printing it', () => {
+    const named = (displayName: string) => () => legalDocuments({ kind: 'individual', displayName, contactEmail: 'support@push.devcyjoon.tech' }, 'app')
+    expect(named('{agnet}')).toThrow('{agnet}')
+    expect(named('{이/가}')).toThrow('{이/가}')
+    expect(named('{agent}{이/가}')).not.toThrow()
+  })
+
   it('keeps every table row as wide as its header', () => {
     for (const document of Object.values(LEGAL_DOCUMENTS))
       for (const block of document.articles.flatMap((article) => article.blocks))
