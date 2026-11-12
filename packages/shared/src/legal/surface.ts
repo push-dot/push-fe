@@ -4,11 +4,12 @@ import type { LegalBlock, LegalDocument, LegalSurface } from './types'
 // The only wording that differs by surface. The source writes {agent}, never the word.
 const TERMS: Record<string, Record<LegalSurface, string>> = {
   agent: { web: '에이전트', app: '봇' },
+  plan: { web: '요금제', app: '플랜' },
   // 봇 names the product in the app, so the forbidden tool takes another word there.
   automation: { web: '봇', app: '매크로' },
 }
 
-const PARTICLES = ['이/가', '을/를', '은/는', '와/과', '으로/로', '이란/란'] as const
+const PARTICLES = ['이/가', '을/를', '은/는', '와/과', '으로/로', '이란/란', '이나/나'] as const
 
 const isParticle = (key: string): key is (typeof PARTICLES)[number] => (PARTICLES as readonly string[]).includes(key)
 

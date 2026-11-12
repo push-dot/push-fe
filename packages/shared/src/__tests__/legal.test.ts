@@ -28,8 +28,13 @@ const APP_FORM: Record<string, string> = {
   에이전트: '봇',
 }
 
+const PLAN_PARTICLE: Record<string, string> = { 가: '이', 를: '을', 는: '은', 와: '과', 로: '으로', 나: '이나' }
+
 const appWording = (web: string) =>
-  web.replace('크롤러, 봇, 스크립트', '크롤러, 매크로, 스크립트').replace(/"에이전트"란|에이전트[가를는와로]?/g, (form) => APP_FORM[form])
+  web
+    .replace('크롤러, 봇, 스크립트', '크롤러, 매크로, 스크립트')
+    .replace(/"에이전트"란|에이전트[가를는와로]?/g, (form) => APP_FORM[form])
+    .replace(/요금제([가를는와로나]?)/g, (_, particle: string) => `플랜${PLAN_PARTICLE[particle] ?? particle}`)
 
 describe('legal documents', () => {
   it.each(Object.values(LEGAL_DOCUMENTS))('$key matches the published markdown', async (document) => {
@@ -64,9 +69,21 @@ describe('legal documents', () => {
     for (const key of Object.keys(LEGAL_DOCUMENTS) as LegalDocumentKey[]) expect(text(APP_DOCUMENTS[key])).toBe(appWording(text(LEGAL_DOCUMENTS[key])))
   })
 
-  it('reads a page the user did not give only after the user allows it, on both surfaces', () => {
-    for (const documents of SURFACES)
-      expect(text(documents.termsOfService)).toContain('다만 이용자가 주지 않은 페이지는 이용자가 그 페이지나 그 사이트를 읽어도 된다고 허락한 뒤에만 읽으며, 이용자는 거절할 수 있습니다.')
+  it('says 플랜 in the app with the particle 플랜 takes, and keeps 요금제 on the web', () => {
+    for (const document of Object.values(APP_DOCUMENTS)) expect(text(document)).not.toContain('요금제')
+    for (const document of Object.values(LEGAL_DOCUMENTS)) expect(text(document)).not.toContain('플랜')
+    const terms = text(APP_DOCUMENTS.termsOfService)
+    for (const form of ['제11조 (유료 서비스와 플랜)', '플랜은 다음과 같습니다', '플랜을 바꿀', '플랜이나 기기', '플랜과 관계없이', 'FREE 플랜으로 바뀝니다', '플랜마다']) expect(terms).toContain(form)
+    expect(terms).not.toMatch(/플랜(가|를|는|와|로|나)/)
+    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('| 결제 | 플랜, 구독 상태와 기간')
+  })
+
+  it('reads a page the user did not give only after the user allows it or chose 바로 실행, on both surfaces', () => {
+    for (const documents of SURFACES) {
+      const terms = text(documents.termsOfService)
+      expect(terms).toContain('다만 이용자가 주지 않은 페이지는 이용자가 그 페이지나 그 사이트를 읽어도 된다고 허락한 뒤에만 읽으며, 이용자는 거절할 수 있습니다.')
+      expect(terms).toMatch(/이용자가 (에이전트가|봇이) 묻지 않고 실행하는 방식인 "바로 실행"을 고른 경우에는 그 선택을 허락으로 봅니다\./)
+    }
   })
 
   it('says usage records outlive a deleted chat without its content, on both surfaces', () => {
