@@ -163,7 +163,7 @@ export type AppNotification = {
   type: NotificationType
   title: string
   body: string
-  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'calendar' | 'activity'; id: string }
+  target: { kind: 'posting' | 'offer' | 'post' | 'conversation' | 'calendar' | 'activity' | 'bot'; id: string }
   readAt: string | null
   createdAt: string
 }
@@ -495,6 +495,8 @@ export type BillingStatus = {
   source?: BillingSource
   /** False while push-be has payments closed (PAYMENTS_ENABLED off); missing on servers before push-be #246. */
   paymentsEnabled?: boolean
+  /** When the plan's credits are granted again. Missing on servers that do not send it yet. */
+  creditsRefillAt?: string
 }
 
 export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
