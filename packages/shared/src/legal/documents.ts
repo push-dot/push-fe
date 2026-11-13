@@ -6,10 +6,10 @@ import { termsOfService } from './terms-of-service'
 import type { LegalBlock, LegalDocument, LegalDocumentKey, LegalOperator, LegalSurface } from './types'
 
 export const legalDocuments = (operator: LegalOperator, surface: LegalSurface = 'web'): Record<LegalDocumentKey, LegalDocument> => ({
-  termsOfService: renderLegal(termsOfService(operator), surface),
-  privacyPolicy: renderLegal(privacyPolicy(operator), surface),
-  privacyConsent: renderLegal(privacyConsent, surface),
-  marketingConsent: renderLegal(marketingConsent, surface),
+  termsOfService: renderLegal(termsOfService(operator), surface, operator),
+  privacyPolicy: renderLegal(privacyPolicy(operator), surface, operator),
+  privacyConsent: renderLegal(privacyConsent, surface, operator),
+  marketingConsent: renderLegal(marketingConsent, surface, operator),
 })
 
 export const LEGAL_DOCUMENTS = legalDocuments(LEGAL_OPERATOR)
