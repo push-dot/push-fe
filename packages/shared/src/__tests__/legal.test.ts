@@ -19,13 +19,13 @@ const APP_DOCUMENTS = legalDocuments(LEGAL_OPERATOR, 'app')
 const SURFACES = [LEGAL_DOCUMENTS, APP_DOCUMENTS]
 
 const APP_FORM: Record<string, string> = {
-  '"에이전트"란': '"봇"이란',
-  에이전트가: '봇이',
-  에이전트를: '봇을',
-  에이전트는: '봇은',
-  에이전트와: '봇과',
-  에이전트로: '봇으로',
-  에이전트: '봇',
+  '"에이전트"란': '"Bot"이란',
+  에이전트가: 'Bot이',
+  에이전트를: 'Bot을',
+  에이전트는: 'Bot은',
+  에이전트와: 'Bot과',
+  에이전트로: 'Bot으로',
+  에이전트: 'Bot',
 }
 
 const PLAN_PARTICLE: Record<string, string> = { 가: '이', 를: '을', 는: '은', 와: '과', 로: '으로', 나: '이나' }
@@ -33,6 +33,7 @@ const PLAN_PARTICLE: Record<string, string> = { 가: '이', 를: '을', 는: '�
 const appWording = (web: string) =>
   web
     .replace('크롤러, 봇, 스크립트', '크롤러, 매크로, 스크립트')
+    .replace('이 약관은 운영자가 제공하는', '이 약관은 운영자 채영준이 제공하는')
     .replace(/"에이전트"란|에이전트[가를는와로]?/g, (form) => APP_FORM[form])
     .replace(/요금제([가를는와로나]?)/g, (_, particle: string) => `플랜${PLAN_PARTICLE[particle] ?? particle}`)
 
@@ -50,13 +51,27 @@ describe('legal documents', () => {
     expect(legalDocuments(LEGAL_OPERATOR, 'web')).toEqual(LEGAL_DOCUMENTS)
   })
 
-  it('says 봇 in the app with the particle 봇 takes, and never 에이전트', () => {
+  it('says Bot in the app with the particle Bot takes, and never 에이전트 or 봇', () => {
     for (const document of Object.values(APP_DOCUMENTS)) {
       expect(text(document)).not.toContain('에이전트')
-      expect(text(document)).not.toMatch(/봇(가|를|는|와|로)/)
+      expect(text(document)).not.toContain('봇')
+      expect(text(document)).not.toMatch(/Bot(가|를|는|와|로|란|나)/)
     }
     const terms = text(APP_DOCUMENTS.termsOfService)
-    for (const form of ['"봇"이란', '봇이', '봇을', '봇은', '봇과', '봇으로', '제9조 (봇(AI) 이용)']) expect(terms).toContain(form)
+    for (const form of ['"Bot"이란', 'Bot이', 'Bot을', 'Bot은', 'Bot과', 'Bot으로', '제9조 (Bot(AI) 이용)']) expect(terms).toContain(form)
+  })
+
+  it('names the operator 채영준 in 제1조 and the privacy officer table in the app, and not on the web', () => {
+    const intro = (document: LegalDocument) => document.articles[0].blocks[0]
+    expect(intro(APP_DOCUMENTS.termsOfService)).toEqual({ kind: 'paragraph', text: expect.stringContaining('이 약관은 운영자 채영준이 제공하는 Push 서비스') })
+    expect(intro(LEGAL_DOCUMENTS.termsOfService)).toEqual({ kind: 'paragraph', text: expect.stringContaining('이 약관은 운영자가 제공하는 Push 서비스') })
+    expect(text(APP_DOCUMENTS.termsOfService)).toContain('| 성명 | 채영준 |')
+    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('| 개인정보 보호책임자 | 채영준 (운영자) |')
+  })
+
+  it('names a registered business by its trade name in the app', () => {
+    expect(text(legalDocuments(BUSINESS, 'app').termsOfService)).toContain('이 약관은 운영자 푸시랩이 제공하는 Push 서비스')
+    expect(text(legalDocuments(BUSINESS).termsOfService)).toContain('이 약관은 운영자가 제공하는 Push 서비스')
   })
 
   it('says 봇 on the web only for the forbidden tool, which takes another word in the app', () => {
@@ -82,13 +97,13 @@ describe('legal documents', () => {
     for (const documents of SURFACES) {
       const terms = text(documents.termsOfService)
       expect(terms).toContain('다만 이용자가 주지 않은 페이지는 이용자가 그 페이지나 그 사이트를 읽어도 된다고 허락한 뒤에만 읽으며, 이용자는 거절할 수 있습니다.')
-      expect(terms).toMatch(/이용자가 (에이전트가|봇이) 묻지 않고 실행하는 방식인 "바로 실행"을 고른 경우에는 그 선택을 허락으로 봅니다\./)
+      expect(terms).toMatch(/이용자가 (에이전트가|Bot이) 묻지 않고 실행하는 방식인 "바로 실행"을 고른 경우에는 그 선택을 허락으로 봅니다\./)
     }
   })
 
   it('says usage records outlive a deleted chat without its content, on both surfaces', () => {
     expect(text(LEGAL_DOCUMENTS.privacyPolicy)).toContain('에이전트의 사용 기록(쓴 모델, 처리한 분량)도 잔액 계산에 쓰므로, 이용자가 대화를 지운 뒤에도 대화 내용 없이 계정이 있는 동안 보관합니다.')
-    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('봇의 사용 기록(쓴 모델, 처리한 분량)도 잔액 계산에 쓰므로, 이용자가 대화를 지운 뒤에도 대화 내용 없이 계정이 있는 동안 보관합니다.')
+    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('Bot의 사용 기록(쓴 모델, 처리한 분량)도 잔액 계산에 쓰므로, 이용자가 대화를 지운 뒤에도 대화 내용 없이 계정이 있는 동안 보관합니다.')
   })
 
   it('calls the operator 운영자 and never 회사', () => {

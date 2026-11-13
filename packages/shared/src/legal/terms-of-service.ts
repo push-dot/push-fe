@@ -12,7 +12,7 @@ export const termsOfService = (operator: LegalOperator): LegalDocument => ({
   articles: [
     {
       heading: '제1조 (목적)',
-      blocks: [p('이 약관은 운영자가 제공하는 Push 서비스(이하 "서비스")를 이용할 때 운영자와 이용자 사이의 권리, 의무, 책임과 이용 절차를 정합니다.')],
+      blocks: [p('이 약관은 {operator}{이/가} 제공하는 Push 서비스(이하 "서비스")를 이용할 때 운영자와 이용자 사이의 권리, 의무, 책임과 이용 절차를 정합니다.')],
     },
     {
       heading: '제2조 (정의)',
