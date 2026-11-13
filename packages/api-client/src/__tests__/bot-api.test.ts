@@ -332,3 +332,13 @@ describe('bot list outcome', () => {
     expect(list.data.map((b) => b.outcome?.kind)).toEqual(['expired', 'failed'])
   })
 })
+
+describe('BotSiteGrant', () => {
+  it('matches the row GET /bots/{id}/site-grants sends', () => {
+    expectTypeOf<BotContract.BotSiteGrant>().toEqualTypeOf<{
+      host: string
+      kind: 'posting' | 'company' | 'other'
+      grantedAt: string
+    }>()
+  })
+})
