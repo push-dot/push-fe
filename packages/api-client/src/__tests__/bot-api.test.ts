@@ -54,6 +54,7 @@ const bot: BotContract.Bot = {
   lastMessage: { preview: '이 변경을 이력서에 반영할까요?', at: '2026-11-12T09:50:00Z', fromBot: true },
   unread: true,
   activity: { phase: 'waiting', since: '2026-11-12T09:50:00Z', for: 'confirm', cardId: 'c1', cardTitle: '이력서 수정', expiresAt: null },
+  outcome: null,
 }
 
 const limit: BotContract.BotLimit = { plan: 'FREE', max: 3, used: 1, table: { FREE: 3, PRO: 20, ULTRA: null } }
