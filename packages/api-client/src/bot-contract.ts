@@ -10,6 +10,9 @@ export type BotActivity =
   | { phase: 'working'; since: string; label: string }
   | { phase: 'waiting'; since: string; for: 'answer' | 'confirm'; cardId: string; cardTitle: string; expiresAt: string | null }
 
+/** How the last run ended while nothing runs and no card is open. A later message, card, or run replaces it. */
+export type BotOutcome = { kind: 'expired' | 'failed'; at: string }
+
 export type Bot = {
   id: string
   kind: BotKind
@@ -25,6 +28,7 @@ export type Bot = {
   lastMessage: { preview: string; at: string; fromBot: boolean } | null
   unread: boolean
   activity: BotActivity | null
+  outcome: BotOutcome | null
 }
 
 /** `max` null is unlimited. The Push Bot is not counted. */

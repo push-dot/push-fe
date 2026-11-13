@@ -54,6 +54,7 @@ const bot: BotContract.Bot = {
   lastMessage: { preview: '이 변경을 이력서에 반영할까요?', at: '2026-11-12T09:50:00Z', fromBot: true },
   unread: true,
   activity: { phase: 'waiting', since: '2026-11-12T09:50:00Z', for: 'confirm', cardId: 'c1', cardTitle: '이력서 수정', expiresAt: null },
+  outcome: null,
 }
 
 const limit: BotContract.BotLimit = { plan: 'FREE', max: 3, used: 1, table: { FREE: 3, PRO: 20, ULTRA: null } }
@@ -315,5 +316,19 @@ describe('bot contract types', () => {
   it('adds the bot target and an optional refill date to the existing types', () => {
     expectTypeOf<'bot'>().toExtend<AppNotification['target']['kind']>()
     expectTypeOf<BillingStatus['creditsRefillAt']>().toEqualTypeOf<string | undefined>()
+  })
+})
+
+describe('bot list outcome', () => {
+  it('carries the expired and failed states push-be sends on a bot', async () => {
+    const outcomes: BotContract.BotOutcome[] = [
+      { kind: 'expired', at: '2026-11-13T00:00:00Z' },
+      { kind: 'failed', at: '2026-11-13T00:01:00Z' },
+    ]
+    expectTypeOf<BotContract.Bot['outcome']>().toEqualTypeOf<BotContract.BotOutcome | null>()
+    const bot = (outcome: BotContract.BotOutcome | null) => ({ id: 'b', outcome }) as BotContract.Bot
+    const { api } = harness(() => json(200, { data: outcomes.map(bot) }))
+    const list = await api.bots.list()
+    expect(list.data.map((b) => b.outcome?.kind)).toEqual(['expired', 'failed'])
   })
 })

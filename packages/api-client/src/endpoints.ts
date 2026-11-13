@@ -3,7 +3,7 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, Bot, BotCompanyHit, BotLibrary, BotLibraryQuery, BotLinkPreview, CompanyInvite, CreateBotInput, UpdateBotInput, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
@@ -313,23 +313,6 @@ export const createApi = (c: Client) => ({
 
   integrations: {
     google: () => unwrap(c.get<DataEnvelope<GoogleIntegration>>('integrations/google')),
-  },
-
-  bots: {
-    list: () => unwrap(c.get<DataEnvelope<Bot[]>>('bots')),
-    create: (body: CreateBotInput) => unwrap(c.post<DataEnvelope<Bot>>('bots', { body })),
-    get: (id: string) => unwrap(c.get<DataEnvelope<Bot>>(`bots/${id}`)),
-    update: (id: string, body: UpdateBotInput) => unwrap(c.patch<DataEnvelope<Bot>>(`bots/${id}`, { body })),
-    remove: (id: string) => c.delete<void>(`bots/${id}`),
-    conversations: (id: string, page?: PageParams) =>
-      c.get<ListEnvelope<Conversation>>(`bots/${id}/conversations`, { query: page }),
-    createConversation: (id: string, body: { title: string; applicationId?: string }) =>
-      unwrap(c.post<DataEnvelope<Conversation>>(`bots/${id}/conversations`, { body })),
-    linkPreview: (url: string) => unwrap(c.post<DataEnvelope<BotLinkPreview>>('bots/link-preview', { body: { url } })),
-    searchCompanies: (q: string, page?: PageParams) =>
-      c.get<ListEnvelope<BotCompanyHit>>('bots/companies/search', { query: { q, ...page } }),
-    markRead: (id: string) => unwrap(c.post<DataEnvelope<{ readAt: string }>>(`bots/${id}/read`)),
-    library: (id: string, query?: BotLibraryQuery) => unwrap(c.get<DataEnvelope<BotLibrary>>(`bots/${id}/library`, { query })),
   },
 })
 
