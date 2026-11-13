@@ -317,3 +317,17 @@ describe('bot contract types', () => {
     expectTypeOf<BillingStatus['creditsRefillAt']>().toEqualTypeOf<string | undefined>()
   })
 })
+
+describe('bot list outcome', () => {
+  it('carries the expired and failed states push-be sends on a bot', async () => {
+    const outcomes: BotContract.BotOutcome[] = [
+      { kind: 'expired', at: '2026-11-13T00:00:00Z' },
+      { kind: 'failed', at: '2026-11-13T00:01:00Z' },
+    ]
+    expectTypeOf<BotContract.Bot['outcome']>().toEqualTypeOf<BotContract.BotOutcome | null>()
+    const bot = (outcome: BotContract.BotOutcome | null) => ({ id: 'b', outcome }) as BotContract.Bot
+    const { api } = harness(() => json(200, { data: outcomes.map(bot) }))
+    const list = await api.bots.list()
+    expect(list.data.map((b) => b.outcome?.kind)).toEqual(['expired', 'failed'])
+  })
+})
