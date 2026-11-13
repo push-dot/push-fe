@@ -320,7 +320,7 @@ export type ChatIntent =
   | 'offer_reply'
   | 'coffee_chat'
   | 'career_post'
-export type ToolTier = 'READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
+export type ToolTier = 'READ' | 'EXTERNAL_READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
 export type StreamOption = { id: string; label: string; desc?: string; badge?: string; sub?: string }
 /** push-be #224. `action` is only on row options and is not an answer id. */
@@ -732,70 +732,3 @@ export type GoogleIntegration = {
 
 export type ConversationAttachment = { id: string }
 
-export type BotKind = 'push' | 'company'
-export type BotStatus = 'DONE' | 'RUNNING' | 'NEEDS_APPROVAL'
-
-export type Bot = {
-  id: string
-  kind: BotKind
-  displayName: string
-  companyId: string | null
-  companyName: string
-  postingId: string | null
-  postingUrl: string | null
-  avatarKey: string | null
-  mascotKey: string | null
-  notificationsMuted: boolean
-  revision: number
-  createdAt: string
-  updatedAt: string
-  lastMessagePreview: string
-  unread: boolean
-  status: BotStatus
-}
-
-export type CreateBotInput = {
-  companyId?: string | null
-  companyName?: string
-  postingId?: string | null
-  postingUrl?: string | null
-  displayName?: string
-}
-
-export type UpdateBotInput = {
-  expectedRevision: number
-  displayName?: string
-  notificationsMuted?: boolean
-  avatarKey?: string | null
-  mascotKey?: string | null
-}
-
-export type BotLinkPreview =
-  | { status: 'found'; company: string; title: string; postingId: string }
-  | { status: 'not_a_posting' }
-
-export type BotCompanyHit = { name: string; openPostingCount: number }
-
-export type BotLibraryConversation = Conversation & {
-  status: BotStatus
-  lastMessagePreview: string
-}
-
-export type BotLibrarySection<T> = {
-  items: T[]
-  nextCursor: string | null
-  hasMore: boolean
-}
-
-export type BotLibrary = {
-  conversations: BotLibrarySection<BotLibraryConversation>
-  files: BotLibrarySection<SourceItem>
-  links: BotLibrarySection<UserLink>
-}
-
-export type BotLibraryQuery = PageParams & {
-  section?: 'conversations' | 'files' | 'links'
-  conversationCursor?: string
-  fileCursor?: string
-  linkCursor?: string
-}
