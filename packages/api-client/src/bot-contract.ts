@@ -201,3 +201,6 @@ export type MaterialsPage = {
 }
 
 export type MaterialDetail = Material & { usedBy: BotRef[] }
+
+/** One row of `GET /bots/{id}/site-grants`; the body is `{ data: BotSiteGrant[] }`. */
+export type BotSiteGrant = { host: string; kind: 'posting' | 'company' | 'other'; grantedAt: string }
