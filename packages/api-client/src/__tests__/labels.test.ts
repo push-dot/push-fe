@@ -29,8 +29,34 @@ describe('labels', () => {
   it('resolves server-relative image paths against the API origin', () => {
     const base = 'https://push.example/api/v1'
     expect(absoluteUrl('/api/v1/uploads/images/a.png', base)).toBe('https://push.example/api/v1/uploads/images/a.png')
-    expect(absoluteUrl('https://cdn.example/a.png', base)).toBe('https://cdn.example/a.png')
+    expect(absoluteUrl('https://push.example/api/v1/uploads/images/a.png', base)).toBe(
+      'https://push.example/api/v1/uploads/images/a.png',
+    )
     expect(absoluteUrl(null, base)).toBeNull()
+  })
+
+  it('never loads an image from another origin, however the address is written', () => {
+    const base = 'https://api.example/api/v1'
+    for (const hostile of [
+      'https://tracker.example/p.png',
+      'http://api.example/api/v1/uploads/images/a.png',
+      '//tracker.example/p.png',
+      '/\\tracker.example/p.png',
+      'https://api.example.tracker.example/p.png',
+      'https://api.example@tracker.example/p.png',
+      'javascript:alert(1)',
+      'data:text/html,<script>1</script>',
+      'ftp://api.example/a.png',
+    ]) {
+      expect(absoluteUrl(hostile, base), hostile).toBeNull()
+    }
+  })
+
+  it('lets a local preview through', () => {
+    const base = 'https://api.example/api/v1'
+    for (const local of ['blob:https://app.example/0b8f', 'file:///var/mobile/a.jpg', 'data:image/png;base64,AAAA']) {
+      expect(absoluteUrl(local, base)).toBe(local)
+    }
   })
 
   it('maps withdrawn onto the rejected badge until a cancel badge exists', () => {
