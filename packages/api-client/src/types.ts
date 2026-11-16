@@ -145,6 +145,8 @@ export type Post = {
   imageUrls: string[]
   commentCount: number
   viewCount: number
+  /** Whether the signed-in reader saved the post; a server from before push-be #333 omits it. */
+  saved?: boolean
   createdAt: string
 }
 export type Comment = { id: string; author: SocialAuthor; body: string; parentId?: string | null; createdAt: string }
