@@ -199,6 +199,15 @@ describe('employer api', () => {
     expect(bodyOf(hits[1]!)).toEqual({ email: 'a@push.app', password: 'secret123' })
   })
 
+  it('logs out with the refresh token, or with an empty body when the cookie holds it', async () => {
+    const { api, hits } = harness(() => noContent(204))
+    await api.auth.logout('rt-1')
+    await api.auth.logout()
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/logout')
+    expect(bodyOf(hits[0]!)).toEqual({ refreshToken: 'rt-1' })
+    expect(bodyOf(hits[1]!)).toEqual({})
+  })
+
   it('requests and confirms a password reset', async () => {
     const { api, hits } = harness((req) => noContent(req.url.includes('confirm') ? 204 : 202))
     await api.auth.requestPasswordReset('a@push.app')
