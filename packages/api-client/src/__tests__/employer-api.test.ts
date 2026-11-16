@@ -49,7 +49,6 @@ describe('employer api', () => {
     const { api, hits } = harness(() => noContent(202))
     await api.auth.emailSignup({
       email: 'a@push.app',
-      password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
       agreeTerms: true,
@@ -57,7 +56,6 @@ describe('employer api', () => {
     })
     await api.auth.emailSignup({
       email: 'b@push.app',
-      password: 'secret123',
       accountType: 'PERSONAL',
       displayName: '이하은',
     })
@@ -65,7 +63,6 @@ describe('employer api', () => {
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/signup')
     expect(bodyOf(hits[0]!)).toEqual({
       email: 'a@push.app',
-      password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
       agreeTerms: true,
@@ -73,7 +70,6 @@ describe('employer api', () => {
     })
     expect(bodyOf(hits[1]!)).toEqual({
       email: 'b@push.app',
-      password: 'secret123',
       accountType: 'PERSONAL',
       displayName: '이하은',
     })
@@ -194,11 +190,11 @@ describe('employer api', () => {
 
   it('verifies email and logs in with a session', async () => {
     const { api, hits } = harness(() => json(200, { data: session }))
-    await expect(api.auth.emailVerify('tok')).resolves.toEqual(session)
+    await expect(api.auth.emailVerify('tok', 'chosen-password-1')).resolves.toEqual(session)
     await expect(api.auth.emailLogin('a@push.app', 'secret123')).resolves.toEqual(session)
     expect(hits[0]!.method).toBe('POST')
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/verify')
-    expect(bodyOf(hits[0]!)).toEqual({ token: 'tok' })
+    expect(bodyOf(hits[0]!)).toEqual({ token: 'tok', password: 'chosen-password-1' })
     expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/auth/email/login')
     expect(bodyOf(hits[1]!)).toEqual({ email: 'a@push.app', password: 'secret123' })
   })
