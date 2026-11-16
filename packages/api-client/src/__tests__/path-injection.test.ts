@@ -30,6 +30,7 @@ describe('ids from links cannot steer an authenticated request', () => {
     const { fetch, api } = setup()
     await expect(api.postings.bookmark('../../auth/logout')).rejects.toBeInstanceOf(ApiError)
     await expect(api.me.offer('../../companies/me')).rejects.toBeInstanceOf(ApiError)
+    await expect(api.me.unblockUser('.. ')).rejects.toBeInstanceOf(ApiError)
     expect(fetch).not.toHaveBeenCalled()
   })
 })

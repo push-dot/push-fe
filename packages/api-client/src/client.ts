@@ -43,7 +43,7 @@ const toSearch = (query?: Query) => {
   return params
 }
 
-const isSafePath = (path: string) => !UNSAFE_PATH_CHARACTER.test(path) && !path.split('/').some((segment) => DOT_SEGMENT.test(segment))
+const isSafePath = (path: string) => path === path.trim() && !UNSAFE_PATH_CHARACTER.test(path) && !path.split('/').some((segment) => DOT_SEGMENT.test(segment))
 
 export const createClient = (config: ClientConfig) => {
   const uuid = config.uuid ?? (() => globalThis.crypto.randomUUID())
