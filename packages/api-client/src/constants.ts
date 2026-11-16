@@ -27,3 +27,7 @@ export const JOB_POLL_MS = 1500
 export const SETTLED_JOB_STATUSES = ['DONE', 'FAILED', 'DEAD', 'CANCELLED'] as const
 
 export const TERMINAL_STREAM_EVENTS: readonly string[] = ['done', 'error', 'cancelled']
+
+export const INVALID_PATH = 'INVALID_PATH'
+export const DOT_SEGMENT = /^(\.|%2e){1,2}$/i
+export const UNSAFE_PATH_CHARACTER = /[?#\\\u0000-\u001f\u007f]/

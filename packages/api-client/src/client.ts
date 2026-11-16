@@ -1,12 +1,15 @@
 import ky, { HTTPError, type KyInstance } from 'ky'
 import {
   DEFAULT_RETRY_AFTER_SEC,
+  DOT_SEGMENT,
   HTTP_UNAUTHORIZED,
   QUEUE_BUSY,
   IDEMPOTENCY_KEY_HEADER,
+  INVALID_PATH,
   MULTI_VALUE_QUERY_SEPARATOR,
   REQUEST_TIMEOUT_DISABLED,
   RETRY_LIMIT,
+  UNSAFE_PATH_CHARACTER,
 } from './constants'
 import { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
 
@@ -39,6 +42,8 @@ const toSearch = (query?: Query) => {
   }
   return params
 }
+
+const isSafePath = (path: string) => path === path.trim() && !UNSAFE_PATH_CHARACTER.test(path) && !path.split('/').some((segment) => DOT_SEGMENT.test(segment))
 
 export const createClient = (config: ClientConfig) => {
   const uuid = config.uuid ?? (() => globalThis.crypto.randomUUID())
@@ -74,6 +79,7 @@ export const createClient = (config: ClientConfig) => {
   })
 
   const send = async (method: string, path: string, options: RequestOptions = {}): Promise<Response> => {
+    if (!isSafePath(path)) throw new ApiError('unsafe request path', INVALID_PATH, 0)
     const headers: Record<string, string> = { ...options.headers }
     const key = options.idempotencyKey ?? (method === 'POST' && !path.endsWith('/stream') ? uuid() : undefined)
     if (key) headers[IDEMPOTENCY_KEY_HEADER] = key
