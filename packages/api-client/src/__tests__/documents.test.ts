@@ -68,3 +68,29 @@ describe('documents.archive', () => {
     expect(hits).toEqual(['GET /api/v1/documents?limit=20&applicationId=app-1&kind=RESUME&archived=1 '])
   })
 })
+
+describe('my posts, saved posts and the profile PDF', () => {
+  it('sends sort to all three lists and the save calls to posts/:id/save', async () => {
+    const { api, hits } = harness((req) => (req.method === 'GET' ? json(200, { data: [], page: { nextCursor: null, hasMore: false } }) : new Response(null, { status: 204 })))
+    await api.me.posts({ sort: 'views' })
+    await api.me.commentedPosts({ sort: 'comments' })
+    await api.me.savedPosts()
+    await api.posts.save('p1')
+    await api.posts.unsave('p1')
+    expect(hits.map((h) => h.trim())).toEqual([
+      'GET /api/v1/me/posts?sort=views',
+      'GET /api/v1/me/commented-posts?sort=comments',
+      'GET /api/v1/me/saved-posts',
+      'POST /api/v1/posts/p1/save',
+      'DELETE /api/v1/posts/p1/save',
+    ])
+  })
+
+  it('asks for the profile PDF with photo=1 only when the photo is wanted', async () => {
+    const { api, hits } = harness(() => new Response('%PDF', { headers: { 'Content-Type': 'application/pdf' } }))
+    await api.me.profilePdf()
+    const res = await api.me.profilePdf(true)
+    expect(res.headers.get('Content-Type')).toBe('application/pdf')
+    expect(hits.map((h) => h.trim())).toEqual(['GET /api/v1/me/profile/pdf', 'GET /api/v1/me/profile/pdf?photo=1'])
+  })
+})

@@ -6,7 +6,7 @@ import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
-  InvitePreview, Offer, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
+  InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
@@ -126,8 +126,11 @@ export const createApi = (c: Client) => ({
     postingViews: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/posting-views', { query: p }),
     follows: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/follows', { query: p }),
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
-    posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
-    commentedPosts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
+    posts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
+    commentedPosts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
+    savedPosts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/saved-posts', { query: p }),
+    /** The profile screen as a PDF; photo stamps the avatar on the first page. */
+    profilePdf: (photo = false) => c.raw('GET', 'me/profile/pdf', { query: photo ? { photo: 1 } : undefined }),
     offers: (box: 'received' | 'sent', p: PageParams & { archived?: 1 } = {}) =>
       c.get<ListEnvelope<Offer>>('me/offers', { query: { box, ...p } }),
     offer: (id: string) => unwrap(c.get<DataEnvelope<Offer>>(`me/offers/${id}`)),
@@ -177,6 +180,8 @@ export const createApi = (c: Client) => ({
     comments: (id: string, p: PageParams = {}) => c.get<ListEnvelope<Comment>>(`posts/${id}/comments`, { query: p }),
     comment: (id: string, body: string, parentId?: string) =>
       unwrap(c.post<DataEnvelope<Comment>>(`posts/${id}/comments`, { body: { body, parentId } })),
+    save: (id: string) => c.post<void>(`posts/${id}/save`),
+    unsave: (id: string) => c.delete<void>(`posts/${id}/save`),
   },
 
   uploads: {
