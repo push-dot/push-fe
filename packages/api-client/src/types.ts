@@ -99,6 +99,9 @@ export type Profile = {
   offered?: boolean
 }
 
+/** A profile change a Bot run applied at once: the fields it moved and whether it was put back (GET me/profile/changes/{id}). */
+export type ProfileChange = { id: string; fields: string[]; undone: boolean; createdAt: string }
+
 export type ProfileFilters = PageParams & {
   q?: string
   category?: JobCategory[]
