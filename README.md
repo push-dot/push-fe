@@ -179,7 +179,7 @@ WebView에서는 `/postings/:id`와 `/profiles/:id`만 있어요.
 
 Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sign-in`, `phone`, `verify-phone`, `signup-terms`, `phone-registered`)은 루트에 있어요. 로그인 뒤 화면은 `(app)/(stack)` 아래에 있고, `(app)`은 그 스택을 그대로 그리는 레이아웃이에요. 에이전트 사이드바도 이 스택의 `sidebar/` 화면이에요. 그룹은 URL에 들어가지 않지만, typed routes 때문에 그룹을 쓰는 href는 `/(app)/(stack)/(tabs)/…` 전체를 적어요.
 
-탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 실행 방식, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `access-mode`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
+탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
 
 화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `billing`, `bots`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
 
