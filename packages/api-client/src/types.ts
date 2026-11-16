@@ -689,9 +689,9 @@ export type LedgerEntry = {
   receiptUrl: string | null
 }
 
+/** The password is chosen when the mailed link is opened (`emailVerify`), not at signup. */
 export type EmailSignupInput = {
   email: string
-  password: string
   accountType: AccountType
   displayName: string
   /** The 약관·개인정보처리방침 checkbox; push-be #240 requires true for every email signup. */

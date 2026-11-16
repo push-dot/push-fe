@@ -33,7 +33,8 @@ export const createApi = (c: Client) => ({
     emailSignup: async (body: EmailSignupInput) => {
       await c.raw('POST', 'auth/email/signup', { body })
     },
-    emailVerify: (token: string) => unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token } })),
+    emailVerify: (token: string, password: string) =>
+      unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token, password } })),
     email: {
       // 204 whether or not the address exists. 429 RATE_LIMITED is the shared mail bucket.
       resendVerify: (email: string) => c.post<void>('auth/email/verify/resend', { body: { email } }),
