@@ -497,6 +497,8 @@ export type BillingStatus = {
   paymentsEnabled?: boolean
   /** When the plan's credits are granted again. Missing on servers that do not send it yet. */
   creditsRefillAt?: string
+  /** Personal accounts: this month's settled micro credits per Bot, biggest first. Missing on servers before push-be #315. */
+  usageByBot?: { id: string; name: string; usedMicroCredits: number }[]
 }
 
 export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
