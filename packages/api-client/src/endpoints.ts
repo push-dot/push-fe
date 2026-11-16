@@ -7,7 +7,7 @@ import type {
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
-  ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  ProfileChange, ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
 
@@ -122,6 +122,10 @@ export const createApi = (c: Client) => ({
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
+    /** The changeId of an update_my_profile tool line; 404 when it is not the caller's. */
+    profileChange: (id: string) => unwrap(c.get<DataEnvelope<ProfileChange>>(`me/profile/changes/${id}`)),
+    /** Puts the replaced values back, once: a second call is 409 (ApiError.status). Resolves with the profile as it is now. */
+    undoProfileChange: (id: string) => unwrap(c.post<DataEnvelope<Profile>>(`me/profile/changes/${id}/undo`)),
     bookmarks: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/bookmarks', { query: p }),
     postingViews: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/posting-views', { query: p }),
     follows: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/follows', { query: p }),
