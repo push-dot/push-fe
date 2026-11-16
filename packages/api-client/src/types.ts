@@ -3,6 +3,10 @@ export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
 export type PageParams = { limit?: number; cursor?: string }
 
+/** GET /me/posts, /me/saved-posts and /me/commented-posts. views and comments answer the first page only. */
+export type MyPostsSort = 'latest' | 'views' | 'comments'
+export type MyPostsParams = PageParams & { sort?: MyPostsSort }
+
 /** GET /posts. push-be accepts sort=latest|popular and period=week (omitted means no window). */
 export type PostsListParams = PageParams & {
   sort?: 'latest' | 'popular'
