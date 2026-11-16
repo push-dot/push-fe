@@ -89,7 +89,8 @@ describe('my posts, saved posts and the profile PDF', () => {
   it('asks for the profile PDF with photo=1 only when the photo is wanted', async () => {
     const { api, hits } = harness(() => new Response('%PDF', { headers: { 'Content-Type': 'application/pdf' } }))
     await api.me.profilePdf()
-    await api.me.profilePdf(true)
+    const res = await api.me.profilePdf(true)
+    expect(res.headers.get('Content-Type')).toBe('application/pdf')
     expect(hits.map((h) => h.trim())).toEqual(['GET /api/v1/me/profile/pdf', 'GET /api/v1/me/profile/pdf?photo=1'])
   })
 })
