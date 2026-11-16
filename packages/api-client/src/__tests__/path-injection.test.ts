@@ -17,7 +17,7 @@ describe('ids from links cannot steer an authenticated request', () => {
     expect((fetch.mock.calls[0] as unknown[])[0]).toMatchObject({ url: 'https://api.example/api/v1/bots/b_123/read' })
   })
 
-  it.each(['../me/withdraw', '%2e%2e/auth/logout', 'x/../../auth/logout', '..\\auth\\logout', 'b1?evil=1', 'b1#'])(
+  it.each(['../me/withdraw', '%2e%2e/auth/logout', 'x/../../auth/logout', '..\\auth\\logout', 'b1?evil=1', 'b1#', '.\t./me/withdraw', '.\n./me', '%2e\r%2e/me'])(
     'never sends bots/%s/read',
     async (id) => {
       const { fetch, bots } = setup()

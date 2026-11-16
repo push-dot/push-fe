@@ -30,4 +30,4 @@ export const TERMINAL_STREAM_EVENTS: readonly string[] = ['done', 'error', 'canc
 
 export const INVALID_PATH = 'INVALID_PATH'
 export const DOT_SEGMENT = /^(\.|%2e){1,2}$/i
-export const UNSAFE_PATH_CHARACTER = /[?#\\]/
+export const UNSAFE_PATH_CHARACTER = /[?#\\\u0000-\u001f\u007f]/
