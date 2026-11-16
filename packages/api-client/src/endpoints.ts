@@ -28,7 +28,8 @@ export const createApi = (c: Client) => ({
     phoneVerify: (body: { phone: string; code: string; pendingToken?: string }) =>
       unwrap(c.post<DataEnvelope<PhoneVerifyResult>>('auth/phone/verify', { body })),
     refresh: (refreshToken: string) => unwrap(c.post<DataEnvelope<Session>>('auth/refresh', { body: { refreshToken } })),
-    logout: (refreshToken: string) => c.post<void>('auth/logout', { body: { refreshToken } }),
+    // A web session kept in the push_rt cookie has no token to send; push-be reads the cookie instead.
+    logout: (refreshToken?: string) => c.post<void>('auth/logout', { body: refreshToken ? { refreshToken } : {} }),
     me: () => unwrap(c.get<DataEnvelope<Me>>('auth/me')),
     emailSignup: async (body: EmailSignupInput) => {
       await c.raw('POST', 'auth/email/signup', { body })
