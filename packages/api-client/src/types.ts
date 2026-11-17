@@ -403,7 +403,7 @@ export type StreamEvent = (
   | { type: 'think'; seconds: number; phase: string }
   | {
       type: 'plan'
-      id: 'strategy' | 'feedback'
+      id: 'strategy' | 'feedback' | 'blueprints'
       title: string
       meta: string
       rows: { tag: string; label: string; note: string }[]
