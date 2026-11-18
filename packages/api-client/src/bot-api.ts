@@ -39,8 +39,8 @@ export const createBotApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<BotDetail>>(`bots/${id}`)),
     update: (id: string, body: UpdateBotBody) => unwrap(c.patch<DataEnvelope<Bot>>(`bots/${id}`, { body })),
     remove: (id: string) => c.delete<void>(`bots/${id}`),
-    /** Takes a site off the bot's allowed list. The bot asks again before it reads it. */
-    revokeSite: (id: string, siteId: string) => c.delete<void>(`bots/${id}/allowed-sites/${siteId}`),
+    /** Takes a host off the bot's site grants. The bot asks again before it reads it. */
+    revokeSite: (id: string, host: string) => c.delete<void>(`bots/${id}/site-grants/${encodeURIComponent(host)}`),
     markRead: (id: string) => unwrap(c.post<DataEnvelope<{ readAt: string }>>(`bots/${id}/read`)),
 
     transcript: (id: string, page: PageParams = {}) => c.get<Transcript>(`bots/${id}/transcript`, { query: page }),
