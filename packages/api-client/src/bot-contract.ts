@@ -42,11 +42,16 @@ export type BotLimit = {
 /** `limit` comes with the unfiltered list only. */
 export type BotList = { data: Bot[]; limit?: BotLimit }
 
+/** A site the bot reads without asking. `kind` says what the user allowed it for (BotProfileAllowed). */
+export type AllowedSite = { id: string; host: string; allowedAt: string; kind: 'posting' | 'company' }
+
 export type BotDetail = Bot & {
   posting: { id: string; title: string; deadline: string | null; closed: boolean } | null
   fit: { score: number } | null
   /** Missing until the server counts materials. */
   materialCount?: number
+  /** Missing until the server lists them. */
+  allowedSites?: AllowedSite[]
 }
 
 export type BotRef = { id: string; kind: BotKind; displayName: string; color: BotColor | null }
