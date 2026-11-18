@@ -1,0 +1,15 @@
+diff --git a/build/native-tabs/utils/optionsIconConverter.android.js b/build/native-tabs/utils/optionsIconConverter.android.js
+index fc005b31fdd89cea1bffb5f1c1b529a8d0dbb97a..ca9e56403ce3d714ff8bb19b1ebb8df64a55611f 100644
+--- a/build/native-tabs/utils/optionsIconConverter.android.js
++++ b/build/native-tabs/utils/optionsIconConverter.android.js
+@@ -73,7 +73,9 @@ function convertOptionsIconToScreensPropsIcon(icon) {
+             platform: 'android',
+             icon: {
+                 type: 'imageSource',
+-                imageSource: icon.src
++                imageSource: icon.src,
++                // Pass renderingMode 'original' through so react-native-screens skips the tab tint.
++                ...(icon.renderingMode === 'original' ? { tinting: 'original' } : {})
+             }
+         };
+     }

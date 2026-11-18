@@ -1,12 +1,37 @@
 import { describe, expect, it } from 'vitest'
-import { brandOf, fileSize, monthDay } from '../index'
+import { readFileSync } from 'node:fs'
+import { brandColor, fileSize, monthDay, registerBrandColors } from '../index'
+import { registerMockBrandColors } from '../mock-brand'
 
-describe('brandOf', () => {
-  it('picks a stable colour from the name', () => {
-    expect(brandOf('모아페이')).toBe('#0E7A5F')
-    expect(brandOf('Push')).toBe('#B4501E')
-    expect(brandOf('김서준')).toBe('#5B4CF0')
-    expect(brandOf('하루랩스')).toBe('#1B6E8F')
+describe('brandColor', () => {
+  it('picks the same board palette colour for the same key', () => {
+    expect(brandColor('핀다')).toBe('#0C8599')
+    expect(brandColor('u-42')).toBe(brandColor('u-42'))
+    expect(brandColor('Push')).toBe('#D9480F')
+  })
+
+  it('lets a registered colour win over the pick for that exact key only', () => {
+    registerBrandColors({ 'test-co': '#123456' })
+    expect(brandColor('test-co')).toBe('#123456')
+    expect(brandColor('test-co 주식회사')).not.toBe('#123456')
+  })
+
+  it('names no company or person in the shared code', () => {
+    expect(readFileSync(new URL('../brand-of.ts', import.meta.url), 'utf8')).not.toMatch(/[가-힣]/)
+    expect(readFileSync(new URL('../index.ts', import.meta.url), 'utf8')).not.toMatch(/mock/)
+  })
+
+  it('gives the mock companies the colours both the app and web boards draw', () => {
+    registerMockBrandColors()
+    expect(brandColor('모아페이')).toBe('#1F3A8A')
+    expect(brandColor('파도AI')).toBe('#862E9C')
+  })
+
+  it('gives the mock people the avatar colours the app boards draw', () => {
+    registerMockBrandColors()
+    expect(brandColor('오지현')).toBe('#E8590C')
+    expect(brandColor('정해린')).toBe('#D6336C')
+    expect(brandColor('강민호')).toBe('#2F9E44')
   })
 })
 

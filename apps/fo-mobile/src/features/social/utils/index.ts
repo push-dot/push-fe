@@ -1,5 +1,0 @@
-export * from './category-label'
-export * from './post-image'
-export * from './given-name'
-export * from './thread-comments'
-export * from './time-ago'

@@ -1,4 +1,3 @@
-import { HUB_CATEGORY_COUNT } from '../constants'
 import type { CareerStatus, CareerYears, EmploymentType, JobCategory, PostCategory, Tenure } from '../types'
 
 export const JOB_CATEGORIES: { key: JobCategory; label: string }[] = [
@@ -12,7 +11,14 @@ export const JOB_CATEGORIES: { key: JobCategory; label: string }[] = [
   { key: 'ops', label: '경영지원' },
 ]
 
-export const HUB_CATEGORIES = JOB_CATEGORIES.slice(0, HUB_CATEGORY_COUNT)
+export const HUB_CATEGORIES: { key: JobCategory; label: string }[] = [
+  { key: 'dev', label: '개발' },
+  { key: 'design', label: '디자인' },
+  { key: 'plan', label: '기획' },
+  { key: 'marketing', label: '마케팅' },
+  { key: 'data', label: '데이터' },
+  { key: 'sales', label: '영업' },
+]
 
 export const CAREER_YEARS: { key: CareerYears; label: string }[] = [
   { key: '0', label: '신입' },
@@ -31,7 +37,8 @@ export const EMPLOYMENT_TYPES: { key: EmploymentType; label: string }[] = [
 ]
 
 export const TENURES: { key: Tenure; label: string }[] = [
-  { key: '0-2', label: '0–2년' },
+  { key: '0', label: '신입' },
+  { key: '1-2', label: '1–2년' },
   { key: '3-5', label: '3–5년' },
   { key: '6-9', label: '6–9년' },
   { key: '10+', label: '10년+' },

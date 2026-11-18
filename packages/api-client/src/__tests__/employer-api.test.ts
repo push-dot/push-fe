@@ -45,18 +45,17 @@ const session = {
 }
 
 describe('employer api', () => {
-  it('posts email signup with account type and optional consent', async () => {
+  it('posts email signup with account type, the terms agreement, and optional consent', async () => {
     const { api, hits } = harness(() => noContent(202))
     await api.auth.emailSignup({
       email: 'a@push.app',
-      password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     await api.auth.emailSignup({
       email: 'b@push.app',
-      password: 'secret123',
       accountType: 'PERSONAL',
       displayName: '이하은',
     })
@@ -64,17 +63,24 @@ describe('employer api', () => {
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/signup')
     expect(bodyOf(hits[0]!)).toEqual({
       email: 'a@push.app',
-      password: 'secret123',
       accountType: 'EMPLOYER',
       displayName: '김서준',
+      agreeTerms: true,
       consentReference: true,
     })
     expect(bodyOf(hits[1]!)).toEqual({
       email: 'b@push.app',
-      password: 'secret123',
       accountType: 'PERSONAL',
       displayName: '이하은',
     })
+  })
+
+  it('resends a verification mail and reads a 204 as success', async () => {
+    const { api, hits } = harness(() => noContent(204))
+    await expect(api.auth.email.resendVerify('a@push.app')).resolves.toBeUndefined()
+    expect(hits[0]).toMatchObject({ method: 'POST' })
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/verify/resend')
+    expect(bodyOf(hits[0]!)).toEqual({ email: 'a@push.app' })
   })
 
   it('posts company verify fields and returns the company', async () => {
@@ -146,6 +152,14 @@ describe('employer api', () => {
     expect(decodeURIComponent(hits[2]!.url)).toBe('http://x/api/v1/conversations?limit=10&audience=EMPLOYER')
   })
 
+  it('sends sort and period on the posts list', async () => {
+    const { api, hits } = harness(() => json(200, { data: [], page: { nextCursor: null, hasMore: false } }))
+    await api.posts.list(null, { sort: 'popular', period: 'week', limit: 12 })
+    await api.posts.list('dev', { sort: 'latest' })
+    expect(decodeURIComponent(hits[0]!.url)).toBe('http://x/api/v1/posts?sort=popular&period=week&limit=12')
+    expect(decodeURIComponent(hits[1]!.url)).toBe('http://x/api/v1/posts?category=dev&sort=latest')
+  })
+
   it('sends accountType on oauth start', async () => {
     const { api, hits } = harness(() => json(200, { data: { authorizationUrl: 'https://auth.example', state: 's' } }))
     await api.auth.start('google', {
@@ -176,13 +190,22 @@ describe('employer api', () => {
 
   it('verifies email and logs in with a session', async () => {
     const { api, hits } = harness(() => json(200, { data: session }))
-    await expect(api.auth.emailVerify('tok')).resolves.toEqual(session)
+    await expect(api.auth.emailVerify('tok', 'chosen-password-1')).resolves.toEqual(session)
     await expect(api.auth.emailLogin('a@push.app', 'secret123')).resolves.toEqual(session)
     expect(hits[0]!.method).toBe('POST')
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/verify')
-    expect(bodyOf(hits[0]!)).toEqual({ token: 'tok' })
+    expect(bodyOf(hits[0]!)).toEqual({ token: 'tok', password: 'chosen-password-1' })
     expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/auth/email/login')
     expect(bodyOf(hits[1]!)).toEqual({ email: 'a@push.app', password: 'secret123' })
+  })
+
+  it('logs out with the refresh token, or with an empty body when the cookie holds it', async () => {
+    const { api, hits } = harness(() => noContent(204))
+    await api.auth.logout('rt-1')
+    await api.auth.logout()
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/logout')
+    expect(bodyOf(hits[0]!)).toEqual({ refreshToken: 'rt-1' })
+    expect(bodyOf(hits[1]!)).toEqual({})
   })
 
   it('requests and confirms a password reset', async () => {
@@ -196,6 +219,13 @@ describe('employer api', () => {
     expect(bodyOf(hits[1]!)).toEqual({ token: 'tok', password: 'new-secret' })
   })
 
+  it('looks up the account email of a reset link without using it', async () => {
+    const { api, hits } = harness(() => json(200, { data: { email: 'a@push.app' } }))
+    await expect(api.auth.passwordResetEmail('tok_1')).resolves.toEqual({ email: 'a@push.app' })
+    expect(hits[0]!.method).toBe('GET')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/auth/email/password-reset/tok_1')
+  })
+
   it('tops up, opens the portal, lists the ledger, and verifies iap', async () => {
     const ledger = {
       data: [{ type: 'PURCHASE' as const, amountMicroCredits: 30, balanceAfter: 30, createdAt: '2026-10-21T00:00:00.000Z' }],
@@ -207,14 +237,14 @@ describe('employer api', () => {
       if (path.endsWith('/iap/verify')) return json(200, { data: { plan: 'BASIC', periodEndsAt: '2026-11-21T00:00:00.000Z' } })
       return json(200, { data: { url: 'https://pay.example/next' } })
     })
-    await expect(api.billing.topup(3000)).resolves.toEqual({ url: 'https://pay.example/next' })
+    await expect(api.billing.topup(2)).resolves.toEqual({ url: 'https://pay.example/next' })
     await expect(api.billing.portal()).resolves.toEqual({ url: 'https://pay.example/next' })
     await expect(api.billing.ledger({ limit: 10, cursor: 'c1' })).resolves.toEqual(ledger)
     await expect(
       api.billing.verifyIap({ platform: 'APP_STORE', productId: 'push.basic', signedTransaction: 'jws' }),
     ).resolves.toEqual({ plan: 'BASIC', periodEndsAt: '2026-11-21T00:00:00.000Z' })
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/billing/topup')
-    expect(bodyOf(hits[0]!)).toEqual({ amount: 3000 })
+    expect(bodyOf(hits[0]!)).toEqual({ packs: 2 })
     expect(hits[1]!.method).toBe('POST')
     expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/billing/portal')
     expect(hits[1]!.body).toBe('')
@@ -251,6 +281,14 @@ describe('employer api', () => {
     expect(hits[3]!.method).toBe('PATCH')
     expect(new URL(hits[3]!.url).pathname).toBe('/api/v1/companies/me/members/u2')
     expect(bodyOf(hits[3]!)).toEqual({ role: 'ADMIN' })
+  })
+
+  it('keeps an invite token inside its own path segment', async () => {
+    const { api, hits } = harness((req) => (req.method === 'POST' ? noContent(204) : json(200, { data: {} })))
+    await api.companies.invitePreview('../../me/members')
+    await api.companies.acceptInvite('a/../../b?x=1#y')
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/companies/invites/..%2F..%2Fme%2Fmembers')
+    expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/companies/invites/a%2F..%2F..%2Fb%3Fx%3D1%23y/accept')
   })
 
   it('creates, updates, and closes a posting', async () => {
@@ -400,7 +438,7 @@ describe('employer api', () => {
     expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/me/consents')
     expect(hits[0]!.method).toBe('GET')
     expect(decodeURIComponent(hits[1]!.url)).toBe(
-      'http://x/api/v1/calendar/events?from=2026-10-01T00:00:00.000Z&to=2026-10-31T00:00:00.000Z',
+      'http://x/api/v1/calendar/events?from=2026-10-01T00:00:00.000Z&to=2026-10-31T00:00:00.000Z&limit=100',
     )
   })
 

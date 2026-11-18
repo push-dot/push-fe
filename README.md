@@ -1,113 +1,232 @@
-<p align="center">
-  <img src="apps/fo-mobile/assets/icon.png" width="96" alt="Push icon" />
-</p>
-
 <h1 align="center">Push FE</h1>
 
 <p align="center">
-  <strong>근거 기반 커리어 작업공간 Push의 프론트엔드 — 모바일 앱, 웹, 데스크톱</strong>
+  <strong>Push의 모바일 앱과 웹. 공고·허브·소셜, 그리고 모바일 에이전트</strong>
 </p>
 
 <p align="center">
-  pnpm workspaces · Turborepo · React 19 · Expo · Vite · TanStack Query
+  pnpm 11 · Turborepo · React 19 · Expo SDK 58 · Vite 6 · TanStack Query 5
 </p>
 
 ---
 
-**push-fe**는 Push 클라이언트를 모아 둔 모노레포예요. 앱 3개와 공통 패키지 2개가 있어요. 화면 디자인 기준은 Claude Design이고, 시안은 `docs/design/`에 있어요.
+**push-fe**는 Push의 웹과 모바일 클라이언트를 모아 둔 pnpm 워크스페이스예요. 앱은 `apps/fo-web`, `apps/fo-mobile`이고, 둘이 같이 쓰는 패키지는 `packages/api-client`, `packages/design-system`, `packages/shared`예요.
 
-| 앱 | 대상 | 스택 |
-|---|---|---|
-| `apps/fo-mobile` | 개인 사용자 iOS·Android 앱. AI 채팅이 있는 메인 앱이에요. | Expo SDK 58, React Native 0.88, Expo Router, Zustand |
-| `apps/fo-web` | 개인용 웹(채용공고·허브·소셜)과 기업용 웹(공고·지원자·기업 AI). 모바일 앱 안의 WebView로도 열려요. | Vite, React 19, React Router 7, es-hangul |
-| `apps/fo-desktop` | Tauri 데스크톱 앱. 지금은 개발을 멈춘 상태예요. | Tauri v2, Mantine, TipTap, vanilla-extract |
+화면 문구는 한국어예요. 글꼴은 Noto Sans KR이에요.
 
-| 패키지 | 내용 |
-|---|---|
-| `packages/api-client` | `@push/api-client`. fo-web과 fo-mobile이 함께 쓰는 push-be API 클라이언트예요. ky 기반이고, 타입(`types.ts`), 엔드포인트(`endpoints.ts`), SSE 스트림(`sse.ts`), 작업 폴링(`jobs.ts`)이 들어 있어요. |
-| `packages/design-system` | `@push/design-system`. 구버전 디자인 시스템(vanilla-extract, Storybook)이에요. fo-desktop만 써요. fo-web과 fo-mobile은 Claude Design 기준으로 각자 UI 컴포넌트를 만들어 써요. |
+| 패키지 | 하는 일 |
+| --- | --- |
+| `apps/fo-mobile` (`@push/fo-mobile`) | 개인용 iOS·Android 앱. 탭은 홈, 허브, 소셜, 에이전트, 마이예요. |
+| `apps/fo-web` (`@push/fo-web`) | 개인 웹과 기업 웹. 개발 서버는 5174예요. 모바일 WebView도 이 앱의 공고·프로필 상세를 열어요. |
+| `packages/api-client` (`@push/api-client`) | push-be `/api/v1` 클라이언트. ky, 타입, SSE 파서, 작업 폴링. |
+| `packages/design-system` (`@push/design-system`) | Claude Design 디자인 시스템의 색, 타입, 간격, 반경, 그림자 토큰과 아이콘. 웹은 `tokens.css`를 가져다 써요. |
+| `packages/shared` (`@push/shared`) | 한글 검색(`es-hangul`), 경력 라벨, 날짜, 파일 크기. 웹과 모바일이 같이 써요. |
 
-## AI
+## 개요
 
-AI는 Push가 제공하는 관리형 모델만 써요. 사용자 API 키(BYOK)는 받지 않아요. 요금제(Free·Pro·Ultra)에 따라 쓸 수 있는 모델과 크레딧이 정해져요. 채팅은 SSE로 응답을 받고, 다른 화면에 갔다 와도 진행 중인 응답에 다시 이어 붙어요.
+개인 웹과 모바일은 공고를 보고, 검색하고, 허브 프로필과 소셜, 제안, 알림, 내 정보를 다뤄요. 웹에서 로그인 없이 열리는 경로는 `/`, `/jobs`, `/search`, `/postings/:id`와 약관 경로예요.
 
-## 실행
+에이전트(AI 채팅) 화면은 모바일에 있어요. 메시지는 SSE(스트림 v3)로 받고, 진행 중인 응답은 다시 이어 받아요. 대화 목록 사이드바는 탭 위에 쌓이는 스택 화면(`/sidebar`)으로 열려서 탭 바까지 덮어요. 웹의 AI 채팅은 기업 화면(`/employer/chat`)에 있어요.
 
-패키지 매니저는 **pnpm**이에요. 버전은 `package.json`의 `packageManager`에 고정돼 있어요. 다른 패키지 매니저(npm, yarn, bun)로 설치하지 마세요. `package.json`이나 lock 파일이 바뀌어요.
+기업 웹은 사업자 확인, 공고 작성, 지원자, 담당자 초대, 요금제 화면을 가져요. 계정 종류는 `PERSONAL`과 `EMPLOYER`예요.
+
+모바일 로그인은 Google, Apple(iOS만), GitHub, 휴대폰 번호예요. OAuth는 PKCE이고 콜백은 `push://auth/callback`이에요. `__DEV__` 빌드에서만 `EXPO_PUBLIC_DEV_AUTH_TOKEN`으로 들어갈 수 있어요. 웹 개인 로그인은 Google, Apple, GitHub, 휴대폰 번호예요. 기업 로그인은 Google과 이메일이에요. 이메일 가입·인증·비밀번호 재설정 경로는 `/signup`, `/auth/verify`, `/auth/reset`이에요.
+
+## 아키텍처
+
+```
+fo-mobile                         fo-web
+Expo Router + Zustand             React Router + TanStack Query
+expo-secure-store                 브라우저 세션 (push-web-session)
+        │                                │
+        │  WebView: /postings/:id        │
+        │           /profiles/:id        │
+        └──────── @push/api-client ──────┘
+                         │  ky, Bearer, 401이면 refresh 한 번
+                         ▼
+                    push-be /api/v1
+```
+
+웹이 `window.ReactNativeWebView` 안에 있으면 라우터는 공고 상세와 프로필 상세만 남겨요. 앱이 `window.__PUSH__`로 토큰, API 주소, 목업 여부를 넘겨요. WebView 안에서는 웹이 refresh를 시도하지 않아요.
+
+## 기술 스택
+
+| 영역 | 선택 |
+| --- | --- |
+| 워크스페이스 | pnpm 11.0.4 (`packageManager`), Turborepo 2.11, TypeScript 5.8 (모바일만 6.0) |
+| Node | CI는 Node 22 |
+| 모바일 | Expo SDK 58.0, React Native 0.88, React 19.3, Expo Router 58(Native Tabs, Stack), Zustand 5, React Native WebView 14, `@expo/ui`(SwiftUI·Jetpack Compose 시트, 메뉴, 피커), Noto Sans KR |
+| 웹 | Vite 6, React 19.1, React Router 7, TanStack Query 5, Noto Sans KR |
+| HTTP | `@push/api-client` (ky 1) |
+| 한글 검색 | `@push/shared`가 `es-hangul` 2.4를 감싸요 |
+| 테스트 | Vitest. 모바일 린트는 `expo lint` |
+| 번들 ID | iOS·Android 모두 `app.push.mobile`. URL 스킴은 `push` |
+
+웹에는 i18n 라이브러리가 없고, 문구는 페이지의 한국어 상수예요. 모바일 상태 저장은 Zustand, 서버 상태는 TanStack Query예요. 웹의 서버 상태도 TanStack Query이고, Zustand는 쓰지 않아요.
+
+## 시작하기
+
+`apps/fo-mobile`과 `apps/fo-web`의 앱 소스는 각각 [fo-mobile](https://github.com/push-dot/fo-mobile), [fo-web](https://github.com/push-dot/fo-web) 저장소에 있고, 이 워크스페이스에는 그 경로로 링크돼 있어요. 패키지 설치와 실행은 이 저장소 루트에서 해요. `pnpm-lock.yaml`은 여기에만 있어요.
 
 ```bash
+git clone --recurse-submodules https://github.com/push-dot/push-fe.git
+cd push-fe
 pnpm install
 ```
 
-### fo-mobile
+이미 받은 저장소는 `git pull` 다음 `git submodule update --init`이에요.
 
-```bash
-pnpm --filter @push/fo-mobile start     # Expo 개발 서버
-pnpm --filter @push/fo-mobile ios       # iOS 빌드 후 실행
-pnpm --filter @push/fo-mobile android   # Android 빌드 후 실행
-```
+앱 소스 변경 PR은 [fo-mobile](https://github.com/push-dot/fo-mobile) 또는 [fo-web](https://github.com/push-dot/fo-web)에 열고, 이 저장소 PR은 머지된 커밋을 가리키도록 gitlink만 올려요. 앱 gitlink는 Dependabot이 `develop` 대상 PR로 올려요. 각 앱 저장소 `develop` 끝을 따라가요. 앱 저장소에 SemVer 태그가 생기면 Dependabot은 브랜치 끝 대신 더 높은 태그에 핀해요.
 
-Expo 패키지를 추가할 때는 `npx expo install <package>`를 쓰세요. SDK에 맞는 버전을 골라 줘요. 자세한 규칙은 `apps/fo-mobile/AGENTS.md`에 있어요.
+의존성을 바꾸면 앱 `package.json`은 앱 저장소에, `pnpm-lock.yaml`은 이 저장소 루트에 각각 커밋해요. 앱 PR이 잠금 파일을 바꿔야 하면 PR 본문에 한 줄로 적어요.
+
+    push-fe-ref: <branch-or-sha>
+
+패키지 매니저는 **pnpm**이에요. `package.json`의 `packageManager`에 pnpm 11.0.4로 고정돼 있어요.
 
 ### fo-web
 
 ```bash
-pnpm --filter @push/fo-web dev          # http://localhost:5174
-pnpm --filter @push/fo-web build        # tsc -b && vite build
+pnpm --filter @push/fo-web dev       # http://localhost:5174, host 공개
+pnpm --filter @push/fo-web dev:test  # 스테이징 API로 개발 서버
+pnpm --filter @push/fo-web build     # tsc -b && vite build
+pnpm --filter @push/fo-web preview   # 포트 5174
+pnpm --filter @push/fo-web test
+pnpm --filter @push/fo-web typecheck
 ```
 
-### fo-desktop
+`@push/fo-web`에는 `lint` 스크립트가 없어요.
 
-루트 `pnpm dev`와 `pnpm build`는 fo-desktop을 대상으로 해요.
+목업은 목업 빌드에서만 켜져요. 주소에 `mock` 쿼리를 붙이고, `as`는 `personal`, `employer`, `employer-pro`, `employer-ultra`, `employer-new` 중 하나예요. 목업이면 `shared/api/mock.ts`가 fetch를 대체해요.
+
+### fo-mobile
 
 ```bash
-pnpm dev                                # Vite 개발 서버
-pnpm --filter @push/fo-desktop tauri dev
+pnpm --filter @push/fo-mobile start      # Expo 개발 서버 (기본 API 주소)
+pnpm --filter @push/fo-mobile start:test # 스테이징 API로 개발 서버
+pnpm --filter @push/fo-mobile ios        # expo run:ios
+pnpm --filter @push/fo-mobile android    # expo run:android
+pnpm --filter @push/fo-mobile test
+pnpm --filter @push/fo-mobile lint       # expo lint
+pnpm --filter @push/fo-mobile typecheck
 ```
+
+Expo 패키지를 더할 때는 앱 디렉터리에서 `npx expo install <package>`를 써요. 규칙이 더 있으면 `apps/fo-mobile/AGENTS.md`에 있어요.
+
+`expo-router` 58.0.24에는 pnpm 패치(`patches/expo-router@58.0.24.patch`)가 있어요. Android 탭 아이콘이 `renderingMode="original"`이면 색을 입히지 않게 하는 한 줄이에요. expo-router를 올릴 때 이 패치가 아직 필요한지 확인하세요.
+
+목업 API는 `EXPO_PUBLIC_API_MOCK`가 `1`일 때 `src/mock`을 써요. 예시는 `apps/fo-mobile/.env.example`이고, 복사 대상은 `.env.local`이에요.
+
+Maestro 플로우는 `apps/fo-mobile/.maestro/`에 있어요. `.maestro/config.yaml`은 `flows/*`를 실행하고, `_*.yaml` 서브플로와 `visual/`(디자인 비교용 스크린샷)은 제외해요. iOS 시뮬레이터와 Android 에뮬레이터에서 돌려요. `.env.local`에 `EXPO_PUBLIC_API_MOCK=1`과 `EXPO_PUBLIC_DEV_AUTH_TOKEN`을 넣고 Metro를 띄운 뒤 `maestro test apps/fo-mobile/.maestro`를 실행해요. npm 스크립트와 CI에는 연결되어 있지 않아요.
+
+### 웹·모바일 함께
+
+```bash
+pnpm --filter @push/fo-web --filter @push/fo-mobile --filter @push/api-client --filter @push/shared typecheck
+pnpm --filter @push/fo-web --filter @push/fo-mobile --filter @push/api-client --filter @push/shared test
+pnpm --filter @push/fo-mobile lint
+pnpm --filter @push/fo-web build
+```
+
+루트 스크립트는 `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm check`(`turbo run typecheck lint test build`)예요.
 
 ## 환경 변수
 
-| 변수 | 앱 | 기본값 | 용도 |
-|---|---|---|---|
-| `EXPO_PUBLIC_API_BASE_URL` | fo-mobile | `https://push-be.youngjoon568.workers.dev/api/v1` | push-be API 주소 |
-| `EXPO_PUBLIC_WEB_BASE_URL` | fo-mobile | `http://localhost:5174` | WebView로 여는 fo-web 주소 |
-| `EXPO_PUBLIC_API_MOCK` | fo-mobile | 꺼짐 | `1`이면 목업 데이터로 동작해요. |
-| `EXPO_PUBLIC_DEV_AUTH_TOKEN` | fo-mobile | 없음 | 개발용 인증 토큰 |
-| `VITE_API_BASE_URL` | fo-web, fo-desktop | `https://push-be.youngjoon568.workers.dev/api/v1` | push-be API 주소 |
-| `VITE_SENTRY_DSN` | fo-desktop | 없음 | Sentry 오류 수집 |
-| `VITE_LOCIZE_PROJECT_ID`, `VITE_LOCIZE_API_KEY` | fo-desktop | 없음 | Locize 번역 |
+값은 적지 않아요. 비우면 각 앱 코드에 있는 기본 주소를 써요. fo-web용 `.env.example`은 없어요.
 
-fo-web은 주소에 `?mock`을 붙이면 목업 데이터로 동작해요. 모바일 앱 WebView 안에서는 앱이 `window.__PUSH__`로 토큰, API 주소, 목업 여부를 넘겨줘요.
+| 이름 | 앱 | 읽는 곳 |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | fo-web | `apps/fo-web/src/shared/api/client.ts` |
+| `EXPO_PUBLIC_API_BASE_URL` | fo-mobile | `apps/fo-mobile/src/shared/infrastructure/config.ts` |
+| `EXPO_PUBLIC_WEB_BASE_URL` | fo-mobile | 같은 파일. WebView로 여는 fo-web 주소 |
+| `EXPO_PUBLIC_API_MOCK` | fo-mobile | `1`이면 목업 |
+| `EXPO_PUBLIC_DEV_AUTH_TOKEN` | fo-mobile | `__DEV__` 빌드의 개발 로그인 |
 
-## 테스트·검증
+웹은 `window.__PUSH__.apiBaseUrl`이 있으면 그 주소를 `VITE_API_BASE_URL`보다 먼저 써요.
+
+## 화면
+
+### fo-web
+
+브라우저에서는 `app/shell.tsx` 안에 아래 경로가 있어요. `RequireAuth`가 붙은 경로는 로그인이 필요해요.
+
+| 경로 | 화면 |
+| --- | --- |
+| `/` | 홈. 공개 |
+| `/jobs` | 채용공고 목록. 공개 |
+| `/search` | 검색. 공개 |
+| `/login`, `/signup` | 로그인, 가입 |
+| `/auth/callback`, `/auth/verify`, `/auth/reset` | OAuth 콜백, 이메일 인증, 비밀번호 재설정 |
+| `/postings/:id` | 공고 상세. 공개 |
+| `/terms`, `/privacy`, `/privacy-consent`, `/marketing-consent` | 약관·처리방침. 공개 |
+| `/profiles/:id` | 허브 프로필. 로그인 |
+| `/hub`, `/social`, `/posts/:id` | 허브, 소셜, 게시물 |
+| `/me` | 마이 |
+| `/offers`, `/offers/:id` | 제안함 |
+| `/notifications`, `/settings`, `/settings/blocked` | 알림, 설정, 차단 목록 |
+| `/employer/verify` | 사업자 확인 |
+| `/employer/postings`, `…/new`, `…/:id/edit` | 공고 관리 |
+| `/employer/postings/:id/applicants`, `…/:applicationId` | 지원자 |
+| `/employer/chat`, `…/new`, `…/:id` | 기업 AI 채팅 |
+| `/employer/members`, `/employer/plans` | 담당자, 요금제 |
+| `/invites/:token` | 초대 수락 |
+
+WebView에서는 `/postings/:id`와 `/profiles/:id`만 있어요.
+
+코드는 Feature-Sliced Design이에요. `src/app`, `src/pages`, `src/features`, `src/entities`, `src/shared`.
+
+### fo-mobile
+
+Expo Router 파일은 `apps/fo-mobile/src/app/`예요. 로그인 전 화면(`sign-in`, `phone`, `verify-phone`, `signup-terms`, `phone-registered`)은 루트에 있어요. 로그인 뒤 화면은 `(app)/(stack)` 아래에 있고, `(app)`은 그 스택을 그대로 그리는 레이아웃이에요. 에이전트 사이드바도 이 스택의 `sidebar/` 화면이에요. 그룹은 URL에 들어가지 않지만, typed routes 때문에 그룹을 쓰는 href는 `/(app)/(stack)/(tabs)/…` 전체를 적어요.
+
+탭 다섯 개 밖에 검색, 알림, 제안, 설정, 대화(`chat/[id]`), 게시물, 서류(`docs/[id]`)가 있어요. 필터, 지원, 제안하기, 확인, 일정 추가, 빠른 시작, 자료 같은 시트는 네이티브 폼 시트 라우트예요(`job-filter`, `apply`, `proposal`, `confirm`, `activity/add-event`, `quick-start/[key]`, `materials` 등). 공고 상세와 프로필 상세는 네이티브 크롬 안의 WebView로 fo-web을 열어요. 탭 바 아이콘은 `assets/tabs/`의 PNG예요.
+
+화면 컴포넌트는 `src/screens/`, 기능은 `src/features/`의 `auth`, `billing`, `bots`, `chat`, `home`, `hub`, `jobs`, `my`, `notifications`, `search`, `social`이에요.
+
+## API 클라이언트
+
+`@push/api-client`의 `createApi`가 묶는 영역은 `auth`, `postings`, `documents`, `jobs`, `search`, `profiles`, `me`, `posts`, `uploads`, `billing`, `sources`, `applications`, `conversations`, `companies`, `calendar`, `integrations`, `bots`예요. 대화는 SSE `stream`과 이어 받기 `follow`를 포함해요. 오류 타입과 작업 상태 헬퍼(`jobs.ts`)도 같이 내보내요.
+
+## 테스트·CI
 
 ```bash
-pnpm typecheck       # turbo run typecheck — 모든 앱·패키지
-pnpm lint            # turbo run lint
-pnpm test            # turbo run test (Vitest)
-pnpm check           # typecheck, lint, test, build 한 번에
-pnpm test:e2e        # fo-desktop Playwright e2e
+pnpm --filter @push/fo-web test
+pnpm --filter @push/fo-web typecheck
+pnpm --filter @push/fo-web build
+pnpm --filter @push/fo-mobile test
+pnpm --filter @push/fo-mobile lint
+pnpm --filter @push/fo-mobile typecheck
+pnpm --filter @push/api-client test
+pnpm --filter @push/api-client typecheck
+pnpm --filter @push/shared test
+pnpm --filter @push/shared typecheck
+pnpm --filter @push/design-system test
 ```
 
-CI(`.github/workflows/ci.yml`)는 모든 PR과 develop·main push에서 돌아요. `pnpm install --frozen-lockfile` → `turbo run typecheck lint test` → `pnpm run build` 순서예요. fo-desktop Playwright e2e는 별도 job이에요.
+`.github/workflows/ci.yml`은 PR과 `develop`·`main` push, `workflow_dispatch`에서 `pnpm install --frozen-lockfile` 뒤에 `turbo run typecheck lint test`를 실행해요. 웹 프로덕션 빌드는 `pnpm --filter @push/fo-web build`예요. 웹 호스팅이나 스토어 제출 워크플로는 이 저장소에 없어요.
 
-## 구조
+## 폴더 구조
 
 ```
 apps/
-  fo-mobile/   Expo 앱 — src/app(Expo Router 경로), screens, features, shared, theme, mock
-  fo-web/      Vite 웹 — Feature-Sliced Design(app, pages, features, entities, shared)
-  fo-desktop/  Tauri 앱 — src(app, pages, features, shared, theme), src-tauri(Rust)
+  fo-mobile/          Expo. src/app, screens, features, shared, mock, providers, theme
+  fo-web/             Vite. src/app, pages, features, entities, shared
 packages/
-  api-client/     @push/api-client
-  design-system/  @push/design-system (구버전, fo-desktop 전용)
-docs/
-  design/      Claude Design 시안 (HTML·PNG)
-  plans/       구현 계획
+  api-client/         @push/api-client
+  design-system/      @push/design-system
+  shared/             @push/shared
+patches/              pnpm 패치 (expo-router)
 ```
 
-## 기여
+## 브랜치 규칙
 
-- 브랜치는 `develop`에서 만들고, PR은 `develop`으로 올려요. `main`에는 릴리스 PR로만 반영해요.
-- 커밋과 PR 제목은 Conventional Commits 형식을 따라요. 예: `fix(fo-web): …`
-- PR 템플릿(`.github/PULL_REQUEST_TEMPLATE.md`)의 체크리스트를 채워 주세요.
+브랜치는 `develop`에서 만들고, PR은 `develop`으로 올려요. `main`에는 릴리스 PR로 반영해요. 커밋과 PR 제목은 Conventional Commits를 따라요. 예: `docs(readme): …`. PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md`를 써요.
+
+## 관련 저장소
+
+- [push-be](https://github.com/push-dot/push-be) — API
+- [push-fe](https://github.com/push-dot/push-fe) — 이 저장소
+- [fo-web](https://github.com/push-dot/fo-web) — 웹 앱
+- [fo-mobile](https://github.com/push-dot/fo-mobile) — 모바일 앱
+- [push-workspace](https://github.com/push-dot/push-workspace) — 통합 워크스페이스와 제품 문서
+- [push-langdig](https://github.com/push-dot/push-langdig) — 랜딩 페이지

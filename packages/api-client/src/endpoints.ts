@@ -3,30 +3,43 @@ import { readEvents } from './sse'
 import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
-  AccessMode, AccountType, AiOptions, ApprovalResolution, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, Company, CompanyBillingStatus, CompanyMember, Consent, Conversation, ConversationAttachment, CreatePostingInput,
-  DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message,
-  Offer, OfferMessage, PageParams, Post, PostCategory, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile,
-  ProfileFilters, Session, Settings, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
+  CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
+  InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
+  ProfileChange, ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
+
+const bearer = (accessToken?: string) => (accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined)
 
 const unwrap = async <T>(p: Promise<DataEnvelope<T>>) => (await p).data
 
 export const createApi = (c: Client) => ({
   auth: {
-    start: (provider: 'google' | 'github', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
+    start: (provider: 'google' | 'github' | 'apple', query: { codeChallenge: string; redirectUri: string; accountType?: AccountType }) =>
       unwrap(c.get<DataEnvelope<{ authorizationUrl: string; state: string }>>(`auth/${provider}/start`, {
         query: { ...query, codeChallengeMethod: 'S256' },
       })),
-    exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<Session>>('auth/exchange', { body })),
+    exchange: (body: { code: string; codeVerifier: string }) => unwrap(c.post<DataEnvelope<AuthResult>>('auth/exchange', { body })),
+    appleNative: (body: { identityToken: string; nonce: string }) =>
+      unwrap(c.post<DataEnvelope<AuthResult>>('auth/apple/native', { body })),
+    phoneSend: (phone: string) => unwrap(c.post<DataEnvelope<PhoneCodeSent>>('auth/phone/send', { body: { phone } })),
+    phoneVerify: (body: { phone: string; code: string; pendingToken?: string }) =>
+      unwrap(c.post<DataEnvelope<PhoneVerifyResult>>('auth/phone/verify', { body })),
     refresh: (refreshToken: string) => unwrap(c.post<DataEnvelope<Session>>('auth/refresh', { body: { refreshToken } })),
-    logout: (refreshToken: string) => c.post<void>('auth/logout', { body: { refreshToken } }),
+    // A web session kept in the push_rt cookie has no token to send; push-be reads the cookie instead.
+    logout: (refreshToken?: string) => c.post<void>('auth/logout', { body: refreshToken ? { refreshToken } : {} }),
     me: () => unwrap(c.get<DataEnvelope<Me>>('auth/me')),
     emailSignup: async (body: EmailSignupInput) => {
       await c.raw('POST', 'auth/email/signup', { body })
     },
-    emailVerify: (token: string) => unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token } })),
+    emailVerify: (token: string, password: string) =>
+      unwrap(c.post<DataEnvelope<Session>>('auth/email/verify', { body: { token, password } })),
+    email: {
+      // 204 whether or not the address exists. 429 RATE_LIMITED is the shared mail bucket.
+      resendVerify: (email: string) => c.post<void>('auth/email/verify/resend', { body: { email } }),
+    },
     emailLogin: (email: string, password: string) =>
       unwrap(c.post<DataEnvelope<Session>>('auth/email/login', { body: { email, password } })),
     requestPasswordReset: async (email: string) => {
@@ -34,11 +47,13 @@ export const createApi = (c: Client) => ({
     },
     confirmPasswordReset: (token: string, password: string) =>
       c.post<void>('auth/email/password-reset/confirm', { body: { token, password } }),
+    passwordResetEmail: (token: string) =>
+      unwrap(c.get<DataEnvelope<{ email: string }>>(`auth/email/password-reset/${encodeURIComponent(token)}`)),
   },
 
   postings: {
     list: (f: PostingFilters = {}) => c.get<ListEnvelope<Posting>>('postings', { query: f }),
-    mine: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('companies/me/postings', { query: p }),
+    mine: (p: PageParams = {}) => c.get<ListEnvelope<CompanyPosting>>('companies/me/postings', { query: p }),
     locations: (f: PostingFilters = {}) =>
       unwrap(c.get<DataEnvelope<{ location: string; count: number }[]>>('postings/locations', { query: f })),
     get: (id: string) => unwrap(c.get<DataEnvelope<PostingDetail>>(`postings/${id}`)),
@@ -54,14 +69,34 @@ export const createApi = (c: Client) => ({
       c.get<ListEnvelope<ApplicantSummary>>(`postings/${id}/applicants`, { query }),
     applicant: (postingId: string, applicationId: string) =>
       unwrap(c.get<DataEnvelope<ApplicantDetail>>(`postings/${postingId}/applicants/${applicationId}`)),
+    /** The attached file's bytes (Content-Disposition carries the name). */
+    applicantFile: (postingId: string, applicationId: string, fileId: string) =>
+      c.raw('GET', `postings/${postingId}/applicants/${applicationId}/files/${fileId}`),
+    applicantCounts: (id: string) => unwrap(c.get<DataEnvelope<ApplicantCounts>>(`postings/${id}/applicant-counts`)),
     setApplicantStage: (postingId: string, applicationId: string, stage: EmployerStage) =>
       unwrap(c.patch<DataEnvelope<Application>>(`postings/${postingId}/applicants/${applicationId}`, { body: { stage } })),
     fit: (id: string, documentId: string) => unwrap(c.post<DataEnvelope<JobAccepted>>(`postings/${id}/fit`, { body: { documentId } })),
   },
 
   documents: {
+    list: (query: PageParams & { applicationId?: string; kind?: string } = {}) =>
+      c.get<ListEnvelope<ResumeDocument>>('documents', { query }),
+    listArchived: (query: PageParams & { applicationId?: string; kind?: string } = {}) =>
+      c.get<ListEnvelope<ArchivedDocument>>('documents', { query: { ...query, archived: 1 } }),
     generate: (id: string, body: GenerateDocumentInput) =>
       unwrap(c.post<DataEnvelope<JobAccepted>>(`documents/${id}/generate`, { body })),
+    setBaseProfile: (id: string) =>
+      unwrap(c.post<DataEnvelope<{ documentId: string; profileUserId: string }>>(`documents/${id}/base-profile`, { body: {} })),
+    get: (id: string) => unwrap(c.get<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`)),
+    exportFile: (id: string, versionId: string, format: 'PDF' | 'DOCX' = 'PDF') =>
+      c.raw('GET', `documents/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/export`, { query: { format } }),
+    rename: (id: string, expectedRevision: number, title: string) =>
+      unwrap(c.patch<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}`, { body: { expectedRevision, title } })),
+    // push-be deletes a Push document by archiving it; DELETE sources/:id is for uploaded files only.
+    archive: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/archive`, { body: { expectedRevision } })),
+    restore: (id: string, expectedRevision: number) =>
+      unwrap(c.post<DataEnvelope<ResumeDocument>>(`documents/${encodeURIComponent(id)}/restore`, { body: { expectedRevision } })),
   },
 
   jobs: {
@@ -72,6 +107,8 @@ export const createApi = (c: Client) => ({
     c.get<ListEnvelope<T extends 'postings' ? Posting : T extends 'people' ? Profile : Post>>('search', {
       query: { q, type, ...page },
     }),
+
+  searchTrending: () => unwrap(c.get<DataEnvelope<SearchTrending>>('search/trending')),
 
   profiles: {
     list: (f: ProfileFilters = {}) => c.get<ListEnvelope<Profile>>('profiles', { query: f }),
@@ -87,17 +124,31 @@ export const createApi = (c: Client) => ({
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
+    /** The changeId of an update_my_profile tool line; 404 when it is not the caller's. */
+    profileChange: (id: string) => unwrap(c.get<DataEnvelope<ProfileChange>>(`me/profile/changes/${id}`)),
+    /** Puts the replaced values back, once: a second call is 409 (ApiError.status). Resolves with the profile as it is now. */
+    undoProfileChange: (id: string) => unwrap(c.post<DataEnvelope<Profile>>(`me/profile/changes/${id}/undo`)),
     bookmarks: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/bookmarks', { query: p }),
+    postingViews: (p: PageParams = {}) => c.get<ListEnvelope<Posting>>('me/posting-views', { query: p }),
     follows: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/follows', { query: p }),
     followers: (p: PageParams = {}) => c.get<ListEnvelope<Profile>>('me/followers', { query: p }),
-    posts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
-    commentedPosts: (p: PageParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
-    offers: (box: 'received' | 'sent', p: PageParams = {}) =>
+    posts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/posts', { query: p }),
+    commentedPosts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/commented-posts', { query: p }),
+    savedPosts: (p: MyPostsParams = {}) => c.get<ListEnvelope<Post>>('me/saved-posts', { query: p }),
+    /** The profile screen as a PDF; photo stamps the avatar on the first page. */
+    profilePdf: (photo = false) => c.raw('GET', 'me/profile/pdf', { query: photo ? { photo: 1 } : undefined }),
+    offers: (box: 'received' | 'sent', p: PageParams & { archived?: 1 } = {}) =>
       c.get<ListEnvelope<Offer>>('me/offers', { query: { box, ...p } }),
     offer: (id: string) => unwrap(c.get<DataEnvelope<Offer>>(`me/offers/${id}`)),
     acceptOffer: (id: string, reply?: string) =>
       unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/accept`, { body: reply ? { reply } : {} })),
     declineOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/decline`)),
+    archiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/archive`)),
+    unarchiveOffer: (id: string) => unwrap(c.post<DataEnvelope<Offer>>(`me/offers/${id}/unarchive`)),
+    reportOffer: (id: string, reason?: string) => c.post<void>(`me/offers/${id}/report`, { body: reason ? { reason } : {} }),
+    blocks: (p: PageParams = {}) => c.get<ListEnvelope<BlockedUser>>('me/blocks', { query: p }),
+    blockUser: (userId: string) => c.post<void>('me/blocks', { body: { userId } }),
+    unblockUser: (userId: string) => c.delete<void>(`me/blocks/${userId}`),
     offerMessages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<OfferMessage>>(`me/offers/${id}/messages`, { query: p }),
     sendOfferMessage: (id: string, body: string) =>
@@ -106,6 +157,7 @@ export const createApi = (c: Client) => ({
     addLink: (body: { url: string; kind?: LinkKind; title?: string; aiRead?: boolean }) =>
       unwrap(c.post<DataEnvelope<UserLink>>('me/links', { body })),
     deleteLink: (id: string) => c.delete<void>(`me/links/${id}`),
+    restoreLink: (id: string) => unwrap(c.post<DataEnvelope<UserLink>>(`me/links/${encodeURIComponent(id)}/restore`)),
     notifications: (p: PageParams = {}) => c.get<ListEnvelope<AppNotification>>('me/notifications', { query: p }),
     webNotifications: (p: PageParams = {}) => c.get<ListEnvelope<WebNotification>>('me/notifications', { query: p }),
     readNotifications: (ids: string[] | 'all') =>
@@ -116,13 +168,17 @@ export const createApi = (c: Client) => ({
     settings: () => unwrap(c.get<DataEnvelope<Settings>>('me/settings')),
     updateSettings: (patch: Partial<Settings> & { defaultTone?: Tone }) =>
       unwrap(c.patch<DataEnvelope<Settings>>('me/settings', { body: patch })),
-    consents: () => unwrap(c.get<DataEnvelope<Consent>>('me/consents')),
+    consents: (accessToken?: string) => unwrap(c.get<DataEnvelope<Consent>>('me/consents', { headers: bearer(accessToken) })),
     updateConsents: (referenceData: boolean) =>
       unwrap(c.put<DataEnvelope<Consent>>('me/consents', { body: { referenceData } })),
+    updateMarketing: (marketing: boolean) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body: { marketing } })),
+    updateTerms: (body: SignupTermsInput, accessToken?: string) =>
+      unwrap(c.put<DataEnvelope<Consent>>('me/consents/terms', { body, headers: bearer(accessToken) })),
   },
 
   posts: {
-    list: (category?: PostCategory | null, p: PageParams = {}) =>
+    list: (category?: PostCategory | null, p: PostsListParams = {}) =>
       c.get<ListEnvelope<Post>>('posts', { query: { category: category ?? undefined, ...p } }),
     get: (id: string) => unwrap(c.get<DataEnvelope<Post>>(`posts/${id}`)),
     create: (body: { category: PostCategory; title: string; body: string; imageKeys: string[] }) =>
@@ -130,6 +186,8 @@ export const createApi = (c: Client) => ({
     comments: (id: string, p: PageParams = {}) => c.get<ListEnvelope<Comment>>(`posts/${id}/comments`, { query: p }),
     comment: (id: string, body: string, parentId?: string) =>
       unwrap(c.post<DataEnvelope<Comment>>(`posts/${id}/comments`, { body: { body, parentId } })),
+    save: (id: string) => c.post<void>(`posts/${id}/save`),
+    unsave: (id: string) => c.delete<void>(`posts/${id}/save`),
   },
 
   uploads: {
@@ -140,7 +198,7 @@ export const createApi = (c: Client) => ({
     status: () => unwrap(c.get<DataEnvelope<BillingStatus>>('billing')),
     companyStatus: () => unwrap(c.get<DataEnvelope<CompanyBillingStatus>>('billing')),
     checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
-    topup: (amount: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { amount } })),
+    topup: (packs: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { packs } })),
     portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
     ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
     verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
@@ -152,14 +210,15 @@ export const createApi = (c: Client) => ({
     get: (id: string) => unwrap(c.get<DataEnvelope<Source>>(`sources/${id}`)),
     profileDraft: (id: string) => unwrap(c.get<DataEnvelope<ProfileDraft>>(`sources/${id}/profile-draft`)),
     remove: (id: string) => c.delete<void>(`sources/${id}`),
+    content: (id: string) => c.raw('GET', `sources/${encodeURIComponent(id)}/content`),
   },
   applications: {
-    list: (p: PageParams & { stage?: string; query?: string } = {}) =>
+    list: (p: PageParams & { stage?: string; query?: string; applied?: boolean } = {}) =>
       c.get<ListEnvelope<Application>>('applications', { query: p }),
   },
   conversations: {
     list: (p: PageParams & { audience?: 'EMPLOYER' | 'PERSONAL' } = {}) =>
-      c.get<ListEnvelope<Conversation>>('conversations', { query: p }),
+      c.get<ListEnvelope<ConversationListItem>>('conversations', { query: p }),
     create: (title: string) => unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { title } })),
     createEmployer: (body: { title: string; postingId?: string; applicationId?: string }) =>
       unwrap(c.post<DataEnvelope<Conversation>>('conversations', { body: { ...body, audience: 'EMPLOYER' } })),
@@ -171,6 +230,8 @@ export const createApi = (c: Client) => ({
       unwrap(c.post<DataEnvelope<Conversation>>(`conversations/${id}/archive`, { body: { expectedRevision } })),
     messages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<Message>>(`conversations/${id}/messages`, { query: p }),
+    turns: (id: string, p: PageParams = {}) =>
+      c.get<ListEnvelope<ConversationTurn>>(`conversations/${id}/turns`, { query: p }),
     send: async (
       id: string,
       body: {
@@ -202,8 +263,12 @@ export const createApi = (c: Client) => ({
       if (!res.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
       yield* readEvents<StreamEvent>(res.body, signal)
     },
-    resolveApproval: (id: string, approvalId: string, optionId: string) =>
-      unwrap(c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, { body: { optionId } })),
+    resolveApproval: (id: string, approvalId: string, optionId: string, optionIds?: string[]) =>
+      unwrap(
+        c.post<DataEnvelope<ApprovalResolution>>(`conversations/${id}/approvals/${approvalId}`, {
+          body: optionIds?.length ? { optionId, optionIds } : { optionId },
+        }),
+      ),
     follow: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       let seq = after
       for (;;) {
@@ -221,6 +286,8 @@ export const createApi = (c: Client) => ({
         }
       }
     },
+    cancel: (id: string) =>
+      unwrap(c.post<DataEnvelope<{ jobId: string; status: 'CANCELLED' }>>(`conversations/${id}/stream/cancel`)),
     active: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       const res = await c.raw('GET', `conversations/${id}/messages/stream/active`, {
         query: { after },
@@ -236,16 +303,27 @@ export const createApi = (c: Client) => ({
     verify: (body: { bNo: string; startDt: string; pNm: string; bNm: string }) =>
       unwrap(c.post<DataEnvelope<Company>>('companies/verify', { body })),
     me: () => unwrap(c.get<DataEnvelope<Company>>('companies/me')),
+    update: (body: UpdateCompanyInput) => unwrap(c.patch<DataEnvelope<Company>>('companies/me', { body })),
     members: () => unwrap(c.get<DataEnvelope<CompanyMember[]>>('companies/me/members')),
+    invites: () => unwrap(c.get<DataEnvelope<CompanyInvite[]>>('companies/me/invites')),
     invite: (email: string) => c.post<void>('companies/me/invites', { body: { email } }),
-    acceptInvite: (token: string) => c.post<void>(`companies/invites/${token}/accept`),
+    invitePreview: (token: string) => unwrap(c.get<DataEnvelope<InvitePreview>>(`companies/invites/${encodeURIComponent(token)}`)),
+    resendInvite: (id: string) => unwrap(c.post<DataEnvelope<CompanyInvite>>(`companies/me/invites/${id}/resend`)),
+    cancelInvite: (id: string) => c.delete<void>(`companies/me/invites/${id}`),
+    acceptInvite: (token: string) => c.post<void>(`companies/invites/${encodeURIComponent(token)}/accept`),
     removeMember: (userId: string) => c.delete<void>(`companies/me/members/${userId}`),
     transferAdmin: (userId: string) =>
       c.patch<void>(`companies/me/members/${userId}`, { body: { role: 'ADMIN' } }),
   },
 
   calendar: {
-    events: (from: string, to: string) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to } }),
+    // shortcut: one page of 100 (same as the app); page once a month view can hold more events.
+    events: (from: string, to: string, limit = 100) => c.get<ListEnvelope<CalendarEvent>>('calendar/events', { query: { from, to, limit } }),
+    create: (body: CreateCalendarEventInput) => unwrap(c.post<DataEnvelope<CalendarEvent>>('calendar/events', { body })),
+  },
+
+  integrations: {
+    google: () => unwrap(c.get<DataEnvelope<GoogleIntegration>>('integrations/google')),
   },
 })
 

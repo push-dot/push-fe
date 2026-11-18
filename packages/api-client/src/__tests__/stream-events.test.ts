@@ -4,7 +4,7 @@ import { createApi } from '../endpoints'
 import { QueueBusyError } from '../errors'
 import { isJobSettled, jobQuery } from '../jobs'
 import { parseFrame } from '../sse'
-import type { QueueJob, StreamEvent } from '../types'
+import type { ConversationTurn, QueueJob, StreamEvent } from '../types'
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...headers } })
@@ -25,6 +25,10 @@ const harness = (reply: (req: Request) => Response = () => json(200, { data: nul
 const frame = (event: unknown) => [...parseFrame<StreamEvent>(`id: 7\ndata: ${JSON.stringify(event)}`)]
 
 describe('harness stream events', () => {
+  it('yields no events for a comment-only ping frame', () => {
+    expect([...parseFrame(': ping')]).toEqual([])
+  })
+
   it('parses tool, approval, choice, file, todo, and done frames as typed events', () => {
     const events: StreamEvent[] = [
       { type: 'tool', name: 'draft_posting', state: 'ok', summary: '공고 초안을 저장해요', tier: 'SAFE_WRITE', result: { draft: { id: 'p1' } }, seq: 1 },
@@ -50,6 +54,18 @@ describe('harness endpoints', () => {
     const { api, hits } = harness(() => json(202, { data: { id: 'a1', status: 'APPROVED', optionId: 'approve', jobId: 'j1' } }))
     await expect(api.conversations.resolveApproval('c1', 'a1', 'approve')).resolves.toMatchObject({ jobId: 'j1' })
     expect(hits[0]).toMatchObject({ method: 'POST', url: 'http://x/api/v1/conversations/c1/approvals/a1', body: '{"optionId":"approve"}' })
+  })
+
+  it('cancels the active job through stream/cancel', async () => {
+    const { api, hits } = harness(() => json(200, { data: { jobId: 'j1', status: 'CANCELLED' } }))
+    await expect(api.conversations.cancel('c1')).resolves.toEqual({ jobId: 'j1', status: 'CANCELLED' })
+    expect(hits[0]).toMatchObject({ method: 'POST', url: 'http://x/api/v1/conversations/c1/stream/cancel' })
+  })
+
+  it('sends every selected id when the card allows several', async () => {
+    const { api, hits } = harness(() => json(202, { data: { id: 'a1', status: 'APPROVED', optionId: 'resume', optionIds: ['resume', 'portfolio'], jobId: 'j1' } }))
+    await expect(api.conversations.resolveApproval('c1', 'a1', 'resume', ['resume', 'portfolio'])).resolves.toMatchObject({ optionIds: ['resume', 'portfolio'] })
+    expect(hits[0]).toMatchObject({ body: '{"optionId":"resume","optionIds":["resume","portfolio"]}' })
   })
 
   it('sends the access mode and intent on the stream request', async () => {
@@ -89,6 +105,28 @@ describe('harness endpoints', () => {
     await expect(api.me.updateSettings({ aiAccessMode: 'ALWAYS_ASK' })).resolves.toMatchObject({ aiAccessMode: 'ALWAYS_ASK' })
     expect(hits[0]).toMatchObject({ method: 'PATCH', url: 'http://x/api/v1/me/settings', body: '{"aiAccessMode":"ALWAYS_ASK"}' })
   })
+
+  it('lists the stored turns of a conversation with their cards', async () => {
+    const turn: ConversationTurn = {
+      jobId: 'j1',
+      status: 'DONE',
+      createdAt: '2026-11-05T00:00:00Z',
+      userMessageId: 'm1',
+      assistantMessageId: null,
+      answer: null,
+      events: [
+        { type: 'todo', id: 'analyze', items: [{ id: 'resume', text: '이력서 읽기', state: 'now', added: false }], seq: 1 },
+        {
+          type: 'approval', id: 'a1', kind: 'DOCUMENT_EDIT', title: '이 수정을 적용할까요?',
+          options: [{ id: 'apply', label: '적용' }, { id: 'skip', label: '그대로 두기' }],
+          hunks: [{ line: null, sign: '+', text: 'Kafka' }], resolution: { status: 'PENDING', optionId: null }, seq: 2,
+        },
+      ],
+    }
+    const { api, hits } = harness(() => json(200, { data: [turn], page: { nextCursor: null } }))
+    await expect(api.conversations.turns('c1', { limit: 50 })).resolves.toMatchObject({ data: [turn] })
+    expect(hits[0]).toMatchObject({ method: 'GET', url: 'http://x/api/v1/conversations/c1/turns?limit=50' })
+  })
 })
 
 describe('queue jobs', () => {
@@ -109,6 +147,12 @@ describe('queue jobs', () => {
       'POST http://x/api/v1/documents/d1/generate {"expectedRevision":3}',
       'GET http://x/api/v1/ai/jobs/j1 ',
     ])
+  })
+
+  it('sets the base profile on documents/{id}/base-profile', async () => {
+    const { api, hits } = harness(() => json(200, { data: { documentId: 'd1', profileUserId: 'u1' } }))
+    await expect(api.documents.setBaseProfile('d1')).resolves.toEqual({ documentId: 'd1', profileUserId: 'u1' })
+    expect(hits[0]).toEqual({ method: 'POST', url: 'http://x/api/v1/documents/d1/base-profile', body: '{}' })
   })
 
   it('throws QueueBusyError with the retry delay on 429 QUEUE_BUSY', async () => {
