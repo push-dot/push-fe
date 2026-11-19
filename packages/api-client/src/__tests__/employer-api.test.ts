@@ -131,6 +131,48 @@ describe('employer api', () => {
     expect(bodyOf(hits[0]!)).toEqual({ planId: 'BASIC' })
   })
 
+  it('starts and confirms a Toss subscription, then cancels it', async () => {
+    const auth = { customerKey: 'ck_1', planId: 'PRO' as const, amount: 140000, orderName: 'Pro 월 구독' }
+    const confirmed = { plan: 'PRO' as const, amount: 140000, receiptUrl: null }
+    const { api, hits } = harness((req) => {
+      const path = new URL(req.url).pathname
+      if (path.endsWith('/billing-auth')) return json(200, { data: auth })
+      if (path.endsWith('/billing-confirm')) return json(200, { data: confirmed })
+      return noContent(204)
+    })
+    await expect(api.billing.tossBillingAuth('PRO')).resolves.toEqual(auth)
+    await expect(api.billing.tossBillingConfirm({ authKey: 'ak', customerKey: 'ck_1', planId: 'PRO' })).resolves.toEqual(confirmed)
+    await expect(api.billing.tossCancel()).resolves.toBeUndefined()
+    expect(hits.map((hit) => [hit.method, new URL(hit.url).pathname])).toEqual([
+      ['POST', '/api/v1/billing/toss/billing-auth'],
+      ['POST', '/api/v1/billing/toss/billing-confirm'],
+      ['POST', '/api/v1/billing/toss/cancel'],
+    ])
+    expect(bodyOf(hits[0]!)).toEqual({ planId: 'PRO' })
+    expect(bodyOf(hits[1]!)).toEqual({ authKey: 'ak', customerKey: 'ck_1', planId: 'PRO' })
+  })
+
+  it('orders and confirms a Toss credit top-up', async () => {
+    const order = { orderId: 'o_1', amount: 28000, orderName: '크레딧 3,000', customerKey: 'ck_1' }
+    const { api, hits } = harness((req) =>
+      json(200, { data: new URL(req.url).pathname.endsWith('/topup') ? order : { creditsAdded: 3000, receiptUrl: 'https://r/1' } }),
+    )
+    await expect(api.billing.tossTopup(2)).resolves.toEqual(order)
+    await expect(api.billing.tossTopupConfirm({ paymentKey: 'pk', orderId: 'o_1', amount: 28000 })).resolves.toEqual({
+      creditsAdded: 3000,
+      receiptUrl: 'https://r/1',
+    })
+    expect(new URL(hits[0]!.url).pathname).toBe('/api/v1/billing/toss/topup')
+    expect(bodyOf(hits[0]!)).toEqual({ packs: 2 })
+    expect(new URL(hits[1]!.url).pathname).toBe('/api/v1/billing/toss/topup-confirm')
+    expect(bodyOf(hits[1]!)).toEqual({ paymentKey: 'pk', orderId: 'o_1', amount: 28000 })
+  })
+
+  it('surfaces PAYMENTS_DISABLED from a Toss call', async () => {
+    const { api } = harness(() => json(503, { error: { code: 'PAYMENTS_DISABLED', message: 'off' } }))
+    await expect(api.billing.tossBillingAuth('BASIC')).rejects.toMatchObject({ status: 503, code: 'PAYMENTS_DISABLED' })
+  })
+
   it('puts reference data consent', async () => {
     const { api, hits } = harness(() => json(200, { data: { referenceData: true, updatedAt: '2026-10-21T00:00:00.000Z' } }))
     await expect(api.me.updateConsents(true)).resolves.toEqual({

@@ -492,6 +492,9 @@ export type EmployerPlan = 'BASIC' | 'PRO' | 'ULTRA'
 export type BillingAudience = 'PERSONAL' | 'EMPLOYER'
 export type BillingSource = 'STRIPE' | 'APP_STORE' | 'GOOGLE_PLAY'
 
+/** KRW prices push-be charges through Toss Payments: monthly per plan, and one 1,500-credit pack. */
+export type BillingPrices = { BASIC: number; PRO: number; ULTRA: number; pack: number }
+
 export type BillingStatus = {
   subscriptionStatus: string
   plan: 'FREE' | 'PRO' | 'ULTRA' | null
@@ -508,12 +511,27 @@ export type BillingStatus = {
   creditsRefillAt?: string
   /** Personal accounts: this month's settled micro credits per Bot, biggest first. Missing on servers before push-be #315. */
   usageByBot?: { id: string; name: string; usedMicroCredits: number }[]
+  /** Company web payments run on Toss Payments. Missing on servers before the Toss switch. */
+  provider?: 'toss'
+  currency?: 'KRW'
+  prices?: BillingPrices
+  /** Next automatic charge. */
+  renewsAt?: string | null
+  /** True once the admin cancelled; the plan stays until `periodEndsAt` and is not charged again. */
+  canceled?: boolean
 }
 
 export type CompanyBillingStatus = Omit<BillingStatus, 'plan'> & {
   plan: 'BASIC' | 'PRO' | 'ULTRA' | null
   audience?: BillingAudience
 }
+
+export type TossBillingAuth = { customerKey: string; planId: EmployerPlan; amount: number; orderName: string }
+export type TossBillingConfirmInput = { authKey: string; customerKey: string; planId: EmployerPlan }
+export type TossBillingConfirmResult = { plan: EmployerPlan; amount: number; receiptUrl: string | null }
+export type TossTopupOrder = { orderId: string; amount: number; orderName: string; customerKey: string }
+export type TossTopupConfirmInput = { paymentKey: string; orderId: string; amount: number }
+export type TossTopupConfirmResult = { creditsAdded: number; receiptUrl: string | null }
 
 export type PendingAuth = { pendingToken: string; expiresIn: number }
 export type AuthResult = Session | PendingAuth
