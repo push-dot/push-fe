@@ -33,7 +33,7 @@ const PLAN_PARTICLE: Record<string, string> = { 가: '이', 를: '을', 는: '�
 const appWording = (web: string) =>
   web
     .replace('크롤러, 봇, 스크립트', '크롤러, 매크로, 스크립트')
-    .replace('이 약관은 운영자가 제공하는', '이 약관은 운영자 채영준이 제공하는')
+    .replace('이 약관은 운영자가 제공하는', '이 약관은 운영자 데브씨와이준이 제공하는')
     .replace(/"에이전트"란|에이전트[가를는와로]?/g, (form) => APP_FORM[form])
     .replace(/요금제([가를는와로나]?)/g, (_, particle: string) => `플랜${PLAN_PARTICLE[particle] ?? particle}`)
 
@@ -61,12 +61,13 @@ describe('legal documents', () => {
     for (const form of ['"Bot"이란', 'Bot이', 'Bot을', 'Bot은', 'Bot과', 'Bot으로', '제9조 (Bot(AI) 이용)']) expect(terms).toContain(form)
   })
 
-  it('names the operator 채영준 in 제1조 and the privacy officer table in the app, and not on the web', () => {
+  it('names the operator 데브씨와이준 in 제1조 and the privacy officer table in the app, and not on the web', () => {
     const intro = (document: LegalDocument) => document.articles[0].blocks[0]
-    expect(intro(APP_DOCUMENTS.termsOfService)).toEqual({ kind: 'paragraph', text: expect.stringContaining('이 약관은 운영자 채영준이 제공하는 Push 서비스') })
+    expect(intro(APP_DOCUMENTS.termsOfService)).toEqual({ kind: 'paragraph', text: expect.stringContaining('이 약관은 운영자 데브씨와이준이 제공하는 Push 서비스') })
     expect(intro(LEGAL_DOCUMENTS.termsOfService)).toEqual({ kind: 'paragraph', text: expect.stringContaining('이 약관은 운영자가 제공하는 Push 서비스') })
-    expect(text(APP_DOCUMENTS.termsOfService)).toContain('| 성명 | 채영준 |')
-    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('| 개인정보 보호책임자 | 채영준 (운영자) |')
+    expect(text(APP_DOCUMENTS.termsOfService)).toContain('| 상호 | 데브씨와이준 |')
+    expect(text(APP_DOCUMENTS.termsOfService)).toContain('| 사업자등록번호 | 488-29-02010 |')
+    expect(text(APP_DOCUMENTS.privacyPolicy)).toContain('| 개인정보 보호책임자 | 채영준 (대표) |')
   })
 
   it('names a registered business by its trade name in the app', () => {
@@ -111,7 +112,7 @@ describe('legal documents', () => {
   })
 
   it('shows unfilled individual fields as bracketed labels', () => {
-    const terms = text(LEGAL_DOCUMENTS.termsOfService)
+    const terms = text(legalDocuments({ kind: 'individual', displayName: '채영준', contactEmail: 'support@push.devcyjoon.tech' }).termsOfService)
     expect(terms).toContain('| 운영자 구분 | 개인 |')
     expect(terms).toContain('| 성명 | 채영준 |')
     expect(terms).toContain('support@push.devcyjoon.tech')
