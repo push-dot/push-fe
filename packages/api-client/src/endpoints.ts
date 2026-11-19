@@ -120,7 +120,7 @@ export const createApi = (c: Client) => ({
   },
 
   me: {
-    deleteAccount: () => c.delete<void>('me'),
+    deleteAccount: (body?: { appleAuthorizationCode?: string }) => c.delete<void>('me', body ? { body } : undefined),
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
       unwrap(c.patch<DataEnvelope<Profile>>('me/profile', { body: patch })),
