@@ -50,6 +50,45 @@ describe('createClient', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('retries a late 401 with the current token and no refresh', async () => {
+    let token = 'old'
+    const fetch = vi.fn(async (req: RequestInfo | URL) => {
+      const sent = (req as Request).headers.get('Authorization')
+      if (sent === 'Bearer old') return (token = 'new'), json(401, { error: { code: 'TOKEN_EXPIRED', message: 'x' } })
+      return json(200, { data: 1 })
+    })
+    const refresh = vi.fn(async () => true)
+    const c = createClient({ baseUrl: 'http://x', getToken: () => token, refresh, fetch })
+    await expect(c.get('me')).resolves.toEqual({ data: 1 })
+    expect(refresh).not.toHaveBeenCalled()
+    expect(reqOf(fetch.mock.calls[1]!).headers.get('Authorization')).toBe('Bearer new')
+  })
+
+  it('turns an empty or HTML 200 body into PARSE_ERROR', async () => {
+    for (const body of ['', '<html></html>']) {
+      const fetch = vi.fn(async () => new Response(body, { status: 200 }))
+      const c = createClient({ baseUrl: 'http://x', getToken: () => null, fetch })
+      await expect(c.get('me')).rejects.toMatchObject({ code: 'PARSE_ERROR', status: 200 })
+    }
+  })
+
+  it('times out a hung request but not an event stream', async () => {
+    vi.useFakeTimers()
+    try {
+      const hang = (req: RequestInfo | URL) =>
+        new Promise<Response>((_, reject) => (req as Request).signal.addEventListener('abort', () => reject((req as Request).signal.reason)))
+      const c = createClient({ baseUrl: 'http://x', getToken: () => null, fetch: vi.fn(hang) })
+      const timedOut = expect(c.get('me')).rejects.toMatchObject({ code: 'TIMEOUT' })
+      await vi.advanceTimersByTimeAsync(30_001)
+      await timedOut
+      const stream = vi.fn(async () => new Response('ok'))
+      const s = createClient({ baseUrl: 'http://x', getToken: () => null, fetch: stream })
+      await expect(s.raw('GET', 'a/stream', { headers: { Accept: 'text/event-stream' } })).resolves.toBeInstanceOf(Response)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('throws ApiError with server code', async () => {
     const fetch = vi.fn(async () => json(409, { error: { code: 'CONFLICT', message: 'dup', details: null } }))
     const c = createClient({ baseUrl: 'http://x', getToken: () => null, fetch })

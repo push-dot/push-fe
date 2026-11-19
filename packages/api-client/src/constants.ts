@@ -12,7 +12,16 @@ export const RETRY_LIMIT = 1
 
 export const HTTP_UNAUTHORIZED = 401
 
+export const REQUEST_TIMEOUT_MS = 30_000
+
+// Only a stream (SSE) may stay open without limit.
 export const REQUEST_TIMEOUT_DISABLED = false
+
+export const EVENT_STREAM_ACCEPT = 'text/event-stream'
+
+export const PARSE_ERROR = 'PARSE_ERROR'
+
+export const TIMEOUT_ERROR = 'TIMEOUT'
 
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key'
 
