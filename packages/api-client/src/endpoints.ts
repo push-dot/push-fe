@@ -4,7 +4,7 @@ import { ApiError } from './errors'
 import { TERMINAL_STREAM_EVENTS } from './constants'
 import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
-  CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
+  CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, TossBillingAuth, TossBillingConfirmInput, TossBillingConfirmResult, TossTopupConfirmInput, TossTopupConfirmResult, TossTopupOrder, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileChange, ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
@@ -200,6 +200,14 @@ export const createApi = (c: Client) => ({
     checkout: (planId: EmployerPlan) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/checkout', { body: { planId } })),
     topup: (packs: number) => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/topup', { body: { packs } })),
     portal: () => unwrap(c.post<DataEnvelope<{ url: string }>>('billing/portal')),
+    tossBillingAuth: (planId: EmployerPlan) =>
+      unwrap(c.post<DataEnvelope<TossBillingAuth>>('billing/toss/billing-auth', { body: { planId } })),
+    tossBillingConfirm: (body: TossBillingConfirmInput) =>
+      unwrap(c.post<DataEnvelope<TossBillingConfirmResult>>('billing/toss/billing-confirm', { body })),
+    tossTopup: (packs: number) => unwrap(c.post<DataEnvelope<TossTopupOrder>>('billing/toss/topup', { body: { packs } })),
+    tossTopupConfirm: (body: TossTopupConfirmInput) =>
+      unwrap(c.post<DataEnvelope<TossTopupConfirmResult>>('billing/toss/topup-confirm', { body })),
+    tossCancel: () => c.post<void>('billing/toss/cancel'),
     ledger: (page?: PageParams) => c.get<ListEnvelope<LedgerEntry>>('billing/ledger', { query: page }),
     verifyIap: (body: VerifyIapInput) => unwrap(c.post<DataEnvelope<VerifyIapResult>>('billing/iap/verify', { body })),
   },
