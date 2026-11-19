@@ -1,4 +1,5 @@
 export { createClient, type Client, type ClientConfig, type RequestOptions } from './client'
+export { createRefresher, type RefresherConfig } from './refresher'
 export { createApi, type Api } from './endpoints'
 export { createBotApi, type BotApi } from './bot-api'
 export type * as BotContract from './bot-contract'

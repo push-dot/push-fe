@@ -1,14 +1,18 @@
-import ky, { HTTPError, type KyInstance } from 'ky'
+import ky, { HTTPError, TimeoutError, type KyInstance } from 'ky'
 import {
   DEFAULT_RETRY_AFTER_SEC,
   DOT_SEGMENT,
+  EVENT_STREAM_ACCEPT,
   HTTP_UNAUTHORIZED,
   QUEUE_BUSY,
   IDEMPOTENCY_KEY_HEADER,
   INVALID_PATH,
   MULTI_VALUE_QUERY_SEPARATOR,
+  PARSE_ERROR,
   REQUEST_TIMEOUT_DISABLED,
+  REQUEST_TIMEOUT_MS,
   RETRY_LIMIT,
+  TIMEOUT_ERROR,
   UNSAFE_PATH_CHARACTER,
 } from './constants'
 import { ApiError, QueueBusyError, type ApiErrorBody } from './errors'
@@ -51,7 +55,7 @@ export const createClient = (config: ClientConfig) => {
   const http: KyInstance = ky.create({
     prefixUrl: config.baseUrl.replace(/\/+$/, ''),
     fetch: config.fetch,
-    timeout: REQUEST_TIMEOUT_DISABLED,
+    timeout: REQUEST_TIMEOUT_MS,
     retry: { limit: RETRY_LIMIT, methods: [], statusCodes: [] },
     headers: { Accept: 'application/json' },
     hooks: {
@@ -68,10 +72,13 @@ export const createClient = (config: ClientConfig) => {
           if (response.status !== HTTP_UNAUTHORIZED || !config.refresh || retryCount >= RETRY_LIMIT) return
           // Refreshing renews the stored session, which is not the one a caller's own token belongs to.
           if (options.context.ownToken) return
-          if (!(await config.refresh())) return
-          const headers = new Headers(request.headers)
           const token = await config.getToken()
-          if (token) headers.set('Authorization', `Bearer ${token}`)
+          // A late 401 for a request sent with an older token: the session already moved on, so just resend.
+          const stale = !!token && request.headers.get('Authorization') !== `Bearer ${token}`
+          if (!stale && !(await config.refresh())) return
+          const headers = new Headers(request.headers)
+          const next = stale ? token : await config.getToken()
+          if (next) headers.set('Authorization', `Bearer ${next}`)
           return ky.retry({ request: new Request(request, { headers }), code: 'TOKEN_REFRESHED', delay: 0 })
         },
       ],
@@ -91,6 +98,7 @@ export const createClient = (config: ClientConfig) => {
         json: options.form || options.body === undefined ? undefined : options.body,
         body: options.form,
         signal: options.signal,
+        timeout: new Headers(headers).get('Accept')?.includes(EVENT_STREAM_ACCEPT) ? REQUEST_TIMEOUT_DISABLED : REQUEST_TIMEOUT_MS,
         context: { ownToken: new Headers(options.headers).has('Authorization') },
       })
     } catch (error) {
@@ -101,7 +109,11 @@ export const createClient = (config: ClientConfig) => {
   const json = async <T>(method: string, path: string, options?: RequestOptions): Promise<T> => {
     const res = await send(method, path, options)
     if (res.status === 204) return undefined as T
-    return (await res.json()) as T
+    try {
+      return (await res.json()) as T
+    } catch {
+      throw new ApiError('invalid response body', PARSE_ERROR, res.status)
+    }
   }
 
   return {
@@ -130,6 +142,7 @@ const toApiError = async (error: unknown): Promise<ApiError> => {
     }
     return new ApiError(error.response.statusText || 'request failed', 'HTTP_ERROR', error.response.status)
   }
+  if (error instanceof TimeoutError) return new ApiError('request timed out', TIMEOUT_ERROR, 0)
   if (error instanceof Error && error.name === 'AbortError') return new ApiError('aborted', 'ABORTED', 0)
   return new ApiError(error instanceof Error ? error.message : 'network error', 'NETWORK_ERROR', 0)
 }
