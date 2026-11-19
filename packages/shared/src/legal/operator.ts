@@ -4,9 +4,15 @@ export const LEGAL_VERSION = '1.0'
 export const LEGAL_EFFECTIVE_DATE = '2026-11-09'
 
 export const LEGAL_OPERATOR: LegalOperator = {
-  kind: 'individual',
-  displayName: '채영준',
+  kind: 'business',
+  tradeName: '데브씨와이준',
+  representative: '채영준',
+  businessNumber: '488-29-02010',
+  mailOrderNumber: '신고 준비 중',
+  address: '서울특별시 강서구 초록마을로 9-8 401호',
+  phone: '010-5913-6475',
   contactEmail: 'support@push.devcyjoon.tech',
+  privacyOfficer: '채영준 (대표)',
 }
 
 export const koreanDate = (iso: string) => {
