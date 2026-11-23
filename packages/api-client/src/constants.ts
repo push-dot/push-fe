@@ -24,6 +24,7 @@ export const PARSE_ERROR = 'PARSE_ERROR'
 export const TIMEOUT_ERROR = 'TIMEOUT'
 
 export const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key'
+export const A2UI_VERSION_HEADER = 'A2UI-Version'
 
 export const FRAME_SEPARATOR = /\r?\n\r?\n/
 

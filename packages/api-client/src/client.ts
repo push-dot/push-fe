@@ -1,5 +1,7 @@
 import ky, { HTTPError, TimeoutError, type KyInstance } from 'ky'
+import type { A2uiVersion } from './a2ui'
 import {
+  A2UI_VERSION_HEADER,
   DEFAULT_RETRY_AFTER_SEC,
   DOT_SEGMENT,
   EVENT_STREAM_ACCEPT,
@@ -26,6 +28,8 @@ export type RequestOptions = {
   signal?: AbortSignal
   idempotencyKey?: string
   headers?: Record<string, string>
+  /** The response holds Bot frames: send the A2UI version the client draws. */
+  frames?: boolean
 }
 
 export type ClientConfig = {
@@ -34,6 +38,8 @@ export type ClientConfig = {
   refresh?: () => Promise<boolean>
   fetch?: typeof fetch
   uuid?: () => string
+  /** Sent as `A2UI-Version` on every request that returns Bot frames. Unset sends no header. */
+  a2uiVersion?: A2uiVersion
 }
 
 export type Client = ReturnType<typeof createClient>
@@ -90,6 +96,7 @@ export const createClient = (config: ClientConfig) => {
     const headers: Record<string, string> = { ...options.headers }
     const key = options.idempotencyKey ?? (method === 'POST' && !path.endsWith('/stream') ? uuid() : undefined)
     if (key) headers[IDEMPOTENCY_KEY_HEADER] = key
+    if (options.frames && config.a2uiVersion) headers[A2UI_VERSION_HEADER] = config.a2uiVersion
     try {
       return await http(path.replace(/^\/+/, ''), {
         method,
