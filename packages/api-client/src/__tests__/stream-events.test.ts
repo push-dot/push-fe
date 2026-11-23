@@ -3,6 +3,7 @@ import { createClient } from '../client'
 import { createApi } from '../endpoints'
 import { QueueBusyError } from '../errors'
 import { isJobSettled, jobQuery } from '../jobs'
+import type { A2uiFrame, A2uiKind } from '../a2ui'
 import { parseFrame } from '../sse'
 import type { ConversationTurn, QueueJob, StreamEvent } from '../types'
 
@@ -22,6 +23,17 @@ const harness = (reply: (req: Request) => Response = () => json(200, { data: nul
   return { api, hits }
 }
 
+const surface = (surfaceId: string, kind: A2uiKind): A2uiFrame => ({
+  type: 'a2ui',
+  kind,
+  surfaceId,
+  messages: [
+    { version: 'v0.9.1', createSurface: { surfaceId, catalogId: 'https://push.app/a2ui/catalogs/push/v1/catalog.json' } },
+    { version: 'v0.9.1', updateComponents: { surfaceId, components: [{ id: 'root', component: 'Text', text: '이 수정을 적용할까요?' }] } },
+    { version: 'v0.9.1', updateDataModel: { surfaceId, path: '/', value: { open: true, picked: [] } } },
+  ],
+})
+
 const frame = (event: unknown) => [...parseFrame<StreamEvent>(`id: 7\ndata: ${JSON.stringify(event)}`)]
 
 describe('harness stream events', () => {
@@ -29,20 +41,11 @@ describe('harness stream events', () => {
     expect([...parseFrame(': ping')]).toEqual([])
   })
 
-  it('parses tool, approval, choice, file, todo, and done frames as typed events', () => {
+  it('parses tool, a2ui, file, and done frames as typed events', () => {
     const events: StreamEvent[] = [
       { type: 'tool', name: 'draft_posting', state: 'ok', summary: '공고 초안을 저장해요', tier: 'SAFE_WRITE', result: { draft: { id: 'p1' } }, seq: 1 },
-      {
-        type: 'approval', id: 'a1', kind: 'TOOL_ACTION', title: '지원자 단계를 바꿔요', summary: '지원자 단계를 바꿔요',
-        toolName: 'change_applicant_stage', args: { stage: 'INTERVIEW' },
-        options: [{ id: 'approve', label: '실행' }, { id: 'reject', label: '취소' }], seq: 2,
-      },
-      {
-        type: 'choice', id: 'c1', kind: 'RESUME_GATE', gate: 'mode_select', recommended: 'resume_based', auto: true,
-        options: [{ id: 'resume_based', label: '이력서부터 쓸게요' }, { id: 'cancel', label: '그만하기' }], seq: 3,
-      },
+      { ...surface('a1', 'approval'), seq: 2 },
       { type: 'file', name: '05_final_resume.md', mime: 'text/markdown', fileId: 'f1', documentId: 'd1', downloadUrl: '/conversations/c/artifacts/05_final_resume.md', seq: 4 },
-      { type: 'todo', items: [{ id: 't1', text: '분석', state: 'now' }], seq: 5 },
       { type: 'done', operation: null, awaiting: 'approval', seq: 6 },
     ]
     for (const event of events) expect(frame(event)).toEqual([event])
@@ -115,12 +118,8 @@ describe('harness endpoints', () => {
       assistantMessageId: null,
       answer: null,
       events: [
-        { type: 'todo', id: 'analyze', items: [{ id: 'resume', text: '이력서 읽기', state: 'now', added: false }], seq: 1 },
-        {
-          type: 'approval', id: 'a1', kind: 'DOCUMENT_EDIT', title: '이 수정을 적용할까요?',
-          options: [{ id: 'apply', label: '적용' }, { id: 'skip', label: '그대로 두기' }],
-          hunks: [{ line: null, sign: '+', text: 'Kafka' }], resolution: { status: 'PENDING', optionId: null }, seq: 2,
-        },
+        { ...surface('todo:analyze:j1', 'todo'), seq: 1 },
+        { ...surface('a1', 'approval'), seq: 2 },
       ],
     }
     const { api, hits } = harness(() => json(200, { data: [turn], page: { nextCursor: null } }))

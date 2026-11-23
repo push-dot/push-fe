@@ -43,19 +43,19 @@ export const createBotApi = (c: Client) => ({
     revokeSite: (id: string, host: string) => c.delete<void>(`bots/${id}/site-grants/${encodeURIComponent(host)}`),
     markRead: (id: string) => unwrap(c.post<DataEnvelope<{ readAt: string }>>(`bots/${id}/read`)),
 
-    transcript: (id: string, page: PageParams = {}) => c.get<Transcript>(`bots/${id}/transcript`, { query: page }),
+    transcript: (id: string, page: PageParams = {}) => c.get<Transcript>(`bots/${id}/transcript`, { query: page, frames: true }),
     clearChat: (id: string) => c.delete<void>(`bots/${id}/transcript`),
     findInChat: (id: string, q: string) =>
       unwrap(c.get<DataEnvelope<TranscriptMatches>>(`bots/${id}/transcript/matches`, { query: { q } })),
 
     send: async function* (id: string, body: SendBody, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
-      yield* frames(await c.raw('POST', `bots/${id}/messages/stream`, { body, signal, headers: EVENT_STREAM }), signal)
+      yield* frames(await c.raw('POST', `bots/${id}/messages/stream`, { body, signal, headers: EVENT_STREAM, frames: true }), signal)
     },
     /** Ends without a terminal event only when the server says nothing runs. The newest transcript page then holds how the run ended. */
     follow: async function* (id: string, after?: number, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
       let seq = after
       for (;;) {
-        const res = await c.raw('GET', `bots/${id}/stream`, { query: { after: seq }, signal, headers: EVENT_STREAM })
+        const res = await c.raw('GET', `bots/${id}/stream`, { query: { after: seq }, signal, headers: EVENT_STREAM, frames: true })
         if (res.status === HTTP_NO_CONTENT) return
         for await (const frame of frames(res, signal)) {
           const event: StreamEvent = frame
