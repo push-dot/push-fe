@@ -8,7 +8,6 @@ import type {
   InviteExpiredDetails,
   MessageAttachment,
   ReferencedByEvidenceDetails,
-  StreamEvent,
   Tenure,
 } from '../types'
 
@@ -20,13 +19,6 @@ describe('follow-up contract', () => {
     expectTypeOf<ArchivedDocument['archivedAt']>().toBeString()
     expectTypeOf<ArchivedDocument['purgeAt']>().toBeString()
     expectTypeOf<MessageAttachment['documentTitles']>().toEqualTypeOf<string[] | undefined>()
-    type Approval = Extract<StreamEvent, { type: 'approval' }>
-    expectTypeOf<NonNullable<Approval['rows']>[number]>().toEqualTypeOf<{
-      name: string
-      initial?: string
-      from: string
-      to: string
-    }>()
     expectTypeOf<Tenure>().toEqualTypeOf<'0' | '1-2' | '3-5' | '6-9' | '10+'>()
 
     const expired = {

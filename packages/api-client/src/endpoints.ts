@@ -239,7 +239,7 @@ export const createApi = (c: Client) => ({
     messages: (id: string, p: PageParams = {}) =>
       c.get<ListEnvelope<Message>>(`conversations/${id}/messages`, { query: p }),
     turns: (id: string, p: PageParams = {}) =>
-      c.get<ListEnvelope<ConversationTurn>>(`conversations/${id}/turns`, { query: p }),
+      c.get<ListEnvelope<ConversationTurn>>(`conversations/${id}/turns`, { query: p, frames: true }),
     send: async (
       id: string,
       body: {
@@ -267,6 +267,7 @@ export const createApi = (c: Client) => ({
         body,
         signal,
         headers: { Accept: 'text/event-stream' },
+        frames: true,
       })
       if (!res.body) throw new ApiError('empty stream', 'NETWORK_ERROR', 0)
       yield* readEvents<StreamEvent>(res.body, signal)
@@ -284,6 +285,7 @@ export const createApi = (c: Client) => ({
           query: { after: seq },
           signal,
           headers: { Accept: 'text/event-stream' },
+          frames: true,
         })
         if (res.status === 204 || !res.body) return
         for await (const frame of readEvents<StreamEvent>(res.body, signal)) {
@@ -301,6 +303,7 @@ export const createApi = (c: Client) => ({
         query: { after },
         signal,
         headers: { Accept: 'text/event-stream' },
+        frames: true,
       })
       if (res.status === 204 || !res.body) return
       yield* readEvents<StreamEvent>(res.body, signal)

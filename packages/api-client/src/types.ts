@@ -1,3 +1,5 @@
+import type { A2uiFrame } from './a2ui'
+
 export type PageInfo = { nextCursor: string | null; hasMore: boolean; total?: number }
 export type DataEnvelope<T> = { data: T }
 export type ListEnvelope<T> = { data: T[]; page: PageInfo }
@@ -331,22 +333,6 @@ export type ChatIntent =
   | 'career_post'
 export type ToolTier = 'READ' | 'EXTERNAL_READ' | 'SAFE_WRITE' | 'RISKY_WRITE'
 export type ToolRunState = 'run' | 'ok' | 'err' | 'wait'
-export type StreamOption = { id: string; label: string; desc?: string; badge?: string; sub?: string }
-/** push-be #224. `action` is only on row options and is not an answer id. */
-export type ChoiceOption = StreamOption & { action?: 'change' }
-export type ChoiceSection =
-  | { id: string; kind: 'chips'; title?: string; multiple?: boolean; options: ChoiceOption[]; selected: string[] }
-  | { id: string; kind: 'rows'; title?: string; options: ChoiceOption[] }
-  | { id: string; kind: 'toggle'; title?: string; options: ChoiceOption[]; selected: string[] }
-  | { id: string; kind: 'thumbnails'; title?: string; options: ChoiceOption[]; selected: string[] }
-export type ChoiceSubmit = { label: string; zeroLabel?: string; optionLabels?: Record<string, string> }
-export type StreamHunk = { line: number | null; sign: '+' | '-' | ''; text: string }
-/** GET .../turns only: how a card was answered. */
-export type CardResolution = { status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'; optionId: string | null; optionIds?: string[] }
-export type FitParts = { techStack?: number; experienceLink?: number; careerLevel?: number; keyword?: number; domain?: number }
-export type DoneSummary = { summary?: string; fitFrom?: number; fitTo?: number; bullets?: string[] }
-export type ResultAction = { id: string; label: string; method?: string; path?: string }
-export type ApprovalKind = 'TOOL_ACTION' | 'DOCUMENT_EDIT'
 
 export type StreamEvent = (
   | { type: 'token'; text: string }
@@ -366,96 +352,9 @@ export type StreamEvent = (
       extra?: string[]
       warning?: string
     }
-  | {
-      type: 'approval'
-      id: string
-      kind: ApprovalKind
-      title: string
-      options: StreamOption[]
-      summary?: string
-      toolName?: string
-      args?: Record<string, unknown>
-      documentId?: string
-      hunks?: StreamHunk[]
-      foot?: string
-      /** change_applicant_stage: the person and the stage change. No colour. */
-      rows?: { name: string; initial?: string; from: string; to: string }[]
-      resolution?: CardResolution
-    }
-  | {
-      type: 'choice'
-      id: string
-      options: StreamOption[]
-      kind?: string
-      title?: string
-      gate?: string
-      recommended?: string
-      auto?: boolean
-      detail?: string
-      multiple?: boolean
-      note?: string
-      documentId?: string
-      resolution?: CardResolution
-      /** Present → render these instead of the top-level options. */
-      sections?: ChoiceSection[]
-      submit?: ChoiceSubmit
-    }
+  | A2uiFrame
   | { type: 'think'; seconds: number; phase: string }
-  | {
-      type: 'plan'
-      id: 'strategy' | 'feedback' | 'blueprints'
-      title: string
-      meta: string
-      rows: { tag: string; label: string; note: string }[]
-      /** strategy only. No leading "+ ". */
-      keywords?: string[]
-    }
-  | { type: 'paper'; id: string; label: string; heading: string; lines: string[] }
   | { type: 'file'; name: string; mime: string; fileId: string; documentId: string | null; downloadUrl: string }
-  | ({
-      type: 'result'
-      source: 'external'
-      taskLine: string
-      checklist: string[]
-      documentId: string
-      company?: string
-      actions: ResultAction[]
-      fileName: string
-      pageLine: string
-      savedLine?: string
-      cardMeta?: string
-    } & DoneSummary)
-  | ({
-      type: 'result'
-      source: 'profile'
-      taskLine: string
-      checklist: string[]
-      documentId: string
-      company?: string
-      actions: ResultAction[]
-      name: string
-      headline: string
-      title: string
-      subtitle: string
-    } & DoneSummary)
-  /** A later todo with the same `id` replaces the earlier list. */
-  | { type: 'todo'; id?: string; items: { id: string; text: string; state: 'todo' | 'now' | 'done'; added?: boolean }[] }
-  | { type: 'diff'; documentId: string; revisionId: string; hunks: StreamHunk[] }
-  | {
-      type: 'fit'
-      score: number
-      parts?: FitParts
-      topGap?: string
-      plan?: 'FREE' | 'PRO' | 'ULTRA'
-      band?: string
-      summary?: string
-      keywords?: { label: string; ok: boolean }[]
-      /** ULTRA only. */
-      projected?: { score: number; label: string; bullets: string[] }
-      from?: number
-      delta?: string
-      note?: string
-    }
 ) & { seq?: number }
 
 /** One chat job as GET .../turns returns it: stored stream frames minus status and done. */

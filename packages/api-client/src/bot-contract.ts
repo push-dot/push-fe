@@ -1,4 +1,4 @@
-import type { AccessMode, AiOptions, CardResolution, ChatIntent, LinkKind, StreamEvent as ConversationEvent } from './types'
+import type { AccessMode, AiOptions, ChatIntent, LinkKind, StreamEvent as ConversationEvent } from './types'
 
 export type BotKind = 'push' | 'company'
 export type BotColor = 'teal' | 'sky' | 'blue' | 'violet' | 'pink' | 'red' | 'coral' | 'amber' | 'green' | 'brown' | 'gray'
@@ -107,9 +107,8 @@ type Status =
   | { type: 'status'; text: string; phase: 'thinking' | 'working'; since: string }
   | { type: 'status'; text: string; phase: 'waiting'; since: string; for: 'answer' | 'confirm'; cardId: string }
 
-type Unchanged = Exclude<ConversationEvent, { type: 'status' | 'done' | 'cancelled' | 'error' | 'approval' | 'choice' }>
-type Approval = Omit<Extract<ConversationEvent, { type: 'approval' }>, 'seq' | 'resolution'>
-type Choice = Omit<Extract<ConversationEvent, { type: 'choice' }>, 'seq' | 'resolution'>
+/** Every card arrives as an a2ui frame among these. */
+type Unchanged = Exclude<ConversationEvent, { type: 'status' | 'done' | 'cancelled' | 'error' }>
 type Progress = Unchanged | Status | { type: 'notice'; text: string } | { type: 'cancelled'; resumable: boolean }
 type Done = { type: 'done'; operation: unknown; awaiting?: 'approval' | 'choice'; sources?: Attachment[] }
 type Failure = { type: 'error'; error: { code: string; message: string; details?: unknown } }
@@ -119,16 +118,11 @@ type Failure = { type: 'error'; error: { code: string; message: string; details?
  * An error the stream itself raises (a failed poll, an unreadable frame) is not a stored event and has no stamp.
  */
 export type StreamEvent =
-  | ((Progress | (Approval & { expiresAt?: string }) | Choice | Done) & Stamp & { turn: string })
+  | ((Progress | Done) & Stamp & { turn: string })
   | (Failure & Partial<Stamp & { turn: string }>)
 
-/** An event of a stored turn. A card carries the facts of its row, so a card asked again reads the same after a reopen. */
-export type TurnEvent = (
-  | Progress
-  | ((Approval | Choice) & { resolution: CardResolution; openedAt: string; expiresAt: string | null; retryable: boolean })
-  | Failure
-) &
-  Stamp
+/** An event of a stored turn. An answered card replays as an a2ui frame with its answer in the data model. */
+export type TurnEvent = (Progress | Failure) & Stamp
 
 export type Turn = {
   id: string

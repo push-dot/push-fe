@@ -88,9 +88,12 @@ const transcript: BotContract.Transcript = {
       events: [
         { type: 'status', text: '공고 요건을 읽는 중', phase: 'working', since: '2026-11-12T09:49:00Z', seq: 11, at: '2026-11-12T09:49:02Z' },
         {
-          type: 'approval', id: 'c1', kind: 'TOOL_ACTION', title: '이 페이지를 열어도 될까요?',
-          options: [{ id: 'approve', label: '한 번 허용' }, { id: 'approve_always', label: '항상 허용' }, { id: 'reject', label: '거절' }],
-          resolution: { status: 'PENDING', optionId: null }, openedAt: '2026-11-12T09:50:00Z', expiresAt: '2026-11-12T10:00:00Z', retryable: true,
+          type: 'a2ui', kind: 'approval', surfaceId: 'c1',
+          messages: [
+            { version: 'v0.9.1', createSurface: { surfaceId: 'c1', catalogId: 'https://push.app/a2ui/catalogs/push/v1/catalog.json' } },
+            { version: 'v0.9.1', updateComponents: { surfaceId: 'c1', components: [{ id: 'root', component: 'Text', text: '이 페이지를 열어도 될까요?' }] } },
+            { version: 'v0.9.1', updateDataModel: { surfaceId: 'c1', path: '/', value: { open: true, picked: [] } } },
+          ],
           seq: 12, at: '2026-11-12T09:50:00Z',
         },
       ],
@@ -286,12 +289,11 @@ describe('bot contract types', () => {
     expectTypeOf<Extract<BotContract.StreamEvent, { type: 'error' }>['turn']>().toEqualTypeOf<string | undefined>()
   })
 
-  it('stores a card with the facts of its row and never stores done', () => {
-    type Card = Extract<BotContract.TurnEvent, { type: 'approval' | 'choice' }>
-    expectTypeOf<Card['retryable']>().toBeBoolean()
-    expectTypeOf<Card['expiresAt']>().toEqualTypeOf<string | null>()
+  it('stores a card as an a2ui frame and never stores done', () => {
+    expectTypeOf<Extract<BotContract.TurnEvent, { type: 'a2ui' }>['surfaceId']>().toBeString()
+    expectTypeOf<Extract<BotContract.TurnEvent, { type: 'approval' | 'choice' }>>().toBeNever()
     expectTypeOf<Extract<BotContract.TurnEvent, { type: 'done' }>>().toBeNever()
-    expectTypeOf<Extract<BotContract.StreamEvent, { type: 'approval' }>['expiresAt']>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<Extract<BotContract.StreamEvent, { type: 'a2ui' }>['turn']>().toBeString()
   })
 
   it('sends only the personal intents', () => {
