@@ -34,12 +34,24 @@ const codingHooks = ({ uiFiles = [], infraModules = [], open = [], openFiles = [
   uiFiles.length ? { files: uiFiles, ignores: TESTS, rules: { 'coding-hooks/no-infra-in-ui': ['error', { modules: infraModules }] } } : {},
 ]
 
+const NO_CYCLE = { files: TS, rules: { 'import/no-cycle': ['error', { ignoreExternal: true }] } }
+
 const web = (options) => [
   { ...tseslint.configs.base, files: TS },
+  {
+    files: TS,
+    plugins: { import: require('eslint-plugin-import') },
+    settings: {
+      'import/parsers': { [require.resolve('@typescript-eslint/parser')]: ['.ts', '.tsx'] },
+      'import/resolver': { [require.resolve('eslint-import-resolver-typescript')]: { alwaysTryTypes: true } },
+    },
+  },
+  NO_CYCLE,
   ...codingHooks(options),
 ]
 
 const native = (options) => [
+  NO_CYCLE,
   ...codingHooks(options),
   { files: ['src/**/*.tsx'], rules: { 'coding-hooks/no-inline-style': 'error' } },
 ]
