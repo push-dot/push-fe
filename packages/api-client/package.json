@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./a2ui-fixtures/*": "./src/a2ui-fixtures/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

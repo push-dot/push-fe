@@ -1,0 +1,21 @@
+{
+  "name": "@push/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.cjs",
+  "exports": {
+    ".": "./index.cjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "typescript-eslint": "^8.46.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "@typescript-eslint/parser": "^8.71.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0"
+  }
+}
