@@ -3,7 +3,7 @@ import { TERMINAL_STREAM_EVENTS } from './constants'
 import { ApiError } from './errors'
 import { readEvents } from './sse'
 import type {
-  Bot, BotDetail, BotList, BotSearch, CancelResult, CardAnswer, CardAnswerBody, CardRetry, CreateBotBody, LinkPreview,
+  Bot, BotDetail, BotList, BotSchedule, BotSearch, CancelResult, CreateBotScheduleBody, UpdateBotScheduleBody, CardAnswer, CardAnswerBody, CardRetry, CreateBotBody, LinkPreview,
   Material, MaterialDetail, MaterialKind, MaterialsPage, MaterialsQuery, Page, SendBody, StreamEvent, Transcript, TranscriptMatches, UpdateBotBody,
 } from './bot-contract'
 import type { DataEnvelope, PageParams } from './types'
@@ -41,6 +41,12 @@ export const createBotApi = (c: Client) => ({
     remove: (id: string) => c.delete<void>(`bots/${id}`),
     /** Takes a host off the bot's site grants. The bot asks again before it reads it. */
     revokeSite: (id: string, host: string) => c.delete<void>(`bots/${id}/site-grants/${encodeURIComponent(host)}`),
+    schedules: (id: string) => unwrap(c.get<DataEnvelope<BotSchedule[]>>(`bots/${id}/schedules`)),
+    createSchedule: (id: string, body: CreateBotScheduleBody) =>
+      unwrap(c.post<DataEnvelope<BotSchedule>>(`bots/${id}/schedules`, { body })),
+    updateSchedule: (id: string, scheduleId: string, body: UpdateBotScheduleBody) =>
+      unwrap(c.patch<DataEnvelope<BotSchedule>>(`bots/${id}/schedules/${scheduleId}`, { body })),
+    removeSchedule: (id: string, scheduleId: string) => c.delete<void>(`bots/${id}/schedules/${scheduleId}`),
     markRead: (id: string) => unwrap(c.post<DataEnvelope<{ readAt: string }>>(`bots/${id}/read`)),
 
     transcript: (id: string, page: PageParams = {}) => c.get<Transcript>(`bots/${id}/transcript`, { query: page, frames: true }),

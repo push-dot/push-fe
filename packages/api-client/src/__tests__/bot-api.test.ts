@@ -104,6 +104,10 @@ const transcript: BotContract.Transcript = {
   live: { turnId: 't2', lastSeq: 12 },
 }
 
+const schedule: BotContract.BotSchedule = {
+  id: 's1', botId: 'b1', prompt: '새 공고 3개 찾아 줘', cadence: 'DAILY', hour: 9, weekday: null, enabled: true,
+  nextRunAt: '2026-11-27T00:00:00Z', lastRunAt: null, lastError: null,
+}
 const matches: BotContract.TranscriptMatches = { total: 1, items: [{ messageId: 'm1', turnId: 't1', at: '2026-11-12T09:00:00Z' }] }
 
 const retried: BotContract.CardRetry = { id: 'c1', status: 'PENDING', openedAt: '2026-11-12T10:05:00Z', expiresAt: '2026-11-12T10:15:00Z' }
@@ -148,6 +152,16 @@ describe('createBotApi routes', () => {
       'PATCH /api/v1/bots/b1 {"expectedRevision":2,"color":"sky"}', bot,
     ],
     ['remove', (api) => api.bots.remove('b1'), noContent(), 'DELETE /api/v1/bots/b1', undefined],
+    ['schedules', (api) => api.bots.schedules('push'), json(200, { data: [schedule] }), 'GET /api/v1/bots/push/schedules', [schedule]],
+    [
+      'createSchedule', (api) => api.bots.createSchedule('push', { prompt: '새 공고 3개 찾아 줘', cadence: 'DAILY', hour: 9 }), json(201, { data: schedule }),
+      'POST /api/v1/bots/push/schedules {"prompt":"새 공고 3개 찾아 줘","cadence":"DAILY","hour":9}', schedule,
+    ],
+    [
+      'updateSchedule', (api) => api.bots.updateSchedule('b1', 's1', { enabled: false }), json(200, { data: schedule }),
+      'PATCH /api/v1/bots/b1/schedules/s1 {"enabled":false}', schedule,
+    ],
+    ['removeSchedule', (api) => api.bots.removeSchedule('b1', 's1'), noContent(), 'DELETE /api/v1/bots/b1/schedules/s1', undefined],
     ['markRead', (api) => api.bots.markRead('push'), json(200, { data: { readAt: '2026-11-12T10:00:00Z' } }), 'POST /api/v1/bots/push/read', { readAt: '2026-11-12T10:00:00Z' }],
     [
       'transcript', (api) => api.bots.transcript('push', { cursor: 'older', limit: 30 }), json(200, transcript),

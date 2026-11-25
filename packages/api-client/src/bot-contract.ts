@@ -201,5 +201,24 @@ export type MaterialsPage = {
 
 export type MaterialDetail = Material & { usedBy: BotRef[] }
 
+export type BotScheduleCadence = 'DAILY' | 'WEEKDAYS' | 'WEEKLY'
+
+/** A prompt the bot runs on its own. `hour` and `weekday` (0 Sunday) are Korea time; `weekday` is set only for WEEKLY. */
+export type BotSchedule = {
+  id: string
+  botId: string
+  prompt: string
+  cadence: BotScheduleCadence
+  hour: number
+  weekday: number | null
+  enabled: boolean
+  nextRunAt: string
+  lastRunAt: string | null
+  lastError: string | null
+}
+
+export type CreateBotScheduleBody = { prompt: string; cadence: BotScheduleCadence; hour: number; weekday?: number }
+export type UpdateBotScheduleBody = Partial<CreateBotScheduleBody> & { enabled?: boolean }
+
 /** One row of `GET /bots/{id}/site-grants`; the body is `{ data: BotSiteGrant[] }`. */
 export type BotSiteGrant = { host: string; kind: 'posting' | 'company' | 'other'; grantedAt: string }
