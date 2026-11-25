@@ -43,7 +43,7 @@ export type BotLimit = {
 export type BotList = { data: Bot[]; limit?: BotLimit }
 
 /** A site the bot reads without asking. `kind` says what the user allowed it for (BotProfileAllowed). */
-export type AllowedSite = { id: string; host: string; allowedAt: string; kind: 'posting' | 'company' }
+export type AllowedSite = { id: string; host: string; allowedAt: string; kind: 'posting' | 'company' | 'other' }
 
 export type BotDetail = Bot & {
   posting: { id: string; title: string; deadline: string | null; closed: boolean } | null
