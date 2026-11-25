@@ -27,6 +27,7 @@ run('component-default-export', {
     { code: 'const A = () => <View />\nexport default A', filename: '/app/src/a.tsx' },
     { code: 'export const useX = () => 1\nconst A = () => <View />\nexport default A', filename: '/app/src/a.tsx' },
     { code: 'export const value = 1', filename: '/app/src/a.tsx' },
+    { code: 'export type Props = { a: 1 }\nexport interface Ref { b: 2 }\nconst A = () => <View />\nexport default A', filename: '/app/src/a.tsx' },
   ],
   invalid: [
     { code: 'export const Banner = () => <View />', filename: '/app/src/a.tsx', errors: [{ messageId: 'missing' }, { messageId: 'named' }] },

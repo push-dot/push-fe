@@ -21,7 +21,7 @@ module.exports = {
             found = true
             if (node.declaration.type !== 'Identifier') context.report({ node, messageId: 'inline' })
           }
-          if (node.type === 'ExportNamedDeclaration') {
+          if (node.type === 'ExportNamedDeclaration' && node.exportKind !== 'type' && !/^TS(TypeAlias|Interface|Enum)Declaration$/.test(node.declaration?.type ?? '')) {
             const decls = node.declaration?.declarations ?? (node.declaration?.id ? [node.declaration] : [])
             for (const d of decls) {
               const name = d.id?.name
