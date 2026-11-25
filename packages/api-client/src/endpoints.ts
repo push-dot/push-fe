@@ -7,7 +7,7 @@ import type {
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, TossBillingAuth, TossBillingConfirmInput, TossBillingConfirmResult, TossTopupConfirmInput, TossTopupConfirmResult, TossTopupOrder, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
   InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
-  ProfileChange, ProfileFilters, SearchTrending, Session, Settings, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
+  ProfileChange, ProfileFilters, SearchTrending, Session, Settings, UserMemory, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
 
@@ -165,6 +165,11 @@ export const createApi = (c: Client) => ({
     registerDevice: (token: string, platform: 'ios' | 'android') =>
       c.post<void>('me/devices', { body: { token, platform } }),
     unregisterDevice: (token: string) => c.delete<void>(`me/devices/${encodeURIComponent(token)}`),
+    memories: () => unwrap(c.get<DataEnvelope<UserMemory[]>>('me/memories')),
+    updateMemory: (id: string, text: string) =>
+      unwrap(c.patch<DataEnvelope<UserMemory>>(`me/memories/${encodeURIComponent(id)}`, { body: { text } })),
+    removeMemory: (id: string) => c.delete<void>(`me/memories/${encodeURIComponent(id)}`),
+    clearMemories: () => c.delete<void>('me/memories'),
     settings: () => unwrap(c.get<DataEnvelope<Settings>>('me/settings')),
     updateSettings: (patch: Partial<Settings> & { defaultTone?: Tone }) =>
       unwrap(c.patch<DataEnvelope<Settings>>('me/settings', { body: patch })),

@@ -182,6 +182,9 @@ export type AppNotification = {
 export type WebNotificationType = NotificationType
 export type WebNotification = AppNotification
 
+/** One fact the bots keep about the user across bots and threads (GET /me/memories). */
+export type UserMemory = { id: string; text: string; createdAt: string; updatedAt: string }
+
 export type Settings = {
   notifyDeadline: boolean
   notifyOffer: boolean

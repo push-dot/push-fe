@@ -109,6 +109,21 @@ describe('harness endpoints', () => {
     expect(hits[0]).toMatchObject({ method: 'PATCH', url: 'http://x/api/v1/me/settings', body: '{"aiAccessMode":"ALWAYS_ASK"}' })
   })
 
+  it('lists, corrects and forgets what the bots remember', async () => {
+    const memory = { id: 'm1', text: '원격 근무를 원해요', createdAt: '2026-11-20T01:00:00Z', updatedAt: '2026-11-20T01:00:00Z' }
+    const { api, hits } = harness((request) => (request.method === 'DELETE' ? new Response(null, { status: 204 }) : json(200, { data: request.method === 'GET' ? [memory] : memory })))
+    await expect(api.me.memories()).resolves.toEqual([memory])
+    await expect(api.me.updateMemory('m1', '주 2일 재택')).resolves.toEqual(memory)
+    await api.me.removeMemory('m1')
+    await api.me.clearMemories()
+    expect(hits.map((hit) => `${hit.method} ${new URL(hit.url).pathname} ${hit.body ?? ''}`.trim())).toEqual([
+      'GET /api/v1/me/memories',
+      'PATCH /api/v1/me/memories/m1 {"text":"주 2일 재택"}',
+      'DELETE /api/v1/me/memories/m1',
+      'DELETE /api/v1/me/memories',
+    ])
+  })
+
   it('lists the stored turns of a conversation with their cards', async () => {
     const turn: ConversationTurn = {
       jobId: 'j1',
