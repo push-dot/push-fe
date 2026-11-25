@@ -526,6 +526,26 @@ export type ApplicantDetail = {
     /** When the submitted profile was captured. Null when profileSource is CURRENT. */
     capturedAt: string | null
   }
+  /** The company agent's latest document review of this application. It marks what to check; it never decides. */
+  aiReview?: ApplicantAiReview | null
+  /** The company agent's latest interview kit for this application. */
+  interviewKit?: ApplicantInterviewKit | null
+}
+
+export type ApplicantAiReview = {
+  id: string
+  conversationId: string
+  createdAt: string
+  summary: string
+  matches: { requirement: string; status: 'MET' | 'PARTIAL' | 'MISSING'; evidence: string | null }[]
+  flags: { title: string; level: 'CHECK' | 'SUPPORTED' | 'UNKNOWN'; reason: string; quote: string | null }[]
+}
+
+export type ApplicantInterviewKit = {
+  id: string
+  conversationId: string
+  createdAt: string
+  questions: { text: string; verify: string; goodSignals: string[]; cautionSignals: string[]; fromFlag: string | null }[]
 }
 
 /** 404/409 details when an invite link has expired. inviterName is empty when that member is gone. */
