@@ -438,6 +438,10 @@ export type TossTopupConfirmResult = { creditsAdded: number; receiptUrl: string 
 export type PendingAuth = { pendingToken: string; expiresIn: number }
 export type AuthResult = Session | PendingAuth
 export type PhoneCodeSent = { cooldownSeconds: number; expiresAt: string }
+export type Contact = { phone: string | null; email: string | null; loginEmail: string | null }
+export type ContactPhoneResult = { phone: string; moved?: { documents: number; files: number } }
+export type ContactEmailSent = { email: string; verified: true } | PhoneCodeSent
+export type ContactMissing = 'PHONE' | 'EMAIL'
 export type PhoneVerifyResult = Session & { created: boolean; linked?: boolean; provider?: string }
 
 export type Session = {
@@ -519,6 +523,8 @@ export type ApplicantDetail = {
   applicant?: {
     displayName: string
     email: string
+    /** The verified contact phone (E.164), or null. */
+    phone?: string | null
     headline: string
     careers: Partial<Career>[]
     skills: string[]

@@ -6,7 +6,7 @@ import type {
   AccessMode, AccountType, AiOptions, ApprovalResolution, ArchivedDocument, CompanyInvite, UpdateCompanyInput, ChatIntent, GenerateDocumentInput, JobAccepted, QueueJob, UploadedSource, AppNotification, ApplicantCounts, ApplicantDetail, ApplicantSummary, Application, ApplicationStage, BillingStatus,
   CalendarEvent, Comment, CreateCalendarEventInput, GoogleIntegration, Company, CompanyBillingStatus, CompanyMember, TossBillingAuth, TossBillingConfirmInput, TossBillingConfirmResult, TossTopupConfirmInput, TossTopupConfirmResult, TossTopupOrder, CompanyPosting, Consent, Conversation, ConversationAttachment, CreatePostingInput,
   AuthResult, BlockedUser, ConversationListItem, DataEnvelope, EmailSignupInput, EmployerPlan, EmployerStage, LedgerEntry, LinkKind, ListEnvelope, Me, Message, ConversationTurn,
-  InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
+  InvitePreview, Offer, MyPostsParams, OfferMessage, PageParams, Contact, ContactEmailSent, ContactPhoneResult, PhoneCodeSent, PhoneVerifyResult, Post, PostCategory, PostsListParams, ProfileDraft, Posting, PostingDetail, PostingFilters, Profile, ResumeDocument,
   ProfileChange, ProfileFilters, SearchTrending, Session, Settings, UserMemory, SignupTermsInput, Source, SourceItem, StreamEvent, Tone, UpdatePostingInput, UserLink, VerifyIapInput, VerifyIapResult,
   WebNotification,
 } from './types'
@@ -120,6 +120,15 @@ export const createApi = (c: Client) => ({
   },
 
   me: {
+    // The phone and email an employer reaches; POST postings/:id/apply is 403 CONTACT_REQUIRED until both are set.
+    contact: () => unwrap(c.get<DataEnvelope<Contact>>('me/contact')),
+    // Send the SMS code with auth.phoneSend. 409 PHONE_TAKEN (details.canMoveDocuments) leaves the code open for moveDocuments.
+    verifyContactPhone: (body: { phone: string; code: string; moveDocuments?: boolean }) =>
+      unwrap(c.post<DataEnvelope<ContactPhoneResult>>('me/contact/phone', { body })),
+    // The verified login email answers verified: true at once; any other gets a mailed 6-digit code.
+    sendContactEmail: (email: string) => unwrap(c.post<DataEnvelope<ContactEmailSent>>('me/contact/email/send', { body: { email } })),
+    verifyContactEmail: (email: string, code: string) =>
+      unwrap(c.post<DataEnvelope<{ email: string; verified: true }>>('me/contact/email', { body: { email, code } })),
     deleteAccount: (body?: { appleAuthorizationCode?: string }) => c.delete<void>('me', body ? { body } : undefined),
     profile: () => unwrap(c.get<DataEnvelope<Profile>>('me/profile')),
     updateProfile: (patch: Partial<Profile> & { avatarKey?: string }) =>
